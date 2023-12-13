@@ -1,0 +1,9 @@
+{
+  "testEnvironment": "node",
+  "transform": {
+    "^.+\\.(js|ts|tsx)$": "@swc/jest"
+  },
+  "transformIgnorePatterns": [
+    "node_modules/(?!(jest-dom|react-dom|@testing-library))/.+"
+  ]
+}
