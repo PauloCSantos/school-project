@@ -1,4 +1,8 @@
-import { isNumeric } from '@/src/util/validations';
+import {
+  isNumeric,
+  isGreaterZero,
+  validCurrency,
+} from '@/src/util/validations';
 
 type inputProps = {
   salary: number;
@@ -10,7 +14,13 @@ export class Salary {
   constructor(input: inputProps) {
     if (!isNumeric(input.salary))
       throw new Error('The salary field must be of numeric type');
-    this._currency = input.currency ?? 'R$';
+    if (!isGreaterZero(input.salary))
+      throw new Error('Salary must be greater than zero');
+    if (input.currency && !validCurrency(input.currency)) {
+      throw new Error('This currency is not accepted');
+    } else {
+      this._currency = input.currency ?? 'R$';
+    }
     this._salary = input.salary;
   }
 
@@ -19,6 +29,10 @@ export class Salary {
   }
 
   set salary(value: number) {
+    if (!this.validateSalary(value))
+      throw new Error(
+        'Salary must be greater than zero and be of numeric type'
+      );
     this._salary = value;
   }
 
@@ -31,14 +45,27 @@ export class Salary {
   }
 
   set currency(value: 'R$' | '€' | '$') {
+    if (!validCurrency(value)) throw new Error('This currency is not accepted');
     this._currency = value;
   }
 
   increaseSalary(percentValue: number) {
+    if (!this.validateSalary(percentValue))
+      throw new Error(
+        'The percentage value must be greater than zero and be of numeric type'
+      );
     this._salary = percentValue * this._salary + this._salary;
   }
 
   decreaseSalary(percentValue: number) {
+    if (!this.validateSalary(percentValue) && percentValue < 100)
+      throw new Error(
+        'The percentage value must be between 0 and 100 and be of numeric type'
+      );
     this._salary = percentValue * this._salary - this._salary;
+  }
+
+  private validateSalary(value: number): boolean {
+    return isGreaterZero(value) && isNumeric(value);
   }
 }
