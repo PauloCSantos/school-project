@@ -18,3 +18,16 @@ export function minLength(value: string, minlen: number): boolean {
 export function isNumeric(value: number): boolean {
   return !Number.isNaN(value);
 }
+
+export function isGreaterZero(value: number): boolean {
+  return value > 0;
+}
+
+export function validCurrency(value: 'R$' | '€' | '$'): boolean {
+  const validCurrencies: Array<'R$' | '€' | '$'> = ['R$', '€', '$'];
+  if (!validCurrencies.includes(value)) {
+    return false;
+  } else {
+    return true;
+  }
+}
