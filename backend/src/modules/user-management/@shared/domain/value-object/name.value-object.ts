@@ -11,7 +11,7 @@ type NameProps = {
   middleName?: string;
   lastName: string;
 };
-export class Name {
+export default class Name {
   private _firstName: string;
   private _middleName: string;
   private _lastName: string;
