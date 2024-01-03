@@ -1,27 +1,27 @@
 {
-    "compilerOptions": {
-      "target": "esnext",
-      "module": "esnext",
-      "outDir": "./dist",
-      "strict": true,
-      "noImplicitAny": true,
-      "noImplicitThis": true,
-      "noImplicitReturns": true,
-      "noFallthroughCasesInSwitch": true,
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
-      "allowSyntheticDefaultImports": true,
-      "skipLibCheck": true,
-      "esModuleInterop": true,
-      "jsx": "preserve",
-      "lib": ["dom", "esnext"],
-      "allowJs": true,
-      "forceConsistentCasingInFileNames": true,
-      "paths": {
-        "@/*": ["./*"]
-      },
-      "types": ["jest", "node"]
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "outDir": "./dist",
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "lib": ["dom", "esnext"],
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@/*": ["./*"]
     },
-    "include": ["./src/**/*.ts"],
-    "exclude": ["node_modules/**/*", "dist/**/*"]
-  }
+    "types": ["jest", "node"]
+  },
+  "include": ["./src/**/*.ts"],
+  "exclude": ["node_modules/**/*", "dist/**/*"]
+}
