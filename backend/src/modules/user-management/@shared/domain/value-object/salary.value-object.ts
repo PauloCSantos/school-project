@@ -1,8 +1,4 @@
-import {
-  isNumeric,
-  isGreaterZero,
-  validCurrency,
-} from '@/src/util/validations';
+import { isNumeric, isGreaterZero, validCurrency } from '@/util/validations';
 
 type inputProps = {
   salary: number;

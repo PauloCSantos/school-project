@@ -4,7 +4,7 @@ import {
   maxLengthInclusive,
   minLength,
   isNumeric,
-} from '@/src/util/validations';
+} from '@/util/validations';
 
 type AddressProps = {
   street: string;

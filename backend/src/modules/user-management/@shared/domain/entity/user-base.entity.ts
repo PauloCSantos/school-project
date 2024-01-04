@@ -1,4 +1,4 @@
-import { isNotEmpty, validBirthday, validEmail } from '@/src/util/validations';
+import { isNotEmpty, validBirthday, validEmail } from '@/util/validations';
 import Address from '../value-object/address.value-object';
 import Id from '../value-object/id.value-object';
 import Name from '../value-object/name.value-object';

@@ -3,7 +3,7 @@ import {
   isNotEmpty,
   maxLengthInclusive,
   minLength,
-} from '@/src/util/validations';
+} from '@/util/validations';
 import UserBase, {
   UserBaseProps,
 } from '../../../@shared/domain/entity/user-base.entity';

@@ -1,4 +1,4 @@
-import { validCNPJ } from '@/src/util/validations';
+import { validCNPJ } from '@/util/validations';
 import UserBase, {
   UserBaseProps,
 } from '../../../@shared/domain/entity/user-base.entity';
