@@ -5,5 +5,8 @@
   },
   "transformIgnorePatterns": [
     "node_modules/(?!(jest-dom|react-dom|@testing-library))/.+"
-  ]
+  ],
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/src/$1"
+  }
 }
