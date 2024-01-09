@@ -1,4 +1,4 @@
-import Id from '@/modules/user-management/@shared/domain/value-object/id.value-object';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
 describe('Id unit test', () => {
   describe('On fail', () => {
