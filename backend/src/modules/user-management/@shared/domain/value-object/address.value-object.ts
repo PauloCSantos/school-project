@@ -1,10 +1,9 @@
 import {
-  isAlpha,
   isNotEmpty,
   maxLengthInclusive,
   minLength,
   isNumeric,
-} from '@/src/util/validations';
+} from '@/util/validations';
 
 type AddressProps = {
   street: string;
@@ -54,51 +53,54 @@ export default class Address {
     this._avenue = input.avenue;
     this._state = input.state;
   }
+
   get street(): string {
     return this._street;
   }
-
-  set street(value: string) {
-    this._street = value;
-  }
-
   get city(): string {
     return this._city;
   }
-
-  set city(value: string) {
-    this._city = value;
-  }
-
   get zip(): string {
     return this._zip;
   }
-
-  set zip(value: string) {
-    this._zip = value;
-  }
-
   get number(): number {
     return this._number;
   }
-
-  set number(value: number) {
-    this._number = value;
-  }
-
   get avenue(): string {
     return this._avenue;
   }
-
-  set avenue(value: string) {
-    this._avenue = value;
-  }
-
   get state(): string {
     return this._state;
   }
 
+  set street(value: string) {
+    if (!this.validateField(value))
+      throw new Error('The street field was not filled in correctly');
+    this._street = value;
+  }
+  set city(value: string) {
+    if (!this.validateField(value))
+      throw new Error('The city field was not filled in correctly');
+    this._city = value;
+  }
+  set zip(value: string) {
+    if (!this.validateField(value, 20, 5))
+      throw new Error('The zip field was not filled in correctly');
+    this._zip = value;
+  }
+  set number(value: number) {
+    if (!isNumeric(value))
+      throw new Error('The number field must be of numeric type');
+    this._number = value;
+  }
+  set avenue(value: string) {
+    if (!this.validateField(value))
+      throw new Error('The avenue field was not filled in correctly');
+    this._avenue = value;
+  }
   set state(value: string) {
+    if (!this.validateField(value, 255, 1))
+      throw new Error('The state field was not filled in correctly');
     this._state = value;
   }
 
@@ -108,10 +110,9 @@ export default class Address {
     minLen: number = 2
   ): boolean {
     return (
-      isAlpha(value) &&
+      isNotEmpty(value) &&
       minLength(value, minLen) &&
-      maxLengthInclusive(value, maxLen) &&
-      isNotEmpty(value)
+      maxLengthInclusive(value, maxLen)
     );
   }
 }

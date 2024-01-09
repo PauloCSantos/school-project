@@ -3,7 +3,7 @@ import {
   isNotEmpty,
   maxLengthInclusive,
   minLength,
-} from '@/src/util/validations';
+} from '@/util/validations';
 import UserBase, {
   UserBaseProps,
 } from '../../../@shared/domain/entity/user-base.entity';
@@ -20,9 +20,9 @@ export default class UserAdministrator extends UserBase {
 
   constructor(input: AdministratorUserProps) {
     super(input);
-    this._salary = input.salary;
     if (!this.validateGraduation(input.graduation))
       throw new Error('Field graduation is not valid');
+    this._salary = input.salary;
     this._graduation = input.graduation;
   }
 

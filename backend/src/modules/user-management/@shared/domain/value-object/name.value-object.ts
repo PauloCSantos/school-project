@@ -1,10 +1,10 @@
-import { capitalizeString } from '@/src/util/formatting';
+import { capitalizeString } from '@/util/formatting';
 import {
   isAlpha,
   isNotEmpty,
   maxLengthInclusive,
   minLength,
-} from '@/src/util/validations';
+} from '@/util/validations';
 
 type NameProps = {
   firstName: string;

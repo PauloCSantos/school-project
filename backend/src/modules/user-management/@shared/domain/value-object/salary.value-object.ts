@@ -1,8 +1,4 @@
-import {
-  isNumeric,
-  isGreaterZero,
-  validCurrency,
-} from '@/src/util/validations';
+import { isNumeric, isGreaterZero, validCurrency } from '@/util/validations';
 
 type inputProps = {
   salary: number;
@@ -54,7 +50,7 @@ export default class Salary {
       throw new Error(
         'The percentage value must be greater than zero and be of numeric type'
       );
-    this._salary = percentValue * this._salary + this._salary;
+    this._salary = (percentValue / 100) * this._salary + this._salary;
   }
 
   decreaseSalary(percentValue: number) {
@@ -62,7 +58,7 @@ export default class Salary {
       throw new Error(
         'The percentage value must be between 0 and 100 and be of numeric type'
       );
-    this._salary = percentValue * this._salary - this._salary;
+    this._salary = this._salary - (percentValue / 100) * this._salary;
   }
 
   private validateSalary(value: number): boolean {
