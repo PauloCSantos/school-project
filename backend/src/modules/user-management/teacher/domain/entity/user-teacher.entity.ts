@@ -22,6 +22,8 @@ export default class UserTeacher extends UserBase {
 
   constructor(input: TeacherUserProps) {
     super(input);
+    if (!input.salary || !input.graduation || !input.academicDegrees)
+      throw new Error('Salary, graduation and academic degrees are mandatory');
     this._salary = input.salary;
     if (!this.validateGraduation(input.graduation))
       throw new Error('Field graduation is not valid');

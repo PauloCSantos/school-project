@@ -11,6 +11,7 @@ export default class UserMaster extends UserBase {
   private _cnpj;
   constructor(input: MasterUserProps) {
     super(input);
+    if (!input.cnpj) throw new Error('Field CNPJ is mandatory');
     if (!validCNPJ(input.cnpj)) throw new Error('Field CNPJ is not valid');
     this._cnpj = input.cnpj;
   }

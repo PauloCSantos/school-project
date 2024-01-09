@@ -8,7 +8,8 @@ export default class Salary {
   private _salary: number;
   private _currency: 'R$' | '€' | '$';
   constructor(input: inputProps) {
-    if (!input.salary) throw new Error('Field salary is mandatory');
+    if (input.salary === undefined)
+      throw new Error('Field salary is mandatory');
     if (!isNumeric(input.salary))
       throw new Error('The salary field must be of numeric type');
     if (!isGreaterZero(input.salary))

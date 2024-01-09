@@ -19,6 +19,8 @@ export default abstract class UserBase {
   private _birthday;
 
   constructor(input: UserBaseProps) {
+    if (!input.name || !input.address || !input.email || !input.birthday)
+      throw new Error('All fields except Id are mandatory');
     this._id = input.id || new Id();
     this._name = input.name;
     this._address = input.address;

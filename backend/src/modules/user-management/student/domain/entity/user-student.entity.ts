@@ -12,6 +12,8 @@ export default class UserStudent extends UserBase {
 
   constructor(input: StudentUserProps) {
     super(input);
+    if (input.paymentYear === undefined)
+      throw new Error('Payment field is mandatory');
     if (!this.validatePayment(input.paymentYear))
       throw new Error('Field payment is not valid');
     this._paymentYear = input.paymentYear;
