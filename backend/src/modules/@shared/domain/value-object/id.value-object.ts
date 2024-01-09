@@ -1,3 +1,5 @@
+import { validId } from '@/util/validations';
+
 export default class Id {
   private _id: string;
 
@@ -15,11 +17,7 @@ export default class Id {
   }
 
   private validate(id: string): void {
-    if (
-      !id.match(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-      )
-    ) {
+    if (!validId(id)) {
       throw new Error('ID inválido');
     }
   }
