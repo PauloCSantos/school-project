@@ -3,7 +3,7 @@ export function isNotEmpty(value: string): boolean {
 }
 
 export function isAlpha(value: string): boolean {
-  const regexMatch = value.match(/^[a-zA-Z]+$/);
+  const regexMatch = value.match(/^[a-zA-Z\s]+$/);
   return !!regexMatch;
 }
 
@@ -16,7 +16,7 @@ export function minLength(value: string, minlen: number): boolean {
 }
 
 export function isNumeric(value: number): boolean {
-  return !Number.isNaN(value);
+  return typeof value === 'number';
 }
 
 export function isGreaterZero(value: number): boolean {
@@ -50,31 +50,11 @@ export function validBirthday(value: Date): boolean {
 
 export function validCNPJ(value: string): boolean {
   value = value.replace(/\D/g, '');
-
   if (value.length !== 14) {
     return false;
   }
   if (/^(\d)\1+$/.test(value)) {
     return false;
   }
-
-  let sum = 0;
-  for (let i = 0; i < 12; i++) {
-    sum += parseInt(value.charAt(i)) * (5 - (i % 4));
-  }
-  let digit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-  if (parseInt(value.charAt(12)) !== digit) {
-    return false;
-  }
-
-  sum = 0;
-  for (let i = 0; i < 13; i++) {
-    sum += parseInt(value.charAt(i)) * (6 - (i % 4));
-  }
-  digit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-  if (parseInt(value.charAt(13)) !== digit) {
-    return false;
-  }
-
   return true;
 }
