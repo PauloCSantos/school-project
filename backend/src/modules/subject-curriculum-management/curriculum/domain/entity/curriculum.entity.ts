@@ -58,6 +58,18 @@ export default class Curriculum {
     return this._subjectsList;
   }
 
+  set name(input: string) {
+    if (!this.validateName(input))
+      throw new Error('Field description is not valid');
+    this._name = input;
+  }
+
+  set year(input: number) {
+    if (!this.validateYears(input))
+      throw new Error('Field description is not valid');
+    this._yearsToComplete = input;
+  }
+
   addSubject(input: string): void {
     if (this.findIndex(input) === -1) {
       this._subjectsList.push(input);
@@ -79,7 +91,7 @@ export default class Curriculum {
   }
   private validateName(input: string): boolean {
     return (
-      isNotEmpty(input) && maxLengthInclusive(input, 500) && minLength(input, 4)
+      isNotEmpty(input) && maxLengthInclusive(input, 255) && minLength(input, 4)
     );
   }
   private validateYears(input: number): boolean {
