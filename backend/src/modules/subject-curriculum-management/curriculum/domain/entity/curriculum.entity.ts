@@ -30,7 +30,7 @@ export default class Curriculum {
     )
       throw new Error('All curriculum fields are mandatory');
     if (!this.validateName(input.name))
-      throw new Error('Field description is not valid');
+      throw new Error('Field name is not valid');
     if (!this.validateYears(input.yearsToComplete))
       throw new Error('Field date is not valid');
     if (!this.validateSubjects(input.subjectsList))
@@ -45,15 +45,12 @@ export default class Curriculum {
   get id(): Id {
     return this._id;
   }
-
   get name(): string {
     return this._name;
   }
-
   get yearsToComplete(): number {
     return this._yearsToComplete;
   }
-
   get subjectList(): string[] {
     return this._subjectsList;
   }
@@ -63,7 +60,6 @@ export default class Curriculum {
       throw new Error('Field description is not valid');
     this._name = input;
   }
-
   set year(input: number) {
     if (!this.validateYears(input))
       throw new Error('Field description is not valid');
@@ -77,7 +73,6 @@ export default class Curriculum {
       throw new Error('This subject is already on the curriculum');
     }
   }
-
   removeSubject(input: string) {
     const index = this.findIndex(input);
     if (index !== -1) {
@@ -86,6 +81,7 @@ export default class Curriculum {
       throw new Error('This subject is not included in the curriculum');
     }
   }
+
   private findIndex(value: string): number {
     return this._subjectsList.indexOf(value);
   }
