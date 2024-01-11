@@ -85,7 +85,6 @@ describe('Schedule unit test', () => {
     });
     it('should remove a lesson from the lessons list', () => {
       const schedule = new Schedule(scheduleProps);
-      console.log(schedule.lessonsList);
       schedule.removeLesson(lesson2);
 
       expect(schedule.lessonsList).toEqual([lesson1, lesson3]);
