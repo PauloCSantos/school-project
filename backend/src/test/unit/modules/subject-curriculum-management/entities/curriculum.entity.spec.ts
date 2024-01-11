@@ -29,7 +29,7 @@ describe('Curriculum unit test', () => {
           ...validCurriculumProps,
           name: 'A',
         });
-      }).toThrow('Field description is not valid');
+      }).toThrow('Field name is not valid');
     });
     it('should throw an error if yearsToComplete validation fails', () => {
       expect(() => {
