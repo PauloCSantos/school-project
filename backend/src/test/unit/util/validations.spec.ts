@@ -12,6 +12,8 @@ import {
   validEmail,
   validId,
   areAllValuesUnique,
+  validHour24h,
+  validDay,
 } from '@/util/validations';
 
 describe('Testing validation functions', () => {
@@ -139,6 +141,23 @@ describe('Testing validation functions', () => {
     });
     it('areAllValuesUnique should return false for duplicate duplicate', () => {
       expect(areAllValuesUnique(['1', '4', '2', '3'])).toBeTruthy;
+    });
+  });
+
+  describe('Testing validHour24', () => {
+    it('validHour24h should return false for invalid hour', () => {
+      expect(validHour24h('29:72')).toBeFalsy;
+    });
+    it('validHour24h should return true for valid hour', () => {
+      expect(validHour24h('13:25')).toBeTruthy;
+    });
+  });
+  describe('Testing validDay', () => {
+    it('validDay should return false for invalid hour', () => {
+      expect(validDay('sunday')).toBeFalsy;
+    });
+    it('validDay should return true for valid hour', () => {
+      expect(validDay('sun')).toBeTruthy;
     });
   });
 });
