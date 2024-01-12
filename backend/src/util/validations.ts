@@ -73,10 +73,13 @@ export function areAllValuesUnique(arr: string[]): boolean {
 
 export function validHour24h(value: string): boolean {
   const regex24h = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
-
   return regex24h.test(value);
 }
 
 export function validDay(value: string) {
   return ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].includes(value);
+}
+
+export default function validNote(value: number): boolean {
+  return value >= 0 && value <= 10;
 }
