@@ -11,8 +11,6 @@ import {
   validId,
 } from '@/util/validations';
 
-type DayOfWeek = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
-type Hora = `${string}:${string}`;
 type LessonProps = {
   id?: Id;
   name: string;
@@ -21,7 +19,7 @@ type LessonProps = {
   studentsList: string[];
   subject: string;
   days: DayOfWeek[];
-  times: Hora[];
+  times: Hour[];
   semester: 1 | 2;
 };
 
@@ -173,7 +171,7 @@ export default class Lesson {
       throw new Error(`Day ${day} is not included in the lesson`);
     }
   }
-  addTime(time: Hora): void {
+  addTime(time: Hour): void {
     if (!validHour24h(time))
       throw new Error(`${time} is not a valid 24-hour format time`);
     if (!this._times.includes(time)) {
@@ -182,7 +180,7 @@ export default class Lesson {
       throw new Error(`Time ${time} is already added to the lesson`);
     }
   }
-  removeTime(time: Hora): void {
+  removeTime(time: Hour): void {
     if (!validHour24h(time))
       throw new Error(`${time} is not a valid 24-hour format time`);
     const index = this._times.indexOf(time);
