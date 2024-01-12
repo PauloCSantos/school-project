@@ -1,5 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import {
+import validNote, {
   isAlpha,
   isGreaterZero,
   isNotEmpty,
@@ -152,12 +152,23 @@ describe('Testing validation functions', () => {
       expect(validHour24h('13:25')).toBeTruthy;
     });
   });
+
   describe('Testing validDay', () => {
     it('validDay should return false for invalid hour', () => {
       expect(validDay('sunday')).toBeFalsy;
     });
     it('validDay should return true for valid hour', () => {
       expect(validDay('sun')).toBeTruthy;
+    });
+  });
+
+  describe('Testing validNote', () => {
+    it('validNote should return false for invalid note', () => {
+      expect(validNote(11)).toBeFalsy;
+      expect(validNote(-1)).toBeFalsy;
+    });
+    it('validNote should return true for valid note', () => {
+      expect(validNote(10)).toBeTruthy;
     });
   });
 });
