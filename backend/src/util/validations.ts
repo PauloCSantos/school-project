@@ -37,7 +37,7 @@ export function validEmail(value: string): boolean {
   return emailRegex.test(value);
 }
 
-export function validBirthday(value: Date): boolean {
+export function validDate(value: Date): boolean {
   if (!(value instanceof Date)) {
     return false;
   }
@@ -57,4 +57,29 @@ export function validCNPJ(value: string): boolean {
     return false;
   }
   return true;
+}
+
+export function validId(value: string): boolean {
+  const regexMatch = value.match(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  );
+  return !!regexMatch;
+}
+
+export function areAllValuesUnique(arr: string[]): boolean {
+  const set = new Set(arr);
+  return set.size === arr.length;
+}
+
+export function validHour24h(value: string): boolean {
+  const regex24h = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
+  return regex24h.test(value);
+}
+
+export function validDay(value: string) {
+  return ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].includes(value);
+}
+
+export default function validNote(value: number): boolean {
+  return value >= 0 && value <= 10;
 }

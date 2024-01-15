@@ -1,5 +1,6 @@
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
-import Id from '@/modules/user-management/@shared/domain/value-object/id.value-object';
+
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
 import Salary from '@/modules/user-management/@shared/domain/value-object/salary.value-object';
 import UserAdministrator from '@/modules/user-management/administrator/domain/entity/user-administrator.entity';

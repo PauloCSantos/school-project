@@ -1,6 +1,6 @@
-import { isNotEmpty, validBirthday, validEmail } from '@/util/validations';
+import { isNotEmpty, validDate, validEmail } from '@/util/validations';
 import Address from '../value-object/address.value-object';
-import Id from '../value-object/id.value-object';
+import Id from '../../../../@shared/domain/value-object/id.value-object';
 import Name from '../value-object/name.value-object';
 
 export type UserBaseProps = {
@@ -19,6 +19,8 @@ export default abstract class UserBase {
   private _birthday;
 
   constructor(input: UserBaseProps) {
+    if (!input.name || !input.address || !input.email || !input.birthday)
+      throw new Error('All fields except Id are mandatory');
     this._id = input.id || new Id();
     this._name = input.name;
     this._address = input.address;
@@ -68,6 +70,6 @@ export default abstract class UserBase {
   }
 
   private validateBirthday(input: Date): boolean {
-    return validBirthday(input);
+    return validDate(input);
   }
 }

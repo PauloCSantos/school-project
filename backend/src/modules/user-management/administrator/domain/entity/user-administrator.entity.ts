@@ -20,6 +20,8 @@ export default class UserAdministrator extends UserBase {
 
   constructor(input: AdministratorUserProps) {
     super(input);
+    if (!input.salary || !input.graduation)
+      throw new Error('Salary and graduation are mandatory');
     if (!this.validateGraduation(input.graduation))
       throw new Error('Field graduation is not valid');
     this._salary = input.salary;

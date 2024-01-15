@@ -1,14 +1,19 @@
-import {
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import validNote, {
   isAlpha,
   isGreaterZero,
   isNotEmpty,
   isNumeric,
   maxLengthInclusive,
   minLength,
-  validBirthday,
+  validDate,
   validCNPJ,
   validCurrency,
   validEmail,
+  validId,
+  areAllValuesUnique,
+  validHour24h,
+  validDay,
 } from '@/util/validations';
 
 describe('Testing validation functions', () => {
@@ -94,12 +99,12 @@ describe('Testing validation functions', () => {
     });
   });
 
-  describe('Testing validBirthday', () => {
-    it('validBirthday should return false for future dates', () => {
-      expect(validBirthday(new Date('2050-01-01'))).toBe(false);
+  describe('Testing validDate', () => {
+    it('validDate should return false for future dates', () => {
+      expect(validDate(new Date('2050-01-01'))).toBe(false);
     });
-    it('validBirthday should return true for valid dates', () => {
-      expect(validBirthday(new Date('1990-01-01'))).toBe(true);
+    it('validDate should return true for valid dates', () => {
+      expect(validDate(new Date('1990-01-01'))).toBe(true);
     });
   });
 
@@ -118,6 +123,52 @@ describe('Testing validation functions', () => {
     });
     it('validCNPJ should return true for valid CNPJ numbers', () => {
       expect(validCNPJ('33.050.196/0001-88')).toBe(true);
+    });
+  });
+
+  describe('Testing validId', () => {
+    it('validId should return false for invalid id', () => {
+      expect(validId('invalidID')).toBeFalsy;
+    });
+    it('validId should return true for valid id', () => {
+      expect(validId(new Id().id)).toBeTruthy;
+    });
+  });
+
+  describe('Testing areAllValuesUnique', () => {
+    it('areAllValuesUnique should return false for duplicate duplicate', () => {
+      expect(areAllValuesUnique(['1', '1', '2', '3'])).toBeFalsy;
+    });
+    it('areAllValuesUnique should return false for duplicate duplicate', () => {
+      expect(areAllValuesUnique(['1', '4', '2', '3'])).toBeTruthy;
+    });
+  });
+
+  describe('Testing validHour24', () => {
+    it('validHour24h should return false for invalid hour', () => {
+      expect(validHour24h('29:72')).toBeFalsy;
+    });
+    it('validHour24h should return true for valid hour', () => {
+      expect(validHour24h('13:25')).toBeTruthy;
+    });
+  });
+
+  describe('Testing validDay', () => {
+    it('validDay should return false for invalid hour', () => {
+      expect(validDay('sunday')).toBeFalsy;
+    });
+    it('validDay should return true for valid hour', () => {
+      expect(validDay('sun')).toBeTruthy;
+    });
+  });
+
+  describe('Testing validNote', () => {
+    it('validNote should return false for invalid note', () => {
+      expect(validNote(11)).toBeFalsy;
+      expect(validNote(-1)).toBeFalsy;
+    });
+    it('validNote should return true for valid note', () => {
+      expect(validNote(10)).toBeTruthy;
     });
   });
 });

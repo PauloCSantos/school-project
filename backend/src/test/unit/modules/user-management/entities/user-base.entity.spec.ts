@@ -1,8 +1,8 @@
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import UserBase, {
   UserBaseProps,
 } from '@/modules/user-management/@shared/domain/entity/user-base.entity';
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
-import Id from '@/modules/user-management/@shared/domain/value-object/id.value-object';
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
 
 describe('UserBase unit test', () => {
