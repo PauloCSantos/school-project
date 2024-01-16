@@ -55,7 +55,7 @@ export default class Name {
   }
 
   set middleName(value: string) {
-    if (this.validateOptionalInput(value) && value !== '') {
+    if (!this.validateOptionalInput(value) && value !== '') {
       throw new Error('The middle name field does not meet all requirements');
     }
     this._middleName = value;
