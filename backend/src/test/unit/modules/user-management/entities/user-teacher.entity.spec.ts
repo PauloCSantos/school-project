@@ -47,7 +47,7 @@ describe('UserTeacher class', () => {
         birthday: new Date('11/12/1995'),
         salary: validSalary,
         graduation: 'Computer Science',
-        academicDegrees: 'MA',
+        academicDegrees: 'M',
       };
       expect(() => {
         new UserTeacher(invalidUser);
