@@ -68,6 +68,7 @@ export default class Curriculum {
 
   addSubject(input: string): void {
     if (this.findIndex(input) === -1) {
+      if (!validId(input)) throw new Error('This subject id is invalid');
       this._subjectsList.push(input);
     } else {
       throw new Error('This subject is already on the curriculum');
