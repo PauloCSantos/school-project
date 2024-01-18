@@ -3,7 +3,6 @@ import {
   isNotEmpty,
   maxLengthInclusive,
   minLength,
-  validDate,
   validDay,
   validHour24h,
   validId,
@@ -44,7 +43,8 @@ export default class Event {
     if (!validId(input.creator)) throw new Error('Creator id is not valid');
     if (!this.validateName(input.name))
       throw new Error('Field name is not valid');
-    if (!validDate(input.date)) throw new Error('Field date is not valid');
+    if (!this.validateDate(input.date))
+      throw new Error('Field date is not valid');
     if (!validHour24h(input.hour)) throw new Error('Field hour is not valid');
     if (!validDay(input.day)) throw new Error('Field day is not valid');
     if (!this.validateType(input.type))
@@ -94,7 +94,7 @@ export default class Event {
     this._name = value;
   }
   set date(value: Date) {
-    if (!validDate(value)) throw new Error('Field date is not valid');
+    if (!this.validateDate(value)) throw new Error('Field date is not valid');
     this._date = value;
   }
   set hour(value: string) {
@@ -128,5 +128,11 @@ export default class Event {
     return (
       isNotEmpty(input) && maxLengthInclusive(input, 255) && minLength(input, 3)
     );
+  }
+  private validateDate(input: Date): boolean {
+    if (!(input instanceof Date)) {
+      return false;
+    }
+    return true;
   }
 }
