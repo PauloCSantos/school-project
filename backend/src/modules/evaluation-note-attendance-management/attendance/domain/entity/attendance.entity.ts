@@ -91,7 +91,7 @@ export default class Attendance {
     if (this.findIndex(input) === -1) {
       this._studentsPresent.push(input);
     } else {
-      throw new Error('This studend is already on the attendance');
+      throw new Error('This student is already on the attendance');
     }
   }
   removeStudent(input: string): void {
@@ -100,7 +100,7 @@ export default class Attendance {
     if (index !== -1) {
       this._studentsPresent.splice(index, 1);
     } else {
-      throw new Error('This studend is not included in the attendance');
+      throw new Error('This student is not included in the attendance');
     }
   }
 
