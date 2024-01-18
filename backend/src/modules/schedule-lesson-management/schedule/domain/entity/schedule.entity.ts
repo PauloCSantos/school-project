@@ -64,7 +64,7 @@ export default class Schedule {
     if (index !== -1) {
       this._lessonsList.splice(index, 1);
     } else {
-      throw new Error('This lesson is not included in the lesson');
+      throw new Error('This lesson is not included in the schedule');
     }
   }
 
