@@ -25,9 +25,8 @@ export default class Evaluation {
   constructor(input: EvaluationProps) {
     if (
       !input.teacher ||
-      !input.teacher ||
       !input.lesson ||
-      !input.value ||
+      !input.type ||
       input.value === undefined
     )
       throw new Error('All evalutation fields are mandatory');
