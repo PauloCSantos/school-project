@@ -120,14 +120,14 @@ describe('MemoryCurriculumRepository unit test', () => {
       expect(response).toBe('Operação concluída com sucesso');
     });
 
-    it('should add a new subjet to the curriculum', async () => {
+    it('should add a new subject to the curriculum', async () => {
       const response = await repository.addSubjects(curriculum1.id.id, [
         new Id().id,
       ]);
 
       expect(response).toBe('1 value were entered');
     });
-    it('should remove a subjet from the curriculum', async () => {
+    it('should remove a subject from the curriculum', async () => {
       const response = await repository.removeSubjects(curriculum1.id.id, [
         curriculum1.subjectList[0],
       ]);
@@ -135,12 +135,12 @@ describe('MemoryCurriculumRepository unit test', () => {
       expect(response).toBe('1 value were removed');
     });
 
-    it('should add a new subjet to the curriculum', async () => {
+    it('should add a new subject to the curriculum', async () => {
       const response = await repository.addSubjects(curriculum1.id.id, []);
 
       expect(response).toBe('0 values were entered');
     });
-    it('should remove a subjet from the curriculum', async () => {
+    it('should remove a subject from the curriculum', async () => {
       const response = await repository.removeSubjects(curriculum1.id.id, []);
 
       expect(response).toBe('0 values were removed');
