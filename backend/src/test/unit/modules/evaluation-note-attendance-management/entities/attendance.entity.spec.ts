@@ -59,7 +59,7 @@ describe('Attendance unit test', () => {
 
       expect(() => {
         attendanceInstance.removeStudent(studentId);
-      }).toThrow('This studend is not included in the attendance');
+      }).toThrow('This student is not included in the attendance');
     });
   });
 
