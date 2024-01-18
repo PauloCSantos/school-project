@@ -70,7 +70,7 @@ export default class UserTeacher extends UserBase {
 
   private validateAcademicDegrees(input: string): boolean {
     return (
-      isNotEmpty(input) && minLength(input, 3) && maxLengthInclusive(input, 255)
+      isNotEmpty(input) && minLength(input, 1) && maxLengthInclusive(input, 255)
     );
   }
 }

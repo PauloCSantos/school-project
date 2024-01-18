@@ -151,7 +151,7 @@ export default class Lesson {
     if (index !== -1) {
       this._studentsList.splice(index, 1);
     } else {
-      throw new Error('This studend is not included in the lesson');
+      throw new Error('This student is not included in the lesson');
     }
   }
   addDay(day: DayOfWeek): void {

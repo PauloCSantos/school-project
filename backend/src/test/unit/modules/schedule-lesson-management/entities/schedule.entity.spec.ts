@@ -64,7 +64,7 @@ describe('Schedule unit test', () => {
       const schedule = new Schedule(scheduleProps);
 
       expect(() => schedule.removeLesson(new Id().id)).toThrow(
-        'This lesson is not included in the lesson'
+        'This lesson is not included in the schedule'
       );
     });
   });
