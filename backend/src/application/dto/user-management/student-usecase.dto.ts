@@ -1,7 +1,7 @@
-export interface FindUserAdministratorInputDto {
+export interface FindUserStudentInputDto {
   id: string;
 }
-export interface FindUserAdministratorOutputDto {
+export interface FindUserStudentOutputDto {
   name: { fullName: string; shortName: string };
   address: {
     street: string;
@@ -13,15 +13,14 @@ export interface FindUserAdministratorOutputDto {
   };
   email: string;
   birthday: Date;
-  salary: string;
-  graduation: string;
+  paymentYear: string;
 }
 
-export interface FindAllUserAdministratorInputDto {
+export interface FindAllUserStudentInputDto {
   quantity?: number;
   offset?: number;
 }
-export interface FindAllUserAdministratorOutputDto {
+export interface FindAllUserStudentOutputDto {
   name: { fullName: string; shortName: string };
   address: {
     street: string;
@@ -33,13 +32,11 @@ export interface FindAllUserAdministratorOutputDto {
   };
   email: string;
   birthday: Date;
-  salary: string;
-  graduation: string;
+  paymentYear: string;
 }
 [];
 
-export interface CreateUserAdministratorInputDto {
-  id: string;
+export interface CreateUserStudentInputDto {
   name: { firstName: string; middleName: string; lastName: string };
   address: {
     street: string;
@@ -51,14 +48,13 @@ export interface CreateUserAdministratorInputDto {
   };
   email: string;
   birthday: Date;
-  salary: { salary: number; currency?: 'R$' | '€' | '$' };
-  graduation: string;
+  paymentYear: number;
 }
-export interface CreateUserAdministratorOutputDto {
+export interface CreateUserStudentOutputDto {
   id: string;
 }
 
-export interface UpdateUserAdministratorInputDto {
+export interface UpdateUserStudentInputDto {
   id: string;
   name?: { firstName?: string; middleName?: string; lastName?: string };
   address?: {
@@ -71,10 +67,10 @@ export interface UpdateUserAdministratorInputDto {
   };
   email?: string;
   birthday?: Date;
-  salary?: { salary?: number; currency?: 'R$' | '€' | '$' };
-  graduation?: string;
+  paymentYear?: number;
 }
-export interface UpdateUserAdministratorOutputDto {
+export interface UpdateUserStudentOutputDto {
+  id: string;
   name: { fullName: string; shortName: string };
   address: {
     street: string;
@@ -86,13 +82,12 @@ export interface UpdateUserAdministratorOutputDto {
   };
   email: string;
   birthday: Date;
-  salary: string;
-  graduation: string;
+  paymentYear: string;
 }
 
-export interface DeleteUserAdministratorInputDto {
+export interface DeleteUserStudentInputDto {
   id: string;
 }
-export interface DeleteUserAdministratorOutputDto {
+export interface DeleteUserStudentOutputDto {
   message: string;
 }
