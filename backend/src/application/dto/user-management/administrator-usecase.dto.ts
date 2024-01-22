@@ -21,26 +21,25 @@ export interface FindAllUserAdministratorInputDto {
   quantity?: number;
   offset?: number;
 }
-export interface FindAllUserAdministratorOutputDto {
-  name: { fullName: string; shortName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  salary: string;
-  graduation: string;
-}
-[];
+export interface FindAllUserAdministratorOutputDto
+  extends Array<{
+    name: { fullName: string; shortName: string };
+    address: {
+      street: string;
+      city: string;
+      zip: string;
+      number: number;
+      avenue: string;
+      state: string;
+    };
+    email: string;
+    birthday: Date;
+    salary: string;
+    graduation: string;
+  }> {}
 
 export interface CreateUserAdministratorInputDto {
-  id: string;
-  name: { firstName: string; middleName: string; lastName: string };
+  name: { firstName: string; middleName?: string; lastName: string };
   address: {
     street: string;
     city: string;
