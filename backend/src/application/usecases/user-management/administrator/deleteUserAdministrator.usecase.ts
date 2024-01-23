@@ -20,6 +20,9 @@ export default class DeleteUserAdministrator
   async execute({
     id,
   }: DeleteUserAdministratorInputDto): Promise<DeleteUserAdministratorOutputDto> {
+    const userVerification = await this._userAdministratorRepository.find(id);
+    if (!userVerification) throw new Error('User not found');
+
     const result = await this._userAdministratorRepository.delete(id);
 
     return { message: result };

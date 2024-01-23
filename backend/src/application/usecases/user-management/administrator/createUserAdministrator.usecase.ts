@@ -38,6 +38,11 @@ export default class CreateUserAdministrator
       salary: new Salary(salary),
     });
 
+    const userVerification = await this._userAdministratorRepository.find(
+      userAdministrator.id.id
+    );
+    if (userVerification) throw new Error('User already exists');
+
     const result =
       await this._userAdministratorRepository.create(userAdministrator);
 

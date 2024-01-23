@@ -24,7 +24,7 @@ export default class FindUserAdministrator
   > {
     const response = await this._userAdministratorRepository.find(id);
     if (response) {
-      const result = {
+      return {
         name: {
           fullName: response.name.fullName(),
           shortName: response.name.shortName(),
@@ -42,9 +42,8 @@ export default class FindUserAdministrator
         salary: response.salary.calculateTotalIncome(),
         graduation: response.graduation,
       };
-      return result;
     } else {
-      return undefined;
+      return response;
     }
   }
 }
