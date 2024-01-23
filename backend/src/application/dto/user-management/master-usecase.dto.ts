@@ -38,7 +38,7 @@ export interface FindAllUserMasterOutputDto {
 
 export interface CreateUserMasterInputDto {
   id: string;
-  name: { firstName: string; middleName: string; lastName: string };
+  name: { firstName: string; middleName?: string; lastName: string };
   address: {
     street: string;
     city: string;
@@ -82,8 +82,7 @@ export interface UpdateUserMasterOutputDto {
   };
   email: string;
   birthday: Date;
-  salary: string;
-  graduation: string;
+  cnpj: string;
 }
 
 export interface DeleteUserMasterInputDto {
