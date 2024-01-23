@@ -1,12 +1,9 @@
 import UserStudent from '../domain/entity/user-student.entity';
 
 export default interface UserStudentGateway {
-  find(id: string): Promise<Omit<UserStudent, 'id'> | undefined>;
-  findAll(
-    quantity?: number,
-    offSet?: number
-  ): Promise<Omit<UserStudent, 'id'>[]>;
+  find(id: string): Promise<UserStudent | undefined>;
+  findAll(quantity?: number, offSet?: number): Promise<UserStudent[]>;
   create(userStudent: UserStudent): Promise<string>;
-  update(userStudent: UserStudent): Promise<Omit<UserStudent, 'id'>>;
+  update(userStudent: UserStudent): Promise<UserStudent>;
   delete(id: string): Promise<string>;
 }

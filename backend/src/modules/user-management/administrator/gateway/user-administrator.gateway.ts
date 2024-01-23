@@ -1,14 +1,9 @@
 import UserAdministrator from '../domain/entity/user-administrator.entity';
 
 export default interface UserAdministratorGateway {
-  find(id: string): Promise<Omit<UserAdministrator, 'id'> | undefined>;
-  findAll(
-    quantity?: number,
-    offSet?: number
-  ): Promise<Omit<UserAdministrator, 'id'>[]>;
+  find(id: string): Promise<UserAdministrator | undefined>;
+  findAll(quantity?: number, offSet?: number): Promise<UserAdministrator[]>;
   create(userAdministrator: UserAdministrator): Promise<string>;
-  update(
-    userAdministrator: UserAdministrator
-  ): Promise<Omit<UserAdministrator, 'id'>>;
+  update(userAdministrator: UserAdministrator): Promise<UserAdministrator>;
   delete(id: string): Promise<string>;
 }
