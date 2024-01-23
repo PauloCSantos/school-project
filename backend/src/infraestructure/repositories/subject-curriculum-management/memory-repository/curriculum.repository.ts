@@ -8,7 +8,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     curriculums ? (this._curriculums = curriculums) : (this._curriculums = []);
   }
 
-  async find(id: string): Promise<Omit<Curriculum, 'id'> | undefined> {
+  async find(id: string): Promise<Curriculum | undefined> {
     const curriculum = this._curriculums.find(
       curriculum => curriculum.id.id === id
     );
@@ -21,7 +21,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined
-  ): Promise<Omit<Curriculum, 'id'>[]> {
+  ): Promise<Curriculum[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity + offS : 10;
     const curriculums = this._curriculums.slice(offS, qtd);
@@ -32,7 +32,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     this._curriculums.push(curriculum);
     return curriculum.id.id;
   }
-  async update(curriculum: Curriculum): Promise<Omit<Curriculum, 'id'>> {
+  async update(curriculum: Curriculum): Promise<Curriculum> {
     const curriculumIndex = this._curriculums.findIndex(
       dbCurriculum => dbCurriculum.id.id === curriculum.id.id
     );

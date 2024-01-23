@@ -8,7 +8,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
     subjects ? (this._subjects = subjects) : (this._subjects = []);
   }
 
-  async find(id: string): Promise<Omit<Subject, 'id'> | undefined> {
+  async find(id: string): Promise<Subject | undefined> {
     const subject = this._subjects.find(subject => subject.id.id === id);
     if (subject) {
       return subject;
@@ -19,7 +19,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined
-  ): Promise<Omit<Subject, 'id'>[]> {
+  ): Promise<Subject[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity + offS : 10;
     const subjects = this._subjects.slice(offS, qtd);
@@ -30,7 +30,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
     this._subjects.push(subject);
     return subject.id.id;
   }
-  async update(subject: Subject): Promise<Omit<Subject, 'id'>> {
+  async update(subject: Subject): Promise<Subject> {
     const subjectIndex = this._subjects.findIndex(
       dbSubject => dbSubject.id.id === subject.id.id
     );

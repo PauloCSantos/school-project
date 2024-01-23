@@ -8,7 +8,7 @@ export default class MemoryUserMasterRepository implements UserMasterGateway {
     masterUsers ? (this._masterUsers = masterUsers) : (this._masterUsers = []);
   }
 
-  async find(id: string): Promise<Omit<UserMaster, 'id'> | undefined> {
+  async find(id: string): Promise<UserMaster | undefined> {
     const user = this._masterUsers.find(user => user.id.id === id);
     if (user) {
       return user;
@@ -20,7 +20,7 @@ export default class MemoryUserMasterRepository implements UserMasterGateway {
     this._masterUsers.push(userMaster);
     return userMaster.id.id;
   }
-  async update(userMaster: UserMaster): Promise<Omit<UserMaster, 'id'>> {
+  async update(userMaster: UserMaster): Promise<UserMaster> {
     const masterUserIndex = this._masterUsers.findIndex(
       user => user.id.id === userMaster.id.id
     );

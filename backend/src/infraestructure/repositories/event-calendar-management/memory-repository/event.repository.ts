@@ -8,7 +8,7 @@ export default class MemoryEventRepository implements EventGateway {
     events ? (this._events = events) : (this._events = []);
   }
 
-  async find(id: string): Promise<Omit<Event, 'id'> | undefined> {
+  async find(id: string): Promise<Event | undefined> {
     const event = this._events.find(event => event.id.id === id);
     if (event) {
       return event;
@@ -19,7 +19,7 @@ export default class MemoryEventRepository implements EventGateway {
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined
-  ): Promise<Omit<Event, 'id'>[]> {
+  ): Promise<Event[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity + offS : 10;
     const events = this._events.slice(offS, qtd);
@@ -30,7 +30,7 @@ export default class MemoryEventRepository implements EventGateway {
     this._events.push(event);
     return event.id.id;
   }
-  async update(event: Event): Promise<Omit<Event, 'id'>> {
+  async update(event: Event): Promise<Event> {
     const eventIndex = this._events.findIndex(
       dBevent => dBevent.id.id === event.id.id
     );

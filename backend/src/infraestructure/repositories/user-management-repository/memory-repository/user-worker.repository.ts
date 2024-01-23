@@ -8,7 +8,7 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
     workerUsers ? (this._workerUsers = workerUsers) : (this._workerUsers = []);
   }
 
-  async find(id: string): Promise<Omit<UserWorker, 'id'> | undefined> {
+  async find(id: string): Promise<UserWorker | undefined> {
     const user = this._workerUsers.find(user => user.id.id === id);
     if (user) {
       return user;
@@ -19,7 +19,7 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined
-  ): Promise<Omit<UserWorker, 'id'>[]> {
+  ): Promise<UserWorker[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity + offS : 10;
     const users = this._workerUsers.slice(offS, qtd);
@@ -30,7 +30,7 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
     this._workerUsers.push(UserWorker);
     return UserWorker.id.id;
   }
-  async update(UserWorker: UserWorker): Promise<Omit<UserWorker, 'id'>> {
+  async update(UserWorker: UserWorker): Promise<UserWorker> {
     const workerUserIndex = this._workerUsers.findIndex(
       user => user.id.id === UserWorker.id?.id
     );

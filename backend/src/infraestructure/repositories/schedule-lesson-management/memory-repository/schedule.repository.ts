@@ -8,7 +8,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
     schedules ? (this._schedule = schedules) : (this._schedule = []);
   }
 
-  async find(id: string): Promise<Omit<Schedule, 'id'> | undefined> {
+  async find(id: string): Promise<Schedule | undefined> {
     const schedule = this._schedule.find(schedule => schedule.id.id === id);
     if (schedule) {
       return schedule;
@@ -19,7 +19,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined
-  ): Promise<Omit<Schedule, 'id'>[]> {
+  ): Promise<Schedule[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity + offS : 10;
     const schedules = this._schedule.slice(offS, qtd);
@@ -30,7 +30,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
     this._schedule.push(schedule);
     return schedule.id.id;
   }
-  async update(schedule: Schedule): Promise<Omit<Schedule, 'id'>> {
+  async update(schedule: Schedule): Promise<Schedule> {
     const scheduleIndex = this._schedule.findIndex(
       dbSchedule => dbSchedule.id.id === schedule.id.id
     );
