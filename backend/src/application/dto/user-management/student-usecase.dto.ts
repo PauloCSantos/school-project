@@ -20,24 +20,24 @@ export interface FindAllUserStudentInputDto {
   quantity?: number;
   offset?: number;
 }
-export interface FindAllUserStudentOutputDto {
-  name: { fullName: string; shortName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  paymentYear: string;
-}
-[];
+export interface FindAllUserStudentOutputDto
+  extends Array<{
+    name: { fullName: string; shortName: string };
+    address: {
+      street: string;
+      city: string;
+      zip: string;
+      number: number;
+      avenue: string;
+      state: string;
+    };
+    email: string;
+    birthday: Date;
+    paymentYear: string;
+  }> {}
 
 export interface CreateUserStudentInputDto {
-  name: { firstName: string; middleName: string; lastName: string };
+  name: { firstName: string; middleName?: string; lastName: string };
   address: {
     street: string;
     city: string;
@@ -70,7 +70,6 @@ export interface UpdateUserStudentInputDto {
   paymentYear?: number;
 }
 export interface UpdateUserStudentOutputDto {
-  id: string;
   name: { fullName: string; shortName: string };
   address: {
     street: string;
