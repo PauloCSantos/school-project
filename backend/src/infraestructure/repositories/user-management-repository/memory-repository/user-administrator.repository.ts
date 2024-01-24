@@ -12,7 +12,7 @@ export default class MemoryUserAdministratorRepository
       : (this._administratorUsers = []);
   }
 
-  async find(id: string): Promise<Omit<UserAdministrator, 'id'> | undefined> {
+  async find(id: string): Promise<UserAdministrator | undefined> {
     const user = this._administratorUsers.find(user => user.id.id === id);
     if (user) {
       return user;
@@ -23,7 +23,7 @@ export default class MemoryUserAdministratorRepository
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined
-  ): Promise<Omit<UserAdministrator, 'id'>[]> {
+  ): Promise<UserAdministrator[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity + offS : 10;
     const users = this._administratorUsers.slice(offS, qtd);
@@ -36,9 +36,9 @@ export default class MemoryUserAdministratorRepository
   }
   async update(
     userAdministrator: UserAdministrator
-  ): Promise<Omit<UserAdministrator, 'id'>> {
+  ): Promise<UserAdministrator> {
     const administratorUserIndex = this._administratorUsers.findIndex(
-      user => user.id.id === userAdministrator.id?.id
+      user => user.id.id === userAdministrator.id.id
     );
     if (administratorUserIndex !== -1) {
       return (this._administratorUsers[administratorUserIndex] =

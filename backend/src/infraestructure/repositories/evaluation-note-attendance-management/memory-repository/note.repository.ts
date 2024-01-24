@@ -8,7 +8,7 @@ export default class MemoryNoteRepository implements NoteGateway {
     notes ? (this._note = notes) : (this._note = []);
   }
 
-  async find(id: string): Promise<Omit<Note, 'id'> | undefined> {
+  async find(id: string): Promise<Note | undefined> {
     const note = this._note.find(note => note.id.id === id);
     if (note) {
       return note;
@@ -19,7 +19,7 @@ export default class MemoryNoteRepository implements NoteGateway {
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined
-  ): Promise<Omit<Note, 'id'>[]> {
+  ): Promise<Note[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity + offS : 10;
     const notes = this._note.slice(offS, qtd);
@@ -30,7 +30,7 @@ export default class MemoryNoteRepository implements NoteGateway {
     this._note.push(note);
     return note.id.id;
   }
-  async update(note: Note): Promise<Omit<Note, 'id'>> {
+  async update(note: Note): Promise<Note> {
     const noteIndex = this._note.findIndex(
       dbNote => dbNote.id.id === note.id.id
     );

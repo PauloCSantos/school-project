@@ -8,7 +8,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
     evaluations ? (this._evaluation = evaluations) : (this._evaluation = []);
   }
 
-  async find(id: string): Promise<Omit<Evaluation, 'id'> | undefined> {
+  async find(id: string): Promise<Evaluation | undefined> {
     const evaluation = this._evaluation.find(
       evaluation => evaluation.id.id === id
     );
@@ -21,7 +21,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined
-  ): Promise<Omit<Evaluation, 'id'>[]> {
+  ): Promise<Evaluation[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity + offS : 10;
     const evaluations = this._evaluation.slice(offS, qtd);
@@ -32,7 +32,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
     this._evaluation.push(evaluation);
     return evaluation.id.id;
   }
-  async update(evaluation: Evaluation): Promise<Omit<Evaluation, 'id'>> {
+  async update(evaluation: Evaluation): Promise<Evaluation> {
     const evaluationIndex = this._evaluation.findIndex(
       dbEvaluation => dbEvaluation.id.id === evaluation.id.id
     );

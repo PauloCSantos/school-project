@@ -8,7 +8,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
     attendances ? (this._attendance = attendances) : (this._attendance = []);
   }
 
-  async find(id: string): Promise<Omit<Attendance, 'id'> | undefined> {
+  async find(id: string): Promise<Attendance | undefined> {
     const attendance = this._attendance.find(
       attendance => attendance.id.id === id
     );
@@ -21,7 +21,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined
-  ): Promise<Omit<Attendance, 'id'>[]> {
+  ): Promise<Attendance[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity + offS : 10;
     const attendances = this._attendance.slice(offS, qtd);
@@ -32,7 +32,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
     this._attendance.push(attendance);
     return attendance.id.id;
   }
-  async update(attendance: Attendance): Promise<Omit<Attendance, 'id'>> {
+  async update(attendance: Attendance): Promise<Attendance> {
     const attendanceIndex = this._attendance.findIndex(
       dbAttendance => dbAttendance.id.id === attendance.id.id
     );

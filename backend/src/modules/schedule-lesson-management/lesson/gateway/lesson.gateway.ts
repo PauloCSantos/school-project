@@ -1,10 +1,10 @@
 import Lesson from '../domain/entity/lesson.entity';
 
 export default interface LessonGateway {
-  find(id: string): Promise<Omit<Lesson, 'id'> | undefined>;
-  findAll(quantity?: number, offSet?: number): Promise<Omit<Lesson, 'id'>[]>;
+  find(id: string): Promise<Lesson | undefined>;
+  findAll(quantity?: number, offSet?: number): Promise<Lesson[]>;
   create(lesson: Lesson): Promise<string>;
-  update(lesson: Lesson): Promise<Omit<Lesson, 'id'>>;
+  update(lesson: Lesson): Promise<Lesson>;
   delete(id: string): Promise<string>;
   addStudents(id: string, newStudentsList: string[]): Promise<string>;
   removeStudents(id: string, studentsListToRemove: string[]): Promise<string>;

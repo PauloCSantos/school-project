@@ -10,7 +10,7 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
       : (this._teacherUsers = []);
   }
 
-  async find(id: string): Promise<Omit<UserTeacher, 'id'> | undefined> {
+  async find(id: string): Promise<UserTeacher | undefined> {
     const user = this._teacherUsers.find(user => user.id.id === id);
     if (user) {
       return user;
@@ -21,7 +21,7 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined
-  ): Promise<Omit<UserTeacher, 'id'>[]> {
+  ): Promise<UserTeacher[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity + offS : 10;
     const users = this._teacherUsers.slice(offS, qtd);
@@ -32,7 +32,7 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
     this._teacherUsers.push(userTeacher);
     return userTeacher.id.id;
   }
-  async update(userTeacher: UserTeacher): Promise<Omit<UserTeacher, 'id'>> {
+  async update(userTeacher: UserTeacher): Promise<UserTeacher> {
     const teacherUserIndex = this._teacherUsers.findIndex(
       user => user.id.id === userTeacher.id?.id
     );

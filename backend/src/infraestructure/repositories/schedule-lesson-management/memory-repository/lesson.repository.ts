@@ -8,7 +8,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     lessons ? (this._lessons = lessons) : (this._lessons = []);
   }
 
-  async find(id: string): Promise<Omit<Lesson, 'id'> | undefined> {
+  async find(id: string): Promise<Lesson | undefined> {
     const lesson = this._lessons.find(lesson => lesson.id.id === id);
     if (lesson) {
       return lesson;
@@ -19,7 +19,7 @@ export default class MemoryLessonRepository implements LessonGateway {
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined
-  ): Promise<Omit<Lesson, 'id'>[]> {
+  ): Promise<Lesson[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity + offS : 10;
     const lessons = this._lessons.slice(offS, qtd);
@@ -30,7 +30,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     this._lessons.push(lesson);
     return lesson.id.id;
   }
-  async update(lesson: Lesson): Promise<Omit<Lesson, 'id'>> {
+  async update(lesson: Lesson): Promise<Lesson> {
     const lessonIndex = this._lessons.findIndex(
       dbLesson => dbLesson.id.id === lesson.id.id
     );
