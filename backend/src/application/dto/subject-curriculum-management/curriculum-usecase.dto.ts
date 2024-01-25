@@ -11,15 +11,14 @@ export interface FindAllCurriculumInputDto {
   quantity?: number;
   offset?: number;
 }
-export interface FindAllCurriculumOutputDto {
-  name: string;
-  yearsToComplete: number;
-  subjectsList: string[];
-}
-[];
+export interface FindAllCurriculumOutputDto
+  extends Array<{
+    name: string;
+    yearsToComplete: number;
+    subjectsList: string[];
+  }> {}
 
 export interface CreateCurriculumInputDto {
-  id: string;
   name: string;
   yearsToComplete: number;
   subjectsList: string[];
@@ -32,12 +31,10 @@ export interface UpdateCurriculumInputDto {
   id: string;
   name?: string;
   yearsToComplete?: number;
-  subjectsList?: string[];
 }
 export interface UpdateCurriculumOutputDto {
   name: string;
   yearsToComplete: number;
-  subjectsList: string[];
 }
 
 export interface DeleteCurriculumInputDto {
