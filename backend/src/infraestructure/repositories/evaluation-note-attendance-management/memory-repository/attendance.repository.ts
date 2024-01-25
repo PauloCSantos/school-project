@@ -65,8 +65,8 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
         });
         this._attendance[attendanceIndex] = updatedAttendance;
         return `${newAttendancesList.length} ${
-          newAttendancesList.length === 1 ? 'value' : 'values'
-        } were entered`;
+          newAttendancesList.length === 1 ? 'value was' : 'values were'
+        } entered`;
       } catch (error) {
         throw error;
       }
@@ -89,8 +89,8 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
         });
         this._attendance[attendanceIndex] = updatedAttendance;
         return `${attendancesListToRemove.length} ${
-          attendancesListToRemove.length === 1 ? 'value' : 'values'
-        } were removed`;
+          attendancesListToRemove.length === 1 ? 'value was' : 'values were'
+        } removed`;
       } catch (error) {
         throw error;
       }

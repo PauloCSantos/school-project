@@ -63,8 +63,8 @@ export default class MemoryLessonRepository implements LessonGateway {
         });
         this._lessons[lessonIndex] = updatedStudent;
         return `${newStudentsList.length} ${
-          newStudentsList.length === 1 ? 'value' : 'values'
-        } were entered`;
+          newStudentsList.length === 1 ? 'value was' : 'values were'
+        } entered`;
       } catch (error) {
         throw error;
       }
@@ -87,8 +87,8 @@ export default class MemoryLessonRepository implements LessonGateway {
         });
         this._lessons[lessonIndex] = updatedStudent;
         return `${studentsListToRemove.length} ${
-          studentsListToRemove.length === 1 ? 'value' : 'values'
-        } were removed`;
+          studentsListToRemove.length === 1 ? 'value was' : 'values were'
+        } removed`;
       } catch (error) {
         throw error;
       }
@@ -109,8 +109,8 @@ export default class MemoryLessonRepository implements LessonGateway {
         });
         this._lessons[lessonIndex] = updatedStudent;
         return `${newDaysList.length} ${
-          newDaysList.length === 1 ? 'value' : 'values'
-        } were entered`;
+          newDaysList.length === 1 ? 'value was' : 'values were'
+        } entered`;
       } catch (error) {
         throw error;
       }
@@ -130,8 +130,8 @@ export default class MemoryLessonRepository implements LessonGateway {
         });
         this._lessons[lessonIndex] = updatedStudent;
         return `${daysListToRemove.length} ${
-          daysListToRemove.length === 1 ? 'value' : 'values'
-        } were removed`;
+          daysListToRemove.length === 1 ? 'value was' : 'values were'
+        } removed`;
       } catch (error) {
         throw error;
       }
@@ -151,8 +151,8 @@ export default class MemoryLessonRepository implements LessonGateway {
         });
         this._lessons[lessonIndex] = updatedStudent;
         return `${newTimesList.length} ${
-          newTimesList.length === 1 ? 'value' : 'values'
-        } were entered`;
+          newTimesList.length === 1 ? 'value was' : 'values were'
+        } entered`;
       } catch (error) {
         throw error;
       }
@@ -172,8 +172,8 @@ export default class MemoryLessonRepository implements LessonGateway {
         });
         this._lessons[lessonIndex] = updatedStudent;
         return `${timesListToRemove.length} ${
-          timesListToRemove.length === 1 ? 'value' : 'values'
-        } were removed`;
+          timesListToRemove.length === 1 ? 'value was' : 'values were'
+        } removed`;
       } catch (error) {
         throw error;
       }

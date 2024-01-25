@@ -65,8 +65,8 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
         });
         this._curriculums[curriculumIndex] = updatedSubject;
         return `${newSubjectsList.length} ${
-          newSubjectsList.length === 1 ? 'value' : 'values'
-        } were entered`;
+          newSubjectsList.length === 1 ? 'value was' : 'values were'
+        } entered`;
       } catch (error) {
         throw error;
       }
@@ -89,8 +89,8 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
         });
         this._curriculums[curriculumIndex] = updatedSubject;
         return `${subjectsListToRemove.length} ${
-          subjectsListToRemove.length === 1 ? 'value' : 'values'
-        } were removed`;
+          subjectsListToRemove.length === 1 ? 'value was' : 'values were'
+        } removed`;
       } catch (error) {
         throw error;
       }

@@ -63,8 +63,8 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
         });
         this._schedule[scheduleIndex] = updatedSchedule;
         return `${newSchedulesList.length} ${
-          newSchedulesList.length === 1 ? 'value' : 'values'
-        } were entered`;
+          newSchedulesList.length === 1 ? 'value was' : 'values were'
+        } entered`;
       } catch (error) {
         throw error;
       }
@@ -87,8 +87,8 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
         });
         this._schedule[scheduleIndex] = updatedSchedule;
         return `${schedulesListToRemove.length} ${
-          schedulesListToRemove.length === 1 ? 'value' : 'values'
-        } were removed`;
+          schedulesListToRemove.length === 1 ? 'value was' : 'values were'
+        } removed`;
       } catch (error) {
         throw error;
       }
