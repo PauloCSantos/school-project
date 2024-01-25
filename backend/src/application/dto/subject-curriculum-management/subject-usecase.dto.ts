@@ -10,14 +10,13 @@ export interface FindAllSubjectInputDto {
   quantity?: number;
   offset?: number;
 }
-export interface FindAllSubjectOutputDto {
-  name: string;
-  description: string;
-}
-[];
+export interface FindAllSubjectOutputDto
+  extends Array<{
+    name: string;
+    description: string;
+  }> {}
 
 export interface CreateSubjectInputDto {
-  id: string;
   name: string;
   description: string;
 }
