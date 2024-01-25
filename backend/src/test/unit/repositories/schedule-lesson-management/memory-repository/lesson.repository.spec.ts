@@ -159,25 +159,25 @@ describe('MemoryLessonRepository unit test', () => {
         new Id().id,
       ]);
 
-      expect(response).toBe('1 value were entered');
+      expect(response).toBe('1 value was entered');
     });
     it('should remove a student from the lesson', async () => {
       const response = await repository.removeStudents(lesson1.id.id, [
         lesson1.studentList[0],
       ]);
 
-      expect(response).toBe('1 value were removed');
+      expect(response).toBe('1 value was removed');
     });
 
     it('should add a new day to the lesson', async () => {
       const response = await repository.addDay(lesson1.id.id, ['sun']);
 
-      expect(response).toBe('1 value were entered');
+      expect(response).toBe('1 value was entered');
     });
     it('should remove a day from the lesson', async () => {
       const response = await repository.removeDay(lesson1.id.id, ['mon']);
 
-      expect(response).toBe('1 value were removed');
+      expect(response).toBe('1 value was removed');
     });
 
     it('should add a new hour to the lesson', async () => {
@@ -191,7 +191,7 @@ describe('MemoryLessonRepository unit test', () => {
     it('should remove a hour from the lesson', async () => {
       const response = await repository.removeTime(lesson1.id.id, ['07:00']);
 
-      expect(response).toBe('1 value were removed');
+      expect(response).toBe('1 value was removed');
     });
   });
 });

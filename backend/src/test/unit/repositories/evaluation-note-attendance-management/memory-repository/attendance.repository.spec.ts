@@ -154,7 +154,7 @@ describe('MemoryAttendanceRepository unit test', () => {
         attendance1.studentsPresent[0],
       ]);
 
-      expect(response).toBe('1 value were removed');
+      expect(response).toBe('1 value was removed');
     });
   });
 });

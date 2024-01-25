@@ -125,14 +125,14 @@ describe('MemoryCurriculumRepository unit test', () => {
         new Id().id,
       ]);
 
-      expect(response).toBe('1 value were entered');
+      expect(response).toBe('1 value was entered');
     });
     it('should remove a subject from the curriculum', async () => {
       const response = await repository.removeSubjects(curriculum1.id.id, [
         curriculum1.subjectList[0],
       ]);
 
-      expect(response).toBe('1 value were removed');
+      expect(response).toBe('1 value was removed');
     });
 
     it('should add a new subject to the curriculum', async () => {

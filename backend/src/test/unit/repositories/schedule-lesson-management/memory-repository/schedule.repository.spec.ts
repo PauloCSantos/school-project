@@ -124,14 +124,14 @@ describe('MemoryScheduleRepository unit test', () => {
         new Id().id,
       ]);
 
-      expect(response).toBe('1 value were entered');
+      expect(response).toBe('1 value was entered');
     });
     it('should remove a student from the schedule', async () => {
       const response = await repository.removeLessons(schedule1.id.id, [
         schedule1.lessonsList[0],
       ]);
 
-      expect(response).toBe('1 value were removed');
+      expect(response).toBe('1 value was removed');
     });
   });
 });
