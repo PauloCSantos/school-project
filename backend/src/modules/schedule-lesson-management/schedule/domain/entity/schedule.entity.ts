@@ -55,7 +55,7 @@ export default class Schedule {
     if (this.findIndex(input) === -1) {
       this._lessonsList.push(input);
     } else {
-      throw new Error('This lesson is already on the lesson');
+      throw new Error('This lesson is already on the schedule');
     }
   }
   removeLesson(input: string): void {
