@@ -6,6 +6,6 @@ export default interface ScheduleGateway {
   create(schedule: Schedule): Promise<string>;
   update(schedule: Schedule): Promise<Schedule>;
   delete(id: string): Promise<string>;
-  addLessons(id: string, newSchedulesList: string[]): Promise<string>;
-  removeLessons(id: string, schedulesListToRemove: string[]): Promise<string>;
+  addLessons(id: string, newLessonsList: string[]): Promise<string>;
+  removeLessons(id: string, lessonsListToRemove: string[]): Promise<string>;
 }
