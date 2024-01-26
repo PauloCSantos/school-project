@@ -142,7 +142,7 @@ export default class Lesson {
     if (this.findIndex(input) === -1) {
       this._studentsList.push(input);
     } else {
-      throw new Error('This studend is already on the lesson');
+      throw new Error('This student is already on the lesson');
     }
   }
   removeStudent(input: string): void {
