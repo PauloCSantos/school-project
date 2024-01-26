@@ -49,7 +49,7 @@ export default class Subject {
 
   private validateName(input: string): boolean {
     return (
-      isNotEmpty(input) && maxLengthInclusive(input, 255) && minLength(input, 4)
+      isNotEmpty(input) && maxLengthInclusive(input, 255) && minLength(input, 3)
     );
   }
   private validateDescription(input: string): boolean {
