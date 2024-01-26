@@ -16,20 +16,19 @@ export interface FindAllLessonInputDto {
   quantity?: number;
   offset?: number;
 }
-export interface FindAllLessonOutputDto {
-  name: string;
-  duration: number;
-  teacher: string;
-  studentsList: string[];
-  subject: string;
-  days: string[];
-  times: string[];
-  semester: number;
-}
-[];
+export interface FindAllLessonOutputDto
+  extends Array<{
+    name: string;
+    duration: number;
+    teacher: string;
+    studentsList: string[];
+    subject: string;
+    days: string[];
+    times: string[];
+    semester: number;
+  }> {}
 
 export interface CreateLessonInputDto {
-  id: string;
   name: string;
   duration: number;
   teacher: string;
@@ -48,20 +47,14 @@ export interface UpdateLessonInputDto {
   name?: string;
   duration?: number;
   teacher?: string;
-  studentsList?: string[];
   subject?: string;
-  days?: DayOfWeek[];
-  times?: Hour[];
   semester?: 1 | 2;
 }
 export interface UpdateLessonOutputDto {
   name: string;
   duration: number;
   teacher: string;
-  studentsList: string[];
   subject: string;
-  days: string[];
-  times: string[];
   semester: number;
 }
 

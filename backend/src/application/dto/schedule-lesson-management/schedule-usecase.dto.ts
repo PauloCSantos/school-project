@@ -11,15 +11,14 @@ export interface FindAllScheduleInputDto {
   quantity?: number;
   offset?: number;
 }
-export interface FindAllScheduleOutputDto {
-  student: string;
-  curriculum: string;
-  lessonsList: string[];
-}
-[];
+export interface FindAllScheduleOutputDto
+  extends Array<{
+    student: string;
+    curriculum: string;
+    lessonsList: string[];
+  }> {}
 
 export interface CreateScheduleInputDto {
-  id: string;
   student: string;
   curriculum: string;
   lessonsList: string[];
@@ -30,14 +29,10 @@ export interface CreateScheduleOutputDto {
 
 export interface UpdateScheduleInputDto {
   id: string;
-  student?: string;
   curriculum?: string;
-  lessonsList?: string[];
 }
 export interface UpdateScheduleOutputDto {
-  student: string;
   curriculum: string;
-  lessonsList: string[];
 }
 
 export interface DeleteScheduleInputDto {
@@ -49,7 +44,7 @@ export interface DeleteScheduleOutputDto {
 
 export interface AddLessonsInputDto {
   id: string;
-  newSchedulesList: string[];
+  newLessonsList: string[];
 }
 export interface AddLessonsOutputDto {
   message: string;
@@ -57,7 +52,7 @@ export interface AddLessonsOutputDto {
 
 export interface RemoveLessonsInputDto {
   id: string;
-  schedulesListToRemove: string[];
+  lessonsListToRemove: string[];
 }
 export interface RemoveLessonsOutputDto {
   message: string;
