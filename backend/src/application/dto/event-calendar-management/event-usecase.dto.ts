@@ -15,19 +15,18 @@ export interface FindAllEventInputDto {
   quantity?: number;
   offset?: number;
 }
-export interface FindAllEventOutputDto {
-  creator: string;
-  name: string;
-  date: Date;
-  hour: string;
-  day: string;
-  type: string;
-  place: string;
-}
-[];
+export interface FindAllEventOutputDto
+  extends Array<{
+    creator: string;
+    name: string;
+    date: Date;
+    hour: string;
+    day: string;
+    type: string;
+    place: string;
+  }> {}
 
 export interface CreateEventInputDto {
-  id: string;
   creator: string;
   name: string;
   date: Date;
