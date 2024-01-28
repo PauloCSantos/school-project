@@ -12,16 +12,15 @@ export interface FindAllEvaluationInputDto {
   quantity?: number;
   offset?: number;
 }
-export interface FindAllEvaluationOutputDto {
-  teacher: string;
-  lesson: string;
-  type: string;
-  value: number;
-}
-[];
+export interface FindAllEvaluationOutputDto
+  extends Array<{
+    teacher: string;
+    lesson: string;
+    type: string;
+    value: number;
+  }> {}
 
 export interface CreateEvaluationInputDto {
-  id: string;
   teacher: string;
   lesson: string;
   type: string;

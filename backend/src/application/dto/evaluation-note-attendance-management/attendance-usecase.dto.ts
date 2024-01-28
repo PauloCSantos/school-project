@@ -13,17 +13,16 @@ export interface FindAllAttendanceInputDto {
   quantity?: number;
   offset?: number;
 }
-export interface FindAllAttendanceOutputDto {
-  lesson: string;
-  date: Date;
-  hour: string;
-  day: string;
-  studentsPresent: string[];
-}
-[];
+export interface FindAllAttendanceOutputDto
+  extends Array<{
+    lesson: string;
+    date: Date;
+    hour: string;
+    day: string;
+    studentsPresent: string[];
+  }> {}
 
 export interface CreateAttendanceInputDto {
-  id: string;
   lesson: string;
   date: Date;
   hour: Hour;
@@ -40,14 +39,12 @@ export interface UpdateAttendanceInputDto {
   date?: Date;
   hour?: Hour;
   day?: DayOfWeek;
-  studentsPresent?: string[];
 }
 export interface UpdateAttendanceOutputDto {
   lesson: string;
   date: Date;
   hour: string;
   day: string;
-  studentsPresent: string[];
 }
 
 export interface DeleteAttendanceInputDto {

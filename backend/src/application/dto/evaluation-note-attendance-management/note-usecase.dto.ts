@@ -11,15 +11,14 @@ export interface FindAllNoteInputDto {
   quantity?: number;
   offset?: number;
 }
-export interface FindAllNoteOutputDto {
-  evaluation: string;
-  student: string;
-  note: number;
-}
-[];
+export interface FindAllNoteOutputDto
+  extends Array<{
+    evaluation: string;
+    student: string;
+    note: number;
+  }> {}
 
 export interface CreateNoteInputDto {
-  id: string;
   evaluation: string;
   student: string;
   note: number;
