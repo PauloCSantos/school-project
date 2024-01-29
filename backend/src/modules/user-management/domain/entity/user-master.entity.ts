@@ -1,7 +1,7 @@
 import { validCNPJ } from '@/util/validations';
 import UserBase, {
   UserBaseProps,
-} from '../../../@shared/domain/entity/user-base.entity';
+} from '../../@shared/domain/entity/user-base.entity';
 
 type MasterUserProps = UserBaseProps & {
   cnpj: string;

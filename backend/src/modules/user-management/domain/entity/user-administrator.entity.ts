@@ -6,8 +6,8 @@ import {
 } from '@/util/validations';
 import UserBase, {
   UserBaseProps,
-} from '../../../@shared/domain/entity/user-base.entity';
-import Salary from '../../../@shared/domain/value-object/salary.value-object';
+} from '../../@shared/domain/entity/user-base.entity';
+import Salary from '../../@shared/domain/value-object/salary.value-object';
 
 type AdministratorUserProps = UserBaseProps & {
   salary: Salary;
