@@ -1,6 +1,6 @@
 import MemoryCurriculumRepository from '@/infraestructure/repositories/subject-curriculum-management/memory-repository/curriculum.repository';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Curriculum from '@/modules/subject-curriculum-management/curriculum/domain/entity/curriculum.entity';
+import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 
 describe('MemoryCurriculumRepository unit test', () => {
   let repository: MemoryCurriculumRepository;

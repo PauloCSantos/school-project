@@ -1,5 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Subject from '@/modules/subject-curriculum-management/subject/domain/entity/subject.entity';
+import Subject from '@/modules/subject-curriculum-management/domain/entity/subject.entity';
 
 describe('Subject unit test', () => {
   const validId = new Id();

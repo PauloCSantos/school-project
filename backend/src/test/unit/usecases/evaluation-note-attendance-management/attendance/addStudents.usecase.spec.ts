@@ -1,6 +1,6 @@
 import AddStudents from '@/application/usecases/evaluation-note-attendance-management/attendance/addStudents.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Attendance from '@/modules/evaluation-note-attendance-management/attendance/domain/entity/attendance.entity';
+import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
 
 const MockRepository = () => {
   return {

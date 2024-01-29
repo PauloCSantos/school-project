@@ -2,7 +2,7 @@ import DeleteUserWorker from '@/application/usecases/user-management/worker/dele
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
 import Salary from '@/modules/user-management/@shared/domain/value-object/salary.value-object';
-import UserWorker from '@/modules/user-management/worker/domain/entity/user-worker.entity';
+import UserWorker from '@/modules/user-management/domain/entity/user-worker.entity';
 
 const MockRepository = () => {
   return {

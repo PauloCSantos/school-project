@@ -1,6 +1,6 @@
 import DeleteNote from '@/application/usecases/evaluation-note-attendance-management/note/deleteNote.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Note from '@/modules/evaluation-note-attendance-management/note/domain/entity/note.entity';
+import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
 
 const MockRepository = () => {
   return {
