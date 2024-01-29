@@ -1,5 +1,5 @@
-import UserMaster from '@/modules/user-management/master/domain/entity/user-master.entity';
-import UserMasterGateway from '@/modules/user-management/master/gateway/user-master.gateway';
+import UserMasterGateway from '@/infraestructure/gateway/user-management-repository/user-master.gateway';
+import UserMaster from '@/modules/user-management/domain/entity/user-master.entity';
 
 export default class MemoryUserMasterRepository implements UserMasterGateway {
   private _masterUsers: UserMaster[];

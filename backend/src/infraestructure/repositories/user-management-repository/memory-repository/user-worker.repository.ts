@@ -1,5 +1,5 @@
-import UserWorker from '@/modules/user-management/worker/domain/entity/user-worker.entity';
-import UserWorkerGateway from '@/modules/user-management/worker/gateway/user-worker.gateway';
+import UserWorkerGateway from '@/infraestructure/gateway/user-management-repository/user-worker.gateway';
+import UserWorker from '@/modules/user-management/domain/entity/user-worker.entity';
 
 export default class MemoryUserWorkerRepository implements UserWorkerGateway {
   private _workerUsers: UserWorker[];

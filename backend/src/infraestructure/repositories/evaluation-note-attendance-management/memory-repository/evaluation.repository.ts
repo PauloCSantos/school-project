@@ -1,5 +1,5 @@
-import Evaluation from '@/modules/evaluation-note-attendance-management/evaluation/domain/entity/evaluation.entity';
-import EvaluationGateway from '@/modules/evaluation-note-attendance-management/evaluation/gateway/evaluation.gateway';
+import EvaluationGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/evaluation.gateway';
+import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
 
 export default class MemoryEvaluationRepository implements EvaluationGateway {
   private _evaluation: Evaluation[];

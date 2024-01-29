@@ -1,5 +1,5 @@
-import UserStudent from '@/modules/user-management/student/domain/entity/user-student.entity';
-import UserStudentGateway from '@/modules/user-management/student/gateway/user-student.gateway';
+import UserStudentGateway from '@/infraestructure/gateway/user-management-repository/user-student.gateway';
+import UserStudent from '@/modules/user-management/domain/entity/user-student.entity';
 
 export default class MemoryUserStudentRepository implements UserStudentGateway {
   private _studentUsers: UserStudent[];
