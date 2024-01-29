@@ -3,8 +3,8 @@ import {
   CreateCurriculumOutputDto,
 } from '@/application/dto/subject-curriculum-management/curriculum-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import CurriculumGateway from '@/modules/subject-curriculum-management/curriculum/gateway/curriculum.gateway';
-import Curriculum from '@/modules/subject-curriculum-management/curriculum/domain/entity/curriculum.entity';
+import CurriculumGateway from '@/infraestructure/gateway/subject-curriculum-management/curriculum.gateway';
+import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 
 export default class CreateCurriculum
   implements

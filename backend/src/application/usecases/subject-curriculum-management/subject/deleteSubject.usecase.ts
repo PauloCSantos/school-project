@@ -3,7 +3,7 @@ import {
   DeleteSubjectOutputDto,
 } from '@/application/dto/subject-curriculum-management/subject-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import SubjectGateway from '@/modules/subject-curriculum-management/subject/gateway/subject.gateway';
+import SubjectGateway from '@/infraestructure/gateway/subject-curriculum-management/subject.gateway';
 
 export default class DeleteSubject
   implements UseCaseInterface<DeleteSubjectInputDto, DeleteSubjectOutputDto>

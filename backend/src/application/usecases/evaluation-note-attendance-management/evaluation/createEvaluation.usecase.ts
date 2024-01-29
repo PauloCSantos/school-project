@@ -3,8 +3,8 @@ import {
   CreateEvaluationOutputDto,
 } from '@/application/dto/evaluation-note-attendance-management/evaluation-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import EvaluationGateway from '@/modules/evaluation-note-attendance-management/evaluation/gateway/evaluation.gateway';
-import Evaluation from '@/modules/evaluation-note-attendance-management/evaluation/domain/entity/evaluation.entity';
+import EvaluationGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/evaluation.gateway';
+import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
 
 export default class CreateEvaluation
   implements

@@ -3,7 +3,7 @@ import {
   UpdateNoteOutputDto,
 } from '@/application/dto/evaluation-note-attendance-management/note-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import NoteGateway from '@/modules/evaluation-note-attendance-management/note/gateway/note.gateway';
+import NoteGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/note.gateway';
 
 export default class UpdateNote
   implements UseCaseInterface<UpdateNoteInputDto, UpdateNoteOutputDto>

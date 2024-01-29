@@ -3,7 +3,7 @@ import {
   DeleteUserTeacherOutputDto,
 } from '@/application/dto/user-management/teacher-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import UserTeacherGateway from '@/modules/user-management/teacher/gateway/user-teacher.gateway';
+import UserTeacherGateway from '@/infraestructure/gateway/user-management-repository/user-teacher.gateway';
 
 export default class DeleteUserTeacher
   implements

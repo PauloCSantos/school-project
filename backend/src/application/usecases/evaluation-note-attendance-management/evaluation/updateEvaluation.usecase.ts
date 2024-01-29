@@ -3,7 +3,7 @@ import {
   UpdateEvaluationOutputDto,
 } from '@/application/dto/evaluation-note-attendance-management/evaluation-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import EvaluationGateway from '@/modules/evaluation-note-attendance-management/evaluation/gateway/evaluation.gateway';
+import EvaluationGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/evaluation.gateway';
 
 export default class UpdateEvaluation
   implements

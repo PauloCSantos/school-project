@@ -3,7 +3,7 @@ import {
   FindAllEventOutputDto,
 } from '@/application/dto/event-calendar-management/event-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import EventGateway from '@/modules/event-calendar-management/event/gateway/event.gateway';
+import EventGateway from '@/infraestructure/gateway/event-calendar-management/event.gateway';
 
 export default class FindAllEvent
   implements UseCaseInterface<FindAllEventInputDto, FindAllEventOutputDto>

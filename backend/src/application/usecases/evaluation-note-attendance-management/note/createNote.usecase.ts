@@ -3,8 +3,8 @@ import {
   CreateNoteOutputDto,
 } from '@/application/dto/evaluation-note-attendance-management/note-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import NoteGateway from '@/modules/evaluation-note-attendance-management/note/gateway/note.gateway';
-import Note from '@/modules/evaluation-note-attendance-management/note/domain/entity/note.entity';
+import NoteGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/note.gateway';
+import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
 
 export default class CreateNote
   implements UseCaseInterface<CreateNoteInputDto, CreateNoteOutputDto>

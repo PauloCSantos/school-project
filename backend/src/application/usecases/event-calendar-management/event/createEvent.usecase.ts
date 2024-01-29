@@ -3,8 +3,9 @@ import {
   CreateEventOutputDto,
 } from '@/application/dto/event-calendar-management/event-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import EventGateway from '@/modules/event-calendar-management/event/gateway/event.gateway';
-import Event from '@/modules/event-calendar-management/event/domain/entity/event.entity';
+
+import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
+import EventGateway from '@/infraestructure/gateway/event-calendar-management/event.gateway';
 
 export default class CreateEvent
   implements UseCaseInterface<CreateEventInputDto, CreateEventOutputDto>

@@ -3,8 +3,8 @@ import {
   CreateSubjectOutputDto,
 } from '@/application/dto/subject-curriculum-management/subject-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import SubjectGateway from '@/modules/subject-curriculum-management/subject/gateway/subject.gateway';
-import Subject from '@/modules/subject-curriculum-management/subject/domain/entity/subject.entity';
+import SubjectGateway from '@/infraestructure/gateway/subject-curriculum-management/subject.gateway';
+import Subject from '@/modules/subject-curriculum-management/domain/entity/subject.entity';
 
 export default class CreateSubject
   implements UseCaseInterface<CreateSubjectInputDto, CreateSubjectOutputDto>

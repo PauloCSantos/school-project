@@ -3,7 +3,7 @@ import {
   RemoveLessonsOutputDto,
 } from '@/application/dto/schedule-lesson-management/schedule-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import ScheduleGateway from '@/modules/schedule-lesson-management/schedule/gateway/schedule.gateway';
+import ScheduleGateway from '@/infraestructure/gateway/schedule-lesson-management/schedule.gateway';
 
 export default class RemoveLessons
   implements UseCaseInterface<RemoveLessonsInputDto, RemoveLessonsOutputDto>

@@ -3,11 +3,11 @@ import {
   CreateUserWorkerOutputDto,
 } from '@/application/dto/user-management/worker-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import UserWorkerGateway from '@/modules/user-management/worker/gateway/user-worker.gateway';
-import UserWorker from '@/modules/user-management/worker/domain/entity/user-worker.entity';
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
 import Salary from '@/modules/user-management/@shared/domain/value-object/salary.value-object';
+import UserWorkerGateway from '@/infraestructure/gateway/user-management-repository/user-worker.gateway';
+import UserWorker from '@/modules/user-management/domain/entity/user-worker.entity';
 
 export default class CreateUserWorker
   implements

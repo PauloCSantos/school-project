@@ -3,7 +3,7 @@ import {
   FindUserAdministratorOutputDto,
 } from '@/application/dto/user-management/administrator-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import UserAdministratorGateway from '@/modules/user-management/administrator/gateway/user-administrator.gateway';
+import UserAdministratorGateway from '@/infraestructure/gateway/user-management-repository/user-administrator.gateway';
 
 export default class FindUserAdministrator
   implements

@@ -3,7 +3,7 @@ import {
   UpdateUserMasterOutputDto,
 } from '@/application/dto/user-management/master-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import UserMasterGateway from '@/modules/user-management/master/gateway/user-master.gateway';
+import UserMasterGateway from '@/infraestructure/gateway/user-management-repository/user-master.gateway';
 
 export default class UpdateUserMaster
   implements

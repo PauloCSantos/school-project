@@ -3,7 +3,7 @@ import {
   AddSubjectsOutputDto,
 } from '@/application/dto/subject-curriculum-management/curriculum-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import CurriculumGateway from '@/modules/subject-curriculum-management/curriculum/gateway/curriculum.gateway';
+import CurriculumGateway from '@/infraestructure/gateway/subject-curriculum-management/curriculum.gateway';
 
 export default class AddSubjects
   implements UseCaseInterface<AddSubjectsInputDto, AddSubjectsOutputDto>
