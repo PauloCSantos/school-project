@@ -3,11 +3,12 @@ import {
   CreateUserAdministratorOutputDto,
 } from '@/application/dto/user-management/administrator-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import UserAdministratorGateway from '@/modules/user-management/administrator/gateway/user-administrator.gateway';
-import UserAdministrator from '@/modules/user-management/administrator/domain/entity/user-administrator.entity';
+
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
 import Salary from '@/modules/user-management/@shared/domain/value-object/salary.value-object';
+import UserAdministratorGateway from '@/infraestructure/gateway/user-management-repository/user-administrator.gateway';
+import UserAdministrator from '@/modules/user-management/domain/entity/user-administrator.entity';
 
 export default class CreateUserAdministrator
   implements

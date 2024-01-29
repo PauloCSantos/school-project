@@ -3,10 +3,11 @@ import {
   CreateUserMasterOutputDto,
 } from '@/application/dto/user-management/master-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import UserMasterGateway from '@/modules/user-management/master/gateway/user-master.gateway';
-import UserMaster from '@/modules/user-management/master/domain/entity/user-master.entity';
+
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
+import UserMasterGateway from '@/infraestructure/gateway/user-management-repository/user-master.gateway';
+import UserMaster from '@/modules/user-management/domain/entity/user-master.entity';
 
 export default class CreateUserMaster
   implements

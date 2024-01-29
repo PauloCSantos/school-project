@@ -1,5 +1,5 @@
-import Event from '@/modules/event-calendar-management/event/domain/entity/event.entity';
-import EventGateway from '@/modules/event-calendar-management/event/gateway/event.gateway';
+import EventGateway from '@/infraestructure/gateway/event-calendar-management/event.gateway';
+import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
 
 export default class MemoryEventRepository implements EventGateway {
   private _events: Event[];

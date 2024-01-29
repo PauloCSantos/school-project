@@ -1,6 +1,6 @@
 import UpdateCurriculum from '@/application/usecases/subject-curriculum-management/curriculum/updateCurriculum.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Curriculum from '@/modules/subject-curriculum-management/curriculum/domain/entity/curriculum.entity';
+import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 
 const MockRepository = () => {
   return {

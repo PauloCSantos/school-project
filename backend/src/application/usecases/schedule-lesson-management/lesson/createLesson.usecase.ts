@@ -3,8 +3,8 @@ import {
   CreateLessonOutputDto,
 } from '@/application/dto/schedule-lesson-management/lesson-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import LessonGateway from '@/modules/schedule-lesson-management/lesson/gateway/lesson.gateway';
-import Lesson from '@/modules/schedule-lesson-management/lesson/domain/entity/lesson.entity';
+import LessonGateway from '@/infraestructure/gateway/schedule-lesson-management/lesson.gateway';
+import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
 
 export default class CreateLesson
   implements UseCaseInterface<CreateLessonInputDto, CreateLessonOutputDto>

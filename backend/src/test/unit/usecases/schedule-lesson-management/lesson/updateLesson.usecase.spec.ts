@@ -1,6 +1,6 @@
 import UpdateLesson from '@/application/usecases/schedule-lesson-management/lesson/updateLesson.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Lesson from '@/modules/schedule-lesson-management/lesson/domain/entity/lesson.entity';
+import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
 
 const MockRepository = () => {
   return {

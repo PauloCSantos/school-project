@@ -1,5 +1,5 @@
-import UserTeacher from '@/modules/user-management/teacher/domain/entity/user-teacher.entity';
-import UserTeacherGateway from '@/modules/user-management/teacher/gateway/user-teacher.gateway';
+import UserTeacherGateway from '@/infraestructure/gateway/user-management-repository/user-teacher.gateway';
+import UserTeacher from '@/modules/user-management/domain/entity/user-teacher.entity';
 
 export default class MemoryUserTeacherRepository implements UserTeacherGateway {
   private _teacherUsers: UserTeacher[];

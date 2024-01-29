@@ -2,7 +2,7 @@ import MemoryUserStudentRepository from '@/infraestructure/repositories/user-man
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
-import UserStudent from '@/modules/user-management/student/domain/entity/user-student.entity';
+import UserStudent from '@/modules/user-management/domain/entity/user-student.entity';
 
 describe('MemoryUserStudentRepository unit test', () => {
   let repository: MemoryUserStudentRepository;

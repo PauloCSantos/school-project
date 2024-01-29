@@ -1,6 +1,6 @@
 import MemoryEvaluationRepository from '@/infraestructure/repositories/evaluation-note-attendance-management/memory-repository/evaluation.repository';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Evaluation from '@/modules/evaluation-note-attendance-management/evaluation/domain/entity/evaluation.entity';
+import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
 
 describe('MemoryEvaluationRepository unit test', () => {
   let repository: MemoryEvaluationRepository;

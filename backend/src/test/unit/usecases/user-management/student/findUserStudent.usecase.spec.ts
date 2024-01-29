@@ -1,7 +1,7 @@
 import FindUserStudent from '@/application/usecases/user-management/student/findUserStudent.usecase';
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
-import UserStudent from '@/modules/user-management/student/domain/entity/user-student.entity';
+import UserStudent from '@/modules/user-management/domain/entity/user-student.entity';
 
 const MockRepository = () => {
   return {

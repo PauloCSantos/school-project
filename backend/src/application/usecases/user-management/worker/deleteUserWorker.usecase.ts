@@ -3,7 +3,7 @@ import {
   DeleteUserWorkerOutputDto,
 } from '@/application/dto/user-management/worker-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import UserWorkerGateway from '@/modules/user-management/worker/gateway/user-worker.gateway';
+import UserWorkerGateway from '@/infraestructure/gateway/user-management-repository/user-worker.gateway';
 
 export default class DeleteUserWorker
   implements

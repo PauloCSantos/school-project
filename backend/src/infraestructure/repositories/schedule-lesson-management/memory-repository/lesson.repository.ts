@@ -1,5 +1,5 @@
-import Lesson from '@/modules/schedule-lesson-management/lesson/domain/entity/lesson.entity';
-import LessonGateway from '@/modules/schedule-lesson-management/lesson/gateway/lesson.gateway';
+import LessonGateway from '@/infraestructure/gateway/schedule-lesson-management/lesson.gateway';
+import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
 
 export default class MemoryLessonRepository implements LessonGateway {
   private _lessons: Lesson[];

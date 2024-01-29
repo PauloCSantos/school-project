@@ -3,7 +3,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
 import Salary from '@/modules/user-management/@shared/domain/value-object/salary.value-object';
-import UserTeacher from '@/modules/user-management/teacher/domain/entity/user-teacher.entity';
+import UserTeacher from '@/modules/user-management/domain/entity/user-teacher.entity';
 
 describe('MemoryUserTeacherRepository unit test', () => {
   let repository: MemoryUserTeacherRepository;

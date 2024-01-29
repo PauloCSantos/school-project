@@ -2,7 +2,7 @@ import FindUserAdministrator from '@/application/usecases/user-management/admini
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
 import Salary from '@/modules/user-management/@shared/domain/value-object/salary.value-object';
-import UserAdministrator from '@/modules/user-management/administrator/domain/entity/user-administrator.entity';
+import UserAdministrator from '@/modules/user-management/domain/entity/user-administrator.entity';
 
 const MockRepository = () => {
   return {

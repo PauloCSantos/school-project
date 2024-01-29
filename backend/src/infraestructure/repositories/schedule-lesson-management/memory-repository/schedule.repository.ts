@@ -1,5 +1,5 @@
-import Schedule from '@/modules/schedule-lesson-management/schedule/domain/entity/schedule.entity';
-import ScheduleGateway from '@/modules/schedule-lesson-management/schedule/gateway/schedule.gateway';
+import ScheduleGateway from '@/infraestructure/gateway/schedule-lesson-management/schedule.gateway';
+import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
 
 export default class MemoryScheduleRepository implements ScheduleGateway {
   private _schedule: Schedule[];

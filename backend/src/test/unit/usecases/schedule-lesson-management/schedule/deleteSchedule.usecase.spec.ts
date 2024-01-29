@@ -1,6 +1,6 @@
 import DeleteSchedule from '@/application/usecases/schedule-lesson-management/schedule/deleteSchedule.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Schedule from '@/modules/schedule-lesson-management/schedule/domain/entity/schedule.entity';
+import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
 
 const MockRepository = () => {
   return {

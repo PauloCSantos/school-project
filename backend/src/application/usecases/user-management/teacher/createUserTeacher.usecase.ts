@@ -3,11 +3,11 @@ import {
   CreateUserTeacherOutputDto,
 } from '@/application/dto/user-management/teacher-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import UserTeacherGateway from '@/modules/user-management/teacher/gateway/user-teacher.gateway';
-import UserTeacher from '@/modules/user-management/teacher/domain/entity/user-teacher.entity';
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
 import Salary from '@/modules/user-management/@shared/domain/value-object/salary.value-object';
+import UserTeacherGateway from '@/infraestructure/gateway/user-management-repository/user-teacher.gateway';
+import UserTeacher from '@/modules/user-management/domain/entity/user-teacher.entity';
 
 export default class CreateUserTeacher
   implements

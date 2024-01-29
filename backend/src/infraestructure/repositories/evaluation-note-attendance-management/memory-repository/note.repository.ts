@@ -1,5 +1,5 @@
-import Note from '@/modules/evaluation-note-attendance-management/note/domain/entity/note.entity';
-import NoteGateway from '@/modules/evaluation-note-attendance-management/note/gateway/note.gateway';
+import NoteGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/note.gateway';
+import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
 
 export default class MemoryNoteRepository implements NoteGateway {
   private _note: Note[];

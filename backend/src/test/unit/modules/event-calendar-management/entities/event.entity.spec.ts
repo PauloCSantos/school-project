@@ -1,5 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Event from '@/modules/event-calendar-management/event/domain/entity/event.entity';
+import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
 
 describe('Event unit test', () => {
   const eventData = {

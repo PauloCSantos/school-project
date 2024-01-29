@@ -1,5 +1,5 @@
-import UserAdministrator from '@/modules/user-management/administrator/domain/entity/user-administrator.entity';
-import UserAdministratorGateway from '@/modules/user-management/administrator/gateway/user-administrator.gateway';
+import UserAdministratorGateway from '@/infraestructure/gateway/user-management-repository/user-administrator.gateway';
+import UserAdministrator from '@/modules/user-management/domain/entity/user-administrator.entity';
 
 export default class MemoryUserAdministratorRepository
   implements UserAdministratorGateway

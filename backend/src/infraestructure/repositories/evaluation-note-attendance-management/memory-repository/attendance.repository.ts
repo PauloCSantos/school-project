@@ -1,5 +1,5 @@
-import Attendance from '@/modules/evaluation-note-attendance-management/attendance/domain/entity/attendance.entity';
-import AttendanceGateway from '@/modules/evaluation-note-attendance-management/attendance/gateway/attendance.gateway';
+import AttendanceGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/attendance.gateway';
+import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
 
 export default class MemoryAttendanceRepository implements AttendanceGateway {
   private _attendance: Attendance[];

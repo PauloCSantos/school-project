@@ -1,5 +1,5 @@
 import FindSubject from '@/application/usecases/subject-curriculum-management/subject/findSubject.usecase';
-import Subject from '@/modules/subject-curriculum-management/subject/domain/entity/subject.entity';
+import Subject from '@/modules/subject-curriculum-management/domain/entity/subject.entity';
 
 const MockRepository = () => {
   return {

@@ -1,5 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Schedule from '@/modules/schedule-lesson-management/schedule/domain/entity/schedule.entity';
+import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
 
 describe('Schedule unit test', () => {
   const student = new Id().id;

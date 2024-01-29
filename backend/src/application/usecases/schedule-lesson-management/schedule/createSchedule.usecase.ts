@@ -3,8 +3,8 @@ import {
   CreateScheduleOutputDto,
 } from '@/application/dto/schedule-lesson-management/schedule-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import ScheduleGateway from '@/modules/schedule-lesson-management/schedule/gateway/schedule.gateway';
-import Schedule from '@/modules/schedule-lesson-management/schedule/domain/entity/schedule.entity';
+import ScheduleGateway from '@/infraestructure/gateway/schedule-lesson-management/schedule.gateway';
+import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
 
 export default class CreateSchedule
   implements UseCaseInterface<CreateScheduleInputDto, CreateScheduleOutputDto>

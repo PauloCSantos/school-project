@@ -3,10 +3,10 @@ import {
   CreateUserStudentOutputDto,
 } from '@/application/dto/user-management/student-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
-import UserStudentGateway from '@/modules/user-management/student/gateway/user-student.gateway';
-import UserStudent from '@/modules/user-management/student/domain/entity/user-student.entity';
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
+import UserStudentGateway from '@/infraestructure/gateway/user-management-repository/user-student.gateway';
+import UserStudent from '@/modules/user-management/domain/entity/user-student.entity';
 
 export default class CreateUserStudent
   implements
