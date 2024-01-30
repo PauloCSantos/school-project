@@ -1,7 +1,7 @@
-export interface FindUserMasterInputDto {
+export interface FindUserWorkerInputDto {
   id: string;
 }
-export interface FindUserMasterOutputDto {
+export interface FindUserWorkerOutputDto {
   name: { fullName: string; shortName: string };
   address: {
     street: string;
@@ -13,30 +13,30 @@ export interface FindUserMasterOutputDto {
   };
   email: string;
   birthday: Date;
-  cnpj: string;
+  salary: string;
 }
 
-export interface FindAllUserMasterInputDto {
+export interface FindAllUserWorkerInputDto {
   quantity?: number;
   offset?: number;
 }
-export interface FindAllUserMasterOutputDto {
-  name: { fullName: string; shortName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  cnpj: string;
-}
-[];
+export interface FindAllUserWorkerOutputDto
+  extends Array<{
+    name: { fullName: string; shortName: string };
+    address: {
+      street: string;
+      city: string;
+      zip: string;
+      number: number;
+      avenue: string;
+      state: string;
+    };
+    email: string;
+    birthday: Date;
+    salary: string;
+  }> {}
 
-export interface CreateUserMasterInputDto {
+export interface CreateUserWorkerInputDto {
   name: { firstName: string; middleName?: string; lastName: string };
   address: {
     street: string;
@@ -48,13 +48,13 @@ export interface CreateUserMasterInputDto {
   };
   email: string;
   birthday: Date;
-  cnpj: string;
+  salary: { salary: number; currency?: 'R$' | '€' | '$' };
 }
-export interface CreateUserMasterOutputDto {
+export interface CreateUserWorkerOutputDto {
   id: string;
 }
 
-export interface UpdateUserMasterInputDto {
+export interface UpdateUserWorkerInputDto {
   id: string;
   name?: { firstName?: string; middleName?: string; lastName?: string };
   address?: {
@@ -67,9 +67,9 @@ export interface UpdateUserMasterInputDto {
   };
   email?: string;
   birthday?: Date;
-  cnpj?: string;
+  salary?: { salary?: number; currency?: 'R$' | '€' | '$' };
 }
-export interface UpdateUserMasterOutputDto {
+export interface UpdateUserWorkerOutputDto {
   name: { fullName: string; shortName: string };
   address: {
     street: string;
@@ -81,12 +81,12 @@ export interface UpdateUserMasterOutputDto {
   };
   email: string;
   birthday: Date;
-  cnpj: string;
+  salary: string;
 }
 
-export interface DeleteUserMasterInputDto {
+export interface DeleteUserWorkerInputDto {
   id: string;
 }
-export interface DeleteUserMasterOutputDto {
+export interface DeleteUserWorkerOutputDto {
   message: string;
 }
