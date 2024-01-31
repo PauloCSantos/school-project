@@ -62,6 +62,17 @@ describe('Curriculum facade integration test', () => {
 
     expect(result).toBeDefined;
   });
+  it('should add subjects to the curriculum using the facade', async () => {
+    const facade = CurriculumFacadeFactory.create();
+    const id = await facade.create(input);
+
+    const result = await facade.addSubjects({
+      id: id.id,
+      newSubjectsList: [new Id().id],
+    });
+
+    expect(result).toBeDefined;
+  });
   it('should remove subjects to the curriculum using the facade', async () => {
     const facade = CurriculumFacadeFactory.create();
     const id = await facade.create(input);
