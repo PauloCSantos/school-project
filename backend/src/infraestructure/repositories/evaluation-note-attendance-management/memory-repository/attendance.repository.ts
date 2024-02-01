@@ -4,7 +4,7 @@ import Attendance from '@/modules/evaluation-note-attendance-management/domain/e
 export default class MemoryAttendanceRepository implements AttendanceGateway {
   private _attendance: Attendance[];
 
-  constructor(attendances: Attendance[]) {
+  constructor(attendances?: Attendance[]) {
     attendances ? (this._attendance = attendances) : (this._attendance = []);
   }
 

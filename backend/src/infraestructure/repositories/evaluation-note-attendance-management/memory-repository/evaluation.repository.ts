@@ -4,7 +4,7 @@ import Evaluation from '@/modules/evaluation-note-attendance-management/domain/e
 export default class MemoryEvaluationRepository implements EvaluationGateway {
   private _evaluation: Evaluation[];
 
-  constructor(evaluations: Evaluation[]) {
+  constructor(evaluations?: Evaluation[]) {
     evaluations ? (this._evaluation = evaluations) : (this._evaluation = []);
   }
 
