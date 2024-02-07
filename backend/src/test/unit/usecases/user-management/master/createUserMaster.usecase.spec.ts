@@ -48,7 +48,6 @@ describe('createUserMaster usecase unit test', () => {
       await expect(
         usecase.execute({
           ...input,
-          id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
         })
       ).rejects.toThrow('User already exists');
       expect(userMasterRepository.find).toHaveBeenCalledWith(
@@ -64,7 +63,7 @@ describe('createUserMaster usecase unit test', () => {
       userMasterRepository.find.mockResolvedValue(undefined);
 
       const usecase = new CreateUserMaster(userMasterRepository);
-      const result = await usecase.execute({ ...input, id: userMaster.id.id });
+      const result = await usecase.execute({ ...input });
 
       expect(userMasterRepository.find).toHaveBeenCalledWith(
         expect.any(String)

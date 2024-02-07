@@ -4,7 +4,7 @@ import Subject from '@/modules/subject-curriculum-management/domain/entity/subje
 export default class MemorySubjectRepository implements SubjectGateway {
   private _subjects: Subject[];
 
-  constructor(subjects: Subject[]) {
+  constructor(subjects?: Subject[]) {
     subjects ? (this._subjects = subjects) : (this._subjects = []);
   }
 

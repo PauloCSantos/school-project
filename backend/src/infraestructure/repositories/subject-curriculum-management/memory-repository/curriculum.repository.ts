@@ -4,7 +4,7 @@ import Curriculum from '@/modules/subject-curriculum-management/domain/entity/cu
 export default class MemoryCurriculumRepository implements CurriculumGateway {
   private _curriculums: Curriculum[];
 
-  constructor(curriculums: Curriculum[]) {
+  constructor(curriculums?: Curriculum[]) {
     curriculums ? (this._curriculums = curriculums) : (this._curriculums = []);
   }
 
@@ -60,8 +60,8 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     if (curriculumIndex !== -1) {
       try {
         const updatedSubject = this._curriculums[curriculumIndex];
-        newSubjectsList.forEach(id => {
-          updatedSubject.addSubject(id);
+        newSubjectsList.forEach(subjectId => {
+          updatedSubject.addSubject(subjectId);
         });
         this._curriculums[curriculumIndex] = updatedSubject;
         return `${newSubjectsList.length} ${
@@ -84,8 +84,8 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     if (curriculumIndex !== -1) {
       try {
         const updatedSubject = this._curriculums[curriculumIndex];
-        subjectsListToRemove.forEach(id => {
-          updatedSubject.removeSubject(id);
+        subjectsListToRemove.forEach(subjectId => {
+          updatedSubject.removeSubject(subjectId);
         });
         this._curriculums[curriculumIndex] = updatedSubject;
         return `${subjectsListToRemove.length} ${

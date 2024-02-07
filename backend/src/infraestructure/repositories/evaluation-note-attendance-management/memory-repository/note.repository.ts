@@ -4,7 +4,7 @@ import Note from '@/modules/evaluation-note-attendance-management/domain/entity/
 export default class MemoryNoteRepository implements NoteGateway {
   private _note: Note[];
 
-  constructor(notes: Note[]) {
+  constructor(notes?: Note[]) {
     notes ? (this._note = notes) : (this._note = []);
   }
 

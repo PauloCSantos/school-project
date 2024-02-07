@@ -4,6 +4,9 @@ import {
 } from '@/application/dto/subject-curriculum-management/curriculum-usecase.dto';
 import UseCaseInterface from '../../@shared/use-case.interface';
 import CurriculumGateway from '@/infraestructure/gateway/subject-curriculum-management/curriculum.gateway';
+import CurriculumMapper from '@/application/mapper/subject-curriculum-management/curriculum-usecase.mapper';
+import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
 export default class RemoveSubjects
   implements UseCaseInterface<RemoveSubjectsInputDto, RemoveSubjectsOutputDto>
@@ -19,9 +22,15 @@ export default class RemoveSubjects
   }: RemoveSubjectsInputDto): Promise<RemoveSubjectsOutputDto> {
     const curriculumVerification = await this._curriculumRepository.find(id);
     if (!curriculumVerification) throw new Error('Curriculum not found');
+    const curriculumObj = CurriculumMapper.toObj(curriculumVerification);
+    const newCurriculum = JSON.parse(JSON.stringify(curriculumObj));
+    const curriculum = new Curriculum({
+      ...newCurriculum,
+      id: new Id(newCurriculum.id),
+    });
     try {
       subjectsListToRemove.forEach(subjectId => {
-        curriculumVerification.removeSubject(subjectId);
+        curriculum.removeSubject(subjectId);
       });
       const result = await this._curriculumRepository.removeSubjects(
         id,

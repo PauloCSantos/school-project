@@ -4,7 +4,7 @@ import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.en
 export default class MemoryLessonRepository implements LessonGateway {
   private _lessons: Lesson[];
 
-  constructor(lessons: Lesson[]) {
+  constructor(lessons?: Lesson[]) {
     lessons ? (this._lessons = lessons) : (this._lessons = []);
   }
 

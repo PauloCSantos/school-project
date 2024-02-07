@@ -28,7 +28,7 @@ export default class MemoryUserStudentRepository implements UserStudentGateway {
     return users;
   }
   async create(userStudent: UserStudent): Promise<string> {
-    this._studentUsers.push;
+    this._studentUsers.push(userStudent);
     return userStudent.id.id;
   }
   async update(userStudent: UserStudent): Promise<UserStudent> {

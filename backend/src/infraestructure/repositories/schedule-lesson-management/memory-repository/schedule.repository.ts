@@ -4,7 +4,7 @@ import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedul
 export default class MemoryScheduleRepository implements ScheduleGateway {
   private _schedule: Schedule[];
 
-  constructor(schedules: Schedule[]) {
+  constructor(schedules?: Schedule[]) {
     schedules ? (this._schedule = schedules) : (this._schedule = []);
   }
 
