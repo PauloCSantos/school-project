@@ -1,41 +1,35 @@
-import { Request, Response } from 'express';
 import {
   CreateUserAdministratorInputDto,
   UpdateUserAdministratorInputDto,
 } from '@/application/dto/user-management/administrator-usecase.dto';
+import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { UserAdministratorController } from '@/interface/controller/user-management/user-administrator.controller';
-import ExpressHttpGateway from '@/infraestructure/http/express-http.gateway';
-
 export class UserAdministratorRoute {
   constructor(
     private readonly userAdministratorController: UserAdministratorController,
-    private readonly httpGateway: ExpressHttpGateway
+    private readonly expressInstance: HttpInterface
   ) {}
 
   public routes(): void {
-    this.httpGateway.get(
-      '/user-administrators',
-      this.findAllUserAdministrators
+    this.expressInstance.get('/user-administrators', (req: any, res: any) =>
+      this.findAllUserAdministrators(req, res)
     );
-    this.httpGateway.post('/user-administrators', this.createUserAdministrator);
-    this.httpGateway.get(
-      '/user-administrators/:id',
-      this.findUserAdministrator
+    this.expressInstance.post('/user-administrators', (req: any, res: any) =>
+      this.createUserAdministrator(req, res)
     );
-    this.httpGateway.put(
-      '/user-administrators/:id',
-      this.updateUserAdministrator
+    this.expressInstance.get('/user-administrators/:id', (req: any, res: any) =>
+      this.findUserAdministrator(req, res)
     );
-    this.httpGateway.delete(
+    this.expressInstance.put('/user-administrators/:id', (req: any, res: any) =>
+      this.updateUserAdministrator(req, res)
+    );
+    this.expressInstance.delete(
       '/user-administrators/:id',
-      this.deleteUserAdministrator
+      (req: any, res: any) => this.deleteUserAdministrator(req, res)
     );
   }
 
-  private async findAllUserAdministrators(
-    req: Request,
-    res: Response
-  ): Promise<void> {
+  private async findAllUserAdministrators(req: any, res: any): Promise<void> {
     try {
       const { quantity, offset } = req.body;
       const response = await this.userAdministratorController.findAll({
@@ -47,10 +41,7 @@ export class UserAdministratorRoute {
       res.status(204).json({ error });
     }
   }
-  private async createUserAdministrator(
-    req: Request,
-    res: Response
-  ): Promise<void> {
+  private async createUserAdministrator(req: any, res: any): Promise<void> {
     try {
       const input = req.body as CreateUserAdministratorInputDto;
       const response = await this.userAdministratorController.create(input);
@@ -59,10 +50,7 @@ export class UserAdministratorRoute {
       res.status(400).json({ error });
     }
   }
-  private async findUserAdministrator(
-    req: Request,
-    res: Response
-  ): Promise<void> {
+  private async findUserAdministrator(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
       const input = { id };
@@ -72,10 +60,7 @@ export class UserAdministratorRoute {
       res.status(404).json({ error });
     }
   }
-  private async updateUserAdministrator(
-    req: Request,
-    res: Response
-  ): Promise<void> {
+  private async updateUserAdministrator(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
       const input: UpdateUserAdministratorInputDto = req.body;
@@ -86,10 +71,7 @@ export class UserAdministratorRoute {
       res.status(404).json({ error });
     }
   }
-  private async deleteUserAdministrator(
-    req: Request,
-    res: Response
-  ): Promise<void> {
+  private async deleteUserAdministrator(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
       const input = { id };
