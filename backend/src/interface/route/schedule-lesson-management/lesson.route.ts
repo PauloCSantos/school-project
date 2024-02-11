@@ -1,5 +1,3 @@
-import { Request, Response } from 'express';
-import ExpressHttpGateway from '@/infraestructure/http/express-http.gateway';
 import { LessonController } from '@/interface/controller/schedule-lesson-management/lesson.controller';
 import {
   AddDayInputDto,
@@ -11,28 +9,51 @@ import {
   RemoveTimeInputDto,
   UpdateLessonInputDto,
 } from '@/application/dto/schedule-lesson-management/lesson-usecase.dto';
+import { HttpInterface } from '@/infraestructure/http/http.interface';
 
 export class LessonRoute {
   constructor(
     private readonly lessonController: LessonController,
-    private readonly httpGateway: ExpressHttpGateway
+    private readonly httpGateway: HttpInterface
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/lesson', this.findAllLessons);
-    this.httpGateway.post('/lesson', this.createLesson);
-    this.httpGateway.get('/lesson/:id', this.findLesson);
-    this.httpGateway.put('/lesson/:id', this.updateLesson);
-    this.httpGateway.delete('/lesson/:id', this.deleteLesson);
-    this.httpGateway.post('lesson/add/students', this.addStudents);
-    this.httpGateway.post('lesson/remove/students', this.removeStudents);
-    this.httpGateway.post('lesson/add/day', this.addDay);
-    this.httpGateway.post('lesson/remove/day', this.removeDay);
-    this.httpGateway.post('lesson/add/time', this.addTime);
-    this.httpGateway.post('lesson/remove/time', this.removeTime);
+    this.httpGateway.get('/lesson', (req: any, res: any) =>
+      this.findAllLessons(req, res)
+    );
+    this.httpGateway.post('/lesson', (req: any, res: any) =>
+      this.createLesson(req, res)
+    );
+    this.httpGateway.get('/lesson/:id', (req: any, res: any) =>
+      this.findLesson(req, res)
+    );
+    this.httpGateway.put('/lesson/:id', (req: any, res: any) =>
+      this.updateLesson(req, res)
+    );
+    this.httpGateway.delete('/lesson/:id', (req: any, res: any) =>
+      this.deleteLesson(req, res)
+    );
+    this.httpGateway.post('lesson/add/students', (req: any, res: any) =>
+      this.addStudents(req, res)
+    );
+    this.httpGateway.post('lesson/remove/students', (req: any, res: any) =>
+      this.removeStudents(req, res)
+    );
+    this.httpGateway.post('lesson/add/day', (req: any, res: any) =>
+      this.addDay(req, res)
+    );
+    this.httpGateway.post('lesson/remove/day', (req: any, res: any) =>
+      this.removeDay(req, res)
+    );
+    this.httpGateway.post('lesson/add/time', (req: any, res: any) =>
+      this.addTime(req, res)
+    );
+    this.httpGateway.post('lesson/remove/time', (req: any, res: any) =>
+      this.removeTime(req, res)
+    );
   }
 
-  private async findAllLessons(req: Request, res: Response): Promise<void> {
+  private async findAllLessons(req: any, res: any): Promise<void> {
     try {
       const { quantity, offset } = req.body;
       const response = await this.lessonController.findAll({
@@ -44,7 +65,7 @@ export class LessonRoute {
       res.status(204).json({ error });
     }
   }
-  private async createLesson(req: Request, res: Response): Promise<void> {
+  private async createLesson(req: any, res: any): Promise<void> {
     try {
       const input = req.body as CreateLessonInputDto;
       const response = await this.lessonController.create(input);
@@ -53,7 +74,7 @@ export class LessonRoute {
       res.status(400).json({ error });
     }
   }
-  private async findLesson(req: Request, res: Response): Promise<void> {
+  private async findLesson(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
       const input = { id };
@@ -63,7 +84,7 @@ export class LessonRoute {
       res.status(404).json({ error });
     }
   }
-  private async updateLesson(req: Request, res: Response): Promise<void> {
+  private async updateLesson(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
       const input: UpdateLessonInputDto = req.body;
@@ -74,7 +95,7 @@ export class LessonRoute {
       res.status(404).json({ error });
     }
   }
-  private async deleteLesson(req: Request, res: Response): Promise<void> {
+  private async deleteLesson(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
       const input = { id };
@@ -84,7 +105,7 @@ export class LessonRoute {
       res.status(404).json({ error });
     }
   }
-  private async addStudents(req: Request, res: Response): Promise<void> {
+  private async addStudents(req: any, res: any): Promise<void> {
     try {
       const input = req.body as AddStudentsInputDto;
       const response = await this.lessonController.addStudents(input);
@@ -93,7 +114,7 @@ export class LessonRoute {
       res.status(400).json({ error });
     }
   }
-  private async removeStudents(req: Request, res: Response): Promise<void> {
+  private async removeStudents(req: any, res: any): Promise<void> {
     try {
       const input = req.body as RemoveStudentsInputDto;
       const response = await this.lessonController.removeStudents(input);
@@ -102,7 +123,7 @@ export class LessonRoute {
       res.status(400).json({ error });
     }
   }
-  private async addDay(req: Request, res: Response): Promise<void> {
+  private async addDay(req: any, res: any): Promise<void> {
     try {
       const input = req.body as AddDayInputDto;
       const response = await this.lessonController.addDay(input);
@@ -111,7 +132,7 @@ export class LessonRoute {
       res.status(400).json({ error });
     }
   }
-  private async removeDay(req: Request, res: Response): Promise<void> {
+  private async removeDay(req: any, res: any): Promise<void> {
     try {
       const input = req.body as RemoveDayInputDto;
       const response = await this.lessonController.removeDay(input);
@@ -120,7 +141,7 @@ export class LessonRoute {
       res.status(400).json({ error });
     }
   }
-  private async addTime(req: Request, res: Response): Promise<void> {
+  private async addTime(req: any, res: any): Promise<void> {
     try {
       const input = req.body as AddTimeInputDto;
       const response = await this.lessonController.addTime(input);
@@ -129,7 +150,7 @@ export class LessonRoute {
       res.status(400).json({ error });
     }
   }
-  private async removeTime(req: Request, res: Response): Promise<void> {
+  private async removeTime(req: any, res: any): Promise<void> {
     try {
       const input = req.body as RemoveTimeInputDto;
       const response = await this.lessonController.removeTime(input);
