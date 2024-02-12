@@ -1,5 +1,3 @@
-import { Request, Response } from 'express';
-import ExpressHttpGateway from '@/infraestructure/http/express-http.gateway';
 import { AttendanceController } from '@/interface/controller/evaluation-note-attendance-management/attendance.controller';
 import {
   AddStudentsInputDto,
@@ -7,24 +5,39 @@ import {
   RemoveStudentsInputDto,
   UpdateAttendanceInputDto,
 } from '@/application/dto/evaluation-note-attendance-management/attendance-usecase.dto';
+import { HttpInterface } from '@/infraestructure/http/http.interface';
 
 export class AttendanceRoute {
   constructor(
     private readonly attendanceController: AttendanceController,
-    private readonly httpGateway: ExpressHttpGateway
+    private readonly httpGateway: HttpInterface
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/attendance', this.findAllAttendances);
-    this.httpGateway.post('/attendance', this.createAttendance);
-    this.httpGateway.get('/attendance/:id', this.findAttendance);
-    this.httpGateway.put('/attendance/:id', this.updateAttendance);
-    this.httpGateway.delete('/attendance/:id', this.deleteAttendance);
-    this.httpGateway.post('attendance/add/students', this.addStudents);
-    this.httpGateway.post('attendance/remove/students', this.removeStudents);
+    this.httpGateway.get('/attendance', (req: any, res: any) =>
+      this.findAllAttendances(req, res)
+    );
+    this.httpGateway.post('/attendance', (req: any, res: any) =>
+      this.createAttendance(req, res)
+    );
+    this.httpGateway.get('/attendance/:id', (req: any, res: any) =>
+      this.findAttendance(req, res)
+    );
+    this.httpGateway.patch('/attendance/:id', (req: any, res: any) =>
+      this.updateAttendance(req, res)
+    );
+    this.httpGateway.delete('/attendance/:id', (req: any, res: any) =>
+      this.deleteAttendance(req, res)
+    );
+    this.httpGateway.post('attendance/add/students', (req: any, res: any) =>
+      this.addStudents(req, res)
+    );
+    this.httpGateway.post('attendance/remove/students', (req: any, res: any) =>
+      this.removeStudents(req, res)
+    );
   }
 
-  private async findAllAttendances(req: Request, res: Response): Promise<void> {
+  private async findAllAttendances(req: any, res: any): Promise<void> {
     try {
       const { quantity, offset } = req.body;
       const response = await this.attendanceController.findAll({
@@ -36,7 +49,7 @@ export class AttendanceRoute {
       res.status(204).json({ error });
     }
   }
-  private async createAttendance(req: Request, res: Response): Promise<void> {
+  private async createAttendance(req: any, res: any): Promise<void> {
     try {
       const input = req.body as CreateAttendanceInputDto;
       const response = await this.attendanceController.create(input);
@@ -45,7 +58,7 @@ export class AttendanceRoute {
       res.status(400).json({ error });
     }
   }
-  private async findAttendance(req: Request, res: Response): Promise<void> {
+  private async findAttendance(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
       const input = { id };
@@ -55,7 +68,7 @@ export class AttendanceRoute {
       res.status(404).json({ error });
     }
   }
-  private async updateAttendance(req: Request, res: Response): Promise<void> {
+  private async updateAttendance(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
       const input: UpdateAttendanceInputDto = req.body;
@@ -66,7 +79,7 @@ export class AttendanceRoute {
       res.status(404).json({ error });
     }
   }
-  private async deleteAttendance(req: Request, res: Response): Promise<void> {
+  private async deleteAttendance(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
       const input = { id };
@@ -76,7 +89,7 @@ export class AttendanceRoute {
       res.status(404).json({ error });
     }
   }
-  private async addStudents(req: Request, res: Response): Promise<void> {
+  private async addStudents(req: any, res: any): Promise<void> {
     try {
       const input = req.body as AddStudentsInputDto;
       const response = await this.attendanceController.addStudents(input);
@@ -85,7 +98,7 @@ export class AttendanceRoute {
       res.status(400).json({ error });
     }
   }
-  private async removeStudents(req: Request, res: Response): Promise<void> {
+  private async removeStudents(req: any, res: any): Promise<void> {
     try {
       const input = req.body as RemoveStudentsInputDto;
       const response = await this.attendanceController.removeStudents(input);
