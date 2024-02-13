@@ -18,7 +18,7 @@ export class UserMasterRoute {
     this.httpGateway.get('/user-masters/:id', (req: any, res: any) =>
       this.findUserMaster(req, res)
     );
-    this.httpGateway.put('/user-masters/:id', (req: any, res: any) =>
+    this.httpGateway.patch('/user-masters/:id', (req: any, res: any) =>
       this.updateUserMaster(req, res)
     );
   }

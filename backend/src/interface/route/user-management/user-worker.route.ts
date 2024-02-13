@@ -21,7 +21,7 @@ export class UserWorkerRoute {
     this.httpGateway.get('/user-workers/:id', (req: any, res: any) =>
       this.findUserWorker(req, res)
     );
-    this.httpGateway.put('/user-workers/:id', (req: any, res: any) =>
+    this.httpGateway.patch('/user-workers/:id', (req: any, res: any) =>
       this.updateUserWorker(req, res)
     );
     this.httpGateway.delete('/user-workers/:id', (req: any, res: any) =>

@@ -21,7 +21,7 @@ export class UserStudentRoute {
     this.httpGateway.get('/user-students/:id', (req: any, res: any) =>
       this.findUserStudent(req, res)
     );
-    this.httpGateway.put('/user-students/:id', (req: any, res: any) =>
+    this.httpGateway.patch('/user-students/:id', (req: any, res: any) =>
       this.updateUserStudent(req, res)
     );
     this.httpGateway.delete('/user-students/:id', (req: any, res: any) =>

@@ -20,8 +20,9 @@ export class UserAdministratorRoute {
     this.expressInstance.get('/user-administrators/:id', (req: any, res: any) =>
       this.findUserAdministrator(req, res)
     );
-    this.expressInstance.put('/user-administrators/:id', (req: any, res: any) =>
-      this.updateUserAdministrator(req, res)
+    this.expressInstance.patch(
+      '/user-administrators/:id',
+      (req: any, res: any) => this.updateUserAdministrator(req, res)
     );
     this.expressInstance.delete(
       '/user-administrators/:id',
