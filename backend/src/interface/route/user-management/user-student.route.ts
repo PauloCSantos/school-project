@@ -38,16 +38,27 @@ export class UserStudentRoute {
       });
       res.status(200).json(any);
     } catch (error) {
-      res.status(204).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async createUserStudent(req: any, res: any): Promise<void> {
     try {
       const input = req.body as CreateUserStudentInputDto;
-      const any = await this.userStudentController.create(input);
+      const any = await this.userStudentController.create({
+        ...input,
+        birthday: new Date(input.birthday),
+      });
       res.status(201).json(any);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async findUserStudent(req: any, res: any): Promise<void> {
@@ -57,7 +68,11 @@ export class UserStudentRoute {
       const any = await this.userStudentController.find(input);
       res.status(200).json(any);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async updateUserStudent(req: any, res: any): Promise<void> {
@@ -65,20 +80,29 @@ export class UserStudentRoute {
       const { id } = req.params;
       const input: UpdateUserStudentInputDto = req.body;
       input.id = id;
+      input.birthday ? (input.birthday = new Date(input.birthday)) : undefined;
       const any = await this.userStudentController.update(input);
       res.status(200).json(any);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async deleteUserStudent(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
       const input = { id };
-      const any = await this.userStudentController.delete(input);
-      res.status(204).json({ any });
+      const response = await this.userStudentController.delete(input);
+      res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
 }

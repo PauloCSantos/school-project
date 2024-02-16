@@ -39,16 +39,27 @@ export class UserAdministratorRoute {
       });
       res.status(200).json(response);
     } catch (error) {
-      res.status(204).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async createUserAdministrator(req: any, res: any): Promise<void> {
     try {
       const input = req.body as CreateUserAdministratorInputDto;
-      const response = await this.userAdministratorController.create(input);
+      const response = await this.userAdministratorController.create({
+        ...input,
+        birthday: new Date(input.birthday),
+      });
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async findUserAdministrator(req: any, res: any): Promise<void> {
@@ -58,7 +69,11 @@ export class UserAdministratorRoute {
       const response = await this.userAdministratorController.find(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async updateUserAdministrator(req: any, res: any): Promise<void> {
@@ -66,10 +81,15 @@ export class UserAdministratorRoute {
       const { id } = req.params;
       const input: UpdateUserAdministratorInputDto = req.body;
       input.id = id;
+      input.birthday ? (input.birthday = new Date(input.birthday)) : undefined;
       const response = await this.userAdministratorController.update(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async deleteUserAdministrator(req: any, res: any): Promise<void> {
@@ -77,9 +97,13 @@ export class UserAdministratorRoute {
       const { id } = req.params;
       const input = { id };
       const response = await this.userAdministratorController.delete(input);
-      res.status(204).json({ response });
+      res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
 }
