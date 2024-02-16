@@ -168,7 +168,7 @@ describe('UserWorkerRoute unit test', () => {
   describe('DELETE /user-workers/:id', () => {
     it('should delete a user by ID', async () => {
       const response = await supertest(app).delete('/user-workers/123');
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
       expect(userWorkerController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
     });

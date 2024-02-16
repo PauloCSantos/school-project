@@ -153,7 +153,7 @@ describe('UserAdministratorRoute unit test', () => {
   describe('DELETE /user-administrators/:id', () => {
     it('should delete a user by ID', async () => {
       const response = await supertest(app).delete('/user-administrators/123');
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
       expect(userAdministratorController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
     });
