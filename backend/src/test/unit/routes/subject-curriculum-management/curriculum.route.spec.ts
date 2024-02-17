@@ -90,7 +90,7 @@ describe('CurriculumRoute unit test', () => {
   describe('DELETE /curriculum/:id', () => {
     it('should delete a curriculum by ID', async () => {
       const response = await supertest(app).delete('/curriculum/123');
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
       expect(curriculumController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
     });
