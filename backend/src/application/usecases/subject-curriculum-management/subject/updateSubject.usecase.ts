@@ -21,14 +21,18 @@ export default class UpdateSubject
     const subject = await this._subjectRepository.find(id);
     if (!subject) throw new Error('Subject not found');
 
-    name && (subject.name = name);
-    description && (subject.description = description);
+    try {
+      name !== undefined && (subject.name = name);
+      description !== undefined && (subject.description = description);
 
-    const result = await this._subjectRepository.update(subject);
+      const result = await this._subjectRepository.update(subject);
 
-    return {
-      name: result.name,
-      description: result.description,
-    };
+      return {
+        name: result.name,
+        description: result.description,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }

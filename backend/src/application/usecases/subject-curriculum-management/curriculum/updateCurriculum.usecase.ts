@@ -22,14 +22,18 @@ export default class UpdateCurriculum
     const curriculum = await this._curriculumRepository.find(id);
     if (!curriculum) throw new Error('Curriculum not found');
 
-    name && (curriculum.name = name);
-    yearsToComplete && (curriculum.year = yearsToComplete);
+    try {
+      name !== undefined && (curriculum.name = name);
+      yearsToComplete !== undefined && (curriculum.year = yearsToComplete);
 
-    const result = await this._curriculumRepository.update(curriculum);
+      const result = await this._curriculumRepository.update(curriculum);
 
-    return {
-      name: result.name,
-      yearsToComplete: result.yearsToComplete,
-    };
+      return {
+        name: result.name,
+        yearsToComplete: result.yearsToComplete,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }
