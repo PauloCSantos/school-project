@@ -23,16 +23,16 @@ export class ScheduleRoute {
     this.httpGateway.get('/schedule/:id', (req: any, res: any) =>
       this.findSchedule(req, res)
     );
-    this.httpGateway.put('/schedule/:id', (req: any, res: any) =>
+    this.httpGateway.patch('/schedule/:id', (req: any, res: any) =>
       this.updateSchedule(req, res)
     );
     this.httpGateway.delete('/schedule/:id', (req: any, res: any) =>
       this.deleteSchedule(req, res)
     );
-    this.httpGateway.post('schedule/add', (req: any, res: any) =>
+    this.httpGateway.post('/schedule/add', (req: any, res: any) =>
       this.addLessons(req, res)
     );
-    this.httpGateway.post('schedule/remove', (req: any, res: any) =>
+    this.httpGateway.post('/schedule/remove', (req: any, res: any) =>
       this.removeLessons(req, res)
     );
   }
@@ -46,7 +46,11 @@ export class ScheduleRoute {
       });
       res.status(200).json(response);
     } catch (error) {
-      res.status(204).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async createSchedule(req: any, res: any): Promise<void> {
@@ -55,7 +59,11 @@ export class ScheduleRoute {
       const response = await this.scheduleController.create(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async findSchedule(req: any, res: any): Promise<void> {
@@ -65,7 +73,11 @@ export class ScheduleRoute {
       const response = await this.scheduleController.find(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async updateSchedule(req: any, res: any): Promise<void> {
@@ -76,7 +88,11 @@ export class ScheduleRoute {
       const response = await this.scheduleController.update(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async deleteSchedule(req: any, res: any): Promise<void> {
@@ -84,9 +100,13 @@ export class ScheduleRoute {
       const { id } = req.params;
       const input = { id };
       const response = await this.scheduleController.delete(input);
-      res.status(204).json({ response });
+      res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async addLessons(req: any, res: any): Promise<void> {
@@ -95,7 +115,11 @@ export class ScheduleRoute {
       const response = await this.scheduleController.addLessons(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async removeLessons(req: any, res: any): Promise<void> {
@@ -104,7 +128,11 @@ export class ScheduleRoute {
       const response = await this.scheduleController.removeLessons(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
 }

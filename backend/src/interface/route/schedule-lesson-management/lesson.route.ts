@@ -27,28 +27,28 @@ export class LessonRoute {
     this.httpGateway.get('/lesson/:id', (req: any, res: any) =>
       this.findLesson(req, res)
     );
-    this.httpGateway.put('/lesson/:id', (req: any, res: any) =>
+    this.httpGateway.patch('/lesson/:id', (req: any, res: any) =>
       this.updateLesson(req, res)
     );
     this.httpGateway.delete('/lesson/:id', (req: any, res: any) =>
       this.deleteLesson(req, res)
     );
-    this.httpGateway.post('lesson/add/students', (req: any, res: any) =>
+    this.httpGateway.post('/lesson/add/students', (req: any, res: any) =>
       this.addStudents(req, res)
     );
-    this.httpGateway.post('lesson/remove/students', (req: any, res: any) =>
+    this.httpGateway.post('/lesson/remove/students', (req: any, res: any) =>
       this.removeStudents(req, res)
     );
-    this.httpGateway.post('lesson/add/day', (req: any, res: any) =>
+    this.httpGateway.post('/lesson/add/day', (req: any, res: any) =>
       this.addDay(req, res)
     );
-    this.httpGateway.post('lesson/remove/day', (req: any, res: any) =>
+    this.httpGateway.post('/lesson/remove/day', (req: any, res: any) =>
       this.removeDay(req, res)
     );
-    this.httpGateway.post('lesson/add/time', (req: any, res: any) =>
+    this.httpGateway.post('/lesson/add/time', (req: any, res: any) =>
       this.addTime(req, res)
     );
-    this.httpGateway.post('lesson/remove/time', (req: any, res: any) =>
+    this.httpGateway.post('/lesson/remove/time', (req: any, res: any) =>
       this.removeTime(req, res)
     );
   }
@@ -62,7 +62,11 @@ export class LessonRoute {
       });
       res.status(200).json(response);
     } catch (error) {
-      res.status(204).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async createLesson(req: any, res: any): Promise<void> {
@@ -71,7 +75,11 @@ export class LessonRoute {
       const response = await this.lessonController.create(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async findLesson(req: any, res: any): Promise<void> {
@@ -81,7 +89,11 @@ export class LessonRoute {
       const response = await this.lessonController.find(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async updateLesson(req: any, res: any): Promise<void> {
@@ -92,7 +104,11 @@ export class LessonRoute {
       const response = await this.lessonController.update(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async deleteLesson(req: any, res: any): Promise<void> {
@@ -100,9 +116,13 @@ export class LessonRoute {
       const { id } = req.params;
       const input = { id };
       const response = await this.lessonController.delete(input);
-      res.status(204).json({ response });
+      res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async addStudents(req: any, res: any): Promise<void> {
@@ -111,7 +131,11 @@ export class LessonRoute {
       const response = await this.lessonController.addStudents(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async removeStudents(req: any, res: any): Promise<void> {
@@ -120,7 +144,11 @@ export class LessonRoute {
       const response = await this.lessonController.removeStudents(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async addDay(req: any, res: any): Promise<void> {
@@ -129,7 +157,11 @@ export class LessonRoute {
       const response = await this.lessonController.addDay(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async removeDay(req: any, res: any): Promise<void> {
@@ -138,7 +170,11 @@ export class LessonRoute {
       const response = await this.lessonController.removeDay(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async addTime(req: any, res: any): Promise<void> {
@@ -147,7 +183,11 @@ export class LessonRoute {
       const response = await this.lessonController.addTime(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async removeTime(req: any, res: any): Promise<void> {
@@ -156,7 +196,11 @@ export class LessonRoute {
       const response = await this.lessonController.removeTime(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
 }
