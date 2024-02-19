@@ -12,19 +12,19 @@ export class EventRoute {
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/events', (req: any, res: any) =>
+    this.httpGateway.get('/event', (req: any, res: any) =>
       this.findAllEvents(req, res)
     );
-    this.httpGateway.post('/events', (req: any, res: any) =>
+    this.httpGateway.post('/event', (req: any, res: any) =>
       this.createEvent(req, res)
     );
-    this.httpGateway.get('/events/:id', (req: any, res: any) =>
+    this.httpGateway.get('/event/:id', (req: any, res: any) =>
       this.findEvent(req, res)
     );
-    this.httpGateway.patch('/events/:id', (req: any, res: any) =>
+    this.httpGateway.patch('/event/:id', (req: any, res: any) =>
       this.updateEvent(req, res)
     );
-    this.httpGateway.delete('/events/:id', (req: any, res: any) =>
+    this.httpGateway.delete('/event/:id', (req: any, res: any) =>
       this.deleteEvent(req, res)
     );
   }
@@ -38,16 +38,27 @@ export class EventRoute {
       });
       res.status(200).json(response);
     } catch (error) {
-      res.status(204).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async createEvent(req: any, res: any): Promise<void> {
     try {
       const input = req.body as CreateEventInputDto;
-      const response = await this.userStudentController.create(input);
+      const response = await this.userStudentController.create({
+        ...input,
+        date: new Date(input.date),
+      });
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async findEvent(req: any, res: any): Promise<void> {
@@ -57,7 +68,11 @@ export class EventRoute {
       const response = await this.userStudentController.find(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async updateEvent(req: any, res: any): Promise<void> {
@@ -68,7 +83,11 @@ export class EventRoute {
       const response = await this.userStudentController.update(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async deleteEvent(req: any, res: any): Promise<void> {
@@ -76,9 +95,13 @@ export class EventRoute {
       const { id } = req.params;
       const input = { id };
       const response = await this.userStudentController.delete(input);
-      res.status(204).json({ response });
+      res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
 }
