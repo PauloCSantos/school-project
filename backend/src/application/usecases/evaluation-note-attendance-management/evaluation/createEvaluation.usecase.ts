@@ -21,20 +21,24 @@ export default class CreateEvaluation
     type,
     value,
   }: CreateEvaluationInputDto): Promise<CreateEvaluationOutputDto> {
-    const evaluation = new Evaluation({
-      lesson,
-      teacher,
-      type,
-      value,
-    });
+    try {
+      const evaluation = new Evaluation({
+        lesson,
+        teacher,
+        type,
+        value,
+      });
 
-    const evaluationVerification = await this._evaluationRepository.find(
-      evaluation.id.id
-    );
-    if (evaluationVerification) throw new Error('Evaluation already exists');
+      const evaluationVerification = await this._evaluationRepository.find(
+        evaluation.id.id
+      );
+      if (evaluationVerification) throw new Error('Evaluation already exists');
 
-    const result = await this._evaluationRepository.create(evaluation);
+      const result = await this._evaluationRepository.create(evaluation);
 
-    return { id: result };
+      return { id: result };
+    } catch (error) {
+      throw error;
+    }
   }
 }

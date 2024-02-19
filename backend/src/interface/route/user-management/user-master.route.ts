@@ -26,20 +26,31 @@ export class UserMasterRoute {
   private async createUserMaster(req: any, res: any): Promise<void> {
     try {
       const input = req.body as CreateUserMasterInputDto;
-      const any = await this.userMasterController.create(input);
-      res.status(201).json(any);
+      const response = await this.userMasterController.create({
+        ...input,
+        birthday: new Date(input.birthday),
+      });
+      res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async findUserMaster(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
       const input = { id };
-      const any = await this.userMasterController.find(input);
-      res.status(200).json(any);
+      const response = await this.userMasterController.find(input);
+      res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async updateUserMaster(req: any, res: any): Promise<void> {
@@ -47,10 +58,14 @@ export class UserMasterRoute {
       const { id } = req.params;
       const input: UpdateUserMasterInputDto = req.body;
       input.id = id;
-      const any = await this.userMasterController.update(input);
-      res.status(200).json(any);
+      const response = await this.userMasterController.update(input);
+      res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
 }

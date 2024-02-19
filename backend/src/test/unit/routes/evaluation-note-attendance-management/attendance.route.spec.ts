@@ -59,14 +59,11 @@ describe('AttendanceRoute unit test', () => {
       const response = await supertest(app)
         .post('/attendance')
         .send({
-          name: 'Math advanced I',
-          duration: 60,
-          teacher: new Id().id,
-          studentsList: [new Id().id, new Id().id, new Id().id],
-          subject: new Id().id,
-          days: ['mon', 'fri'] as DayOfWeek[],
-          times: ['15:55', '19:00'] as Hour[],
-          semester: 2 as 1 | 2,
+          date: new Date('02/10/26'),
+          day: 'fri' as DayOfWeek,
+          hour: '06:50' as Hour,
+          lesson: new Id().id,
+          studentsPresent: [new Id().id, new Id().id, new Id().id],
         });
       expect(response.status).toBe(201);
       expect(attendanceController.create).toHaveBeenCalled();
@@ -103,7 +100,7 @@ describe('AttendanceRoute unit test', () => {
   describe('DELETE /attendance/:id', () => {
     it('should delete a attendance by ID', async () => {
       const response = await supertest(app).delete('/attendance/123');
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
       expect(attendanceController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
     });

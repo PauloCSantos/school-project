@@ -23,16 +23,16 @@ export class CurriculumRoute {
     this.httpGateway.get('/curriculum/:id', (req: any, res: any) =>
       this.findCurriculum(req, res)
     );
-    this.httpGateway.put('/curriculum/:id', (req: any, res: any) =>
+    this.httpGateway.patch('/curriculum/:id', (req: any, res: any) =>
       this.updateCurriculum(req, res)
     );
     this.httpGateway.delete('/curriculum/:id', (req: any, res: any) =>
       this.deleteCurriculum(req, res)
     );
-    this.httpGateway.post('curriculum/add', (req: any, res: any) =>
+    this.httpGateway.post('/curriculum/add', (req: any, res: any) =>
       this.addSubjects(req, res)
     );
-    this.httpGateway.post('curriculum/remove', (req: any, res: any) =>
+    this.httpGateway.post('/curriculum/remove', (req: any, res: any) =>
       this.removeSubjects(req, res)
     );
   }
@@ -46,7 +46,11 @@ export class CurriculumRoute {
       });
       res.status(200).json(response);
     } catch (error) {
-      res.status(204).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async createCurriculum(req: any, res: any): Promise<void> {
@@ -55,7 +59,11 @@ export class CurriculumRoute {
       const response = await this.curriculumController.create(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async findCurriculum(req: any, res: any): Promise<void> {
@@ -65,7 +73,11 @@ export class CurriculumRoute {
       const response = await this.curriculumController.find(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async updateCurriculum(req: any, res: any): Promise<void> {
@@ -76,7 +88,11 @@ export class CurriculumRoute {
       const response = await this.curriculumController.update(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async deleteCurriculum(req: any, res: any): Promise<void> {
@@ -84,9 +100,13 @@ export class CurriculumRoute {
       const { id } = req.params;
       const input = { id };
       const response = await this.curriculumController.delete(input);
-      res.status(204).json({ response });
+      res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async addSubjects(req: any, res: any): Promise<void> {
@@ -95,7 +115,11 @@ export class CurriculumRoute {
       const response = await this.curriculumController.addSubjects(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async removeSubjects(req: any, res: any): Promise<void> {
@@ -104,7 +128,11 @@ export class CurriculumRoute {
       const response = await this.curriculumController.removeSubjects(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
 }

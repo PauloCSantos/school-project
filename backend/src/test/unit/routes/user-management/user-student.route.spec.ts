@@ -158,7 +158,7 @@ describe('UserStudentRoute unit test', () => {
   describe('DELETE /user-students/:id', () => {
     it('should delete a user by ID', async () => {
       const response = await supertest(app).delete('/user-students/123');
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
       expect(userStudentController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
     });

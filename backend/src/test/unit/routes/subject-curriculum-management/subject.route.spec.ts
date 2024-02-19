@@ -80,7 +80,7 @@ describe('SubjectRoute unit test', () => {
   describe('DELETE /subject/:id', () => {
     it('should delete a subject by ID', async () => {
       const response = await supertest(app).delete('/subject/123');
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
       expect(subjectController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
     });

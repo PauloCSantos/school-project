@@ -38,7 +38,11 @@ export class EvaluationRoute {
       });
       res.status(200).json(response);
     } catch (error) {
-      res.status(204).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async createEvaluation(req: any, res: any): Promise<void> {
@@ -47,7 +51,11 @@ export class EvaluationRoute {
       const response = await this.evaluationController.create(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async findEvaluation(req: any, res: any): Promise<void> {
@@ -57,7 +65,11 @@ export class EvaluationRoute {
       const response = await this.evaluationController.find(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async updateEvaluation(req: any, res: any): Promise<void> {
@@ -68,7 +80,11 @@ export class EvaluationRoute {
       const response = await this.evaluationController.update(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async deleteEvaluation(req: any, res: any): Promise<void> {
@@ -76,9 +92,13 @@ export class EvaluationRoute {
       const { id } = req.params;
       const input = { id };
       const response = await this.evaluationController.delete(input);
-      res.status(204).json({ response });
+      res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
 }

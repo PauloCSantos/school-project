@@ -25,37 +25,48 @@ export default class UpdateUserStudent
     const userStudent = await this._userStudentRepository.find(id);
     if (!userStudent) throw new Error('User not found');
 
-    name?.firstName && (userStudent.name.firstName = name.firstName);
-    name?.middleName && (userStudent.name.middleName = name.middleName);
-    name?.lastName && (userStudent.name.lastName = name.lastName);
-    address?.street && (userStudent.address.street = address.street);
-    address?.city && (userStudent.address.city = address.city);
-    address?.zip && (userStudent.address.zip = address.zip);
-    address?.number && (userStudent.address.number = address.number);
-    address?.avenue && (userStudent.address.avenue = address.avenue);
-    address?.state && (userStudent.address.state = address.state);
-    email && (userStudent.email = email);
-    birthday && (userStudent.birthday = birthday);
-    paymentYear && (userStudent.paymentYear = paymentYear);
+    try {
+      name?.firstName !== undefined &&
+        (userStudent.name.firstName = name.firstName);
+      name?.middleName !== undefined &&
+        (userStudent.name.middleName = name.middleName);
+      name?.lastName !== undefined &&
+        (userStudent.name.lastName = name.lastName);
+      address?.street !== undefined &&
+        (userStudent.address.street = address.street);
+      address?.city !== undefined && (userStudent.address.city = address.city);
+      address?.zip !== undefined && (userStudent.address.zip = address.zip);
+      address?.number !== undefined &&
+        (userStudent.address.number = address.number);
+      address?.avenue !== undefined &&
+        (userStudent.address.avenue = address.avenue);
+      address?.state !== undefined &&
+        (userStudent.address.state = address.state);
+      email !== undefined && (userStudent.email = email);
+      birthday !== undefined && (userStudent.birthday = birthday);
+      paymentYear !== undefined && (userStudent.paymentYear = paymentYear);
 
-    const result = await this._userStudentRepository.update(userStudent);
+      const result = await this._userStudentRepository.update(userStudent);
 
-    return {
-      name: {
-        fullName: result.name.fullName(),
-        shortName: result.name.shortName(),
-      },
-      address: {
-        street: result.address.street,
-        city: result.address.city,
-        zip: result.address.zip,
-        number: result.address.number,
-        avenue: result.address.avenue,
-        state: result.address.state,
-      },
-      email: result.email,
-      birthday: result.birthday,
-      paymentYear: result.paymentWithCurrencyBR(),
-    };
+      return {
+        name: {
+          fullName: result.name.fullName(),
+          shortName: result.name.shortName(),
+        },
+        address: {
+          street: result.address.street,
+          city: result.address.city,
+          zip: result.address.zip,
+          number: result.address.number,
+          avenue: result.address.avenue,
+          state: result.address.state,
+        },
+        email: result.email,
+        birthday: result.birthday,
+        paymentYear: result.paymentWithCurrencyBR(),
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }

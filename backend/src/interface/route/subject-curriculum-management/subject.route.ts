@@ -21,7 +21,7 @@ export class SubjectRoute {
     this.httpGateway.get('/subject/:id', (req: any, res: any) =>
       this.findSubject(req, res)
     );
-    this.httpGateway.put('/subject/:id', (req: any, res: any) =>
+    this.httpGateway.patch('/subject/:id', (req: any, res: any) =>
       this.updateSubject(req, res)
     );
     this.httpGateway.delete('/subject/:id', (req: any, res: any) =>
@@ -38,7 +38,11 @@ export class SubjectRoute {
       });
       res.status(200).json(response);
     } catch (error) {
-      res.status(204).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async createSubject(req: any, res: any): Promise<void> {
@@ -47,7 +51,11 @@ export class SubjectRoute {
       const response = await this.subjectController.create(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async findSubject(req: any, res: any): Promise<void> {
@@ -57,7 +65,11 @@ export class SubjectRoute {
       const response = await this.subjectController.find(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async updateSubject(req: any, res: any): Promise<void> {
@@ -68,7 +80,11 @@ export class SubjectRoute {
       const response = await this.subjectController.update(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async deleteSubject(req: any, res: any): Promise<void> {
@@ -76,9 +92,13 @@ export class SubjectRoute {
       const { id } = req.params;
       const input = { id };
       const response = await this.subjectController.delete(input);
-      res.status(204).json({ response });
+      res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
 }

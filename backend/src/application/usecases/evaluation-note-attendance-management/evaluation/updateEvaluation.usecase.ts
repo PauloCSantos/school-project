@@ -24,18 +24,22 @@ export default class UpdateEvaluation
     const evaluation = await this._evaluationRepository.find(id);
     if (!evaluation) throw new Error('Evaluation not found');
 
-    lesson && (evaluation.lesson = lesson);
-    teacher && (evaluation.teacher = teacher);
-    type && (evaluation.type = type);
-    value && (evaluation.value = value);
+    try {
+      lesson !== undefined && (evaluation.lesson = lesson);
+      teacher !== undefined && (evaluation.teacher = teacher);
+      type !== undefined && (evaluation.type = type);
+      value !== undefined && (evaluation.value = value);
 
-    const result = await this._evaluationRepository.update(evaluation);
+      const result = await this._evaluationRepository.update(evaluation);
 
-    return {
-      teacher: result.teacher,
-      lesson: result.lesson,
-      type: result.type,
-      value: result.value,
-    };
+      return {
+        teacher: result.teacher,
+        lesson: result.lesson,
+        type: result.type,
+        value: result.value,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }

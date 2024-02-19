@@ -21,17 +21,20 @@ export default class UpdateNote
   }: UpdateNoteInputDto): Promise<UpdateNoteOutputDto> {
     const noteInstance = await this._noteRepository.find(id);
     if (!noteInstance) throw new Error('Note not found');
+    try {
+      evaluation !== undefined && (noteInstance.evaluation = evaluation);
+      note !== undefined && (noteInstance.note = note);
+      student !== undefined && (noteInstance.student = student);
 
-    evaluation && (noteInstance.evaluation = evaluation);
-    note && (noteInstance.note = note);
-    student && (noteInstance.student = student);
+      const result = await this._noteRepository.update(noteInstance);
 
-    const result = await this._noteRepository.update(noteInstance);
-
-    return {
-      evaluation: result.evaluation,
-      note: result.note,
-      student: result.student,
-    };
+      return {
+        evaluation: result.evaluation,
+        note: result.note,
+        student: result.student,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }

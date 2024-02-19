@@ -24,18 +24,22 @@ export default class UpdateAttendance
     const attendance = await this._attendanceRepository.find(id);
     if (!attendance) throw new Error('Attendance not found');
 
-    date && (attendance.date = date);
-    day && (attendance.day = day);
-    hour && (attendance.hour = hour);
-    lesson && (attendance.lesson = lesson);
+    try {
+      date !== undefined && (attendance.date = date);
+      day !== undefined && (attendance.day = day);
+      hour !== undefined && (attendance.hour = hour);
+      lesson !== undefined && (attendance.lesson = lesson);
 
-    const result = await this._attendanceRepository.update(attendance);
+      const result = await this._attendanceRepository.update(attendance);
 
-    return {
-      lesson: result.lesson,
-      date: result.date,
-      hour: result.hour,
-      day: result.day,
-    };
+      return {
+        lesson: result.lesson,
+        date: result.date,
+        hour: result.hour,
+        day: result.day,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }

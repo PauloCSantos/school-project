@@ -114,7 +114,7 @@ describe('LessonRoute unit test', () => {
   describe('DELETE /lesson/:id', () => {
     it('should delete a lesson by ID', async () => {
       const response = await supertest(app).delete('/lesson/123');
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
       expect(lessonController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
     });

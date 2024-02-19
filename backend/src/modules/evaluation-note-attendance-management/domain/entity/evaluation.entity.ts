@@ -35,7 +35,7 @@ export default class Evaluation {
     if (!validId(input.lesson)) throw new Error('Lesson id is not valid');
     if (!this.validateType(input.type))
       throw new Error('Type field is not valid');
-    if (!this.validateValue)
+    if (!this.validateValue(input.value))
       throw new Error('The value field must be numeric and between 0 and 10');
 
     this._id = input.id || new Id();

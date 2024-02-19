@@ -19,13 +19,16 @@ export default class UpdateSchedule
   }: UpdateScheduleInputDto): Promise<UpdateScheduleOutputDto> {
     const schedule = await this._scheduleRepository.find(id);
     if (!schedule) throw new Error('Schedule not found');
+    try {
+      curriculum !== undefined && (schedule.curriculum = curriculum);
 
-    curriculum && (schedule.curriculum = curriculum);
+      const result = await this._scheduleRepository.update(schedule);
 
-    const result = await this._scheduleRepository.update(schedule);
-
-    return {
-      curriculum: result.curriculum,
-    };
+      return {
+        curriculum: result.curriculum,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }

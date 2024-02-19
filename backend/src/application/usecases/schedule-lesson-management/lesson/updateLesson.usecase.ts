@@ -24,20 +24,24 @@ export default class UpdateLesson
     const lesson = await this._lessonRepository.find(id);
     if (!lesson) throw new Error('Lesson not found');
 
-    duration && (lesson.duration = duration);
-    name && (lesson.name = name);
-    semester && (lesson.semester = semester);
-    subject && (lesson.subject = subject);
-    teacher && (lesson.teacher = teacher);
+    try {
+      duration !== undefined && (lesson.duration = duration);
+      name !== undefined && (lesson.name = name);
+      semester !== undefined && (lesson.semester = semester);
+      subject !== undefined && (lesson.subject = subject);
+      teacher !== undefined && (lesson.teacher = teacher);
 
-    const result = await this._lessonRepository.update(lesson);
+      const result = await this._lessonRepository.update(lesson);
 
-    return {
-      name: result.name,
-      duration: result.duration,
-      teacher: result.teacher,
-      subject: result.subject,
-      semester: result.semester,
-    };
+      return {
+        name: result.name,
+        duration: result.duration,
+        teacher: result.teacher,
+        subject: result.subject,
+        semester: result.semester,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }

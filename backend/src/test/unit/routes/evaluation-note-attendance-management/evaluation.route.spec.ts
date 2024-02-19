@@ -92,7 +92,7 @@ describe('EvaluationRoute unit test', () => {
   describe('DELETE /evaluation/:id', () => {
     it('should delete a evaluation by ID', async () => {
       const response = await supertest(app).delete('/evaluation/123');
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
       expect(evaluationController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
     });

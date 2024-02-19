@@ -29,10 +29,10 @@ export class AttendanceRoute {
     this.httpGateway.delete('/attendance/:id', (req: any, res: any) =>
       this.deleteAttendance(req, res)
     );
-    this.httpGateway.post('attendance/add/students', (req: any, res: any) =>
+    this.httpGateway.post('/attendance/add/students', (req: any, res: any) =>
       this.addStudents(req, res)
     );
-    this.httpGateway.post('attendance/remove/students', (req: any, res: any) =>
+    this.httpGateway.post('/attendance/remove/students', (req: any, res: any) =>
       this.removeStudents(req, res)
     );
   }
@@ -46,16 +46,27 @@ export class AttendanceRoute {
       });
       res.status(200).json(response);
     } catch (error) {
-      res.status(204).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async createAttendance(req: any, res: any): Promise<void> {
     try {
       const input = req.body as CreateAttendanceInputDto;
-      const response = await this.attendanceController.create(input);
+      const response = await this.attendanceController.create({
+        ...input,
+        date: new Date(input.date),
+      });
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async findAttendance(req: any, res: any): Promise<void> {
@@ -65,7 +76,11 @@ export class AttendanceRoute {
       const response = await this.attendanceController.find(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async updateAttendance(req: any, res: any): Promise<void> {
@@ -73,10 +88,15 @@ export class AttendanceRoute {
       const { id } = req.params;
       const input: UpdateAttendanceInputDto = req.body;
       input.id = id;
+      input.date ? (input.date = new Date(input.date)) : undefined;
       const response = await this.attendanceController.update(input);
       res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async deleteAttendance(req: any, res: any): Promise<void> {
@@ -84,9 +104,13 @@ export class AttendanceRoute {
       const { id } = req.params;
       const input = { id };
       const response = await this.attendanceController.delete(input);
-      res.status(204).json({ response });
+      res.status(200).json(response);
     } catch (error) {
-      res.status(404).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async addStudents(req: any, res: any): Promise<void> {
@@ -95,7 +119,11 @@ export class AttendanceRoute {
       const response = await this.attendanceController.addStudents(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
   private async removeStudents(req: any, res: any): Promise<void> {
@@ -104,7 +132,11 @@ export class AttendanceRoute {
       const response = await this.attendanceController.removeStudents(input);
       res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({ error });
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
     }
   }
 }

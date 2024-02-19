@@ -87,7 +87,7 @@ describe('scheduleRoute unit test', () => {
   describe('DELETE /schedule/:id', () => {
     it('should delete a schedule by ID', async () => {
       const response = await supertest(app).delete('/schedule/123');
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
       expect(scheduleController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
     });
