@@ -18,7 +18,7 @@ import UpdateEvaluation from '@/application/usecases/evaluation-note-attendance-
 
 export class EvaluationController {
   constructor(
-    private readonly createEvauation: CreateEvaluation,
+    private readonly createEvaluation: CreateEvaluation,
     private readonly findEvauation: FindEvaluation,
     private readonly findAllEvauation: FindAllEvaluation,
     private readonly updateEvauation: UpdateEvaluation,
@@ -28,7 +28,7 @@ export class EvaluationController {
   async create(
     input: CreateEvaluationInputDto
   ): Promise<CreateEvaluationOutputDto> {
-    const response = await this.createEvauation.execute(input);
+    const response = await this.createEvaluation.execute(input);
     return response;
   }
   async find(
