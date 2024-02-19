@@ -44,17 +44,11 @@ describe('NoteRoute unit test', () => {
 
   describe('POST/note', () => {
     it('should create a note', async () => {
-      const response = await supertest(app)
-        .post('/note')
-        .send({
-          creator: new Id().id,
-          name: 'Christmas',
-          date: new Date(),
-          hour: '08:00' as Hour,
-          day: 'mon' as DayOfWeek,
-          type: 'note',
-          place: 'school',
-        });
+      const response = await supertest(app).post('/note').send({
+        evaluation: new Id().id,
+        student: new Id().id,
+        note: 10,
+      });
       expect(response.status).toBe(201);
       expect(noteController.create).toHaveBeenCalled();
       expect(response.body.id).toBeDefined();
@@ -90,7 +84,7 @@ describe('NoteRoute unit test', () => {
   describe('DELETE/note/:id', () => {
     it('should delete a note by ID', async () => {
       const response = await supertest(app).delete('/note/123');
-      expect(response.status).toBe(204);
+      expect(response.status).toBe(200);
       expect(noteController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
     });
