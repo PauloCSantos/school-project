@@ -26,24 +26,28 @@ export default class UpdateEvent
     const event = await this._eventRepository.find(id);
     if (!event) throw new Error('Event not found');
 
-    name && (event.name = name);
-    creator && (event.creator = creator);
-    date && (event.date = date);
-    day && (event.day = day);
-    hour && (event.hour = hour);
-    place && (event.place = place);
-    type && (event.type = type);
+    try {
+      name !== undefined && (event.name = name);
+      creator !== undefined && (event.creator = creator);
+      date !== undefined && (event.date = date);
+      day !== undefined && (event.day = day);
+      hour !== undefined && (event.hour = hour);
+      place !== undefined && (event.place = place);
+      type !== undefined && (event.type = type);
 
-    const result = await this._eventRepository.update(event);
+      const result = await this._eventRepository.update(event);
 
-    return {
-      creator: result.creator,
-      name: result.name,
-      date: result.date,
-      hour: result.hour,
-      day: result.day,
-      type: result.type,
-      place: result.place,
-    };
+      return {
+        creator: result.creator,
+        name: result.name,
+        date: result.date,
+        hour: result.hour,
+        day: result.day,
+        type: result.type,
+        place: result.place,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }
