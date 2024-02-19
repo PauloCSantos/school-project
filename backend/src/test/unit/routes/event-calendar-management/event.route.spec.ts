@@ -58,10 +58,10 @@ describe('EventRoute unit test', () => {
   eventRoute.routes();
   const app = expressHttp.getExpressInstance();
 
-  describe('POST /events', () => {
+  describe('POST /event', () => {
     it('should create a event', async () => {
       const response = await supertest(app)
-        .post('/events')
+        .post('/event')
         .send({
           creator: new Id().id,
           name: 'Christmas',
@@ -76,26 +76,26 @@ describe('EventRoute unit test', () => {
       expect(response.body.id).toBeDefined();
     });
   });
-  describe('GET /events/:id', () => {
+  describe('GET /event/:id', () => {
     it('should find a event by ID', async () => {
-      const response = await supertest(app).get('/events/123');
+      const response = await supertest(app).get('/event/123');
       expect(response.status).toBe(200);
       expect(eventController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
     });
   });
-  describe('GET /events/', () => {
+  describe('GET /event/', () => {
     it('should find all events', async () => {
-      const response = await supertest(app).get('/events');
+      const response = await supertest(app).get('/event');
       expect(response.status).toBe(200);
       expect(eventController.findAll).toHaveBeenCalled();
       expect(response.body).toBeDefined;
       expect(response.body.length).toBe(2);
     });
   });
-  describe('PATCH /events/:id', () => {
+  describe('PATCH /event/:id', () => {
     it('should update a event by ID', async () => {
-      const response = await supertest(app).patch('/events/123').send({
+      const response = await supertest(app).patch('/event/123').send({
         description: 'New description',
       });
       expect(response.status).toBe(200);
@@ -103,10 +103,10 @@ describe('EventRoute unit test', () => {
       expect(response.body).toBeDefined();
     });
   });
-  describe('DELETE /events/:id', () => {
+  describe('DELETE /event/:id', () => {
     it('should delete a event by ID', async () => {
-      const response = await supertest(app).delete('/events/123');
-      expect(response.status).toBe(204);
+      const response = await supertest(app).delete('/event/123');
+      expect(response.status).toBe(200);
       expect(eventController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
     });
