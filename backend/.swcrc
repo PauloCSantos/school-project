@@ -1,12 +1,21 @@
 {
-    "$schema": "https://json.schemastore.org/swcrc",
-    "jsc": {
-      "parser": {
-        "syntax": "typescript"
-      },
-      "target": "esnext",
-      "loose": false,
-      "externalHelpers": false
+  "$schema": "https://json.schemastore.org/swcrc",
+  "jsc": {
+    "parser": {
+      "syntax": "typescript"
     },
-    "minify": false
-  }
+    "transform": {
+      "legacyDecorator": true,
+      "decoratorMetadata": true
+    },
+    "target": "esnext",
+    "loose": false,
+    "externalHelpers": false,
+    "paths": {
+      "@/*": ["*"]
+    },
+    "baseUrl": "./src"
+  },
+  "minify": false,
+  "module": { "type": "commonjs" }
+}
