@@ -17,6 +17,5 @@
     "baseUrl": "./src"
   },
   "minify": false,
-  "module": { "type": "commonjs" },
-  "exclude": ["node_modules/**/*", "dist/**/*", "src/test/**/*"]
+  "module": { "type": "commonjs" }
 }
