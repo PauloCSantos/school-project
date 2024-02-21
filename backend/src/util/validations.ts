@@ -76,10 +76,14 @@ export function validHour24h(value: string): boolean {
   return regex24h.test(value);
 }
 
-export function validDay(value: string) {
+export function validDay(value: string): boolean {
   return ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].includes(value);
 }
 
-export default function validNote(value: number): boolean {
+export function validNote(value: number): boolean {
   return value >= 0 && value <= 10;
+}
+
+export function isString(value: string): boolean {
+  return typeof value === 'string';
 }
