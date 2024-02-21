@@ -5,6 +5,7 @@ export default class Id {
 
   constructor(id?: string) {
     if (id) {
+      if (typeof id !== 'string') throw new Error('Invalid id');
       this.validate(id);
       this._id = id;
     } else {
@@ -18,7 +19,7 @@ export default class Id {
 
   private validate(id: string): void {
     if (!validId(id)) {
-      throw new Error('ID inválido');
+      throw new Error('Invalid id');
     }
   }
 }
