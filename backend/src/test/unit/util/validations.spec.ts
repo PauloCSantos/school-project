@@ -1,5 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import validNote, {
+import {
   isAlpha,
   isGreaterZero,
   isNotEmpty,
@@ -14,6 +14,8 @@ import validNote, {
   areAllValuesUnique,
   validHour24h,
   validDay,
+  validNote,
+  isString,
 } from '@/util/validations';
 
 describe('Testing validation functions', () => {
@@ -169,6 +171,23 @@ describe('Testing validation functions', () => {
     });
     it('validNote should return true for valid note', () => {
       expect(validNote(10)).toBeTruthy;
+    });
+  });
+
+  describe('Testing isString', () => {
+    it('isString should return false for types other than string', () => {
+      //@ts-expect-error
+      expect(isString(123)).toBeFalsy;
+      //@ts-expect-error
+      expect(isString(undefined)).toBeFalsy;
+      //@ts-expect-error
+      expect(isString(true)).toBeFalsy;
+      //@ts-expect-error
+      expect(isString(new Date())).toBeFalsy;
+    });
+    it('isString should return true for types string', () => {
+      expect(isString('')).toBeTruthy;
+      expect(isString('string')).toBeTruthy;
     });
   });
 });
