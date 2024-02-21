@@ -1,4 +1,9 @@
-import { isNotEmpty, validDate, validEmail } from '@/util/validations';
+import {
+  isNotEmpty,
+  isString,
+  validDate,
+  validEmail,
+} from '@/util/validations';
 import Address from '../value-object/address.value-object';
 import Id from '../../../../@shared/domain/value-object/id.value-object';
 import Name from '../value-object/name.value-object';
@@ -19,9 +24,24 @@ export default abstract class UserBase {
   private _birthday;
 
   constructor(input: UserBaseProps) {
-    if (!input.name || !input.address || !input.email || !input.birthday)
+    if (
+      input.name === undefined ||
+      input.address === undefined ||
+      input.email === undefined ||
+      input.birthday === undefined
+    )
       throw new Error('All fields except Id are mandatory');
-    this._id = input.id || new Id();
+
+    if (input.id) {
+      if (!(input.id instanceof Id)) throw new Error('Invalid id');
+      this._id = input.id;
+    } else {
+      this._id = new Id();
+    }
+
+    if (!(input.name instanceof Name)) throw new Error('Invalid name');
+    if (!(input.address instanceof Address)) throw new Error('Invalid address');
+
     this._name = input.name;
     this._address = input.address;
 
@@ -66,7 +86,7 @@ export default abstract class UserBase {
   }
 
   private validateEmail(input: string): boolean {
-    return isNotEmpty(input) && validEmail(input);
+    return isString(input) && isNotEmpty(input) && validEmail(input);
   }
 
   private validateBirthday(input: Date): boolean {
