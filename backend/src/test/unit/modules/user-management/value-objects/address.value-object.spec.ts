@@ -20,10 +20,11 @@ describe('Address unit test', () => {
         street: 'Main Street',
         city: 'Cityville',
         number: 123,
-        zip: '',
+        zip: undefined,
         avenue: 'Central Avenue',
         state: 'California',
       };
+      //@ts-expect-error
       expect(() => new Address(invalidAddressData)).toThrow(
         'All address fields are mandatory'
       );
@@ -59,7 +60,7 @@ describe('Address unit test', () => {
       );
       //@ts-expect-error
       expect(() => (address.number = updateAddress.number)).toThrow(
-        'The number field must be of numeric type'
+        'The number field was not filled in correctly'
       );
     });
   });

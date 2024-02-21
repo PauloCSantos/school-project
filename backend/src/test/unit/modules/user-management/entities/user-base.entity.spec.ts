@@ -46,7 +46,6 @@ describe('UserBase unit test', () => {
         'Field email is not valid'
       );
     });
-
     it('should throw an error for an invalid birthday', () => {
       const invalidBirthdayProps = {
         ...userBase,
@@ -56,7 +55,6 @@ describe('UserBase unit test', () => {
         'Field birthday is not valid'
       );
     });
-
     it('should throw an error when setting an invalid birthday', () => {
       const user = new UserMock(userBase);
       expect(() => (user.birthday = new Date('2026-01-06'))).toThrow(
