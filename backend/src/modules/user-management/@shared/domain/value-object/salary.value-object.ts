@@ -10,14 +10,19 @@ export default class Salary {
   constructor(input: inputProps) {
     if (input.salary === undefined)
       throw new Error('Field salary is mandatory');
-    if (!isNumeric(input.salary))
-      throw new Error('The salary field must be of numeric type');
-    if (!isGreaterZero(input.salary))
-      throw new Error('Salary must be greater than zero');
-    if (input.currency && !validCurrency(input.currency)) {
-      throw new Error('This currency is not accepted');
+    if (!this.validateSalary(input.salary))
+      throw new Error(
+        'Salary must be greater than zero and be of numeric type'
+      );
+    if (input.currency !== undefined) {
+      if (
+        !(typeof input.currency === 'string') ||
+        !validCurrency(input.currency)
+      )
+        throw new Error('This currency is not accepted');
+      this._currency = input.currency;
     } else {
-      this._currency = input.currency ?? 'R$';
+      this._currency = 'R$';
     }
     this._salary = input.salary;
   }
@@ -43,7 +48,8 @@ export default class Salary {
   }
 
   set currency(value: 'R$' | '€' | '$') {
-    if (!validCurrency(value)) throw new Error('This currency is not accepted');
+    if (!(typeof value === 'string') || !validCurrency(value))
+      throw new Error('This currency is not accepted');
     this._currency = value;
   }
 
