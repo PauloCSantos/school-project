@@ -32,6 +32,12 @@ export default abstract class UserBase {
     )
       throw new Error('All fields except Id are mandatory');
 
+    if (!(input.name instanceof Name)) throw new Error('Invalid name');
+    if (!(input.address instanceof Address)) throw new Error('Invalid address');
+    if (!this.validateBirthday(input.birthday))
+      throw new Error('Field birthday is not valid');
+    if (!this.validateEmail(input.email))
+      throw new Error('Field email is not valid');
     if (input.id) {
       if (!(input.id instanceof Id)) throw new Error('Invalid id');
       this._id = input.id;
@@ -39,18 +45,9 @@ export default abstract class UserBase {
       this._id = new Id();
     }
 
-    if (!(input.name instanceof Name)) throw new Error('Invalid name');
-    if (!(input.address instanceof Address)) throw new Error('Invalid address');
-
     this._name = input.name;
     this._address = input.address;
-
-    if (!this.validateBirthday(input.birthday))
-      throw new Error('Field birthday is not valid');
     this._birthday = input.birthday;
-
-    if (!this.validateEmail(input.email))
-      throw new Error('Field email is not valid');
     this._email = input.email;
   }
 

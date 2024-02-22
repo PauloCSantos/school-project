@@ -12,7 +12,9 @@ export default class UserWorker extends UserBase {
 
   constructor(input: WorkerUserProps) {
     super(input);
-    if (!input.salary) throw new Error('Salary filed is mandatory');
+    if (input.salary === undefined)
+      throw new Error('Salary filed is mandatory');
+    if (!(input.salary instanceof Salary)) throw new Error('Invalid salary');
     this._salary = input.salary;
   }
 
