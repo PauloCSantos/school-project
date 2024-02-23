@@ -1,5 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import validNote, { isNumeric, validId } from '@/util/validations';
+import { isNumeric, validId, validNote } from '@/util/validations';
 
 type NoteProps = {
   id?: Id;
@@ -15,15 +15,24 @@ export default class Note {
   private _note;
 
   constructor(input: NoteProps) {
-    if (!input.evaluation || !input.student || input.note === undefined)
+    if (
+      input.evaluation === undefined ||
+      input.student === undefined ||
+      input.note === undefined
+    )
       throw new Error('All note fields are mandatory');
     if (!validId(input.evaluation))
       throw new Error('Evaluation id is not valid');
     if (!validId(input.student)) throw new Error('Student id is not valid');
     if (!this.validateNote(input.note))
       throw new Error('The note field must be numeric and between 0 and 10');
+    if (input.id) {
+      if (!(input.id instanceof Id)) throw new Error('Invalid id');
+      this._id = input.id;
+    } else {
+      this._id = new Id();
+    }
 
-    this._id = input.id || new Id();
     this._evaluation = input.evaluation;
     this._student = input.student;
     this._note = input.note;

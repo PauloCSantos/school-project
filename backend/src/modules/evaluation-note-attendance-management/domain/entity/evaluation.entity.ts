@@ -1,10 +1,12 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import validNote, {
+import {
   isNotEmpty,
   isNumeric,
   maxLengthInclusive,
   minLength,
+  validNote,
   validId,
+  isString,
 } from '@/util/validations';
 
 type EvaluationProps = {
@@ -24,9 +26,9 @@ export default class Evaluation {
 
   constructor(input: EvaluationProps) {
     if (
-      !input.teacher ||
-      !input.lesson ||
-      !input.type ||
+      input.teacher === undefined ||
+      input.lesson === undefined ||
+      input.type === undefined ||
       input.value === undefined
     )
       throw new Error('All evalutation fields are mandatory');
@@ -37,8 +39,13 @@ export default class Evaluation {
       throw new Error('Type field is not valid');
     if (!this.validateValue(input.value))
       throw new Error('The value field must be numeric and between 0 and 10');
+    if (input.id) {
+      if (!(input.id instanceof Id)) throw new Error('Invalid id');
+      this._id = input.id;
+    } else {
+      this._id = new Id();
+    }
 
-    this._id = input.id || new Id();
     this._teacher = input.teacher;
     this._lesson = input.lesson;
     this._type = input.type;
@@ -81,7 +88,10 @@ export default class Evaluation {
 
   private validateType(value: string): boolean {
     return (
-      isNotEmpty(value) && maxLengthInclusive(value, 100) && minLength(value, 3)
+      isString(value) &&
+      isNotEmpty(value) &&
+      maxLengthInclusive(value, 100) &&
+      minLength(value, 3)
     );
   }
   private validateValue(input: number): boolean {
