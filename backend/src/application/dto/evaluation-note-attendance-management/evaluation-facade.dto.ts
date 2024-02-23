@@ -2,6 +2,7 @@ export interface FindEvaluationInputDto {
   id: string;
 }
 export interface FindEvaluationOutputDto {
+  id: string;
   teacher: string;
   lesson: string;
   type: string;
@@ -14,6 +15,7 @@ export interface FindAllEvaluationInputDto {
 }
 export interface FindAllEvaluationOutputDto
   extends Array<{
+    id: string;
     teacher: string;
     lesson: string;
     type: string;
@@ -38,6 +40,7 @@ export interface UpdateEvaluationInputDto {
   value?: number;
 }
 export interface UpdateEvaluationOutputDto {
+  id: string;
   teacher: string;
   lesson: string;
   type: string;

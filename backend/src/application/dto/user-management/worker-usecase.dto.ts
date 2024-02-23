@@ -2,6 +2,7 @@ export interface FindUserWorkerInputDto {
   id: string;
 }
 export interface FindUserWorkerOutputDto {
+  id: string;
   name: { fullName: string; shortName: string };
   address: {
     street: string;
@@ -22,6 +23,7 @@ export interface FindAllUserWorkerInputDto {
 }
 export interface FindAllUserWorkerOutputDto
   extends Array<{
+    id: string;
     name: { fullName: string; shortName: string };
     address: {
       street: string;
@@ -70,6 +72,7 @@ export interface UpdateUserWorkerInputDto {
   salary?: { salary?: number; currency?: 'R$' | '€' | '$' };
 }
 export interface UpdateUserWorkerOutputDto {
+  id: string;
   name: { fullName: string; shortName: string };
   address: {
     street: string;

@@ -2,6 +2,7 @@ export interface FindUserAdministratorInputDto {
   id: string;
 }
 export interface FindUserAdministratorOutputDto {
+  id: string;
   name: { fullName: string; shortName: string };
   address: {
     street: string;
@@ -23,6 +24,7 @@ export interface FindAllUserAdministratorInputDto {
 }
 export interface FindAllUserAdministratorOutputDto
   extends Array<{
+    id: string;
     name: { fullName: string; shortName: string };
     address: {
       street: string;
@@ -74,6 +76,7 @@ export interface UpdateUserAdministratorInputDto {
   graduation?: string;
 }
 export interface UpdateUserAdministratorOutputDto {
+  id: string;
   name: { fullName: string; shortName: string };
   address: {
     street: string;

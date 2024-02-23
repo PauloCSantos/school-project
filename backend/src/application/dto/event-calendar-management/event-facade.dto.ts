@@ -2,6 +2,7 @@ export interface FindEventInputDto {
   id: string;
 }
 export interface FindEventOutputDto {
+  id: string;
   creator: string;
   name: string;
   date: Date;
@@ -17,6 +18,7 @@ export interface FindAllEventInputDto {
 }
 export interface FindAllEventOutputDto
   extends Array<{
+    id: string;
     creator: string;
     name: string;
     date: Date;
@@ -50,6 +52,7 @@ export interface UpdateEventInputDto {
   place?: string;
 }
 export interface UpdateEventOutputDto {
+  id: string;
   creator: string;
   name: string;
   date: Date;
