@@ -21,6 +21,7 @@ export default class FindAllSchedule
     const results = await this._scheduleRepository.findAll(offset, quantity);
 
     const result = results.map(schedule => ({
+      id: schedule.id.id,
       student: schedule.student,
       curriculum: schedule.curriculum,
       lessonsList: schedule.lessonsList,

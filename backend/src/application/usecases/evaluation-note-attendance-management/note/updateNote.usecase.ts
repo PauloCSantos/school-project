@@ -29,6 +29,7 @@ export default class UpdateNote
       const result = await this._noteRepository.update(noteInstance);
 
       return {
+        id: result.id.id,
         evaluation: result.evaluation,
         note: result.note,
         student: result.student,

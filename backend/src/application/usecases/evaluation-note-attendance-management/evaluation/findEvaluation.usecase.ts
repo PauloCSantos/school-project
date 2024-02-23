@@ -23,6 +23,7 @@ export default class FindEvaluation
     const response = await this._evaluationRepository.find(id);
     if (response) {
       return {
+        id: response.id.id,
         teacher: response.teacher,
         lesson: response.lesson,
         type: response.type,

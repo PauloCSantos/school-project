@@ -49,6 +49,7 @@ export default class UpdateUserWorker
       const result = await this._userWorkerRepository.update(userAdm);
 
       return {
+        id: result.id.id,
         name: {
           fullName: result.name.fullName(),
           shortName: result.name.shortName(),

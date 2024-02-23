@@ -29,6 +29,7 @@ export default class UpdateCurriculum
       const result = await this._curriculumRepository.update(curriculum);
 
       return {
+        id: result.id.id,
         name: result.name,
         yearsToComplete: result.yearsToComplete,
       };

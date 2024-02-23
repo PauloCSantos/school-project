@@ -49,6 +49,7 @@ export default class UpdateUserMaster
       const result = await this._userMasterRepository.update(userMaster);
 
       return {
+        id: result.id.id,
         name: {
           fullName: result.name.fullName(),
           shortName: result.name.shortName(),

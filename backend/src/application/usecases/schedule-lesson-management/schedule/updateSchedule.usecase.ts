@@ -25,6 +25,7 @@ export default class UpdateSchedule
       const result = await this._scheduleRepository.update(schedule);
 
       return {
+        id: result.id.id,
         curriculum: result.curriculum,
       };
     } catch (error) {
