@@ -132,6 +132,10 @@ describe('Testing validation functions', () => {
     it('validId should return false for invalid id', () => {
       expect(validId('invalidID')).toBeFalsy;
     });
+    it('validId should return false for invalid id', () => {
+      //@ts-expect-error
+      expect(validId(123)).toBeFalsy;
+    });
     it('validId should return true for valid id', () => {
       expect(validId(new Id().id)).toBeTruthy;
     });
@@ -156,10 +160,22 @@ describe('Testing validation functions', () => {
   });
 
   describe('Testing validDay', () => {
-    it('validDay should return false for invalid hour', () => {
+    it('validDay should return false for invalid day', () => {
       expect(validDay('sunday')).toBeFalsy;
     });
-    it('validDay should return true for valid hour', () => {
+    it('validDay should return false for invalid day', () => {
+      //@ts-expect-error
+      expect(validDay(1)).toBeFalsy;
+    });
+    it('validDay should return false for invalid day', () => {
+      //@ts-expect-error
+      expect(validDay(false)).toBeFalsy;
+    });
+    it('validDay should return false for invalid day', () => {
+      //@ts-expect-error
+      expect(validDay(undefined)).toBeFalsy;
+    });
+    it('validDay should return true for valid day', () => {
       expect(validDay('sun')).toBeTruthy;
     });
   });
@@ -168,6 +184,8 @@ describe('Testing validation functions', () => {
     it('validNote should return false for invalid note', () => {
       expect(validNote(11)).toBeFalsy;
       expect(validNote(-1)).toBeFalsy;
+      //@ts-expect-error
+      expect(validNote('asd')).toBeFalsy;
     });
     it('validNote should return true for valid note', () => {
       expect(validNote(10)).toBeTruthy;
