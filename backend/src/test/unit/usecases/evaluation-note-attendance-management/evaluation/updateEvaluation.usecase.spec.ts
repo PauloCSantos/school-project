@@ -55,6 +55,7 @@ describe('updateEvaluation usecase unit test', () => {
       expect(evaluationRepository.update).toHaveBeenCalled();
       expect(evaluationRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
+        id: evaluation1.id.id,
         lesson: input.lesson,
         teacher: input.teacher,
         type: input.type,

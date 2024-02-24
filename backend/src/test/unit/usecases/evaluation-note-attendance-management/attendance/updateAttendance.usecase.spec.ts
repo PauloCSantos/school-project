@@ -53,6 +53,7 @@ describe('updateAttendance usecase unit test', () => {
       expect(attendanceRepository.update).toHaveBeenCalled();
       expect(attendanceRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
+        id: attendance.id.id,
         date: result.date,
         day: result.day,
         hour: result.hour,

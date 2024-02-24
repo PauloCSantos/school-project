@@ -60,6 +60,7 @@ describe('updateEvent usecase unit test', () => {
       expect(eventRepository.update).toHaveBeenCalled();
       expect(eventRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
+        id: event1.id.id,
         creator: result.creator,
         name: result.name,
         date: result.date,

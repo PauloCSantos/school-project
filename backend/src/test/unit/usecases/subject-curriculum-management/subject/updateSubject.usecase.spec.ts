@@ -50,6 +50,7 @@ describe('updateSubject usecase unit test', () => {
       expect(subjectRepository.update).toHaveBeenCalled();
       expect(subjectRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
+        id: subject1.id.id,
         name: input.name,
         description: subject1.description,
       });
