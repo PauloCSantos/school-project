@@ -172,10 +172,10 @@ describe('User management module end to end test', () => {
 
   describe('User administrator', () => {
     describe('On error', () => {
-      describe('POST /user-administrators', () => {
+      describe('POST /user-administrator', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
           const response = await supertest(app)
-            .post('/user-administrators')
+            .post('/user-administrator')
             .send({
               name: {
                 firstName: '',
@@ -200,10 +200,10 @@ describe('User management module end to end test', () => {
           expect(response.body.error).toBeDefined();
         });
       });
-      describe('GET /user-administrators/:id', () => {
+      describe('GET /user-administrator/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await supertest(app)
-            .post('/user-administrators')
+            .post('/user-administrator')
             .send({
               name: {
                 firstName: 'John',
@@ -225,16 +225,16 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
             });
           const userAdministrator = await supertest(app).get(
-            `/user-administrators/123`
+            `/user-administrator/123`
           );
-          expect(userAdministrator.status).toBe(200);
-          expect(userAdministrator.body).toBe('');
+          expect(userAdministrator.status).toBe(400);
+          expect(userAdministrator.body.error).toBeDefined;
         });
       });
-      describe('PATCH /user-administrators/:id', () => {
+      describe('PATCH /user-administrator/:id', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
-            .post('/user-administrators')
+            .post('/user-administrator')
             .send({
               name: {
                 firstName: 'John',
@@ -257,7 +257,7 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-administrators/${id}`)
+            .patch(`/user-administrator/${id}`)
             .send({
               address: {
                 zip: '',
@@ -268,10 +268,10 @@ describe('User management module end to end test', () => {
           expect(updatedUser.body.error).toBeDefined();
         });
       });
-      describe('DELETE /user-administrators/:id', () => {
+      describe('DELETE /user-administrator/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
           await supertest(app)
-            .post('/user-administrators')
+            .post('/user-administrator')
             .send({
               name: {
                 firstName: 'John',
@@ -292,19 +292,17 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
             });
-          const result = await supertest(app).delete(
-            `/user-administrators/123`
-          );
-          expect(result.status).toBe(404);
+          const result = await supertest(app).delete(`/user-administrator/123`);
+          expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined;
         });
       });
     });
     describe('On sucess', () => {
-      describe('POST /user-administrators', () => {
+      describe('POST /user-administrator', () => {
         it('should create a user', async () => {
           const response = await supertest(app)
-            .post('/user-administrators')
+            .post('/user-administrator')
             .send({
               name: {
                 firstName: 'John',
@@ -329,10 +327,10 @@ describe('User management module end to end test', () => {
           expect(response.body.id).toBeDefined();
         });
       });
-      describe('GET /user-administrators/:id', () => {
+      describe('GET /user-administrator/:id', () => {
         it('should find a user by ID', async () => {
           const response = await supertest(app)
-            .post('/user-administrators')
+            .post('/user-administrator')
             .send({
               name: {
                 firstName: 'John',
@@ -355,7 +353,7 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const userAdministrator = await supertest(app).get(
-            `/user-administrators/${id}`
+            `/user-administrator/${id}`
           );
           expect(userAdministrator.status).toBe(200);
           expect(userAdministrator.body).toBeDefined();
@@ -364,7 +362,7 @@ describe('User management module end to end test', () => {
       describe('GET /user-administrators/', () => {
         it('should find all users', async () => {
           await supertest(app)
-            .post('/user-administrators')
+            .post('/user-administrator')
             .send({
               name: {
                 firstName: 'John',
@@ -386,7 +384,7 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
             });
           await supertest(app)
-            .post('/user-administrators')
+            .post('/user-administrator')
             .send({
               name: {
                 firstName: 'Marie',
@@ -413,10 +411,10 @@ describe('User management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /user-administrators/:id', () => {
+      describe('PATCH /user-administrator/:id', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
-            .post('/user-administrators')
+            .post('/user-administrator')
             .send({
               name: {
                 firstName: 'John',
@@ -439,7 +437,7 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-administrators/${id}`)
+            .patch(`/user-administrator/${id}`)
             .send({
               address: {
                 street: 'Street B',
@@ -455,10 +453,10 @@ describe('User management module end to end test', () => {
           expect(updatedUser.body).toBeDefined();
         });
       });
-      describe('DELETE /user-administrators/:id', () => {
+      describe('DELETE /user-administrator/:id', () => {
         it('should delete a user by ID', async () => {
           const response = await supertest(app)
-            .post('/user-administrators')
+            .post('/user-administrator')
             .send({
               name: {
                 firstName: 'John',
@@ -481,7 +479,7 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const result = await supertest(app).delete(
-            `/user-administrators/${id}`
+            `/user-administrator/${id}`
           );
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
