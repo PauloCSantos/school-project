@@ -1,9 +1,6 @@
-import {
-  CreateUserAdministratorInputDto,
-  UpdateUserAdministratorInputDto,
-} from '@/application/dto/user-management/administrator-usecase.dto';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { UserAdministratorController } from '@/interface/controller/user-management/user-administrator.controller';
+import { validId } from '@/util/validations';
 export class UserAdministratorRoute {
   constructor(
     private readonly userAdministratorController: UserAdministratorController,
@@ -14,18 +11,18 @@ export class UserAdministratorRoute {
     this.expressInstance.get('/user-administrators', (req: any, res: any) =>
       this.findAllUserAdministrators(req, res)
     );
-    this.expressInstance.post('/user-administrators', (req: any, res: any) =>
+    this.expressInstance.post('/user-administrator', (req: any, res: any) =>
       this.createUserAdministrator(req, res)
     );
-    this.expressInstance.get('/user-administrators/:id', (req: any, res: any) =>
+    this.expressInstance.get('/user-administrator/:id', (req: any, res: any) =>
       this.findUserAdministrator(req, res)
     );
     this.expressInstance.patch(
-      '/user-administrators/:id',
+      '/user-administrator/:id',
       (req: any, res: any) => this.updateUserAdministrator(req, res)
     );
     this.expressInstance.delete(
-      '/user-administrators/:id',
+      '/user-administrator/:id',
       (req: any, res: any) => this.deleteUserAdministrator(req, res)
     );
   }
@@ -33,11 +30,17 @@ export class UserAdministratorRoute {
   private async findAllUserAdministrators(req: any, res: any): Promise<void> {
     try {
       const { quantity, offset } = req.body;
-      const response = await this.userAdministratorController.findAll({
-        quantity,
-        offset,
-      });
-      res.status(200).json(response);
+      if (!this.validateFindAll(quantity, offset)) {
+        res
+          .status(400)
+          .json({ error: 'Quantity e/ou offset estão incorretos' });
+      } else {
+        const response = await this.userAdministratorController.findAll({
+          quantity,
+          offset,
+        });
+        res.status(200).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -48,12 +51,16 @@ export class UserAdministratorRoute {
   }
   private async createUserAdministrator(req: any, res: any): Promise<void> {
     try {
-      const input = req.body as CreateUserAdministratorInputDto;
-      const response = await this.userAdministratorController.create({
-        ...input,
-        birthday: new Date(input.birthday),
-      });
-      res.status(201).json(response);
+      const input = req.body;
+      if (this.validateCreate(input)) {
+        res.status(400).json({ error: 'Todos os campos sao obrigatorios' });
+      } else {
+        const response = await this.userAdministratorController.create({
+          ...input,
+          birthday: new Date(input.birthday),
+        });
+        res.status(201).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -65,9 +72,12 @@ export class UserAdministratorRoute {
   private async findUserAdministrator(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
-      const input = { id };
-      const response = await this.userAdministratorController.find(input);
-      res.status(200).json(response);
+      if (!this.validFind(id)) {
+        res.status(400).json({ error: 'Id invalido' });
+      } else {
+        const response = await this.userAdministratorController.find({ id });
+        res.status(200).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(404).json({ error: error.message });
@@ -79,11 +89,19 @@ export class UserAdministratorRoute {
   private async updateUserAdministrator(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
-      const input: UpdateUserAdministratorInputDto = req.body;
-      input.id = id;
-      input.birthday ? (input.birthday = new Date(input.birthday)) : undefined;
-      const response = await this.userAdministratorController.update(input);
-      res.status(200).json(response);
+      const input = req.body;
+      if (!this.validUpdate(id, input)) {
+        res
+          .status(400)
+          .json({ error: 'Nenhum valor recebedio para atualizar' });
+      } else {
+        input.id = id;
+        input.birthday
+          ? (input.birthday = new Date(input.birthday))
+          : undefined;
+        const response = await this.userAdministratorController.update(input);
+        res.status(200).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -95,9 +113,12 @@ export class UserAdministratorRoute {
   private async deleteUserAdministrator(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
-      const input = { id };
-      const response = await this.userAdministratorController.delete(input);
-      res.status(200).json(response);
+      if (!this.validDelete(id)) {
+        res.status(400).json({ error: 'Id invalido' });
+      } else {
+        const response = await this.userAdministratorController.delete({ id });
+        res.status(200).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(404).json({ error: error.message });
@@ -105,5 +126,66 @@ export class UserAdministratorRoute {
         res.status(500).json({ error: 'Erro interno do servidor' });
       }
     }
+  }
+  private validateFindAll(
+    quantity: number | undefined,
+    offset: number | undefined
+  ): boolean {
+    if (
+      quantity === undefined ||
+      (typeof quantity === 'number' &&
+        isNaN(quantity) &&
+        offset === undefined) ||
+      (typeof offset === 'number' && isNaN(offset))
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  private validateCreate(input: any): boolean {
+    const {
+      name: { firstName, lastName },
+      address: { street, city, zip, number, avenue, state },
+      email,
+      birthday,
+      salary: { salary, currency },
+      graduation,
+    } = input;
+
+    if (
+      firstName === undefined ||
+      lastName === undefined ||
+      street === undefined ||
+      city === undefined ||
+      zip === undefined ||
+      number === undefined ||
+      avenue === undefined ||
+      state === undefined ||
+      email === undefined ||
+      birthday === undefined ||
+      salary === undefined ||
+      currency === undefined ||
+      graduation === undefined
+    ) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+  private validFind(id: any): boolean {
+    return validId(id);
+  }
+  private validUpdate(id: any, input: any): boolean {
+    if (!validId(id)) return false;
+    for (const value of Object.values(input)) {
+      if (value !== undefined) {
+        return true;
+      }
+    }
+    return false;
+  }
+  private validDelete(id: any): boolean {
+    return validId(id);
   }
 }
