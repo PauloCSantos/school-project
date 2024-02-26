@@ -52,7 +52,7 @@ export class UserAdministratorRoute {
   private async createUserAdministrator(req: any, res: any): Promise<void> {
     try {
       const input = req.body;
-      if (this.validateCreate(input)) {
+      if (!this.validateCreate(input)) {
         res.status(400).json({ error: 'Todos os campos sao obrigatorios' });
       } else {
         const response = await this.userAdministratorController.create({
@@ -91,9 +91,7 @@ export class UserAdministratorRoute {
       const { id } = req.params;
       const input = req.body;
       if (!this.validUpdate(id, input)) {
-        res
-          .status(400)
-          .json({ error: 'Nenhum valor recebedio para atualizar' });
+        res.status(400).json({ error: 'Id e/ou input incorretos' });
       } else {
         input.id = id;
         input.birthday
@@ -149,7 +147,7 @@ export class UserAdministratorRoute {
       address: { street, city, zip, number, avenue, state },
       email,
       birthday,
-      salary: { salary, currency },
+      salary: { salary },
       graduation,
     } = input;
 
@@ -165,7 +163,6 @@ export class UserAdministratorRoute {
       email === undefined ||
       birthday === undefined ||
       salary === undefined ||
-      currency === undefined ||
       graduation === undefined
     ) {
       return false;
