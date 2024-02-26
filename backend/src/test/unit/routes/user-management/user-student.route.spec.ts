@@ -93,10 +93,10 @@ describe('UserStudentRoute unit test', () => {
   userStudentRoute.routes();
   const app = expressHttp.getExpressInstance();
 
-  describe('POST /user-students', () => {
+  describe('POST /user-student', () => {
     it('should create a user', async () => {
       const response = await supertest(app)
-        .post('/user-students')
+        .post('/user-student')
         .send({
           name: {
             firstName: 'John',
@@ -119,9 +119,9 @@ describe('UserStudentRoute unit test', () => {
       expect(response.body.id).toBeDefined();
     });
   });
-  describe('GET /user-students/:id', () => {
+  describe('GET /user-student/:id', () => {
     it('should find a user by ID', async () => {
-      const response = await supertest(app).get('/user-students/123');
+      const response = await supertest(app).get(`/user-student/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(userStudentController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -136,10 +136,10 @@ describe('UserStudentRoute unit test', () => {
       expect(response.body.length).toBe(2);
     });
   });
-  describe('PATCH /user-students/:id', () => {
+  describe('PATCH /user-student/:id', () => {
     it('should update a user by ID', async () => {
       const response = await supertest(app)
-        .patch('/user-students/123')
+        .patch(`/user-student/${new Id().id}`)
         .send({
           address: {
             street: 'Street B',
@@ -155,9 +155,11 @@ describe('UserStudentRoute unit test', () => {
       expect(response.body).toBeDefined();
     });
   });
-  describe('DELETE /user-students/:id', () => {
+  describe('DELETE /user-student/:id', () => {
     it('should delete a user by ID', async () => {
-      const response = await supertest(app).delete('/user-students/123');
+      const response = await supertest(app).delete(
+        `/user-student/${new Id().id}`
+      );
       expect(response.status).toBe(200);
       expect(userStudentController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
