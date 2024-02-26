@@ -54,10 +54,10 @@ describe('UserMasterRoute unit test', () => {
   userMasterRoute.routes();
   const app = expressHttp.getExpressInstance();
 
-  describe('POST /user-masters', () => {
+  describe('POST /user-master', () => {
     it('should create a user', async () => {
       const response = await supertest(app)
-        .post('/user-masters')
+        .post('/user-master')
         .send({
           name: {
             firstName: 'John',
@@ -80,18 +80,18 @@ describe('UserMasterRoute unit test', () => {
       expect(response.body.id).toBeDefined();
     });
   });
-  describe('GET /user-masters/:id', () => {
+  describe('GET /user-master/:id', () => {
     it('should find a user by ID', async () => {
-      const response = await supertest(app).get('/user-masters/123');
+      const response = await supertest(app).get(`/user-master/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(userMasterController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
     });
   });
-  describe('PATCH /user-masters/:id', () => {
+  describe('PATCH /user-master/:id', () => {
     it('should update a user by ID', async () => {
       const response = await supertest(app)
-        .patch('/user-masters/123')
+        .patch(`/user-master/${new Id().id}`)
         .send({
           address: {
             street: 'Street B',
