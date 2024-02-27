@@ -62,15 +62,15 @@ describe('CurriculumRoute unit test', () => {
   });
   describe('GET /curriculum/:id', () => {
     it('should find a curriculum by ID', async () => {
-      const response = await supertest(app).get('/curriculum/123');
+      const response = await supertest(app).get(`/curriculum/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(curriculumController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
     });
   });
-  describe('GET /curriculum/', () => {
+  describe('GET /curriculums/', () => {
     it('should find all curriculums', async () => {
-      const response = await supertest(app).get('/curriculum');
+      const response = await supertest(app).get('/curriculums');
       expect(response.status).toBe(200);
       expect(curriculumController.findAll).toHaveBeenCalled();
       expect(response.body).toBeDefined;
@@ -79,9 +79,11 @@ describe('CurriculumRoute unit test', () => {
   });
   describe('PATCH /curriculum/:id', () => {
     it('should update a curriculum by ID', async () => {
-      const response = await supertest(app).patch('/curriculum/123').send({
-        yearsToComplete: 6,
-      });
+      const response = await supertest(app)
+        .patch(`/curriculum/${new Id().id}`)
+        .send({
+          yearsToComplete: 6,
+        });
       expect(response.status).toBe(200);
       expect(curriculumController.update).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -89,7 +91,9 @@ describe('CurriculumRoute unit test', () => {
   });
   describe('DELETE /curriculum/:id', () => {
     it('should delete a curriculum by ID', async () => {
-      const response = await supertest(app).delete('/curriculum/123');
+      const response = await supertest(app).delete(
+        `/curriculum/${new Id().id}`
+      );
       expect(response.status).toBe(200);
       expect(curriculumController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
