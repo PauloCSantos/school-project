@@ -1,11 +1,6 @@
 import { CurriculumController } from '@/interface/controller/subject-curriculum-management/curriculum.controller';
-import {
-  AddSubjectsInputDto,
-  CreateCurriculumInputDto,
-  RemoveSubjectsInputDto,
-  UpdateCurriculumInputDto,
-} from '@/application/dto/subject-curriculum-management/curriculum-usecase.dto';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
+import { validId } from '@/util/validations';
 
 export class CurriculumRoute {
   constructor(
@@ -14,7 +9,7 @@ export class CurriculumRoute {
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/curriculum', (req: any, res: any) =>
+    this.httpGateway.get('/curriculums', (req: any, res: any) =>
       this.findAllCurriculums(req, res)
     );
     this.httpGateway.post('/curriculum', (req: any, res: any) =>
@@ -40,11 +35,17 @@ export class CurriculumRoute {
   private async findAllCurriculums(req: any, res: any): Promise<void> {
     try {
       const { quantity, offset } = req.body;
-      const response = await this.curriculumController.findAll({
-        quantity,
-        offset,
-      });
-      res.status(200).json(response);
+      if (!this.validateFindAll(quantity, offset)) {
+        res
+          .status(400)
+          .json({ error: 'Quantity e/ou offset estão incorretos' });
+      } else {
+        const response = await this.curriculumController.findAll({
+          quantity,
+          offset,
+        });
+        res.status(200).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -55,9 +56,13 @@ export class CurriculumRoute {
   }
   private async createCurriculum(req: any, res: any): Promise<void> {
     try {
-      const input = req.body as CreateCurriculumInputDto;
-      const response = await this.curriculumController.create(input);
-      res.status(201).json(response);
+      const input = req.body;
+      if (!this.validateCreate(input)) {
+        res.status(400).json({ error: 'Todos os campos sao obrigatorios' });
+      } else {
+        const response = await this.curriculumController.create(input);
+        res.status(201).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -69,9 +74,12 @@ export class CurriculumRoute {
   private async findCurriculum(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
-      const input = { id };
-      const response = await this.curriculumController.find(input);
-      res.status(200).json(response);
+      if (!this.validFind(id)) {
+        res.status(400).json({ error: 'Id invalido' });
+      } else {
+        const response = await this.curriculumController.find({ id });
+        res.status(200).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(404).json({ error: error.message });
@@ -83,10 +91,14 @@ export class CurriculumRoute {
   private async updateCurriculum(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
-      const input: UpdateCurriculumInputDto = req.body;
-      input.id = id;
-      const response = await this.curriculumController.update(input);
-      res.status(200).json(response);
+      const input = req.body;
+      if (!this.validUpdate(id, input)) {
+        res.status(400).json({ error: 'Id e/ou input incorretos' });
+      } else {
+        input.id = id;
+        const response = await this.curriculumController.update(input);
+        res.status(200).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -98,9 +110,12 @@ export class CurriculumRoute {
   private async deleteCurriculum(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
-      const input = { id };
-      const response = await this.curriculumController.delete(input);
-      res.status(200).json(response);
+      if (!this.validDelete(id)) {
+        res.status(400).json({ error: 'Id invalido' });
+      } else {
+        const response = await this.curriculumController.delete({ id });
+        res.status(200).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -111,9 +126,13 @@ export class CurriculumRoute {
   }
   private async addSubjects(req: any, res: any): Promise<void> {
     try {
-      const input = req.body as AddSubjectsInputDto;
-      const response = await this.curriculumController.addSubjects(input);
-      res.status(201).json(response);
+      const input = req.body;
+      if (!this.validAdd(input)) {
+        res.status(400).json({ error: 'Dados invalidos' });
+      } else {
+        const response = await this.curriculumController.addSubjects(input);
+        res.status(201).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -124,9 +143,13 @@ export class CurriculumRoute {
   }
   private async removeSubjects(req: any, res: any): Promise<void> {
     try {
-      const input = req.body as RemoveSubjectsInputDto;
-      const response = await this.curriculumController.removeSubjects(input);
-      res.status(201).json(response);
+      const input = req.body;
+      if (!this.validRemove(input)) {
+        res.status(400).json({ error: 'Dados invalidos' });
+      } else {
+        const response = await this.curriculumController.removeSubjects(input);
+        res.status(201).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -134,5 +157,58 @@ export class CurriculumRoute {
         res.status(500).json({ error: 'Erro interno do servidor' });
       }
     }
+  }
+  private validateFindAll(
+    quantity: number | undefined,
+    offset: number | undefined
+  ): boolean {
+    if (
+      quantity === undefined ||
+      (typeof quantity === 'number' &&
+        isNaN(quantity) &&
+        offset === undefined) ||
+      (typeof offset === 'number' && isNaN(offset))
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  private validateCreate(input: any): boolean {
+    const { name, subjectsList, yearsToComplete } = input;
+
+    if (
+      name === undefined ||
+      subjectsList === undefined ||
+      yearsToComplete === undefined
+    ) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+  private validFind(id: any): boolean {
+    return validId(id);
+  }
+  private validUpdate(id: any, input: any): boolean {
+    if (!validId(id)) return false;
+    for (const value of Object.values(input)) {
+      if (value !== undefined) {
+        return true;
+      }
+    }
+    return false;
+  }
+  private validDelete(id: any): boolean {
+    return validId(id);
+  }
+  private validAdd(input: any): boolean {
+    if (!validId(input.id) || input.newSubjectsList === undefined) return false;
+    return true;
+  }
+  private validRemove(input: any): boolean {
+    if (!validId(input.id) || input.subjectsListToRemove === undefined)
+      return false;
+    return true;
   }
 }
