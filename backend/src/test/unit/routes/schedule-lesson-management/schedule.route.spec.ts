@@ -59,15 +59,15 @@ describe('scheduleRoute unit test', () => {
   });
   describe('GET /schedule/:id', () => {
     it('should find a schedule by ID', async () => {
-      const response = await supertest(app).get('/schedule/123');
+      const response = await supertest(app).get(`/schedule/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(scheduleController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
     });
   });
-  describe('GET /schedule/', () => {
+  describe('GET /schedules/', () => {
     it('should find all schedules', async () => {
-      const response = await supertest(app).get('/schedule');
+      const response = await supertest(app).get('/schedules');
       expect(response.status).toBe(200);
       expect(scheduleController.findAll).toHaveBeenCalled();
       expect(response.body).toBeDefined;
@@ -76,9 +76,11 @@ describe('scheduleRoute unit test', () => {
   });
   describe('PATCH /schedule/:id', () => {
     it('should update a schedule by ID', async () => {
-      const response = await supertest(app).patch('/schedule/123').send({
-        curriculum: new Id().id,
-      });
+      const response = await supertest(app)
+        .patch(`/schedule/${new Id().id}`)
+        .send({
+          curriculum: new Id().id,
+        });
       expect(response.status).toBe(200);
       expect(scheduleController.update).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -86,7 +88,7 @@ describe('scheduleRoute unit test', () => {
   });
   describe('DELETE /schedule/:id', () => {
     it('should delete a schedule by ID', async () => {
-      const response = await supertest(app).delete('/schedule/123');
+      const response = await supertest(app).delete(`/schedule/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(scheduleController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;

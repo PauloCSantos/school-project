@@ -86,15 +86,15 @@ describe('LessonRoute unit test', () => {
   });
   describe('GET /lesson/:id', () => {
     it('should find a lesson by ID', async () => {
-      const response = await supertest(app).get('/lesson/123');
+      const response = await supertest(app).get(`/lesson/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(lessonController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
     });
   });
-  describe('GET /lesson/', () => {
+  describe('GET /lessons/', () => {
     it('should find all lessons', async () => {
-      const response = await supertest(app).get('/lesson');
+      const response = await supertest(app).get('/lessons');
       expect(response.status).toBe(200);
       expect(lessonController.findAll).toHaveBeenCalled();
       expect(response.body).toBeDefined;
@@ -103,9 +103,11 @@ describe('LessonRoute unit test', () => {
   });
   describe('PATCH /lesson/:id', () => {
     it('should update a lesson by ID', async () => {
-      const response = await supertest(app).patch('/lesson/123').send({
-        duration: 50,
-      });
+      const response = await supertest(app)
+        .patch(`/lesson/${new Id().id}`)
+        .send({
+          duration: 50,
+        });
       expect(response.status).toBe(200);
       expect(lessonController.update).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -113,7 +115,7 @@ describe('LessonRoute unit test', () => {
   });
   describe('DELETE /lesson/:id', () => {
     it('should delete a lesson by ID', async () => {
-      const response = await supertest(app).delete('/lesson/123');
+      const response = await supertest(app).delete(`/lesson/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(lessonController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
@@ -151,7 +153,7 @@ describe('LessonRoute unit test', () => {
         .post('/lesson/add/day')
         .send({
           id: new Id().id,
-          newDayList: ['sun'],
+          newDaysList: ['sun'],
         });
       expect(response.status).toBe(201);
       expect(lessonController.addDay).toHaveBeenCalled();
@@ -164,7 +166,7 @@ describe('LessonRoute unit test', () => {
         .post('/lesson/remove/day')
         .send({
           id: new Id().id,
-          dayListToRemove: ['mon', 'fri'],
+          daysListToRemove: ['mon', 'fri'],
         });
       expect(response.status).toBe(201);
       expect(lessonController.removeDay).toHaveBeenCalled();
@@ -177,7 +179,7 @@ describe('LessonRoute unit test', () => {
         .post('/lesson/add/time')
         .send({
           id: new Id().id,
-          newTimeList: ['22:00'],
+          newTimesList: ['22:00'],
         });
       expect(response.status).toBe(201);
       expect(lessonController.addTime).toHaveBeenCalled();
@@ -190,7 +192,7 @@ describe('LessonRoute unit test', () => {
         .post('/lesson/remove/time')
         .send({
           id: new Id().id,
-          timeListToRemove: ['13:00', '19:00'],
+          timesListToRemove: ['13:00', '19:00'],
         });
       expect(response.status).toBe(201);
       expect(lessonController.removeTime).toHaveBeenCalled();
