@@ -69,8 +69,8 @@ describe('Event calendar management module end to end test', () => {
               place: 'school',
             });
           const event = await supertest(app).get(`/event/123`);
-          expect(event.status).toBe(200);
-          expect(event.body).toBe('');
+          expect(event.status).toBe(400);
+          expect(event.body.error).toBeDefined;
         });
       });
       describe('PATCH /event/:id', () => {
@@ -150,7 +150,7 @@ describe('Event calendar management module end to end test', () => {
           expect(event.body).toBeDefined();
         });
       });
-      describe('GET /event/', () => {
+      describe('GET /events/', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/event')
@@ -174,7 +174,7 @@ describe('Event calendar management module end to end test', () => {
               type: 'event',
               place: 'school',
             });
-          const response = await supertest(app).get('/event');
+          const response = await supertest(app).get('/events');
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined;
           expect(response.body.length).toBe(2);
