@@ -56,15 +56,15 @@ describe('NoteRoute unit test', () => {
   });
   describe('GET/note/:id', () => {
     it('should find a note by ID', async () => {
-      const response = await supertest(app).get('/note/123');
+      const response = await supertest(app).get(`/note/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(noteController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
     });
   });
-  describe('GET/note/', () => {
+  describe('GET/notes/', () => {
     it('should find all notes', async () => {
-      const response = await supertest(app).get('/note');
+      const response = await supertest(app).get('/notes');
       expect(response.status).toBe(200);
       expect(noteController.findAll).toHaveBeenCalled();
       expect(response.body).toBeDefined;
@@ -73,7 +73,7 @@ describe('NoteRoute unit test', () => {
   });
   describe('PATCH/note/:id', () => {
     it('should update a note by ID', async () => {
-      const response = await supertest(app).patch('/note/123').send({
+      const response = await supertest(app).patch(`/note/${new Id().id}`).send({
         description: 'New description',
       });
       expect(response.status).toBe(200);
@@ -83,7 +83,7 @@ describe('NoteRoute unit test', () => {
   });
   describe('DELETE/note/:id', () => {
     it('should delete a note by ID', async () => {
-      const response = await supertest(app).delete('/note/123');
+      const response = await supertest(app).delete(`/note/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(noteController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
