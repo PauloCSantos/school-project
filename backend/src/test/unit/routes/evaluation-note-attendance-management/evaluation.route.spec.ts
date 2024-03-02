@@ -64,15 +64,15 @@ describe('EvaluationRoute unit test', () => {
   });
   describe('GET /evaluation/:id', () => {
     it('should find a evaluation by ID', async () => {
-      const response = await supertest(app).get('/evaluation/123');
+      const response = await supertest(app).get(`/evaluation/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(evaluationController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
     });
   });
-  describe('GET /evaluation/', () => {
+  describe('GET /evaluations/', () => {
     it('should find all evaluations', async () => {
-      const response = await supertest(app).get('/evaluation');
+      const response = await supertest(app).get('/evaluations');
       expect(response.status).toBe(200);
       expect(evaluationController.findAll).toHaveBeenCalled();
       expect(response.body).toBeDefined;
@@ -81,9 +81,11 @@ describe('EvaluationRoute unit test', () => {
   });
   describe('PATCH /evaluation/:id', () => {
     it('should update a evaluation by ID', async () => {
-      const response = await supertest(app).patch('/evaluation/123').send({
-        description: 'New description',
-      });
+      const response = await supertest(app)
+        .patch(`/evaluation/${new Id().id}`)
+        .send({
+          description: 'New description',
+        });
       expect(response.status).toBe(200);
       expect(evaluationController.update).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -91,7 +93,9 @@ describe('EvaluationRoute unit test', () => {
   });
   describe('DELETE /evaluation/:id', () => {
     it('should delete a evaluation by ID', async () => {
-      const response = await supertest(app).delete('/evaluation/123');
+      const response = await supertest(app).delete(
+        `/evaluation/${new Id().id}`
+      );
       expect(response.status).toBe(200);
       expect(evaluationController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
