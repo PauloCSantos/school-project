@@ -72,15 +72,15 @@ describe('AttendanceRoute unit test', () => {
   });
   describe('GET /attendance/:id', () => {
     it('should find a attendance by ID', async () => {
-      const response = await supertest(app).get('/attendance/123');
+      const response = await supertest(app).get(`/attendance/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(attendanceController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
     });
   });
-  describe('GET /attendance/', () => {
+  describe('GET /attendances/', () => {
     it('should find all attendances', async () => {
-      const response = await supertest(app).get('/attendance');
+      const response = await supertest(app).get('/attendances');
       expect(response.status).toBe(200);
       expect(attendanceController.findAll).toHaveBeenCalled();
       expect(response.body).toBeDefined;
@@ -89,9 +89,11 @@ describe('AttendanceRoute unit test', () => {
   });
   describe('PATCH /attendance/:id', () => {
     it('should update a attendance by ID', async () => {
-      const response = await supertest(app).patch('/attendance/123').send({
-        date: new Date(),
-      });
+      const response = await supertest(app)
+        .patch(`/attendance/${new Id().id}`)
+        .send({
+          date: new Date(),
+        });
       expect(response.status).toBe(200);
       expect(attendanceController.update).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -99,7 +101,9 @@ describe('AttendanceRoute unit test', () => {
   });
   describe('DELETE /attendance/:id', () => {
     it('should delete a attendance by ID', async () => {
-      const response = await supertest(app).delete('/attendance/123');
+      const response = await supertest(app).delete(
+        `/attendance/${new Id().id}`
+      );
       expect(response.status).toBe(200);
       expect(attendanceController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;
