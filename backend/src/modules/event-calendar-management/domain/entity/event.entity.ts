@@ -1,6 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import {
   isNotEmpty,
+  isString,
   maxLengthInclusive,
   minLength,
   validDay,
@@ -31,27 +32,33 @@ export default class Event {
 
   constructor(input: EventProps) {
     if (
-      !input.creator ||
-      !input.name ||
-      !input.date ||
-      !input.hour ||
-      !input.day ||
-      !input.type ||
-      !input.place
+      input.creator === undefined ||
+      input.name === undefined ||
+      input.date === undefined ||
+      input.hour === undefined ||
+      input.day === undefined ||
+      input.type === undefined ||
+      input.place === undefined
     )
       throw new Error('All event fields are mandatory');
     if (!validId(input.creator)) throw new Error('Creator id is not valid');
+    if (!validHour24h(input.hour)) throw new Error('Field hour is not valid');
+    if (!validDay(input.day)) throw new Error('Field day is not valid');
     if (!this.validateName(input.name))
       throw new Error('Field name is not valid');
     if (!this.validateDate(input.date))
       throw new Error('Field date is not valid');
-    if (!validHour24h(input.hour)) throw new Error('Field hour is not valid');
-    if (!validDay(input.day)) throw new Error('Field day is not valid');
     if (!this.validateType(input.type))
       throw new Error('Field type is not valid');
     if (!this.validatePlace(input.place))
       throw new Error('Field place is not valid');
-    this._id = input.id || new Id();
+    if (input.id) {
+      if (!(input.id instanceof Id)) throw new Error('Invalid id');
+      this._id = input.id;
+    } else {
+      this._id = new Id();
+    }
+
     this._creator = input.creator;
     this._name = input.name;
     this._date = input.date;
@@ -87,6 +94,7 @@ export default class Event {
   }
 
   set creator(value: string) {
+    if (!validId(value)) throw new Error('Creator id is not valid');
     this._creator = value;
   }
   set name(value: string) {
@@ -116,17 +124,26 @@ export default class Event {
 
   private validateName(input: string): boolean {
     return (
-      isNotEmpty(input) && maxLengthInclusive(input, 150) && minLength(input, 3)
+      isString(input) &&
+      isNotEmpty(input) &&
+      maxLengthInclusive(input, 150) &&
+      minLength(input, 3)
     );
   }
   private validateType(input: string): boolean {
     return (
-      isNotEmpty(input) && maxLengthInclusive(input, 150) && minLength(input, 3)
+      isString(input) &&
+      isNotEmpty(input) &&
+      maxLengthInclusive(input, 150) &&
+      minLength(input, 3)
     );
   }
   private validatePlace(input: string): boolean {
     return (
-      isNotEmpty(input) && maxLengthInclusive(input, 255) && minLength(input, 3)
+      isString(input) &&
+      isNotEmpty(input) &&
+      maxLengthInclusive(input, 255) &&
+      minLength(input, 3)
     );
   }
   private validateDate(input: Date): boolean {

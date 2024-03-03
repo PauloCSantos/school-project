@@ -49,6 +49,7 @@ export default class UpdateUserStudent
       const result = await this._userStudentRepository.update(userStudent);
 
       return {
+        id: result.id.id,
         name: {
           fullName: result.name.fullName(),
           shortName: result.name.shortName(),

@@ -20,6 +20,7 @@ export default class FindAllNote
     const results = await this._noteRepository.findAll(offset, quantity);
 
     const result = results.map(note => ({
+      id: note.id.id,
       evaluation: note.evaluation,
       note: note.note,
       student: note.student,

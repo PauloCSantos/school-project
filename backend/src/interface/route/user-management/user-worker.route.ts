@@ -1,9 +1,6 @@
 import { UserWorkerController } from '@/interface/controller/user-management/user-worker.controller';
-import {
-  CreateUserWorkerInputDto,
-  UpdateUserWorkerInputDto,
-} from '@/application/dto/user-management/worker-usecase.dto';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
+import { validId } from '@/util/validations';
 
 export class UserWorkerRoute {
   constructor(
@@ -15,16 +12,16 @@ export class UserWorkerRoute {
     this.httpGateway.get('/user-workers', (req: any, res: any) =>
       this.findAllUserWorkers(req, res)
     );
-    this.httpGateway.post('/user-workers', (req: any, res: any) =>
+    this.httpGateway.post('/user-worker', (req: any, res: any) =>
       this.createUserWorker(req, res)
     );
-    this.httpGateway.get('/user-workers/:id', (req: any, res: any) =>
+    this.httpGateway.get('/user-worker/:id', (req: any, res: any) =>
       this.findUserWorker(req, res)
     );
-    this.httpGateway.patch('/user-workers/:id', (req: any, res: any) =>
+    this.httpGateway.patch('/user-worker/:id', (req: any, res: any) =>
       this.updateUserWorker(req, res)
     );
-    this.httpGateway.delete('/user-workers/:id', (req: any, res: any) =>
+    this.httpGateway.delete('/user-worker/:id', (req: any, res: any) =>
       this.deleteUserWorker(req, res)
     );
   }
@@ -32,11 +29,17 @@ export class UserWorkerRoute {
   private async findAllUserWorkers(req: any, res: any): Promise<void> {
     try {
       const { quantity, offset } = req.body;
-      const any = await this.userWorkerController.findAll({
-        quantity,
-        offset,
-      });
-      res.status(200).json(any);
+      if (!this.validateFindAll(quantity, offset)) {
+        res
+          .status(400)
+          .json({ error: 'Quantity e/ou offset estão incorretos' });
+      } else {
+        const response = await this.userWorkerController.findAll({
+          quantity,
+          offset,
+        });
+        res.status(200).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -47,12 +50,16 @@ export class UserWorkerRoute {
   }
   private async createUserWorker(req: any, res: any): Promise<void> {
     try {
-      const input = req.body as CreateUserWorkerInputDto;
-      const any = await this.userWorkerController.create({
-        ...input,
-        birthday: new Date(input.birthday),
-      });
-      res.status(201).json(any);
+      const input = req.body;
+      if (!this.validateCreate(input)) {
+        res.status(400).json({ error: 'Todos os campos sao obrigatorios' });
+      } else {
+        const response = await this.userWorkerController.create({
+          ...input,
+          birthday: new Date(input.birthday),
+        });
+        res.status(201).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -64,9 +71,12 @@ export class UserWorkerRoute {
   private async findUserWorker(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
-      const input = { id };
-      const any = await this.userWorkerController.find(input);
-      res.status(200).json(any);
+      if (!this.validFind(id)) {
+        res.status(400).json({ error: 'Id invalido' });
+      } else {
+        const any = await this.userWorkerController.find({ id });
+        res.status(200).json(any);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(404).json({ error: error.message });
@@ -78,11 +88,17 @@ export class UserWorkerRoute {
   private async updateUserWorker(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
-      const input: UpdateUserWorkerInputDto = req.body;
-      input.id = id;
-      input.birthday ? (input.birthday = new Date(input.birthday)) : undefined;
-      const response = await this.userWorkerController.update(input);
-      res.status(200).json(response);
+      const input = req.body;
+      if (!this.validUpdate(id, input)) {
+        res.status(400).json({ error: 'Id e/ou input incorretos' });
+      } else {
+        input.id = id;
+        input.birthday
+          ? (input.birthday = new Date(input.birthday))
+          : undefined;
+        const response = await this.userWorkerController.update(input);
+        res.status(200).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
@@ -94,9 +110,12 @@ export class UserWorkerRoute {
   private async deleteUserWorker(req: any, res: any): Promise<void> {
     try {
       const { id } = req.params;
-      const input = { id };
-      const response = await this.userWorkerController.delete(input);
-      res.status(200).json(response);
+      if (!this.validDelete(id)) {
+        res.status(400).json({ error: 'Id invalido' });
+      } else {
+        const response = await this.userWorkerController.delete({ id });
+        res.status(200).json(response);
+      }
     } catch (error) {
       if (error instanceof Error) {
         res.status(404).json({ error: error.message });
@@ -104,5 +123,63 @@ export class UserWorkerRoute {
         res.status(500).json({ error: 'Erro interno do servidor' });
       }
     }
+  }
+  private validateFindAll(
+    quantity: number | undefined,
+    offset: number | undefined
+  ): boolean {
+    if (
+      quantity === undefined ||
+      (typeof quantity === 'number' &&
+        isNaN(quantity) &&
+        offset === undefined) ||
+      (typeof offset === 'number' && isNaN(offset))
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  private validateCreate(input: any): boolean {
+    const {
+      name: { firstName, lastName },
+      address: { street, city, zip, number, avenue, state },
+      email,
+      birthday,
+      salary: { salary },
+    } = input;
+
+    if (
+      firstName === undefined ||
+      lastName === undefined ||
+      street === undefined ||
+      city === undefined ||
+      zip === undefined ||
+      number === undefined ||
+      avenue === undefined ||
+      state === undefined ||
+      email === undefined ||
+      birthday === undefined ||
+      salary === undefined
+    ) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+  private validFind(id: any): boolean {
+    return validId(id);
+  }
+  private validUpdate(id: any, input: any): boolean {
+    if (!validId(id)) return false;
+    for (const value of Object.values(input)) {
+      if (value !== undefined) {
+        return true;
+      }
+    }
+    return false;
+  }
+  private validDelete(id: any): boolean {
+    return validId(id);
   }
 }

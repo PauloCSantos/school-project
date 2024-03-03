@@ -13,8 +13,8 @@ describe('Subject unit test', () => {
     it('should throw an error if mandatory fields are missing', () => {
       expect(() => {
         new Subject({
-          name: '',
-          description: '',
+          //@ts-expect-error
+          name: undefined,
         });
       }).toThrow('Name and description are mandatory');
     });

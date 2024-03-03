@@ -33,6 +33,7 @@ export default class UpdateEvaluation
       const result = await this._evaluationRepository.update(evaluation);
 
       return {
+        id: result.id.id,
         teacher: result.teacher,
         lesson: result.lesson,
         type: result.type,

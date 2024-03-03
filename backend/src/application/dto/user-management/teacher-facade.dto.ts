@@ -2,6 +2,7 @@ export interface FindUserTeacherInputDto {
   id: string;
 }
 export interface FindUserTeacherOutputDto {
+  id: string;
   name: { fullName: string; shortName: string };
   address: {
     street: string;
@@ -24,6 +25,7 @@ export interface FindAllUserTeacherInputDto {
 }
 export interface FindAllUserTeacherOutputDto
   extends Array<{
+    id: string;
     name: { fullName: string; shortName: string };
     address: {
       street: string;
@@ -78,6 +80,7 @@ export interface UpdateUserTeacherInputDto {
   academicDegrees?: string;
 }
 export interface UpdateUserTeacherOutputDto {
+  id: string;
   name: { fullName: string; shortName: string };
   address: {
     street: string;

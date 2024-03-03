@@ -93,8 +93,8 @@ describe('Subject curriculum management module end to end test', () => {
             description: 'Described a subject',
           });
           const subject = await supertest(app).get(`/subject/123`);
-          expect(subject.status).toBe(200);
-          expect(subject.body).toBe('');
+          expect(subject.status).toBe(400);
+          expect(subject.body.error).toBeDefined;
         });
       });
       describe('PATCH /subject/:id', () => {
@@ -120,7 +120,7 @@ describe('Subject curriculum management module end to end test', () => {
             description: 'Described a subject',
           });
           const result = await supertest(app).delete(`/subject/123`);
-          expect(result.status).toBe(404);
+          expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined;
         });
       });
@@ -148,7 +148,7 @@ describe('Subject curriculum management module end to end test', () => {
           expect(subject.body).toBeDefined();
         });
       });
-      describe('GET /subject/', () => {
+      describe('GET /subjects/', () => {
         it('should find all users', async () => {
           await supertest(app).post('/subject').send({
             name: 'Math',
@@ -158,7 +158,7 @@ describe('Subject curriculum management module end to end test', () => {
             name: 'Math',
             description: 'Described a subject',
           });
-          const response = await supertest(app).get('/subject');
+          const response = await supertest(app).get('/subjects');
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined;
           expect(response.body.length).toBe(2);
@@ -219,8 +219,8 @@ describe('Subject curriculum management module end to end test', () => {
               yearsToComplete: 5,
             });
           const curriculum = await supertest(app).get(`/curriculum/123`);
-          expect(curriculum.status).toBe(200);
-          expect(curriculum.body).toBe('');
+          expect(curriculum.status).toBe(400);
+          expect(curriculum.body.error).toBeDefined;
         });
       });
       describe('PATCH /curriculum/:id', () => {
@@ -323,7 +323,7 @@ describe('Subject curriculum management module end to end test', () => {
           expect(curriculum.body).toBeDefined();
         });
       });
-      describe('GET /curriculum/', () => {
+      describe('GET /curriculums/', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/curriculum')
@@ -339,7 +339,7 @@ describe('Subject curriculum management module end to end test', () => {
               subjectsList: [new Id().id, new Id().id, new Id().id],
               yearsToComplete: 5,
             });
-          const response = await supertest(app).get('/curriculum');
+          const response = await supertest(app).get('/curriculums');
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined;
           expect(response.body.length).toBe(2);

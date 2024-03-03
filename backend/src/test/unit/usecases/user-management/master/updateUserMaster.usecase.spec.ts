@@ -88,6 +88,7 @@ describe('updateUserMaster usecase unit test', () => {
       expect(userMasterRepository.update).toHaveBeenCalled();
       expect(userMasterRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
+        id: userMaster1.id.id,
         name: {
           fullName: userMaster1.name.fullName(),
           shortName: userMaster1.name.shortName(),

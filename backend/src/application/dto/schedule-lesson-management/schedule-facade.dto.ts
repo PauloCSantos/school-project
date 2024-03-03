@@ -2,6 +2,7 @@ export interface FindScheduleInputDto {
   id: string;
 }
 export interface FindScheduleOutputDto {
+  id: string;
   student: string;
   curriculum: string;
   lessonsList: string[];
@@ -13,6 +14,7 @@ export interface FindAllScheduleInputDto {
 }
 export interface FindAllScheduleOutputDto
   extends Array<{
+    id: string;
     student: string;
     curriculum: string;
     lessonsList: string[];
@@ -32,6 +34,7 @@ export interface UpdateScheduleInputDto {
   curriculum?: string;
 }
 export interface UpdateScheduleOutputDto {
+  id: string;
   curriculum: string;
 }
 

@@ -127,8 +127,8 @@ describe('Evaluation note attendance management module end to end test', () => {
             value: 10,
           });
           const evaluation = await supertest(app).get(`/evaluation/123`);
-          expect(evaluation.status).toBe(200);
-          expect(evaluation.body).toBe('');
+          expect(evaluation.status).toBe(400);
+          expect(evaluation.body.error).toBeDefined;
         });
       });
       describe('PATCH /evaluation/:id', () => {
@@ -190,7 +190,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           expect(evaluation.body).toBeDefined();
         });
       });
-      describe('GET /evaluation/', () => {
+      describe('GET /evaluations/', () => {
         it('should find all evaluations', async () => {
           await supertest(app).post('/evaluation').send({
             lesson: new Id().id,
@@ -204,7 +204,7 @@ describe('Evaluation note attendance management module end to end test', () => {
             type: 'evaluation',
             value: 10,
           });
-          const response = await supertest(app).get('/evaluation');
+          const response = await supertest(app).get('/evaluations');
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined;
           expect(response.body.length).toBe(2);
@@ -268,8 +268,8 @@ describe('Evaluation note attendance management module end to end test', () => {
             note: 10,
           });
           const note = await supertest(app).get(`/note/123`);
-          expect(note.status).toBe(200);
-          expect(note.body).toBe('');
+          expect(note.status).toBe(400);
+          expect(note.body.error).toBeDefined;
         });
       });
       describe('PATCH /note/:id', () => {
@@ -337,7 +337,7 @@ describe('Evaluation note attendance management module end to end test', () => {
             student: new Id().id,
             note: 10,
           });
-          const response = await supertest(app).get('/note');
+          const response = await supertest(app).get('/notes');
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined;
           expect(response.body.length).toBe(2);
@@ -402,8 +402,8 @@ describe('Evaluation note attendance management module end to end test', () => {
               studentsPresent: [new Id().id, new Id().id, new Id().id],
             });
           const response = await supertest(app).get(`/attendance/123`);
-          expect(response.status).toBe(200);
-          expect(response.body).toBe('');
+          expect(response.status).toBe(400);
+          expect(response.body.error).toBeDefined;
         });
       });
       describe('PATCH /attendance/:id', () => {
@@ -523,7 +523,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           expect(note.body).toBeDefined();
         });
       });
-      describe('GET /attendance/', () => {
+      describe('GET /attendances/', () => {
         it('should find all attendance', async () => {
           await supertest(app)
             .post('/attendance')
@@ -543,7 +543,7 @@ describe('Evaluation note attendance management module end to end test', () => {
               lesson: new Id().id,
               studentsPresent: [new Id().id, new Id().id, new Id().id],
             });
-          const response = await supertest(app).get('/attendance');
+          const response = await supertest(app).get('/attendances');
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined;
           expect(response.body.length).toBe(2);

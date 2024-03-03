@@ -2,6 +2,7 @@ import { capitalizeString } from '@/util/formatting';
 import {
   isAlpha,
   isNotEmpty,
+  isString,
   maxLengthInclusive,
   minLength,
 } from '@/util/validations';
@@ -17,7 +18,7 @@ export default class Name {
   private _lastName: string;
 
   constructor(input: NameProps) {
-    if (!input.firstName && !input.lastName) {
+    if (input.firstName === undefined && input.lastName === undefined) {
       throw new Error('First and last name are mandatory');
     }
     if (!this.validateMandatoryInput(input.firstName)) {
@@ -79,6 +80,7 @@ export default class Name {
 
   private validateMandatoryInput(input: string): boolean {
     return (
+      isString(input) &&
       isAlpha(input) &&
       isNotEmpty(input) &&
       maxLengthInclusive(input, 50) &&
@@ -88,7 +90,10 @@ export default class Name {
 
   private validateOptionalInput(input: string): boolean {
     return (
-      isAlpha(input) && maxLengthInclusive(input, 50) && minLength(input, 2)
+      isString(input) &&
+      isAlpha(input) &&
+      maxLengthInclusive(input, 50) &&
+      minLength(input, 2)
     );
   }
 

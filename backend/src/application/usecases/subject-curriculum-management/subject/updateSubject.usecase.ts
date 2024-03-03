@@ -28,6 +28,7 @@ export default class UpdateSubject
       const result = await this._subjectRepository.update(subject);
 
       return {
+        id: result.id.id,
         name: result.name,
         description: result.description,
       };

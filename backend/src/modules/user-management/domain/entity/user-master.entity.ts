@@ -1,4 +1,4 @@
-import { validCNPJ } from '@/util/validations';
+import { isString, validCNPJ } from '@/util/validations';
 import UserBase, {
   UserBaseProps,
 } from '../../@shared/domain/entity/user-base.entity';
@@ -11,8 +11,9 @@ export default class UserMaster extends UserBase {
   private _cnpj;
   constructor(input: MasterUserProps) {
     super(input);
-    if (!input.cnpj) throw new Error('Field CNPJ is mandatory');
-    if (!validCNPJ(input.cnpj)) throw new Error('Field CNPJ is not valid');
+    if (input.cnpj === undefined) throw new Error('Field CNPJ is mandatory');
+    if (this.validateCnpj(input.cnpj))
+      throw new Error('Field CNPJ is not valid');
     this._cnpj = input.cnpj;
   }
 
@@ -21,7 +22,11 @@ export default class UserMaster extends UserBase {
   }
 
   set cnpj(input: string) {
-    if (!validCNPJ(input)) throw new Error('Field CNPJ is not valid');
+    if (this.validateCnpj(input)) throw new Error('Field CNPJ is not valid');
     this._cnpj = input;
+  }
+
+  private validateCnpj(input: string): boolean {
+    return !isString(input) || !validCNPJ(input);
   }
 }

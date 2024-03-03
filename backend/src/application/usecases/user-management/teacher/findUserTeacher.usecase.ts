@@ -23,6 +23,7 @@ export default class FindUserTeacher
     const response = await this._userTeacherRepository.find(id);
     if (response) {
       return {
+        id: response.id.id,
         name: {
           fullName: response.name.fullName(),
           shortName: response.name.shortName(),

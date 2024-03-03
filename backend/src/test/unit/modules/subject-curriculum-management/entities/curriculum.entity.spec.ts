@@ -16,8 +16,8 @@ describe('Curriculum unit test', () => {
   describe('On fail', () => {
     it('should throw an error if mandatory fields are missing', () => {
       expect(() => {
+        //@ts-expect-error
         new Curriculum({
-          name: '',
           yearsToComplete: 0,
           subjectsList: [],
         });

@@ -1,5 +1,10 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import { isNotEmpty, maxLengthInclusive, minLength } from '@/util/validations';
+import {
+  isNotEmpty,
+  isString,
+  maxLengthInclusive,
+  minLength,
+} from '@/util/validations';
 
 type SubjectProps = {
   id?: Id;
@@ -13,13 +18,20 @@ export default class Subject {
   private _description;
 
   constructor(input: SubjectProps) {
-    this._id = input.id || new Id();
-    if (!input.name || !input.description)
+    if (input.name === undefined || input.description === undefined)
       throw new Error('Name and description are mandatory');
     if (!this.validateName(input.name))
       throw new Error('Field name is not valid');
     if (!this.validateDescription(input.description))
       throw new Error('Field description is not valid');
+
+    if (input.id) {
+      if (!(input.id instanceof Id)) throw new Error('Invalid id');
+      this._id = input.id;
+    } else {
+      this._id = new Id();
+    }
+
     this._name = input.name;
     this._description = input.description;
   }
@@ -49,12 +61,18 @@ export default class Subject {
 
   private validateName(input: string): boolean {
     return (
-      isNotEmpty(input) && maxLengthInclusive(input, 255) && minLength(input, 3)
+      isString(input) &&
+      isNotEmpty(input) &&
+      maxLengthInclusive(input, 255) &&
+      minLength(input, 3)
     );
   }
   private validateDescription(input: string): boolean {
     return (
-      isNotEmpty(input) && maxLengthInclusive(input, 500) && minLength(input, 4)
+      isString(input) &&
+      isNotEmpty(input) &&
+      maxLengthInclusive(input, 500) &&
+      minLength(input, 4)
     );
   }
 }

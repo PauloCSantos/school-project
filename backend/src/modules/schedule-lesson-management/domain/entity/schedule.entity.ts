@@ -15,7 +15,11 @@ export default class Schedule {
   private _lessonsList: string[];
 
   constructor(input: ScheduleProps) {
-    if (!input.curriculum || !input.lessonsList || !input.student)
+    if (
+      input.curriculum === undefined ||
+      input.lessonsList === undefined ||
+      input.student === undefined
+    )
       throw new Error('All schedule fields are mandatory');
     if (!validId(input.curriculum))
       throw new Error('Curriculum id is not valid');
@@ -26,7 +30,13 @@ export default class Schedule {
     )
       throw new Error('lessons list have an invalid id');
 
-    this._id = input.id || new Id();
+    if (input.id) {
+      if (!(input.id instanceof Id)) throw new Error('Invalid id');
+      this._id = input.id;
+    } else {
+      this._id = new Id();
+    }
+
     this._student = input.student;
     this._curriculum = input.curriculum;
     this._lessonsList = input.lessonsList;

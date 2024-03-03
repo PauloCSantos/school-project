@@ -19,6 +19,7 @@ export default class FindNote
     const response = await this._noteRepository.find(id);
     if (response) {
       return {
+        id: response.id.id,
         evaluation: response.evaluation,
         note: response.note,
         student: response.student,

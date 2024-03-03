@@ -8,6 +8,7 @@ const mockUserAdministratorController = jest.fn(() => {
   return {
     create: jest.fn().mockResolvedValue({ id: new Id().id }),
     find: jest.fn().mockResolvedValue({
+      id: new Id().id,
       name: { fullName: 'John David Doe', shortName: 'John D D' },
       address: {
         street: 'Street A',
@@ -24,6 +25,7 @@ const mockUserAdministratorController = jest.fn(() => {
     }),
     findAll: jest.fn().mockResolvedValue([
       {
+        id: new Id().id,
         name: { fullName: 'John David Doe', shortName: 'John D D' },
         address: {
           street: 'Street A',
@@ -39,6 +41,7 @@ const mockUserAdministratorController = jest.fn(() => {
         graduation: 'Math',
       },
       {
+        id: new Id().id,
         name: { fullName: 'John David Doe', shortName: 'John D D' },
         address: {
           street: 'Street A',
@@ -55,6 +58,7 @@ const mockUserAdministratorController = jest.fn(() => {
       },
     ]),
     update: jest.fn().mockResolvedValue({
+      id: new Id().id,
       name: { fullName: 'John David Doe', shortName: 'John D D' },
       address: {
         street: 'Street A',
@@ -85,10 +89,10 @@ describe('UserAdministratorRoute unit test', () => {
   userAdministratorRoute.routes();
   const app = expressHttp.getExpressInstance();
 
-  describe('POST /user-administrators', () => {
+  describe('POST /user-administrator', () => {
     it('should create a user', async () => {
       const response = await supertest(app)
-        .post('/user-administrators')
+        .post('/user-administrator')
         .send({
           name: {
             firstName: 'John',
@@ -114,9 +118,11 @@ describe('UserAdministratorRoute unit test', () => {
       expect(response.body.id).toBeDefined();
     });
   });
-  describe('GET /user-administrators/:id', () => {
+  describe('GET /user-administrator/:id', () => {
     it('should find a user by ID', async () => {
-      const response = await supertest(app).get('/user-administrators/123');
+      const response = await supertest(app).get(
+        `/user-administrator/${new Id().id}`
+      );
       expect(response.status).toBe(200);
       expect(userAdministratorController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -131,10 +137,10 @@ describe('UserAdministratorRoute unit test', () => {
       expect(response.body.length).toBe(2);
     });
   });
-  describe('PATCH /user-administrators/:id', () => {
+  describe('PATCH /user-administrator/:id', () => {
     it('should update a user by ID', async () => {
       const response = await supertest(app)
-        .patch('/user-administrators/123')
+        .patch(`/user-administrator/${new Id().id}`)
         .send({
           address: {
             street: 'Street B',
@@ -150,9 +156,11 @@ describe('UserAdministratorRoute unit test', () => {
       expect(response.body).toBeDefined();
     });
   });
-  describe('DELETE /user-administrators/:id', () => {
+  describe('DELETE /user-administrator/:id', () => {
     it('should delete a user by ID', async () => {
-      const response = await supertest(app).delete('/user-administrators/123');
+      const response = await supertest(app).delete(
+        `/user-administrator/${new Id().id}`
+      );
       expect(response.status).toBe(200);
       expect(userAdministratorController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;

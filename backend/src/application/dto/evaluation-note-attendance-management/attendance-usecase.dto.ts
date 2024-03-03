@@ -2,6 +2,7 @@ export interface FindAttendanceInputDto {
   id: string;
 }
 export interface FindAttendanceOutputDto {
+  id: string;
   lesson: string;
   date: Date;
   hour: string;
@@ -15,6 +16,7 @@ export interface FindAllAttendanceInputDto {
 }
 export interface FindAllAttendanceOutputDto
   extends Array<{
+    id: string;
     lesson: string;
     date: Date;
     hour: string;
@@ -41,6 +43,7 @@ export interface UpdateAttendanceInputDto {
   day?: DayOfWeek;
 }
 export interface UpdateAttendanceOutputDto {
+  id: string;
   lesson: string;
   date: Date;
   hour: string;

@@ -21,6 +21,7 @@ export default class FindAllUserStudent
     const results = await this._userStudentRepository.findAll(offset, quantity);
 
     const result = results.map(userStudent => ({
+      id: userStudent.id.id,
       name: {
         fullName: userStudent.name.fullName(),
         shortName: userStudent.name.shortName(),

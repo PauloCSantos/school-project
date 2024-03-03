@@ -9,7 +9,7 @@ describe('Salary unit test', () => {
           salary: '1200',
           currency: 'R$',
         });
-      }).toThrow('The salary field must be of numeric type');
+      }).toThrow('Salary must be greater than zero and be of numeric type');
     });
 
     it('should throw an error for salary less than or equal to zero', () => {

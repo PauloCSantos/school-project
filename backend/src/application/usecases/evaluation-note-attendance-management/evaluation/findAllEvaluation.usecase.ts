@@ -21,6 +21,7 @@ export default class FindAllEvaluation
     const results = await this._evaluationRepository.findAll(offset, quantity);
 
     const result = results.map(evaluation => ({
+      id: evaluation.id.id,
       teacher: evaluation.teacher,
       lesson: evaluation.lesson,
       type: evaluation.type,

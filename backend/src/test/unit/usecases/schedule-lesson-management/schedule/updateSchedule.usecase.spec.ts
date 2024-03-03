@@ -53,6 +53,7 @@ describe('updateSchedule usecase unit test', () => {
       expect(scheduleRepository.update).toHaveBeenCalled();
       expect(scheduleRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
+        id: input.id,
         curriculum: input.curriculum,
       });
     });

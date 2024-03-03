@@ -2,6 +2,7 @@ export interface FindNoteInputDto {
   id: string;
 }
 export interface FindNoteOutputDto {
+  id: string;
   evaluation: string;
   student: string;
   note: number;
@@ -13,6 +14,7 @@ export interface FindAllNoteInputDto {
 }
 export interface FindAllNoteOutputDto
   extends Array<{
+    id: string;
     evaluation: string;
     student: string;
     note: number;
@@ -34,6 +36,7 @@ export interface UpdateNoteInputDto {
   note?: number;
 }
 export interface UpdateNoteOutputDto {
+  id: string;
   evaluation: string;
   student: string;
   note: number;

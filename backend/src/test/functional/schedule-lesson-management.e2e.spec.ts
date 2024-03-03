@@ -112,8 +112,8 @@ describe('Schedule lesson management module end to end test', () => {
               lessonsList: [new Id().id, new Id().id, new Id().id],
             });
           const schedule = await supertest(app).get(`/schedule/123`);
-          expect(schedule.status).toBe(200);
-          expect(schedule.body).toBe('');
+          expect(schedule.status).toBe(400);
+          expect(schedule.body.error).toBeDefined;
         });
       });
       describe('PATCH /schedule/:id', () => {
@@ -217,7 +217,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(schedule.body).toBeDefined();
         });
       });
-      describe('GET /schedule/', () => {
+      describe('GET /schedules/', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/schedule')
@@ -233,7 +233,7 @@ describe('Schedule lesson management module end to end test', () => {
               curriculum: new Id().id,
               lessonsList: [new Id().id, new Id().id, new Id().id],
             });
-          const response = await supertest(app).get('/schedule');
+          const response = await supertest(app).get('/schedules');
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined;
           expect(response.body.length).toBe(2);
@@ -350,8 +350,8 @@ describe('Schedule lesson management module end to end test', () => {
               semester: 2 as 1 | 2,
             });
           const lesson = await supertest(app).get(`/lesson/123`);
-          expect(lesson.status).toBe(200);
-          expect(lesson.body).toBe('');
+          expect(lesson.status).toBe(400);
+          expect(lesson.body.error).toBeDefined;
         });
       });
       describe('PATCH /lesson/:id', () => {
@@ -582,7 +582,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(lesson.body).toBeDefined();
         });
       });
-      describe('GET /lesson/', () => {
+      describe('GET /lessons/', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/lesson')
@@ -608,7 +608,7 @@ describe('Schedule lesson management module end to end test', () => {
               times: ['15:55', '19:00'] as Hour[],
               semester: 2 as 1 | 2,
             });
-          const response = await supertest(app).get('/lesson');
+          const response = await supertest(app).get('/lessons');
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined;
           expect(response.body.length).toBe(2);

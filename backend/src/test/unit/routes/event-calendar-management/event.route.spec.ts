@@ -78,15 +78,15 @@ describe('EventRoute unit test', () => {
   });
   describe('GET /event/:id', () => {
     it('should find a event by ID', async () => {
-      const response = await supertest(app).get('/event/123');
+      const response = await supertest(app).get(`/event/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(eventController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
     });
   });
-  describe('GET /event/', () => {
+  describe('GET /events/', () => {
     it('should find all events', async () => {
-      const response = await supertest(app).get('/event');
+      const response = await supertest(app).get('/events');
       expect(response.status).toBe(200);
       expect(eventController.findAll).toHaveBeenCalled();
       expect(response.body).toBeDefined;
@@ -95,9 +95,11 @@ describe('EventRoute unit test', () => {
   });
   describe('PATCH /event/:id', () => {
     it('should update a event by ID', async () => {
-      const response = await supertest(app).patch('/event/123').send({
-        description: 'New description',
-      });
+      const response = await supertest(app)
+        .patch(`/event/${new Id().id}`)
+        .send({
+          description: 'New description',
+        });
       expect(response.status).toBe(200);
       expect(eventController.update).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -105,7 +107,7 @@ describe('EventRoute unit test', () => {
   });
   describe('DELETE /event/:id', () => {
     it('should delete a event by ID', async () => {
-      const response = await supertest(app).delete('/event/123');
+      const response = await supertest(app).delete(`/event/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(eventController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined;

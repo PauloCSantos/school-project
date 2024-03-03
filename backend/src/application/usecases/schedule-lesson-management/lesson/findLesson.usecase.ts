@@ -20,6 +20,7 @@ export default class FindLesson
     const response = await this._lessonRepository.find(id);
     if (response) {
       return {
+        id: response.id.id,
         name: response.name,
         duration: response.duration,
         teacher: response.teacher,

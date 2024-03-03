@@ -55,6 +55,7 @@ describe('updateCurriculum usecase unit test', () => {
       expect(curriculumRepository.update).toHaveBeenCalled();
       expect(curriculumRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
+        id: curriculum1.id.id,
         name: input.name,
         yearsToComplete: input.yearsToComplete,
       });

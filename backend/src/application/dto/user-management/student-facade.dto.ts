@@ -2,6 +2,7 @@ export interface FindUserStudentInputDto {
   id: string;
 }
 export interface FindUserStudentOutputDto {
+  id: string;
   name: { fullName: string; shortName: string };
   address: {
     street: string;
@@ -22,6 +23,7 @@ export interface FindAllUserStudentInputDto {
 }
 export interface FindAllUserStudentOutputDto
   extends Array<{
+    id: string;
     name: { fullName: string; shortName: string };
     address: {
       street: string;
@@ -70,6 +72,7 @@ export interface UpdateUserStudentInputDto {
   paymentYear?: number;
 }
 export interface UpdateUserStudentOutputDto {
+  id: string;
   name: { fullName: string; shortName: string };
   address: {
     street: string;

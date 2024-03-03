@@ -26,11 +26,11 @@ export default class Attendance {
 
   constructor(input: AttendanceProps) {
     if (
-      !input.lesson ||
-      !input.date ||
-      !input.hour ||
-      !input.day ||
-      !input.studentsPresent
+      input.lesson === undefined ||
+      input.date === undefined ||
+      input.hour === undefined ||
+      input.day === undefined ||
+      input.studentsPresent === undefined
     )
       throw new Error('All attendance fields are mandatory');
 
@@ -41,8 +41,13 @@ export default class Attendance {
     if (!validDate(input.date)) throw new Error('Date is not up to standard');
     if (!this.validateList(input.studentsPresent))
       throw new Error('All student IDs do not follow standards');
+    if (input.id) {
+      if (!(input.id instanceof Id)) throw new Error('Invalid id');
+      this._id = input.id;
+    } else {
+      this._id = new Id();
+    }
 
-    this._id = input.id || new Id();
     this._lesson = input.lesson;
     this._date = input.date;
     this._hour = input.hour;

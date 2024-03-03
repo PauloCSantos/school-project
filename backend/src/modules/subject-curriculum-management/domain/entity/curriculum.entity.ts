@@ -4,6 +4,7 @@ import {
   isGreaterZero,
   isNotEmpty,
   isNumeric,
+  isString,
   maxLengthInclusive,
   minLength,
   validId,
@@ -24,9 +25,9 @@ export default class Curriculum {
 
   constructor(input: CurriculumProps) {
     if (
-      !input.name ||
+      input.name === undefined ||
       input.yearsToComplete === undefined ||
-      !input.subjectsList
+      input.subjectsList === undefined
     )
       throw new Error('All curriculum fields are mandatory');
     if (!this.validateName(input.name))
@@ -36,7 +37,13 @@ export default class Curriculum {
     if (!this.validateSubjects(input.subjectsList))
       throw new Error('Subject IDs do not match pattern');
 
-    this._id = input.id || new Id();
+    if (input.id) {
+      if (!(input.id instanceof Id)) throw new Error('Invalid id');
+      this._id = input.id;
+    } else {
+      this._id = new Id();
+    }
+
     this._name = input.name;
     this._yearsToComplete = input.yearsToComplete;
     this._subjectsList = input.subjectsList;
@@ -88,7 +95,10 @@ export default class Curriculum {
   }
   private validateName(input: string): boolean {
     return (
-      isNotEmpty(input) && maxLengthInclusive(input, 255) && minLength(input, 3)
+      isString(input) &&
+      isNotEmpty(input) &&
+      maxLengthInclusive(input, 255) &&
+      minLength(input, 3)
     );
   }
   private validateYears(input: number): boolean {

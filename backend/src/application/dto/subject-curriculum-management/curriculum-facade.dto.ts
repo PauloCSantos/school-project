@@ -2,6 +2,7 @@ export interface FindCurriculumInputDto {
   id: string;
 }
 export interface FindCurriculumOutputDto {
+  id: string;
   name: string;
   yearsToComplete: number;
   subjectsList: string[];
@@ -13,6 +14,7 @@ export interface FindAllCurriculumInputDto {
 }
 export interface FindAllCurriculumOutputDto
   extends Array<{
+    id: string;
     name: string;
     yearsToComplete: number;
     subjectsList: string[];
@@ -33,6 +35,7 @@ export interface UpdateCurriculumInputDto {
   yearsToComplete?: number;
 }
 export interface UpdateCurriculumOutputDto {
+  id: string;
   name: string;
   yearsToComplete: number;
 }

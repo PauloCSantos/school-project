@@ -20,6 +20,7 @@ export default class FindSubject
     const response = await this._subjectRepository.find(id);
     if (response) {
       return {
+        id: response.id.id,
         name: response.name,
         description: response.description,
       };

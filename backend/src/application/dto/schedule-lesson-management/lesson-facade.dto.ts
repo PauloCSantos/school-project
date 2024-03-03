@@ -2,6 +2,7 @@ export interface FindLessonInputDto {
   id: string;
 }
 export interface FindLessonOutputDto {
+  id: string;
   name: string;
   duration: number;
   teacher: string;
@@ -18,6 +19,7 @@ export interface FindAllLessonInputDto {
 }
 export interface FindAllLessonOutputDto
   extends Array<{
+    id: string;
     name: string;
     duration: number;
     teacher: string;
@@ -51,6 +53,7 @@ export interface UpdateLessonInputDto {
   semester?: 1 | 2;
 }
 export interface UpdateLessonOutputDto {
+  id: string;
   name: string;
   duration: number;
   teacher: string;

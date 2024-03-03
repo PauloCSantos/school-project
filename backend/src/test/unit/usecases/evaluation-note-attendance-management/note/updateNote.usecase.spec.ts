@@ -51,6 +51,7 @@ describe('updateNote usecase unit test', () => {
       expect(noteRepository.update).toHaveBeenCalled();
       expect(noteRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
+        id: note1.id.id,
         evaluation: note1.evaluation,
         student: note1.student,
         note: input.note,

@@ -4,12 +4,28 @@ describe('Id unit test', () => {
   describe('On fail', () => {
     it('should throw an error for an invalid ID format', () => {
       const invalidId = 'invalid-id-format';
-      expect(() => new Id(invalidId)).toThrow('ID inválido');
+      expect(() => new Id(invalidId)).toThrow('Invalid id');
+    });
+    it('should throw an error for an invalid ID format', () => {
+      const invalidId = 123;
+      //@ts-expect-error
+      expect(() => new Id(invalidId)).toThrow('Invalid id');
+    });
+    it('should throw an error for an invalid ID format', () => {
+      const invalidId = true;
+      //@ts-expect-error
+      expect(() => new Id(invalidId)).toThrow('Invalid id');
     });
   });
   describe('On success', () => {
     it('should generate a valid ID if no ID is provided', () => {
       const id = new Id();
+      expect(id.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      );
+    });
+    it('should generate a valid ID if undefined is provided', () => {
+      const id = new Id(undefined);
       expect(id.id).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
       );

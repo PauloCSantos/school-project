@@ -1,6 +1,7 @@
 import {
   isAlpha,
   isNotEmpty,
+  isString,
   maxLengthInclusive,
   minLength,
 } from '@/util/validations';
@@ -22,15 +23,19 @@ export default class UserTeacher extends UserBase {
 
   constructor(input: TeacherUserProps) {
     super(input);
-    if (!input.salary || !input.graduation || !input.academicDegrees)
+    if (
+      input.salary === undefined ||
+      input.graduation === undefined ||
+      input.academicDegrees === undefined
+    )
       throw new Error('Salary, graduation and academic degrees are mandatory');
-    this._salary = input.salary;
     if (!this.validateGraduation(input.graduation))
       throw new Error('Field graduation is not valid');
-
     if (!this.validateAcademicDegrees(input.academicDegrees))
       throw new Error('Field academic degrees is not valid');
+    if (!(input.salary instanceof Salary)) throw new Error('Invalid salary');
 
+    this._salary = input.salary;
     this._graduation = input.graduation;
     this._academicDegrees = input.academicDegrees;
   }
@@ -61,6 +66,7 @@ export default class UserTeacher extends UserBase {
 
   private validateGraduation(input: string): boolean {
     return (
+      isString(input) &&
       isNotEmpty(input) &&
       isAlpha(input) &&
       minLength(input, 3) &&
@@ -70,7 +76,10 @@ export default class UserTeacher extends UserBase {
 
   private validateAcademicDegrees(input: string): boolean {
     return (
-      isNotEmpty(input) && minLength(input, 1) && maxLengthInclusive(input, 255)
+      isString(input) &&
+      isNotEmpty(input) &&
+      minLength(input, 1) &&
+      maxLengthInclusive(input, 255)
     );
   }
 }

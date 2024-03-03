@@ -3,6 +3,7 @@ import {
   maxLengthInclusive,
   minLength,
   isNumeric,
+  isString,
 } from '@/util/validations';
 
 type AddressProps = {
@@ -24,12 +25,12 @@ export default class Address {
 
   constructor(input: AddressProps) {
     if (
-      !input.street ||
-      !input.city ||
-      !input.avenue ||
-      !input.zip ||
-      !input.state ||
-      !input.number
+      input.street === undefined ||
+      input.city === undefined ||
+      input.avenue === undefined ||
+      input.zip === undefined ||
+      input.state === undefined ||
+      input.number === undefined
     ) {
       throw new Error('All address fields are mandatory');
     }
@@ -43,8 +44,8 @@ export default class Address {
       throw new Error('The zip field was not filled in correctly');
     if (!this.validateField(input.state, 255, 1))
       throw new Error('The state field was not filled in correctly');
-    if (!isNumeric(input.number))
-      throw new Error('The number field must be of numeric type');
+    if (!isNumeric(input.number) || input.number < 0)
+      throw new Error('The number field was not filled in correctly');
 
     this._street = input.street;
     this._city = input.city;
@@ -89,8 +90,8 @@ export default class Address {
     this._zip = value;
   }
   set number(value: number) {
-    if (!isNumeric(value))
-      throw new Error('The number field must be of numeric type');
+    if (!isNumeric(value) || value < 0)
+      throw new Error('The number field was not filled in correctly');
     this._number = value;
   }
   set avenue(value: string) {
@@ -110,6 +111,7 @@ export default class Address {
     minLen: number = 2
   ): boolean {
     return (
+      isString(value) &&
       isNotEmpty(value) &&
       minLength(value, minLen) &&
       maxLengthInclusive(value, maxLen)

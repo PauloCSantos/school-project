@@ -21,6 +21,7 @@ export default class FindAllCurriculum
     const results = await this._curriculumRepository.findAll(offset, quantity);
 
     const result = results.map(curriculum => ({
+      id: curriculum.id.id,
       name: curriculum.name,
       subjectsList: curriculum.subjectList,
       yearsToComplete: curriculum.yearsToComplete,

@@ -1,6 +1,7 @@
 import {
   isAlpha,
   isNotEmpty,
+  isString,
   maxLengthInclusive,
   minLength,
 } from '@/util/validations';
@@ -20,10 +21,12 @@ export default class UserAdministrator extends UserBase {
 
   constructor(input: AdministratorUserProps) {
     super(input);
-    if (!input.salary || !input.graduation)
+    if (input.salary === undefined || input.graduation === undefined)
       throw new Error('Salary and graduation are mandatory');
     if (!this.validateGraduation(input.graduation))
       throw new Error('Field graduation is not valid');
+    if (!(input.salary instanceof Salary)) throw new Error('Invalid salary');
+
     this._salary = input.salary;
     this._graduation = input.graduation;
   }
@@ -44,6 +47,7 @@ export default class UserAdministrator extends UserBase {
 
   private validateGraduation(input: string): boolean {
     return (
+      isString(input) &&
       isNotEmpty(input) &&
       isAlpha(input) &&
       minLength(input, 3) &&

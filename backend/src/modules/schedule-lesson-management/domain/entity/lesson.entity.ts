@@ -4,6 +4,7 @@ import {
   isGreaterZero,
   isNotEmpty,
   isNumeric,
+  isString,
   maxLengthInclusive,
   minLength,
   validDay,
@@ -36,14 +37,14 @@ export default class Lesson {
 
   constructor(input: LessonProps) {
     if (
-      !input.name ||
+      input.name === undefined ||
       input.duration === undefined ||
-      !input.teacher ||
-      !input.studentsList ||
-      !input.subject ||
-      !input.days ||
-      !input.times ||
-      !input.semester === undefined
+      input.teacher === undefined ||
+      input.studentsList === undefined ||
+      input.subject === undefined ||
+      input.days === undefined ||
+      input.times === undefined ||
+      input.semester === undefined
     )
       throw new Error('All lesson fields are mandatory');
 
@@ -51,9 +52,9 @@ export default class Lesson {
       throw new Error('Field name is not valid');
     if (!this.validateNumbers(input.duration))
       throw new Error('Field duration is not valid');
-    if (!validId(input.teacher)) throw new Error('Teacher id is not valid');
     if (!this.validateStudents(input.studentsList))
       throw new Error('Subject IDs do not match pattern');
+    if (!validId(input.teacher)) throw new Error('Teacher id is not valid');
     if (!validId(input.subject)) throw new Error('Subject id is not valid');
     if (
       !input.days.every(day => validDay(day)) &&
@@ -67,7 +68,13 @@ export default class Lesson {
       areAllValuesUnique(input.times)
     )
       throw new Error('Times are not up to standard');
-    this._id = input.id || new Id();
+    if (input.id) {
+      if (!(input.id instanceof Id)) throw new Error('Invalid id');
+      this._id = input.id;
+    } else {
+      this._id = new Id();
+    }
+
     this._name = input.name;
     this._duration = input.duration;
     this._teacher = input.teacher;
@@ -196,7 +203,10 @@ export default class Lesson {
   }
   private validateName(input: string): boolean {
     return (
-      isNotEmpty(input) && maxLengthInclusive(input, 255) && minLength(input, 4)
+      isString(input) &&
+      isNotEmpty(input) &&
+      maxLengthInclusive(input, 255) &&
+      minLength(input, 4)
     );
   }
   private validateNumbers(input: number): boolean {
