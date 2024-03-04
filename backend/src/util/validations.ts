@@ -99,3 +99,10 @@ export function validNote(value: number): boolean {
 export function isString(value: string): boolean {
   return typeof value === 'string';
 }
+
+export function validRole(value: string): boolean {
+  if (typeof value !== 'string') return false;
+  return ['master', 'administrator', 'teacher', 'worker', 'student'].includes(
+    value
+  );
+}
