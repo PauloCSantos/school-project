@@ -23,7 +23,7 @@ export default class AuthUser {
       input.password === undefined ||
       input.role === undefined
     ) {
-      throw new Error('All fields expect Id are mandatory');
+      throw new Error('All fields are mandatory');
     }
 
     if (!this.validateEmail(input.email))
@@ -35,7 +35,7 @@ export default class AuthUser {
       if (!validId(input.masterId))
         throw new Error('Field masterId is not valid');
     }
-    if (this.role !== 'master') {
+    if (input.role !== 'master') {
       if (input.masterId === undefined) {
         throw new Error('The masterId field is mandatory for regular users');
       }
@@ -69,10 +69,6 @@ export default class AuthUser {
     return this._role;
   }
 
-  get isHashed(): boolean {
-    return this._isHashed;
-  }
-
   set email(input: string) {
     if (!this.validateEmail(input)) throw new Error('Field email is not valid');
     this._email = input;
@@ -82,6 +78,7 @@ export default class AuthUser {
     if (!this.validatePassword(input))
       throw new Error('Field password is not valid');
     this._password = input;
+    this._isHashed = false;
   }
 
   set role(input: string) {
@@ -100,6 +97,8 @@ export default class AuthUser {
   async comparePassword(input: string) {
     if (!this.validatePassword(input))
       throw new Error('Field password is not valid');
+    if (this._isHashed === false)
+      throw new Error('Use the method to hash before comparing');
     const response = await this._authService.comparePassword(
       this._password,
       input
