@@ -16,6 +16,7 @@ import {
   validDay,
   validNote,
   isString,
+  validRole,
 } from '@/util/validations';
 
 describe('Testing validation functions', () => {
@@ -206,6 +207,23 @@ describe('Testing validation functions', () => {
     it('isString should return true for types string', () => {
       expect(isString('')).toBeTruthy;
       expect(isString('string')).toBeTruthy;
+    });
+  });
+
+  describe('Testing validRole', () => {
+    it('validRole should return false for types other than system users', () => {
+      //@ts-expect-error
+      expect(validRole(123)).toBeFalsy;
+      //@ts-expect-error
+      expect(validRole(undefined)).toBeFalsy;
+      //@ts-expect-error
+      expect(validRole(true)).toBeFalsy;
+      expect(validRole('')).toBeFalsy;
+      expect(validRole('Student')).toBeFalsy;
+    });
+    it('validRole should return true for types string', () => {
+      expect(validRole('master')).toBeTruthy;
+      expect(validRole('teacher')).toBeTruthy;
     });
   });
 });
