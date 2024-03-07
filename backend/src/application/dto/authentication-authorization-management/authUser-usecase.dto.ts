@@ -3,7 +3,6 @@ export interface FindAuthUserInputDto {
 }
 export interface FindAuthUserOutputDto {
   email: string;
-  password: string;
   masterId?: string;
   role: RoleUsers;
   isHashed: boolean;
@@ -30,7 +29,6 @@ export interface UpdateAuthUserInputDto {
 }
 export interface UpdateAuthUserOutputDto {
   email: string;
-  password: string;
   role: RoleUsers;
 }
 
