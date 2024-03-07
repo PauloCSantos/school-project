@@ -23,6 +23,7 @@ describe('updateAuthUser usecase unit test', () => {
   };
   const dataToUpdate = {
     password: 'XdQd2Jjd4',
+    email: 'newemail@teste.com.br',
   };
   const authUserService = new AuthUserService();
 
@@ -56,8 +57,7 @@ describe('updateAuthUser usecase unit test', () => {
       expect(authUserRepository.update).toHaveBeenCalled();
       expect(authUserRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
-        email: authUser.email,
-        password: authUser.password,
+        email: dataToUpdate.email,
         role: authUser.role,
       });
     });
