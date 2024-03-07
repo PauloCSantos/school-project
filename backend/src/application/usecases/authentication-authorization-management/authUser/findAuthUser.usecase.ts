@@ -21,10 +21,9 @@ export default class FindAuthUser
     if (response) {
       return {
         email: response.email,
-        password: response.password,
         masterId: response.masterId,
         role: response.role as RoleUsers,
-        isHashed: response.isHashed,
+        isHashed: true,
       };
     } else {
       return response;

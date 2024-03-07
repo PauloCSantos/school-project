@@ -19,21 +19,21 @@ export default class UpdateAuthUser
   }: UpdateAuthUserInputDto): Promise<UpdateAuthUserOutputDto> {
     const authUser = await this._authUserRepository.find(email);
     if (!authUser) throw new Error('AuthUser not found');
+    const modifiedObj = Object.create(authUser);
 
     try {
       authUserDataToUpdate.password !== undefined &&
-        (authUser.password = authUserDataToUpdate.password);
-      authUserDataToUpdate.password !== undefined && authUser.hashPassword();
+        (modifiedObj.password = authUserDataToUpdate.password);
+      authUserDataToUpdate.password !== undefined && modifiedObj.hashPassword();
       authUserDataToUpdate.role !== undefined &&
-        (authUser.role = authUserDataToUpdate.role);
+        (modifiedObj.role = authUserDataToUpdate.role);
       authUserDataToUpdate.email !== undefined &&
-        (authUser.email = authUserDataToUpdate.email);
+        (modifiedObj.email = authUserDataToUpdate.email);
 
-      const result = await this._authUserRepository.update(authUser, email);
+      const result = await this._authUserRepository.update(modifiedObj, email);
 
       return {
         email: result.email,
-        password: result.password,
         role: result.role as RoleUsers,
       };
     } catch (error) {
