@@ -77,7 +77,8 @@ describe('MemoryAuthUserRepository unit test', () => {
     it('should create a new authUser and return its id', async () => {
       const result = await repository.create(authUser3);
 
-      expect(result).toBe(authUser3.email);
+      expect(result.email).toBe(authUser3.email);
+      expect(result.masterId).toBe(authUser3.masterId);
     });
     it('should update a authUser and return its new informations', async () => {
       const updateAuthUser: AuthUser = authUser2;
