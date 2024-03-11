@@ -17,6 +17,7 @@ export interface CreateAuthUserInputDto {
 }
 export interface CreateAuthUserOutputDto {
   email: string;
+  masterId: string;
 }
 
 export interface UpdateAuthUserInputDto {
@@ -37,4 +38,13 @@ export interface DeleteAuthUserInputDto {
 }
 export interface DeleteAuthUserOutputDto {
   message: string;
+}
+
+export interface LoginAuthUserInputDto {
+  email: string;
+  password: string;
+  role: RoleUsers;
+}
+export interface LoginAuthUserOutputDto {
+  token: string;
 }
