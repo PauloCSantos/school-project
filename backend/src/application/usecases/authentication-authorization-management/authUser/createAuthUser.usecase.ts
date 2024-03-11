@@ -42,7 +42,7 @@ export default class CreateAuthUser
       await authUser.hashPassword();
       const result = await this._authUserRepository.create(authUser);
 
-      return { email: result };
+      return result;
     } catch (error) {
       throw error;
     }
