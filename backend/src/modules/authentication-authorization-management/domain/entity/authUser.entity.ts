@@ -65,8 +65,18 @@ export default class AuthUser {
     return this._masterId;
   }
 
-  get role(): string {
+  get role(): RoleUsers {
     return this._role;
+  }
+
+  get isHashed(): boolean {
+    return this._isHashed;
+  }
+
+  get password(): string {
+    if (this._isHashed === false)
+      throw new Error('Use the method to hash before get');
+    return this._password;
   }
 
   set email(input: string) {
@@ -100,8 +110,8 @@ export default class AuthUser {
     if (this._isHashed === false)
       throw new Error('Use the method to hash before comparing');
     const response = await this._authService.comparePassword(
-      this._password,
-      input
+      input,
+      this._password
     );
     return response;
   }
