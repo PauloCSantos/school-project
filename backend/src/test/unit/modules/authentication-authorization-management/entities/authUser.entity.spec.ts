@@ -47,18 +47,18 @@ describe('AuthUser unit test', () => {
 
       expect(authUserInstance.email).toBe('teste2@teste.com.br');
     });
-    it('Should compare the password with the hash', () => {
+    it('Should compare the password with the hash', async () => {
       const authUser = new AuthUser(authUserData, authUserService);
       const password = authUserData.password;
-      authUser.hashPassword();
-      expect(() => authUser.comparePassword(password)).toBeTruthy;
+      await authUser.hashPassword();
+      expect(async () => await authUser.comparePassword(password)).toBeTruthy;
     });
-    it('Should hash the password only once', () => {
+    it('Should hash the password only once', async () => {
       const authUser = new AuthUser(authUserData, authUserService);
       const password = authUserData.password;
-      authUser.hashPassword();
-      authUser.hashPassword();
-      expect(() => authUser.comparePassword(password)).toBeTruthy;
+      await authUser.hashPassword();
+      await authUser.hashPassword();
+      expect(async () => await authUser.comparePassword(password)).toBeTruthy;
     });
   });
 });
