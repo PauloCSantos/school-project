@@ -16,9 +16,11 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
       return undefined;
     }
   }
-  async create(authUser: AuthUser): Promise<string> {
+  async create(
+    authUser: AuthUser
+  ): Promise<{ email: string; masterId: string }> {
     this._authUser.push(authUser);
-    return authUser.email;
+    return { email: authUser.email, masterId: authUser.masterId };
   }
   async update(authUser: AuthUser, email: string): Promise<AuthUser> {
     const authUserIndex = this._authUser.findIndex(
