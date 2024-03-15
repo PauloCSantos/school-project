@@ -75,7 +75,7 @@ describe('EvaluationRoute unit test', () => {
       const response = await supertest(app).get('/evaluations');
       expect(response.status).toBe(200);
       expect(evaluationController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -98,7 +98,7 @@ describe('EvaluationRoute unit test', () => {
       );
       expect(response.status).toBe(200);
       expect(evaluationController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
 });

@@ -34,7 +34,7 @@ describe('MemorySubjectRepository unit test', () => {
       const subjectId = new Id().id;
       const subjectFound = await repository.find(subjectId);
 
-      expect(subjectFound).toBeUndefined;
+      expect(subjectFound).toBeUndefined();
     });
     it('should throw an error when the Id is wrong', async () => {
       const subject = new Subject({
@@ -58,9 +58,8 @@ describe('MemorySubjectRepository unit test', () => {
       const subjectId = subject1.id.id;
       const subjectFound = await repository.find(subjectId);
 
-      expect(subjectFound).toBeDefined;
-      //@ts-expect-error
-      expect(subjectFound.id).toBeUndefined;
+      expect(subjectFound).toBeDefined();
+      expect(subjectFound!.id).toBeDefined();
       expect(subjectFound!.name).toBe(subject1.name);
       expect(subjectFound!.description).toBe(subject1.description);
     });

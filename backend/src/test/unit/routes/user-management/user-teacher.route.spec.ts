@@ -152,7 +152,7 @@ describe('UserTeacherRoute unit test', () => {
       const response = await supertest(app).get('/user-teachers');
       expect(response.status).toBe(200);
       expect(userTeacherController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -182,7 +182,7 @@ describe('UserTeacherRoute unit test', () => {
       );
       expect(response.status).toBe(200);
       expect(userTeacherController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
 });

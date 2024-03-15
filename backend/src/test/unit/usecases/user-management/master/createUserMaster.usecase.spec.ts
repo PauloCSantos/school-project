@@ -69,7 +69,7 @@ describe('createUserMaster usecase unit test', () => {
         expect.any(String)
       );
       expect(userMasterRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

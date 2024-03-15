@@ -142,7 +142,7 @@ describe('UserWorkerRoute unit test', () => {
       const response = await supertest(app).get('/user-workers');
       expect(response.status).toBe(200);
       expect(userWorkerController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -172,7 +172,7 @@ describe('UserWorkerRoute unit test', () => {
       );
       expect(response.status).toBe(200);
       expect(userWorkerController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
 });

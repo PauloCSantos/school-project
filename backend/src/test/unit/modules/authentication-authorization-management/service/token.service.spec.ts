@@ -1,3 +1,4 @@
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/authUser.entity';
 import AuthUserService from '@/modules/authentication-authorization-management/domain/service/authUser-entity.service';
 import TokenService from '@/modules/authentication-authorization-management/domain/service/token.service';
@@ -30,7 +31,7 @@ describe('TokenService unit test', () => {
     });
   });
   describe('On success', () => {
-    it('Should create a token with the AuthUser instance', async () => {
+    it('Should create a token with the AuthUser instance, role master', async () => {
       const authUserService = new AuthUserService();
       const authUser = new AuthUser(
         {
@@ -42,7 +43,23 @@ describe('TokenService unit test', () => {
       );
       const secretKey = 'PxHf3H7';
       const tokenService = new TokenService(secretKey);
-      const token = await tokenService.generateToken(authUser);
+      const token = await tokenService.generateToken(authUser, '500d');
+      expect(token).toBeDefined();
+    });
+    it('Should create a token with the AuthUser instance, role teacher', async () => {
+      const authUserService = new AuthUserService();
+      const authUser = new AuthUser(
+        {
+          email: 'teste@teste.com.br',
+          password: 'XpA2Jjd4',
+          role: 'teacher' as RoleUsers,
+          masterId: new Id().id,
+        },
+        authUserService
+      );
+      const secretKey = 'PxHf3H7';
+      const tokenService = new TokenService(secretKey);
+      const token = await tokenService.generateToken(authUser, '500d');
       expect(token).toBeDefined();
     });
     it('Should validate a token', async () => {

@@ -159,19 +159,19 @@ describe('LessonController unit test', () => {
       semester: 2,
     });
 
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
     expect(createLesson.execute).toHaveBeenCalled();
   });
   it('should return a lesson', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(findLesson.execute).toHaveBeenCalled();
   });
   it('should return all lessons', async () => {
     const result = await controller.findAll({});
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllLesson.execute).toHaveBeenCalled();
   });
@@ -181,7 +181,7 @@ describe('LessonController unit test', () => {
       semester: 1,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(updateLesson.execute).toHaveBeenCalled();
   });
   it('should delete a lesson', async () => {
@@ -189,7 +189,7 @@ describe('LessonController unit test', () => {
       id: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(deleteLesson.execute).toHaveBeenCalled();
   });
   it('should add students to the curriculum', async () => {
@@ -198,7 +198,7 @@ describe('LessonController unit test', () => {
       newStudentsList: [new Id().id],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(addStudents.execute).toHaveBeenCalled();
   });
   it('should remove students from the curriculum', async () => {
@@ -207,7 +207,7 @@ describe('LessonController unit test', () => {
       studentsListToRemove: [new Id().id, new Id().id],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(removeStudents.execute).toHaveBeenCalled();
   });
 
@@ -217,7 +217,7 @@ describe('LessonController unit test', () => {
       newDaysList: ['wed'],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(addDay.execute).toHaveBeenCalled();
   });
   it('should remove day from the curriculum', async () => {
@@ -226,7 +226,7 @@ describe('LessonController unit test', () => {
       daysListToRemove: ['mon', 'fri'],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(removeDay.execute).toHaveBeenCalled();
   });
 
@@ -236,7 +236,7 @@ describe('LessonController unit test', () => {
       newTimesList: ['20:00'],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(addTime.execute).toHaveBeenCalled();
   });
   it('should remove time from the curriculum', async () => {
@@ -245,7 +245,7 @@ describe('LessonController unit test', () => {
       timesListToRemove: ['15:55', '19:00'],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(removeTime.execute).toHaveBeenCalled();
   });
 });

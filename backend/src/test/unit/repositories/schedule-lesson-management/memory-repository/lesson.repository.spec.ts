@@ -70,7 +70,7 @@ describe('MemoryLessonRepository unit test', () => {
       const lessonId = new Id().id;
       const lessonFound = await repository.find(lessonId);
 
-      expect(lessonFound).toBeUndefined;
+      expect(lessonFound).toBeUndefined();
     });
     it('should throw an error when the Id is wrong', async () => {
       const lesson = new Lesson({
@@ -117,9 +117,8 @@ describe('MemoryLessonRepository unit test', () => {
       const lessonId = lesson1.id.id;
       const lessonFound = await repository.find(lessonId);
 
-      expect(lessonFound).toBeDefined;
-      //@ts-expect-error
-      expect(lessonFound.id).toBeUndefined;
+      expect(lessonFound).toBeDefined();
+      expect(lessonFound!.id).toBeDefined();
       expect(lessonFound!.name).toBe(lesson1.name);
       expect(lessonFound!.duration).toBe(lesson1.duration);
       expect(lessonFound!.teacher).toBe(lesson1.teacher);

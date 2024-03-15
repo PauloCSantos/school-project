@@ -76,7 +76,7 @@ describe('createUserTeacher usecase unit test', () => {
         expect.any(String)
       );
       expect(userTeacherRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

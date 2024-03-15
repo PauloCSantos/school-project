@@ -63,7 +63,7 @@ describe('SubjectRoute unit test', () => {
       const response = await supertest(app).get('/subjects');
       expect(response.status).toBe(200);
       expect(subjectController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -84,7 +84,7 @@ describe('SubjectRoute unit test', () => {
       const response = await supertest(app).delete(`/subject/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(subjectController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
 });

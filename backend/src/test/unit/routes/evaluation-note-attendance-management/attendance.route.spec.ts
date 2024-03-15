@@ -83,7 +83,7 @@ describe('AttendanceRoute unit test', () => {
       const response = await supertest(app).get('/attendances');
       expect(response.status).toBe(200);
       expect(attendanceController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -106,7 +106,7 @@ describe('AttendanceRoute unit test', () => {
       );
       expect(response.status).toBe(200);
       expect(attendanceController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
   describe('POST /attendance/add/students', () => {
@@ -119,7 +119,7 @@ describe('AttendanceRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(attendanceController.addStudents).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
   describe('POST /attendance/remove/students', () => {
@@ -132,7 +132,7 @@ describe('AttendanceRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(attendanceController.removeStudents).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
 });

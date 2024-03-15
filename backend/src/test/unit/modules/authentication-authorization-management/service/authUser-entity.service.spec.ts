@@ -7,7 +7,7 @@ describe('AuthUserService unit test', () => {
       const authUserService = new AuthUserService();
       const hashPassword = await authUserService.generateHash(password);
       expect(authUserService).toBeInstanceOf(AuthUserService);
-      expect(hashPassword).toBeDefined;
+      expect(hashPassword).toBeDefined();
       expect(hashPassword.length).toBeGreaterThan(0);
     });
     it('Should validate a hash', async () => {

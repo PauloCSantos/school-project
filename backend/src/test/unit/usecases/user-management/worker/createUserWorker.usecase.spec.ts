@@ -72,7 +72,7 @@ describe('createUserWorker usecase unit test', () => {
         expect.any(String)
       );
       expect(userWorkerRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

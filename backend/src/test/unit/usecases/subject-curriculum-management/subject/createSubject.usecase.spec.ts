@@ -47,7 +47,7 @@ describe('createSubject usecase unit test', () => {
 
       expect(subjectRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(subjectRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

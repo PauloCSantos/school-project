@@ -89,7 +89,7 @@ describe('EventRoute unit test', () => {
       const response = await supertest(app).get('/events');
       expect(response.status).toBe(200);
       expect(eventController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -110,7 +110,7 @@ describe('EventRoute unit test', () => {
       const response = await supertest(app).delete(`/event/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(eventController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
 });

@@ -76,13 +76,13 @@ describe('UserMasterController unit test', () => {
       cnpj: '35.741.901/0001-58',
     });
 
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
     expect(createUserMaster.execute).toHaveBeenCalled();
   });
   it('should return a user', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(findUserMaster.execute).toHaveBeenCalled();
   });
   it('should update an user', async () => {
@@ -93,7 +93,7 @@ describe('UserMasterController unit test', () => {
       },
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(updateUserMaster.execute).toHaveBeenCalled();
   });
 });

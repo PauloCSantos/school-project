@@ -119,19 +119,19 @@ describe('AttendanceController unit test', () => {
       studentsPresent: [new Id().id, new Id().id, new Id().id],
     });
 
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
     expect(createAttendance.execute).toHaveBeenCalled();
   });
   it('should return a attendance', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(findAttendance.execute).toHaveBeenCalled();
   });
   it('should return all attendances', async () => {
     const result = await controller.findAll({});
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllAttendance.execute).toHaveBeenCalled();
   });
@@ -141,7 +141,7 @@ describe('AttendanceController unit test', () => {
       hour: '14:00',
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(updateAttendance.execute).toHaveBeenCalled();
   });
   it('should delete a attendance', async () => {
@@ -149,7 +149,7 @@ describe('AttendanceController unit test', () => {
       id: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(deleteAttendance.execute).toHaveBeenCalled();
   });
   it('should add students to the attendance', async () => {
@@ -158,7 +158,7 @@ describe('AttendanceController unit test', () => {
       newStudentsList: [new Id().id],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(addStudents.execute).toHaveBeenCalled();
   });
   it('should remove students from the attendance', async () => {
@@ -167,7 +167,7 @@ describe('AttendanceController unit test', () => {
       studentsListToRemove: [new Id().id, new Id().id],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(removeStudents.execute).toHaveBeenCalled();
   });
 });

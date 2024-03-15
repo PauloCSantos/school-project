@@ -130,19 +130,19 @@ describe('UserAdministratorController unit test', () => {
       graduation: 'Math',
     });
 
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
     expect(createUserAdministrator.execute).toHaveBeenCalled();
   });
   it('should return a user', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(findUserAdministrator.execute).toHaveBeenCalled();
   });
   it('should return all users', async () => {
     const result = await controller.findAll({});
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllUserAdministrator.execute).toHaveBeenCalled();
   });
@@ -154,7 +154,7 @@ describe('UserAdministratorController unit test', () => {
       },
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(updateUserAdministrator.execute).toHaveBeenCalled();
   });
   it('should delete an users', async () => {
@@ -162,7 +162,7 @@ describe('UserAdministratorController unit test', () => {
       id: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(deleteUserAdministrator.execute).toHaveBeenCalled();
   });
 });

@@ -56,7 +56,7 @@ describe('createLesson usecase unit test', () => {
 
       expect(lessonRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(lessonRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

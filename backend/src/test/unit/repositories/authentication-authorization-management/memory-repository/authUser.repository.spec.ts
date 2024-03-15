@@ -41,7 +41,7 @@ describe('MemoryAuthUserRepository unit test', () => {
       const authUserEmail = 'teste5@teste.com.br';
       const authUserFound = await repository.find(authUserEmail);
 
-      expect(authUserFound).toBeUndefined;
+      expect(authUserFound).toBeUndefined();
     });
     it('should throw an error when the email is wrong', async () => {
       const authUser = new AuthUser(

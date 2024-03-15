@@ -56,7 +56,7 @@ describe('createCurriculum usecase unit test', () => {
         expect.any(String)
       );
       expect(curriculumRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

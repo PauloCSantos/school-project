@@ -67,7 +67,7 @@ describe('NoteRoute unit test', () => {
       const response = await supertest(app).get('/notes');
       expect(response.status).toBe(200);
       expect(noteController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -86,7 +86,7 @@ describe('NoteRoute unit test', () => {
       const response = await supertest(app).delete(`/note/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(noteController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
 });

@@ -70,7 +70,7 @@ describe('scheduleRoute unit test', () => {
       const response = await supertest(app).get('/schedules');
       expect(response.status).toBe(200);
       expect(scheduleController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -91,7 +91,7 @@ describe('scheduleRoute unit test', () => {
       const response = await supertest(app).delete(`/schedule/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(scheduleController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
   describe('POST /schedule/add', () => {
@@ -104,7 +104,7 @@ describe('scheduleRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(scheduleController.addLessons).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
   describe('POST /schedule/remove', () => {
@@ -117,7 +117,7 @@ describe('scheduleRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(scheduleController.removeLessons).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
 });

@@ -64,7 +64,7 @@ describe('MemoryEventRepository unit test', () => {
       const eventId = new Id().id;
       const eventFound = await repository.find(eventId);
 
-      expect(eventFound).toBeUndefined;
+      expect(eventFound).toBeUndefined();
     });
     it('should throw an error when the Id is wrong', async () => {
       const event = new Event({
@@ -91,9 +91,8 @@ describe('MemoryEventRepository unit test', () => {
       const eventId = event1.id.id;
       const eventFound = await repository.find(eventId);
 
-      expect(eventFound).toBeDefined;
-      //@ts-expect-error
-      expect(eventFound.id).toBeUndefined;
+      expect(eventFound).toBeDefined();
+      expect(eventFound!.id).toBeDefined();
       expect(eventFound!.name).toBe(event1.name);
       expect(eventFound!.creator).toBe(event1.creator);
       expect(eventFound!.date).toBe(event1.date);

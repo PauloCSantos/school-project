@@ -73,7 +73,7 @@ describe('CurriculumRoute unit test', () => {
       const response = await supertest(app).get('/curriculums');
       expect(response.status).toBe(200);
       expect(curriculumController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -96,7 +96,7 @@ describe('CurriculumRoute unit test', () => {
       );
       expect(response.status).toBe(200);
       expect(curriculumController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
   describe('POST /curriculum/add', () => {
@@ -109,7 +109,7 @@ describe('CurriculumRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(curriculumController.addSubjects).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
   describe('POST /curriculum/remove', () => {
@@ -122,7 +122,7 @@ describe('CurriculumRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(curriculumController.removeSubjects).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
 });
