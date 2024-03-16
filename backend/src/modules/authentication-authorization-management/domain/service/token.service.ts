@@ -15,7 +15,7 @@ export default class TokenService {
 
   async generateToken(
     authUser: AuthUser,
-    timeToExpire?: number
+    timeToExpire?: number | string
   ): Promise<string> {
     const payload = {
       masterId: authUser.masterId,
