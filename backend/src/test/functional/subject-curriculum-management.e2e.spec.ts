@@ -94,7 +94,7 @@ describe('Subject curriculum management module end to end test', () => {
           });
           const subject = await supertest(app).get(`/subject/123`);
           expect(subject.status).toBe(400);
-          expect(subject.body.error).toBeDefined;
+          expect(subject.body.error).toBeDefined();
         });
       });
       describe('PATCH /subject/:id', () => {
@@ -121,7 +121,7 @@ describe('Subject curriculum management module end to end test', () => {
           });
           const result = await supertest(app).delete(`/subject/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -160,7 +160,7 @@ describe('Subject curriculum management module end to end test', () => {
           });
           const response = await supertest(app).get('/subjects');
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -220,7 +220,7 @@ describe('Subject curriculum management module end to end test', () => {
             });
           const curriculum = await supertest(app).get(`/curriculum/123`);
           expect(curriculum.status).toBe(400);
-          expect(curriculum.body.error).toBeDefined;
+          expect(curriculum.body.error).toBeDefined();
         });
       });
       describe('PATCH /curriculum/:id', () => {
@@ -254,7 +254,7 @@ describe('Subject curriculum management module end to end test', () => {
             });
           const result = await supertest(app).delete(`/curriculum/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /curriculum/add', () => {
@@ -274,7 +274,7 @@ describe('Subject curriculum management module end to end test', () => {
               newSubjectsList: ['123'],
             });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /curriculum/remove', () => {
@@ -290,7 +290,7 @@ describe('Subject curriculum management module end to end test', () => {
             subjectsListToRemove: input.subjectsList,
           });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -341,7 +341,7 @@ describe('Subject curriculum management module end to end test', () => {
             });
           const response = await supertest(app).get('/curriculums');
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -397,7 +397,7 @@ describe('Subject curriculum management module end to end test', () => {
               newSubjectsList: [new Id().id],
             });
           expect(result.status).toBe(201);
-          expect(result.body).toBeDefined;
+          expect(result.body).toBeDefined();
         });
       });
       describe('POST /curriculum/remove', () => {
@@ -414,7 +414,7 @@ describe('Subject curriculum management module end to end test', () => {
             subjectsListToRemove: input.subjectsList,
           });
           expect(result.status).toBe(201);
-          expect(result.body).toBeDefined;
+          expect(result.body).toBeDefined();
         });
       });
     });

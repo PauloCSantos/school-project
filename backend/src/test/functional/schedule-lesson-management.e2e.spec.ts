@@ -113,7 +113,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const schedule = await supertest(app).get(`/schedule/123`);
           expect(schedule.status).toBe(400);
-          expect(schedule.body.error).toBeDefined;
+          expect(schedule.body.error).toBeDefined();
         });
       });
       describe('PATCH /schedule/:id', () => {
@@ -146,7 +146,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const result = await supertest(app).delete(`/schedule/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /schedule/add', () => {
@@ -166,7 +166,7 @@ describe('Schedule lesson management module end to end test', () => {
               newLessonsList: [123],
             });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /schedule/remove', () => {
@@ -184,7 +184,7 @@ describe('Schedule lesson management module end to end test', () => {
               schedulesListToRemove: [input.lessonsList[0]],
             });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -235,7 +235,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const response = await supertest(app).get('/schedules');
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -292,7 +292,7 @@ describe('Schedule lesson management module end to end test', () => {
               newLessonsList: [new Id().id],
             });
           expect(result.status).toBe(201);
-          expect(result.body).toBeDefined;
+          expect(result.body).toBeDefined();
         });
       });
       describe('POST /schedule/remove', () => {
@@ -311,7 +311,7 @@ describe('Schedule lesson management module end to end test', () => {
               lessonsListToRemove: [input.lessonsList[0]],
             });
           expect(result.status).toBe(201);
-          expect(result.body).toBeDefined;
+          expect(result.body).toBeDefined();
         });
       });
     });
@@ -351,7 +351,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const lesson = await supertest(app).get(`/lesson/123`);
           expect(lesson.status).toBe(400);
-          expect(lesson.body.error).toBeDefined;
+          expect(lesson.body.error).toBeDefined();
         });
       });
       describe('PATCH /lesson/:id', () => {
@@ -395,7 +395,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const result = await supertest(app).delete(`/lesson/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /lesson/add/students', () => {
@@ -420,7 +420,7 @@ describe('Schedule lesson management module end to end test', () => {
               newStudentsList: ['invalidId'],
             });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /lesson/remove/students', () => {
@@ -443,7 +443,7 @@ describe('Schedule lesson management module end to end test', () => {
               schedulesListToRemove: [input.studentsList[0]],
             });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /lesson/add/day', () => {
@@ -468,7 +468,7 @@ describe('Schedule lesson management module end to end test', () => {
               newDayList: ['sunday'],
             });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /lesson/remove/day', () => {
@@ -491,7 +491,7 @@ describe('Schedule lesson management module end to end test', () => {
               dayListToRemove: ['tue'],
             });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /lesson/add/time', () => {
@@ -516,7 +516,7 @@ describe('Schedule lesson management module end to end test', () => {
               newTimeList: ['24:00'],
             });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /lesson/remove/time', () => {
@@ -533,13 +533,13 @@ describe('Schedule lesson management module end to end test', () => {
           };
           await supertest(app).post('/lesson').send(input);
           const result = await supertest(app)
-            .post('/lesson/remove')
+            .post('/lesson/remove/time')
             .send({
               id: new Id().id,
               newTimeList: ['22:00'],
             });
-          expect(result.status).toBe(404);
-          expect(result.body.error).toBeDefined;
+          expect(result.status).toBe(400);
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -610,7 +610,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const response = await supertest(app).get('/lessons');
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -680,7 +680,7 @@ describe('Schedule lesson management module end to end test', () => {
               newStudentsList: [new Id().id],
             });
           expect(result.status).toBe(201);
-          expect(result.body).toBeDefined;
+          expect(result.body).toBeDefined();
         });
       });
       describe('POST /lesson/remove/students', () => {
@@ -704,7 +704,7 @@ describe('Schedule lesson management module end to end test', () => {
               studentsListToRemove: [input.studentsList[0]],
             });
           expect(result.status).toBe(201);
-          expect(result.body.error).toBeDefined;
+          expect(result.body).toBeDefined();
         });
       });
       describe('POST /lesson/add/day', () => {
@@ -729,7 +729,7 @@ describe('Schedule lesson management module end to end test', () => {
               newDaysList: ['tue'],
             });
           expect(result.status).toBe(201);
-          expect(result.body).toBeDefined;
+          expect(result.body).toBeDefined();
         });
       });
       describe('POST /lesson/remove/day', () => {
@@ -752,7 +752,7 @@ describe('Schedule lesson management module end to end test', () => {
               daysListToRemove: ['mon'],
             });
           expect(result.status).toBe(201);
-          expect(result.body.message).toBeDefined;
+          expect(result.body.message).toBeDefined();
         });
       });
       describe('POST /lesson/add/time', () => {
@@ -777,7 +777,7 @@ describe('Schedule lesson management module end to end test', () => {
               newTimesList: ['07:00'],
             });
           expect(result.status).toBe(201);
-          expect(result.body.message).toBeDefined;
+          expect(result.body.message).toBeDefined();
         });
       });
       describe('POST /lesson/remove/time', () => {
@@ -801,7 +801,7 @@ describe('Schedule lesson management module end to end test', () => {
               timesListToRemove: ['15:55'],
             });
           expect(result.status).toBe(201);
-          expect(result.body.message).toBeDefined;
+          expect(result.body.message).toBeDefined();
         });
       });
     });

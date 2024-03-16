@@ -67,7 +67,7 @@ describe('Authentication authorization management module end to end test', () =>
             `/authUser/wrongemateste.com`
           );
           expect(authUser.status).toBe(400);
-          expect(authUser.body.error).toBeDefined;
+          expect(authUser.body.error).toBeDefined();
         });
       });
       describe('PATCH /authUser/:email', () => {
@@ -107,7 +107,7 @@ describe('Authentication authorization management module end to end test', () =>
             });
           const result = await supertest(app).delete(`/authUser/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /login', () => {

@@ -128,7 +128,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           });
           const evaluation = await supertest(app).get(`/evaluation/123`);
           expect(evaluation.status).toBe(400);
-          expect(evaluation.body.error).toBeDefined;
+          expect(evaluation.body.error).toBeDefined();
         });
       });
       describe('PATCH /evaluation/:id', () => {
@@ -159,7 +159,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           });
           const result = await supertest(app).delete(`/evaluation/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -206,7 +206,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           });
           const response = await supertest(app).get('/evaluations');
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -269,7 +269,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           });
           const note = await supertest(app).get(`/note/123`);
           expect(note.status).toBe(400);
-          expect(note.body.error).toBeDefined;
+          expect(note.body.error).toBeDefined();
         });
       });
       describe('PATCH /note/:id', () => {
@@ -296,7 +296,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           });
           const result = await supertest(app).delete(`/note/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -339,7 +339,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           });
           const response = await supertest(app).get('/notes');
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -403,7 +403,7 @@ describe('Evaluation note attendance management module end to end test', () => {
             });
           const response = await supertest(app).get(`/attendance/123`);
           expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined;
+          expect(response.body.error).toBeDefined();
         });
       });
       describe('PATCH /attendance/:id', () => {
@@ -440,7 +440,7 @@ describe('Evaluation note attendance management module end to end test', () => {
             });
           const result = await supertest(app).delete(`/attendance/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /attendance/add/students', () => {
@@ -462,7 +462,7 @@ describe('Evaluation note attendance management module end to end test', () => {
               newStudentsList: ['invalidId'],
             });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /attendance/remove/students', () => {
@@ -486,7 +486,7 @@ describe('Evaluation note attendance management module end to end test', () => {
               studentsPresent: [new Id().id, new Id().id, new Id().id],
             });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -545,7 +545,7 @@ describe('Evaluation note attendance management module end to end test', () => {
             });
           const response = await supertest(app).get('/attendances');
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -606,7 +606,7 @@ describe('Evaluation note attendance management module end to end test', () => {
               newStudentsList: [new Id().id],
             });
           expect(result.status).toBe(201);
-          expect(result.body).toBeDefined;
+          expect(result.body).toBeDefined();
         });
       });
       describe('POST /attendance/remove/students', () => {
@@ -627,7 +627,7 @@ describe('Evaluation note attendance management module end to end test', () => {
               studentsListToRemove: [input.studentsPresent[0]],
             });
           expect(result.status).toBe(201);
-          expect(result.body.error).toBeDefined;
+          expect(result.body).toBeDefined();
         });
       });
     });

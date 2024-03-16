@@ -228,7 +228,7 @@ describe('User management module end to end test', () => {
             `/user-administrator/123`
           );
           expect(userAdministrator.status).toBe(400);
-          expect(userAdministrator.body.error).toBeDefined;
+          expect(userAdministrator.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-administrator/:id', () => {
@@ -294,7 +294,7 @@ describe('User management module end to end test', () => {
             });
           const result = await supertest(app).delete(`/user-administrator/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -407,7 +407,7 @@ describe('User management module end to end test', () => {
             });
           const response = await supertest(app).get('/user-administrators');
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -535,9 +535,9 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
             });
-          const userMaster = await supertest(app).get(`/user-masters/123`);
-          expect(userMaster.status).toBe(404);
-          expect(userMaster.body.error).toBeDefined;
+          const response = await supertest(app).get(`/user-master/123`);
+          expect(response.status).toBe(400);
+          expect(response.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-master/:id', () => {
@@ -709,7 +709,7 @@ describe('User management module end to end test', () => {
             });
           const userStudent = await supertest(app).get(`/user-student/123`);
           expect(userStudent.status).toBe(400);
-          expect(userStudent.body.error).toBeDefined;
+          expect(userStudent.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-student/:id', () => {
@@ -767,7 +767,7 @@ describe('User management module end to end test', () => {
             });
           const result = await supertest(app).delete(`/user-student/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -866,7 +866,7 @@ describe('User management module end to end test', () => {
             });
           const response = await supertest(app).get('/user-students');
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -1002,7 +1002,7 @@ describe('User management module end to end test', () => {
             });
           const userTeacher = await supertest(app).get(`/user-teacher/123`);
           expect(userTeacher.status).toBe(400);
-          expect(userTeacher.body.error).toBeDefined;
+          expect(userTeacher.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-teacher/:id', () => {
@@ -1068,7 +1068,7 @@ describe('User management module end to end test', () => {
             });
           const result = await supertest(app).delete(`/user-teacher/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -1183,7 +1183,7 @@ describe('User management module end to end test', () => {
             });
           const response = await supertest(app).get('/user-teachers');
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -1327,7 +1327,7 @@ describe('User management module end to end test', () => {
             });
           const userWorker = await supertest(app).get(`/user-worker/123`);
           expect(userWorker.status).toBe(400);
-          expect(userWorker.body.error).toBeDefined;
+          expect(userWorker.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-worker/:id', () => {
@@ -1390,7 +1390,7 @@ describe('User management module end to end test', () => {
             });
           const result = await supertest(app).delete(`/user-worker/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -1497,7 +1497,7 @@ describe('User management module end to end test', () => {
             });
           const response = await supertest(app).get('/user-workers');
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });

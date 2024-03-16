@@ -70,7 +70,7 @@ describe('Event calendar management module end to end test', () => {
             });
           const event = await supertest(app).get(`/event/123`);
           expect(event.status).toBe(400);
-          expect(event.body.error).toBeDefined;
+          expect(event.body.error).toBeDefined();
         });
       });
       describe('PATCH /event/:id', () => {
@@ -109,7 +109,7 @@ describe('Event calendar management module end to end test', () => {
             });
           const result = await supertest(app).delete(`/event/123`);
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -176,7 +176,7 @@ describe('Event calendar management module end to end test', () => {
             });
           const response = await supertest(app).get('/events');
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
