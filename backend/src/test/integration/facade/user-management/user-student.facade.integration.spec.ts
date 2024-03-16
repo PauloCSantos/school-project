@@ -57,14 +57,14 @@ describe('User Student facade integration test', () => {
     const facade = StudentFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an user Student using the facade', async () => {
     const facade = StudentFacadeFactory.create();
     const result = await facade.create(input);
     const userStudent = await facade.find(result);
 
-    expect(userStudent).toBeDefined;
+    expect(userStudent).toBeDefined();
   });
   it('should find all users Student using the facade', async () => {
     const facade = StudentFacadeFactory.create();
@@ -102,6 +102,6 @@ describe('User Student facade integration test', () => {
       },
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

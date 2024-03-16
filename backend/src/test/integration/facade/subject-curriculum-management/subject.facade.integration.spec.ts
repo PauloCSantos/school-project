@@ -18,14 +18,14 @@ describe('Subject facade integration test', () => {
     const facade = SubjectFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an Subject using the facade', async () => {
     const facade = SubjectFacadeFactory.create();
     const result = await facade.create(input);
     const userSubject = await facade.find(result);
 
-    expect(userSubject).toBeDefined;
+    expect(userSubject).toBeDefined();
   });
   it('should find all users Subject using the facade', async () => {
     const facade = SubjectFacadeFactory.create();
@@ -56,6 +56,6 @@ describe('Subject facade integration test', () => {
       description: 'New amazing description',
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

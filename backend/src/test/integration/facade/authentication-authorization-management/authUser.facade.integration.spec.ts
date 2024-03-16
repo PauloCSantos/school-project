@@ -54,6 +54,6 @@ describe('AuthUser facade integration test', () => {
       email: response.email,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

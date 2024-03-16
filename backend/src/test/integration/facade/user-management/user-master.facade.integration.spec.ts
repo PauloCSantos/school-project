@@ -23,14 +23,14 @@ describe('User master facade integration test', () => {
     const facade = MasterFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an user Master using the facade', async () => {
     const facade = MasterFacadeFactory.create();
     const result = await facade.create(input);
     const userMaster = await facade.find(result);
 
-    expect(userMaster).toBeDefined;
+    expect(userMaster).toBeDefined();
   });
   it('should update an user Master using the facade', async () => {
     const facade = MasterFacadeFactory.create();
@@ -48,6 +48,6 @@ describe('User master facade integration test', () => {
       },
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

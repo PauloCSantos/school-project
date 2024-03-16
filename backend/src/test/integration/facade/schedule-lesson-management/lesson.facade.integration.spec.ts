@@ -37,14 +37,14 @@ describe('Lesson facade integration test', () => {
     const facade = LessonFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an Lesson using the facade', async () => {
     const facade = LessonFacadeFactory.create();
     const result = await facade.create(input);
     const userLesson = await facade.find(result);
 
-    expect(userLesson).toBeDefined;
+    expect(userLesson).toBeDefined();
   });
   it('should find all users Lesson using the facade', async () => {
     const facade = LessonFacadeFactory.create();
@@ -75,7 +75,7 @@ describe('Lesson facade integration test', () => {
       duration: 45,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should add students to the lesson using the facade', async () => {
     const facade = LessonFacadeFactory.create();
@@ -86,7 +86,7 @@ describe('Lesson facade integration test', () => {
       newStudentsList: [new Id().id],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should remove students to the lesson using the facade', async () => {
     const facade = LessonFacadeFactory.create();
@@ -97,7 +97,7 @@ describe('Lesson facade integration test', () => {
       studentsListToRemove: [input.studentsList[0]],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should add day to the lesson using the facade', async () => {
     const facade = LessonFacadeFactory.create();
@@ -108,7 +108,7 @@ describe('Lesson facade integration test', () => {
       newDaysList: ['mon'],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should remove day to the lesson using the facade', async () => {
     const facade = LessonFacadeFactory.create();
@@ -119,7 +119,7 @@ describe('Lesson facade integration test', () => {
       daysListToRemove: ['mon'],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should add time to the lesson using the facade', async () => {
     const facade = LessonFacadeFactory.create();
@@ -130,7 +130,7 @@ describe('Lesson facade integration test', () => {
       newTimesList: ['20:00'],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should remove time to the lesson using the facade', async () => {
     const facade = LessonFacadeFactory.create();
@@ -141,6 +141,6 @@ describe('Lesson facade integration test', () => {
       timesListToRemove: ['07:00'],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

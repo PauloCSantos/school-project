@@ -22,14 +22,14 @@ describe('Curriculum facade integration test', () => {
     const facade = CurriculumFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an Curriculum using the facade', async () => {
     const facade = CurriculumFacadeFactory.create();
     const result = await facade.create(input);
     const userCurriculum = await facade.find(result);
 
-    expect(userCurriculum).toBeDefined;
+    expect(userCurriculum).toBeDefined();
   });
   it('should find all users Curriculum using the facade', async () => {
     const facade = CurriculumFacadeFactory.create();
@@ -60,7 +60,7 @@ describe('Curriculum facade integration test', () => {
       yearsToComplete: 6,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should add subjects to the curriculum using the facade', async () => {
     const facade = CurriculumFacadeFactory.create();
@@ -71,7 +71,7 @@ describe('Curriculum facade integration test', () => {
       newSubjectsList: [new Id().id],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should remove subjects to the curriculum using the facade', async () => {
     const facade = CurriculumFacadeFactory.create();
@@ -82,6 +82,6 @@ describe('Curriculum facade integration test', () => {
       subjectsListToRemove: [input.subjectsList[0]],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

@@ -34,14 +34,14 @@ describe('Event facade integration test', () => {
     const facade = EventFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an event using the facade', async () => {
     const facade = EventFacadeFactory.create();
     const result = await facade.create(input);
     const Event = await facade.find(result);
 
-    expect(Event).toBeDefined;
+    expect(Event).toBeDefined();
   });
   it('should find all event using the facade', async () => {
     const facade = EventFacadeFactory.create();
@@ -72,6 +72,6 @@ describe('Event facade integration test', () => {
       place: 'Airport',
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });
