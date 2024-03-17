@@ -8,6 +8,7 @@ import Name from '@/modules/user-management/@shared/domain/value-object/name.val
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
 import UserMasterGateway from '@/infraestructure/gateway/user-management-repository/user-master.gateway';
 import UserMaster from '@/modules/user-management/domain/entity/user-master.entity';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
 export default class CreateUserMaster
   implements
@@ -19,6 +20,7 @@ export default class CreateUserMaster
     this._userMasterRepository = userMasterRepository;
   }
   async execute({
+    id,
     name,
     address,
     email,
@@ -26,6 +28,7 @@ export default class CreateUserMaster
     cnpj,
   }: CreateUserMasterInputDto): Promise<CreateUserMasterOutputDto> {
     const userMaster = new UserMaster({
+      id: new Id(id),
       name: new Name(name),
       address: new Address(address),
       email,
