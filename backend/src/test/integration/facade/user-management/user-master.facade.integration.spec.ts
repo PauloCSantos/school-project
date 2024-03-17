@@ -1,7 +1,9 @@
 import MasterFacadeFactory from '@/application/factory/user-management/master-facade.factory';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
 describe('User master facade integration test', () => {
   const input = {
+    id: new Id().id,
     name: {
       firstName: 'John',
       lastName: 'Doe',

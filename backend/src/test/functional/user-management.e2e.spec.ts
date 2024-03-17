@@ -37,6 +37,7 @@ import { UserMasterRoute } from '@/interface/route/user-management/user-master.r
 import { UserStudentRoute } from '@/interface/route/user-management/user-student.route';
 import { UserTeacherRoute } from '@/interface/route/user-management/user-teacher.route';
 import { UserWorkerRoute } from '@/interface/route/user-management/user-worker.route';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 
 describe('User management module end to end test', () => {
@@ -578,6 +579,7 @@ describe('User management module end to end test', () => {
           const response = await supertest(app)
             .post('/user-master')
             .send({
+              id: new Id().id,
               name: {
                 firstName: 'John',
                 lastName: 'Doe',
@@ -603,6 +605,7 @@ describe('User management module end to end test', () => {
           const response = await supertest(app)
             .post('/user-master')
             .send({
+              id: new Id().id,
               name: {
                 firstName: 'John',
                 lastName: 'Doe',
@@ -630,6 +633,7 @@ describe('User management module end to end test', () => {
           const response = await supertest(app)
             .post('/user-master')
             .send({
+              id: new Id().id,
               name: {
                 firstName: 'John',
                 lastName: 'Doe',

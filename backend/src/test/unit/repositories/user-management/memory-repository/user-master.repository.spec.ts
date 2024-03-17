@@ -7,6 +7,9 @@ import UserMaster from '@/modules/user-management/domain/entity/user-master.enti
 describe('MemoryUserMasterRepository unit test', () => {
   let repository: MemoryUserMasterRepository;
 
+  const id1 = new Id();
+  const id2 = new Id();
+  const id3 = new Id();
   const address1 = new Address({
     street: 'Street A',
     city: 'City A',
@@ -57,6 +60,7 @@ describe('MemoryUserMasterRepository unit test', () => {
   const email3 = 'teste3@test.com';
 
   const userMaster1 = new UserMaster({
+    id: id1,
     name: name1,
     address: address1,
     birthday: birthday1,
@@ -64,6 +68,7 @@ describe('MemoryUserMasterRepository unit test', () => {
     email: email1,
   });
   const userMaster2 = new UserMaster({
+    id: id2,
     name: name2,
     address: address2,
     birthday: birthday2,
@@ -112,6 +117,7 @@ describe('MemoryUserMasterRepository unit test', () => {
     });
     it('should create a new user and return its id', async () => {
       const userMaster = new UserMaster({
+        id: id3,
         name: name3,
         address: address3,
         birthday: birthday3,
