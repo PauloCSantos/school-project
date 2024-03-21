@@ -1,8 +1,10 @@
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 import CreateUserAdministrator from '@/application/usecases/user-management/administrator/createUserAdministrator.usecase';
 import DeleteUserAdministrator from '@/application/usecases/user-management/administrator/deleteUserAdministrator.usecase';
 import FindAllUserAdministrator from '@/application/usecases/user-management/administrator/findAllUserAdministrator.usecase';
 import FindUserAdministrator from '@/application/usecases/user-management/administrator/findUserAdministrator.usecase';
 import UpdateUserAdministrator from '@/application/usecases/user-management/administrator/updateUserAdministrator.usecase';
+import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import MemoryUserAdministratorRepository from '@/infraestructure/repositories/user-management-repository/memory-repository/user-administrator.repository';
 import { UserAdministratorController } from '@/interface/controller/user-management/user-administrator.controller';
@@ -34,9 +36,13 @@ export default function initializeUserAdministrator(
     updateUserAdministratorUsecase,
     deleteUserAdministratorUsecase
   );
+  const tokenService = tokenInstance();
+  const allowedRoles: RoleUsers[] = ['master', 'administrator'];
+  const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
   const userAdministratorRoute = new UserAdministratorRoute(
     userAdministratorController,
-    express
+    express,
+    authUserMiddleware
   );
   userAdministratorRoute.routes();
 }
