@@ -1,8 +1,10 @@
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 import CreateUserWorker from '@/application/usecases/user-management/worker/createUserWorker.usecase';
 import DeleteUserWorker from '@/application/usecases/user-management/worker/deleteUserWorker.usecase';
 import FindAllUserWorker from '@/application/usecases/user-management/worker/findAllUserWorker.usecase';
 import FindUserWorker from '@/application/usecases/user-management/worker/findUserWorker.usecase';
 import UpdateUserWorker from '@/application/usecases/user-management/worker/updateUserWorker.usecase';
+import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import MemoryUserWorkerRepository from '@/infraestructure/repositories/user-management-repository/memory-repository/user-worker.repository';
 import { UserWorkerController } from '@/interface/controller/user-management/user-worker.controller';
@@ -22,6 +24,13 @@ export default function initializeUserWorker(express: ExpressHttp): void {
     updateUserWorkerUsecase,
     deleteUserWorkerUsecase
   );
-  const userWorkerRoute = new UserWorkerRoute(userWorkerController, express);
+  const tokenService = tokenInstance();
+  const allowedRoles: RoleUsers[] = ['master', 'administrator', 'worker'];
+  const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
+  const userWorkerRoute = new UserWorkerRoute(
+    userWorkerController,
+    express,
+    authUserMiddleware
+  );
   userWorkerRoute.routes();
 }

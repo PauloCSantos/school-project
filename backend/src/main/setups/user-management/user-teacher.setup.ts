@@ -1,8 +1,10 @@
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 import CreateUserTeacher from '@/application/usecases/user-management/teacher/createUserTeacher.usecase';
 import DeleteUserTeacher from '@/application/usecases/user-management/teacher/deleteUserTeacher.usecase';
 import FindAllUserTeacher from '@/application/usecases/user-management/teacher/findAllUserTeacher.usecase';
 import FindUserTeacher from '@/application/usecases/user-management/teacher/findUserTeacher.usecase';
 import UpdateUserTeacher from '@/application/usecases/user-management/teacher/updateUserTeacher.usecase';
+import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import MemoryUserTeacherRepository from '@/infraestructure/repositories/user-management-repository/memory-repository/user-teacher.repository';
 import { UserTeacherController } from '@/interface/controller/user-management/user-teacher.controller';
@@ -24,6 +26,18 @@ export default function initializeUserTeacher(express: ExpressHttp): void {
     updateUserTeacherUsecase,
     deleteUserTeacherUsecase
   );
-  const userTeacherRoute = new UserTeacherRoute(userTeacherController, express);
+  const tokenService = tokenInstance();
+  const allowedRoles: RoleUsers[] = [
+    'master',
+    'administrator',
+    'student',
+    'teacher',
+  ];
+  const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
+  const userTeacherRoute = new UserTeacherRoute(
+    userTeacherController,
+    express,
+    authUserMiddleware
+  );
   userTeacherRoute.routes();
 }
