@@ -1,29 +1,39 @@
 import { UserWorkerController } from '@/interface/controller/user-management/user-worker.controller';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { validId } from '@/util/validations';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 
 export class UserWorkerRoute {
   constructor(
     private readonly userWorkerController: UserWorkerController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/user-workers', (req: any, res: any) =>
-      this.findAllUserWorkers(req, res)
-    );
-    this.httpGateway.post('/user-worker', (req: any, res: any) =>
-      this.createUserWorker(req, res)
-    );
-    this.httpGateway.get('/user-worker/:id', (req: any, res: any) =>
-      this.findUserWorker(req, res)
-    );
-    this.httpGateway.patch('/user-worker/:id', (req: any, res: any) =>
-      this.updateUserWorker(req, res)
-    );
-    this.httpGateway.delete('/user-worker/:id', (req: any, res: any) =>
-      this.deleteUserWorker(req, res)
-    );
+    this.httpGateway.get('/user-workers', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.findAllUserWorkers(req, res)
+      );
+    });
+    this.httpGateway.post('/user-worker', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.createUserWorker(req, res)
+      );
+    });
+    this.httpGateway.get('/user-worker/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findUserWorker(req, res));
+    });
+    this.httpGateway.patch('/user-worker/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.updateUserWorker(req, res)
+      );
+    });
+    this.httpGateway.delete('/user-worker/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.deleteUserWorker(req, res)
+      );
+    });
   }
 
   private async findAllUserWorkers(req: any, res: any): Promise<void> {

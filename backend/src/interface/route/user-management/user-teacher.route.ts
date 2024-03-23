@@ -1,29 +1,41 @@
 import { UserTeacherController } from '@/interface/controller/user-management/user-teacher.controller';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { validId } from '@/util/validations';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 
 export class UserTeacherRoute {
   constructor(
     private readonly userTeacherController: UserTeacherController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/user-teachers', (req: any, res: any) =>
-      this.findAllUserTeachers(req, res)
-    );
-    this.httpGateway.post('/user-teacher', (req: any, res: any) =>
-      this.createUserTeacher(req, res)
-    );
-    this.httpGateway.get('/user-teacher/:id', (req: any, res: any) =>
-      this.findUserTeacher(req, res)
-    );
-    this.httpGateway.patch('/user-teacher/:id', (req: any, res: any) =>
-      this.updateUserTeacher(req, res)
-    );
-    this.httpGateway.delete('/user-teacher/:id', (req: any, res: any) =>
-      this.deleteUserTeacher(req, res)
-    );
+    this.httpGateway.get('/user-teachers', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.findAllUserTeachers(req, res)
+      );
+    });
+    this.httpGateway.post('/user-teacher', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.createUserTeacher(req, res)
+      );
+    });
+    this.httpGateway.get('/user-teacher/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.findUserTeacher(req, res)
+      );
+    });
+    this.httpGateway.patch('/user-teacher/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.updateUserTeacher(req, res)
+      );
+    });
+    this.httpGateway.delete('/user-teacher/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.deleteUserTeacher(req, res)
+      );
+    });
   }
 
   private async findAllUserTeachers(req: any, res: any): Promise<void> {
