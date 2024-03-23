@@ -1,22 +1,26 @@
 import { UserMasterController } from '@/interface/controller/user-management/user-master.controller';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { validId } from '@/util/validations';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 
 export class UserMasterRoute {
   constructor(
     private readonly userMasterController: UserMasterController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
     this.httpGateway.post('/user-master', (req: any, res: any) =>
       this.createUserMaster(req, res)
     );
-    this.httpGateway.get('/user-master/:id', (req: any, res: any) =>
-      this.findUserMaster(req, res)
-    );
+    this.httpGateway.get('/user-master/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findUserMaster(req, res));
+    });
     this.httpGateway.patch('/user-master/:id', (req: any, res: any) =>
-      this.updateUserMaster(req, res)
+      this.authMiddleware.handle(req, res, () =>
+        this.updateUserMaster(req, res)
+      )
     );
   }
 
