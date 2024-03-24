@@ -1,35 +1,45 @@
 import { CurriculumController } from '@/interface/controller/subject-curriculum-management/curriculum.controller';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { validId } from '@/util/validations';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 
 export class CurriculumRoute {
   constructor(
     private readonly curriculumController: CurriculumController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/curriculums', (req: any, res: any) =>
-      this.findAllCurriculums(req, res)
-    );
-    this.httpGateway.post('/curriculum', (req: any, res: any) =>
-      this.createCurriculum(req, res)
-    );
-    this.httpGateway.get('/curriculum/:id', (req: any, res: any) =>
-      this.findCurriculum(req, res)
-    );
-    this.httpGateway.patch('/curriculum/:id', (req: any, res: any) =>
-      this.updateCurriculum(req, res)
-    );
-    this.httpGateway.delete('/curriculum/:id', (req: any, res: any) =>
-      this.deleteCurriculum(req, res)
-    );
-    this.httpGateway.post('/curriculum/add', (req: any, res: any) =>
-      this.addSubjects(req, res)
-    );
-    this.httpGateway.post('/curriculum/remove', (req: any, res: any) =>
-      this.removeSubjects(req, res)
-    );
+    this.httpGateway.get('/curriculums', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.findAllCurriculums(req, res)
+      );
+    });
+    this.httpGateway.post('/curriculum', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.createCurriculum(req, res)
+      );
+    });
+    this.httpGateway.get('/curriculum/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findCurriculum(req, res));
+    });
+    this.httpGateway.patch('/curriculum/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.updateCurriculum(req, res)
+      );
+    });
+    this.httpGateway.delete('/curriculum/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.deleteCurriculum(req, res)
+      );
+    });
+    this.httpGateway.post('/curriculum/add', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.addSubjects(req, res));
+    });
+    this.httpGateway.post('/curriculum/remove', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.removeSubjects(req, res));
+    });
   }
 
   private async findAllCurriculums(req: any, res: any): Promise<void> {
