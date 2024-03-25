@@ -3,6 +3,15 @@ import supertest from 'supertest';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import { ScheduleController } from '@/interface/controller/schedule-lesson-management/schedule.controller';
 import { ScheduleRoute } from '@/interface/route/schedule-lesson-management/schedule.route';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
+
+const mockAuthUserMiddleware = jest.fn(
+  () =>
+    ({
+      //@ts-expect-error
+      handle: jest.fn((req: any, res: any, next: any) => next()),
+    }) as unknown as AuthUserMiddleware
+);
 
 const mockScheduleController = jest.fn(() => {
   return {
@@ -38,8 +47,13 @@ const mockScheduleController = jest.fn(() => {
 
 describe('scheduleRoute unit test', () => {
   const scheduleController = mockScheduleController();
+  const authUserMiddleware = mockAuthUserMiddleware();
   const expressHttp = new ExpressHttp();
-  const scheduleRoute = new ScheduleRoute(scheduleController, expressHttp);
+  const scheduleRoute = new ScheduleRoute(
+    scheduleController,
+    expressHttp,
+    authUserMiddleware
+  );
   scheduleRoute.routes();
   const app = expressHttp.getExpressInstance();
 
