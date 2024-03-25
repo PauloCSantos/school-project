@@ -1,47 +1,49 @@
 import { LessonController } from '@/interface/controller/schedule-lesson-management/lesson.controller';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { validId } from '@/util/validations';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 
 export class LessonRoute {
   constructor(
     private readonly lessonController: LessonController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/lessons', (req: any, res: any) =>
-      this.findAllLessons(req, res)
-    );
-    this.httpGateway.post('/lesson', (req: any, res: any) =>
-      this.createLesson(req, res)
-    );
-    this.httpGateway.get('/lesson/:id', (req: any, res: any) =>
-      this.findLesson(req, res)
-    );
-    this.httpGateway.patch('/lesson/:id', (req: any, res: any) =>
-      this.updateLesson(req, res)
-    );
-    this.httpGateway.delete('/lesson/:id', (req: any, res: any) =>
-      this.deleteLesson(req, res)
-    );
-    this.httpGateway.post('/lesson/add/students', (req: any, res: any) =>
-      this.addStudents(req, res)
-    );
-    this.httpGateway.post('/lesson/remove/students', (req: any, res: any) =>
-      this.removeStudents(req, res)
-    );
-    this.httpGateway.post('/lesson/add/day', (req: any, res: any) =>
-      this.addDay(req, res)
-    );
-    this.httpGateway.post('/lesson/remove/day', (req: any, res: any) =>
-      this.removeDay(req, res)
-    );
-    this.httpGateway.post('/lesson/add/time', (req: any, res: any) =>
-      this.addTime(req, res)
-    );
-    this.httpGateway.post('/lesson/remove/time', (req: any, res: any) =>
-      this.removeTime(req, res)
-    );
+    this.httpGateway.get('/lessons', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findAllLessons(req, res));
+    });
+    this.httpGateway.post('/lesson', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.createLesson(req, res));
+    });
+    this.httpGateway.get('/lesson/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findLesson(req, res));
+    });
+    this.httpGateway.patch('/lesson/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.updateLesson(req, res));
+    });
+    this.httpGateway.delete('/lesson/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.deleteLesson(req, res));
+    });
+    this.httpGateway.post('/lesson/add/students', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.addStudents(req, res));
+    });
+    this.httpGateway.post('/lesson/remove/students', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.removeStudents(req, res));
+    });
+    this.httpGateway.post('/lesson/add/day', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.addDay(req, res));
+    });
+    this.httpGateway.post('/lesson/remove/day', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.removeDay(req, res));
+    });
+    this.httpGateway.post('/lesson/add/time', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.addTime(req, res));
+    });
+    this.httpGateway.post('/lesson/remove/time', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.removeTime(req, res));
+    });
   }
 
   private async findAllLessons(req: any, res: any): Promise<void> {
