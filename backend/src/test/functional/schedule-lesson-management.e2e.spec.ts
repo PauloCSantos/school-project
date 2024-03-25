@@ -1,3 +1,4 @@
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 import AddDay from '@/application/usecases/schedule-lesson-management/lesson/addDay.usecase';
 import AddStudents from '@/application/usecases/schedule-lesson-management/lesson/addStudents.usecase';
 import AddTime from '@/application/usecases/schedule-lesson-management/lesson/addTime.usecase';
@@ -16,6 +17,7 @@ import FindAllSchedule from '@/application/usecases/schedule-lesson-management/s
 import FindSchedule from '@/application/usecases/schedule-lesson-management/schedule/findSchedule.usecase';
 import RemoveLessons from '@/application/usecases/schedule-lesson-management/schedule/removeLessons.usecase';
 import UpdateSchedule from '@/application/usecases/schedule-lesson-management/schedule/updateSchedule.usecase';
+import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import MemoryLessonRepository from '@/infraestructure/repositories/schedule-lesson-management/memory-repository/lesson.repository';
 import MemoryScheduleRepository from '@/infraestructure/repositories/schedule-lesson-management/memory-repository/schedule.repository';
@@ -78,9 +80,27 @@ describe('Schedule lesson management module end to end test', () => {
     );
 
     const expressHttp = new ExpressHttp();
+    const tokerService = tokenInstance();
 
-    const scheduleRoute = new ScheduleRoute(scheduleController, expressHttp);
-    const lessonRoute = new LessonRoute(lessonController, expressHttp);
+    const authUserMiddlewareSchedule = new AuthUserMiddleware(tokerService, [
+      'master',
+      'administrator',
+    ]);
+    const authUserMiddlewareLesson = new AuthUserMiddleware(tokerService, [
+      'master',
+      'administrator',
+    ]);
+
+    const scheduleRoute = new ScheduleRoute(
+      scheduleController,
+      expressHttp,
+      authUserMiddlewareSchedule
+    );
+    const lessonRoute = new LessonRoute(
+      lessonController,
+      expressHttp,
+      authUserMiddlewareLesson
+    );
 
     scheduleRoute.routes();
     lessonRoute.routes();
@@ -93,6 +113,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
           const response = await supertest(app)
             .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: '123',
               curriculum: new Id().id,
@@ -106,12 +130,21 @@ describe('Schedule lesson management module end to end test', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: new Id().id,
               curriculum: new Id().id,
               lessonsList: [new Id().id, new Id().id, new Id().id],
             });
-          const schedule = await supertest(app).get(`/schedule/123`);
+          const schedule = await supertest(app)
+            .get(`/schedule/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(schedule.status).toBe(400);
           expect(schedule.body.error).toBeDefined();
         });
@@ -120,6 +153,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should throw an error when the data to update a schedule is wrong', async () => {
           const response = await supertest(app)
             .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: new Id().id,
               curriculum: new Id().id,
@@ -128,6 +165,10 @@ describe('Schedule lesson management module end to end test', () => {
           const id = response.body.id;
           const updatedSchedule = await supertest(app)
             .patch(`/schedule/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               curriculum: 24,
             });
@@ -139,12 +180,21 @@ describe('Schedule lesson management module end to end test', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: new Id().id,
               curriculum: new Id().id,
               lessonsList: [new Id().id, new Id().id, new Id().id],
             });
-          const result = await supertest(app).delete(`/schedule/123`);
+          const result = await supertest(app)
+            .delete(`/schedule/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined();
         });
@@ -153,6 +203,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should add lessons to the schedule', async () => {
           const response = await supertest(app)
             .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: new Id().id,
               curriculum: new Id().id,
@@ -161,6 +215,10 @@ describe('Schedule lesson management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .post('/schedule/add')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id,
               newLessonsList: [123],
@@ -176,9 +234,19 @@ describe('Schedule lesson management module end to end test', () => {
             curriculum: new Id().id,
             lessonsList: [new Id().id, new Id().id, new Id().id],
           };
-          await supertest(app).post('/schedule').send(input);
+          await supertest(app)
+            .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send(input);
           const result = await supertest(app)
             .post('/schedule/remove')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: '123',
               schedulesListToRemove: [input.lessonsList[0]],
@@ -193,6 +261,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should create a user', async () => {
           const response = await supertest(app)
             .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: new Id().id,
               curriculum: new Id().id,
@@ -206,13 +278,22 @@ describe('Schedule lesson management module end to end test', () => {
         it('should find a user by ID', async () => {
           const response = await supertest(app)
             .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: new Id().id,
               curriculum: new Id().id,
               lessonsList: [new Id().id, new Id().id, new Id().id],
             });
           const id = response.body.id;
-          const schedule = await supertest(app).get(`/schedule/${id}`);
+          const schedule = await supertest(app)
+            .get(`/schedule/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(schedule.status).toBe(200);
           expect(schedule.body).toBeDefined();
         });
@@ -221,6 +302,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: new Id().id,
               curriculum: new Id().id,
@@ -228,12 +313,21 @@ describe('Schedule lesson management module end to end test', () => {
             });
           await supertest(app)
             .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: new Id().id,
               curriculum: new Id().id,
               lessonsList: [new Id().id, new Id().id, new Id().id],
             });
-          const response = await supertest(app).get('/schedules');
+          const response = await supertest(app)
+            .get('/schedules')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -243,6 +337,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: new Id().id,
               curriculum: new Id().id,
@@ -251,6 +349,10 @@ describe('Schedule lesson management module end to end test', () => {
           const id = response.body.id;
           const updatedSchedule = await supertest(app)
             .patch(`/schedule/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: new Id().id,
               curriculum: new Id().id,
@@ -264,13 +366,22 @@ describe('Schedule lesson management module end to end test', () => {
         it('should delete a user by ID', async () => {
           const response = await supertest(app)
             .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: new Id().id,
               curriculum: new Id().id,
               lessonsList: [new Id().id, new Id().id, new Id().id],
             });
           const id = response.body.id;
-          const result = await supertest(app).delete(`/schedule/${id}`);
+          const result = await supertest(app)
+            .delete(`/schedule/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -279,6 +390,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should add lessons to the schedule', async () => {
           const response = await supertest(app)
             .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               student: new Id().id,
               curriculum: new Id().id,
@@ -287,6 +402,10 @@ describe('Schedule lesson management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .post('/schedule/add')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id,
               newLessonsList: [new Id().id],
@@ -302,10 +421,20 @@ describe('Schedule lesson management module end to end test', () => {
             curriculum: new Id().id,
             lessonsList: [new Id().id, new Id().id, new Id().id],
           };
-          const response = await supertest(app).post('/schedule').send(input);
+          const response = await supertest(app)
+            .post('/schedule')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send(input);
           const id = response.body.id;
           const result = await supertest(app)
             .post('/schedule/remove')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id,
               lessonsListToRemove: [input.lessonsList[0]],
@@ -322,6 +451,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should throw an error when the data to create a lesson is wrong', async () => {
           const response = await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               teacher: new Id().id,
@@ -339,6 +472,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -349,7 +486,12 @@ describe('Schedule lesson management module end to end test', () => {
               times: ['15:55', '19:00'] as Hour[],
               semester: 2 as 1 | 2,
             });
-          const lesson = await supertest(app).get(`/lesson/123`);
+          const lesson = await supertest(app)
+            .get(`/lesson/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(lesson.status).toBe(400);
           expect(lesson.body.error).toBeDefined();
         });
@@ -358,6 +500,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -371,6 +517,10 @@ describe('Schedule lesson management module end to end test', () => {
           const id = response.body.id;
           const updatedLesson = await supertest(app)
             .patch(`/lesson/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: -60,
@@ -383,6 +533,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -393,7 +547,12 @@ describe('Schedule lesson management module end to end test', () => {
               times: ['15:55', '19:00'] as Hour[],
               semester: 2 as 1 | 2,
             });
-          const result = await supertest(app).delete(`/lesson/123`);
+          const result = await supertest(app)
+            .delete(`/lesson/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined();
         });
@@ -402,6 +561,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should throw an error when the schedule`ID is incorrect', async () => {
           const response = await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -415,6 +578,10 @@ describe('Schedule lesson management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .post('/lesson/add/students')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id,
               newStudentsList: ['invalidId'],
@@ -435,9 +602,19 @@ describe('Schedule lesson management module end to end test', () => {
             times: ['15:55', '19:00'] as Hour[],
             semester: 2 as 1 | 2,
           };
-          await supertest(app).post('/lesson').send(input);
+          await supertest(app)
+            .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send(input);
           const result = await supertest(app)
             .post('/lesson/remove/students')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: new Id().id,
               schedulesListToRemove: [input.studentsList[0]],
@@ -450,6 +627,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should throw an error when the day is incorrect', async () => {
           const response = await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -463,6 +644,10 @@ describe('Schedule lesson management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .post('/lesson/add/day')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id,
               newDayList: ['sunday'],
@@ -483,9 +668,19 @@ describe('Schedule lesson management module end to end test', () => {
             times: ['15:55', '19:00'] as Hour[],
             semester: 2 as 1 | 2,
           };
-          await supertest(app).post('/lesson').send(input);
+          await supertest(app)
+            .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send(input);
           const result = await supertest(app)
             .post('/lesson/remove/day')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: new Id().id,
               dayListToRemove: ['tue'],
@@ -498,6 +693,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should throw an error when the time format is incorrect', async () => {
           const response = await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -511,6 +710,10 @@ describe('Schedule lesson management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .post('/lesson/add/time')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id,
               newTimeList: ['24:00'],
@@ -531,9 +734,19 @@ describe('Schedule lesson management module end to end test', () => {
             times: ['15:55', '19:00'] as Hour[],
             semester: 2 as 1 | 2,
           };
-          await supertest(app).post('/lesson').send(input);
+          await supertest(app)
+            .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send(input);
           const result = await supertest(app)
             .post('/lesson/remove/time')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: new Id().id,
               newTimeList: ['22:00'],
@@ -548,6 +761,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should create a lesson', async () => {
           const response = await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -566,6 +783,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should find a lesson by ID', async () => {
           const response = await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -577,7 +798,12 @@ describe('Schedule lesson management module end to end test', () => {
               semester: 2 as 1 | 2,
             });
           const id = response.body.id;
-          const lesson = await supertest(app).get(`/lesson/${id}`);
+          const lesson = await supertest(app)
+            .get(`/lesson/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(lesson.status).toBe(200);
           expect(lesson.body).toBeDefined();
         });
@@ -586,6 +812,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -598,6 +828,10 @@ describe('Schedule lesson management module end to end test', () => {
             });
           await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -608,7 +842,12 @@ describe('Schedule lesson management module end to end test', () => {
               times: ['15:55', '19:00'] as Hour[],
               semester: 2 as 1 | 2,
             });
-          const response = await supertest(app).get('/lessons');
+          const response = await supertest(app)
+            .get('/lessons')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -618,6 +857,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -631,6 +874,10 @@ describe('Schedule lesson management module end to end test', () => {
           const id = response.body.id;
           const updatedLesson = await supertest(app)
             .patch(`/lesson/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               duration: 75,
             });
@@ -642,6 +889,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should delete a user by ID', async () => {
           const response = await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -653,7 +904,12 @@ describe('Schedule lesson management module end to end test', () => {
               semester: 2 as 1 | 2,
             });
           const id = response.body.id;
-          const result = await supertest(app).delete(`/lesson/${id}`);
+          const result = await supertest(app)
+            .delete(`/lesson/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -662,6 +918,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should add students to the lesson', async () => {
           const response = await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -675,6 +935,10 @@ describe('Schedule lesson management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .post('/lesson/add/students')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id,
               newStudentsList: [new Id().id],
@@ -695,10 +959,20 @@ describe('Schedule lesson management module end to end test', () => {
             times: ['15:55', '19:00'] as Hour[],
             semester: 2 as 1 | 2,
           };
-          const response = await supertest(app).post('/lesson').send(input);
+          const response = await supertest(app)
+            .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send(input);
           const id = response.body.id;
           const result = await supertest(app)
             .post('/lesson/remove/students')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id,
               studentsListToRemove: [input.studentsList[0]],
@@ -711,6 +985,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should add day to the lesson', async () => {
           const response = await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -724,6 +1002,10 @@ describe('Schedule lesson management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .post('/lesson/add/day')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id,
               newDaysList: ['tue'],
@@ -744,9 +1026,19 @@ describe('Schedule lesson management module end to end test', () => {
             times: ['15:55', '19:00'] as Hour[],
             semester: 2 as 1 | 2,
           };
-          const id = await supertest(app).post('/lesson').send(input);
+          const id = await supertest(app)
+            .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send(input);
           const result = await supertest(app)
             .post('/lesson/remove/day')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id.body.id,
               daysListToRemove: ['mon'],
@@ -759,6 +1051,10 @@ describe('Schedule lesson management module end to end test', () => {
         it('should add time to the lesson', async () => {
           const response = await supertest(app)
             .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: 'Math advanced I',
               duration: 60,
@@ -772,6 +1068,10 @@ describe('Schedule lesson management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .post('/lesson/add/time')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id,
               newTimesList: ['07:00'],
@@ -792,10 +1092,20 @@ describe('Schedule lesson management module end to end test', () => {
             times: ['15:55', '19:00'] as Hour[],
             semester: 2 as 1 | 2,
           };
-          const response = await supertest(app).post('/lesson').send(input);
+          const response = await supertest(app)
+            .post('/lesson')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send(input);
           const id = response.body.id;
           const result = await supertest(app)
             .post('/lesson/remove/time')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id,
               timesListToRemove: ['15:55'],
