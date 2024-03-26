@@ -3,6 +3,15 @@ import supertest from 'supertest';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import { EventController } from '@/interface/controller/event-calendar-management/event.controller';
 import { EventRoute } from '@/interface/route/event-calendar-management/event.route';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
+
+const mockAuthUserMiddleware = jest.fn(
+  () =>
+    ({
+      //@ts-expect-error
+      handle: jest.fn((req: any, res: any, next: any) => next()),
+    }) as unknown as AuthUserMiddleware
+);
 
 const mockEventController = jest.fn(() => {
   return {
@@ -53,8 +62,13 @@ const mockEventController = jest.fn(() => {
 
 describe('EventRoute unit test', () => {
   const eventController = mockEventController();
+  const authUserMiddleware = mockAuthUserMiddleware();
   const expressHttp = new ExpressHttp();
-  const eventRoute = new EventRoute(eventController, expressHttp);
+  const eventRoute = new EventRoute(
+    eventController,
+    expressHttp,
+    authUserMiddleware
+  );
   eventRoute.routes();
   const app = expressHttp.getExpressInstance();
 
