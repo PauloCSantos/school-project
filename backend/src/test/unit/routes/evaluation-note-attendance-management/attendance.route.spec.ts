@@ -3,6 +3,15 @@ import supertest from 'supertest';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import { AttendanceController } from '@/interface/controller/evaluation-note-attendance-management/attendance.controller';
 import { AttendanceRoute } from '@/interface/route/evaluation-note-attendance-management/attendance.route';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
+
+const mockAuthUserMiddleware = jest.fn(
+  () =>
+    ({
+      //@ts-expect-error
+      handle: jest.fn((req: any, res: any, next: any) => next()),
+    }) as unknown as AuthUserMiddleware
+);
 
 const mockAttendanceController = jest.fn(() => {
   return {
@@ -46,10 +55,12 @@ const mockAttendanceController = jest.fn(() => {
 
 describe('AttendanceRoute unit test', () => {
   const attendanceController = mockAttendanceController();
+  const authUserMiddleware = mockAuthUserMiddleware();
   const expressHttp = new ExpressHttp();
   const attendanceRoute = new AttendanceRoute(
     attendanceController,
-    expressHttp
+    expressHttp,
+    authUserMiddleware
   );
   attendanceRoute.routes();
   const app = expressHttp.getExpressInstance();
