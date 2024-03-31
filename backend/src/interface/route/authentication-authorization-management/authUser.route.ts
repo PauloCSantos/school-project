@@ -1,29 +1,31 @@
 import AuthUserController from '@/interface/controller/authentication-authorization-management/authUser.controller';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { isNotEmpty, validEmail, validRole } from '@/util/validations';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 
 export default class AuthUserRoute {
   constructor(
     private readonly authUserController: AuthUserController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/authUser/:email', (req: any, res: any) =>
-      this.findAuthUser(req, res)
-    );
-    this.httpGateway.patch('/authUser/:email', (req: any, res: any) =>
-      this.updateAuthUser(req, res)
-    );
-    this.httpGateway.delete('/authUser/:email', (req: any, res: any) =>
-      this.deleteAuthUser(req, res)
-    );
-    this.httpGateway.post('/register', (req: any, res: any) =>
-      this.createAuthUser(req, res)
-    );
-    this.httpGateway.post('/login', (req: any, res: any) =>
-      this.loginAuthUser(req, res)
-    );
+    this.httpGateway.get('/authUser/:email', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findAuthUser(req, res));
+    });
+    this.httpGateway.patch('/authUser/:email', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.updateAuthUser(req, res));
+    });
+    this.httpGateway.delete('/authUser/:email', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.deleteAuthUser(req, res));
+    });
+    this.httpGateway.post('/register', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.createAuthUser(req, res));
+    });
+    this.httpGateway.post('/login', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.loginAuthUser(req, res));
+    });
   }
 
   private async createAuthUser(req: any, res: any): Promise<void> {
