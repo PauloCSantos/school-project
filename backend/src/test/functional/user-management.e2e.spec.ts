@@ -1,3 +1,4 @@
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 import CreateUserAdministrator from '@/application/usecases/user-management/administrator/createUserAdministrator.usecase';
 import DeleteUserAdministrator from '@/application/usecases/user-management/administrator/deleteUserAdministrator.usecase';
 import FindAllUserAdministrator from '@/application/usecases/user-management/administrator/findAllUserAdministrator.usecase';
@@ -21,6 +22,7 @@ import DeleteUserWorker from '@/application/usecases/user-management/worker/dele
 import FindAllUserWorker from '@/application/usecases/user-management/worker/findAllUserWorker.usecase';
 import FindUserWorker from '@/application/usecases/user-management/worker/findUserWorker.usecase';
 import UpdateUserWorker from '@/application/usecases/user-management/worker/updateUserWorker.usecase';
+import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import MemoryUserAdministratorRepository from '@/infraestructure/repositories/user-management-repository/memory-repository/user-administrator.repository';
 import MemoryUserMasterRepository from '@/infraestructure/repositories/user-management-repository/memory-repository/user-master.repository';
@@ -37,6 +39,7 @@ import { UserMasterRoute } from '@/interface/route/user-management/user-master.r
 import { UserStudentRoute } from '@/interface/route/user-management/user-student.route';
 import { UserTeacherRoute } from '@/interface/route/user-management/user-teacher.route';
 import { UserWorkerRoute } from '@/interface/route/user-management/user-worker.route';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 
 describe('User management module end to end test', () => {
@@ -141,25 +144,57 @@ describe('User management module end to end test', () => {
       deleteUserWorkerUsecase
     );
     const expressHttp = new ExpressHttp();
+    const tokerService = tokenInstance();
+
+    const authUserMiddlewareMaster = new AuthUserMiddleware(tokerService, [
+      'master',
+    ]);
+    const authUserMiddlewareAdministrator = new AuthUserMiddleware(
+      tokerService,
+      ['master', 'administrator']
+    );
+    const authUserMiddlewareTeacher = new AuthUserMiddleware(tokerService, [
+      'master',
+      'administrator',
+      'teacher',
+      'student',
+    ]);
+    const authUserMiddlewareStudent = new AuthUserMiddleware(tokerService, [
+      'master',
+      'administrator',
+      'teacher',
+      'student',
+    ]);
+    const authUserMiddlewareWorker = new AuthUserMiddleware(tokerService, [
+      'master',
+      'worker',
+      'administrator',
+    ]);
+
     const userAdministratorRoute = new UserAdministratorRoute(
       userAdministratorController,
-      expressHttp
+      expressHttp,
+      authUserMiddlewareAdministrator
     );
     const userMasterRoute = new UserMasterRoute(
       userMasterController,
-      expressHttp
+      expressHttp,
+      authUserMiddlewareMaster
     );
     const userStudentRoute = new UserStudentRoute(
       userStudentController,
-      expressHttp
+      expressHttp,
+      authUserMiddlewareStudent
     );
     const userTeacherRoute = new UserTeacherRoute(
       userTeacherController,
-      expressHttp
+      expressHttp,
+      authUserMiddlewareTeacher
     );
     const userWorkerRoute = new UserWorkerRoute(
       userWorkerController,
-      expressHttp
+      expressHttp,
+      authUserMiddlewareWorker
     );
 
     userAdministratorRoute.routes();
@@ -176,6 +211,10 @@ describe('User management module end to end test', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-administrator')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: '',
@@ -204,6 +243,10 @@ describe('User management module end to end test', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/user-administrator')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -224,17 +267,24 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
             });
-          const userAdministrator = await supertest(app).get(
-            `/user-administrator/123`
-          );
+          const userAdministrator = await supertest(app)
+            .get(`/user-administrator/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(userAdministrator.status).toBe(400);
-          expect(userAdministrator.body.error).toBeDefined;
+          expect(userAdministrator.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-administrator/:id', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-administrator')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -258,6 +308,10 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-administrator/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               address: {
                 zip: '',
@@ -272,6 +326,10 @@ describe('User management module end to end test', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/user-administrator')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -292,17 +350,26 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
             });
-          const result = await supertest(app).delete(`/user-administrator/123`);
+          const result = await supertest(app)
+            .delete(`/user-administrator/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
-    describe('On sucess', () => {
+    describe('On success', () => {
       describe('POST /user-administrator', () => {
         it('should create a user', async () => {
           const response = await supertest(app)
             .post('/user-administrator')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -331,6 +398,10 @@ describe('User management module end to end test', () => {
         it('should find a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-administrator')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -352,9 +423,12 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
             });
           const id = response.body.id;
-          const userAdministrator = await supertest(app).get(
-            `/user-administrator/${id}`
-          );
+          const userAdministrator = await supertest(app)
+            .get(`/user-administrator/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(userAdministrator.status).toBe(200);
           expect(userAdministrator.body).toBeDefined();
         });
@@ -363,6 +437,10 @@ describe('User management module end to end test', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/user-administrator')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -385,6 +463,10 @@ describe('User management module end to end test', () => {
             });
           await supertest(app)
             .post('/user-administrator')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'Marie',
@@ -405,9 +487,14 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Spanish',
             });
-          const response = await supertest(app).get('/user-administrators');
+          const response = await supertest(app)
+            .get('/user-administrators')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -415,6 +502,10 @@ describe('User management module end to end test', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-administrator')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -438,6 +529,10 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-administrator/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               address: {
                 street: 'Street B',
@@ -457,6 +552,10 @@ describe('User management module end to end test', () => {
         it('should delete a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-administrator')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -478,9 +577,12 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
             });
           const id = response.body.id;
-          const result = await supertest(app).delete(
-            `/user-administrator/${id}`
-          );
+          const result = await supertest(app)
+            .delete(`/user-administrator/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -535,9 +637,14 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
             });
-          const userMaster = await supertest(app).get(`/user-masters/123`);
-          expect(userMaster.status).toBe(404);
-          expect(userMaster.body.error).toBeDefined;
+          const response = await supertest(app)
+            .get(`/user-master/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
+          expect(response.status).toBe(400);
+          expect(response.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-master/:id', () => {
@@ -564,6 +671,10 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-master/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               cnpj: '142154654',
             });
@@ -578,6 +689,7 @@ describe('User management module end to end test', () => {
           const response = await supertest(app)
             .post('/user-master')
             .send({
+              id: new Id().id,
               name: {
                 firstName: 'John',
                 lastName: 'Doe',
@@ -603,6 +715,7 @@ describe('User management module end to end test', () => {
           const response = await supertest(app)
             .post('/user-master')
             .send({
+              id: new Id().id,
               name: {
                 firstName: 'John',
                 lastName: 'Doe',
@@ -620,7 +733,12 @@ describe('User management module end to end test', () => {
               cnpj: '35.741.901/0001-58',
             });
           const id = response.body.id;
-          const userMaster = await supertest(app).get(`/user-master/${id}`);
+          const userMaster = await supertest(app)
+            .get(`/user-master/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(userMaster.status).toBe(200);
           expect(userMaster.body).toBeDefined();
         });
@@ -630,6 +748,7 @@ describe('User management module end to end test', () => {
           const response = await supertest(app)
             .post('/user-master')
             .send({
+              id: new Id().id,
               name: {
                 firstName: 'John',
                 lastName: 'Doe',
@@ -649,6 +768,10 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-master/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               email: 'teste2@test.com',
               cnpj: '35.845.901/0001-58',
@@ -665,6 +788,10 @@ describe('User management module end to end test', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-student')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -690,6 +817,10 @@ describe('User management module end to end test', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/user-student')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -707,15 +838,24 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
-          const userStudent = await supertest(app).get(`/user-student/123`);
+          const userStudent = await supertest(app)
+            .get(`/user-student/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(userStudent.status).toBe(400);
-          expect(userStudent.body.error).toBeDefined;
+          expect(userStudent.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-student/:id', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-student')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -736,6 +876,10 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-student/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               paymentYear: 0,
               birthday: '18/02/2024',
@@ -748,6 +892,10 @@ describe('User management module end to end test', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/user-student')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -765,9 +913,14 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
-          const result = await supertest(app).delete(`/user-student/123`);
+          const result = await supertest(app)
+            .delete(`/user-student/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -776,6 +929,10 @@ describe('User management module end to end test', () => {
         it('should create a user', async () => {
           const response = await supertest(app)
             .post('/user-student')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -801,6 +958,10 @@ describe('User management module end to end test', () => {
         it('should find a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-student')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -819,7 +980,12 @@ describe('User management module end to end test', () => {
               paymentYear: 20000,
             });
           const id = response.body.id;
-          const userStudent = await supertest(app).get(`/user-student/${id}`);
+          const userStudent = await supertest(app)
+            .get(`/user-student/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(userStudent.status).toBe(200);
           expect(userStudent.body).toBeDefined();
         });
@@ -828,6 +994,10 @@ describe('User management module end to end test', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/user-student')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -847,6 +1017,10 @@ describe('User management module end to end test', () => {
             });
           await supertest(app)
             .post('/user-student')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -864,9 +1038,14 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
-          const response = await supertest(app).get('/user-students');
+          const response = await supertest(app)
+            .get('/user-students')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -874,6 +1053,10 @@ describe('User management module end to end test', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-student')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -894,6 +1077,10 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-student/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -919,6 +1106,10 @@ describe('User management module end to end test', () => {
         it('should delete a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-student')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -937,7 +1128,12 @@ describe('User management module end to end test', () => {
               paymentYear: 20000,
             });
           const id = response.body.id;
-          const result = await supertest(app).delete(`/user-student/${id}`);
+          const result = await supertest(app)
+            .delete(`/user-student/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -950,6 +1146,10 @@ describe('User management module end to end test', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-teacher')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -979,6 +1179,10 @@ describe('User management module end to end test', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/user-teacher')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1000,15 +1204,24 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          const userTeacher = await supertest(app).get(`/user-teacher/123`);
+          const userTeacher = await supertest(app)
+            .get(`/user-teacher/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(userTeacher.status).toBe(400);
-          expect(userTeacher.body.error).toBeDefined;
+          expect(userTeacher.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-teacher/:id', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-teacher')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1033,6 +1246,10 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-teacher/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               academicDegrees: 0,
               birthday: '02/20/2024',
@@ -1045,6 +1262,10 @@ describe('User management module end to end test', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/user-teacher')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1066,9 +1287,14 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          const result = await supertest(app).delete(`/user-teacher/123`);
+          const result = await supertest(app)
+            .delete(`/user-teacher/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -1077,6 +1303,10 @@ describe('User management module end to end test', () => {
         it('should create a user', async () => {
           const response = await supertest(app)
             .post('/user-teacher')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1106,6 +1336,10 @@ describe('User management module end to end test', () => {
         it('should find a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-teacher')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1128,7 +1362,12 @@ describe('User management module end to end test', () => {
               academicDegrees: 'Msc',
             });
           const id = response.body.id;
-          const userTeacher = await supertest(app).get(`/user-teacher/${id}`);
+          const userTeacher = await supertest(app)
+            .get(`/user-teacher/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(userTeacher.status).toBe(200);
           expect(userTeacher.body).toBeDefined();
         });
@@ -1137,6 +1376,10 @@ describe('User management module end to end test', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/user-teacher')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1160,6 +1403,10 @@ describe('User management module end to end test', () => {
             });
           await supertest(app)
             .post('/user-teacher')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1181,9 +1428,14 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          const response = await supertest(app).get('/user-teachers');
+          const response = await supertest(app)
+            .get('/user-teachers')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -1191,6 +1443,10 @@ describe('User management module end to end test', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-teacher')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1215,6 +1471,10 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-teacher/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1244,6 +1504,10 @@ describe('User management module end to end test', () => {
         it('should delete a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-teacher')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1266,7 +1530,12 @@ describe('User management module end to end test', () => {
               academicDegrees: 'Msc',
             });
           const id = response.body.id;
-          const result = await supertest(app).delete(`/user-teacher/${id}`);
+          const result = await supertest(app)
+            .delete(`/user-teacher/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -1279,6 +1548,10 @@ describe('User management module end to end test', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-worker')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1306,6 +1579,10 @@ describe('User management module end to end test', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/user-worker')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1325,15 +1602,24 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          const userWorker = await supertest(app).get(`/user-worker/123`);
+          const userWorker = await supertest(app)
+            .get(`/user-worker/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(userWorker.status).toBe(400);
-          expect(userWorker.body.error).toBeDefined;
+          expect(userWorker.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-worker/:id', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-worker')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1356,6 +1642,10 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-worker/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               salary: {
                 salary: 'a',
@@ -1369,6 +1659,10 @@ describe('User management module end to end test', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/user-worker')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1388,9 +1682,14 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          const result = await supertest(app).delete(`/user-worker/123`);
+          const result = await supertest(app)
+            .delete(`/user-worker/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -1399,6 +1698,10 @@ describe('User management module end to end test', () => {
         it('should create a user', async () => {
           const response = await supertest(app)
             .post('/user-worker')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1426,6 +1729,10 @@ describe('User management module end to end test', () => {
         it('should find a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-worker')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1446,7 +1753,12 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
             });
           const id = response.body.id;
-          const userWorker = await supertest(app).get(`/user-worker/${id}`);
+          const userWorker = await supertest(app)
+            .get(`/user-worker/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(userWorker.status).toBe(200);
           expect(userWorker.body).toBeDefined();
         });
@@ -1455,6 +1767,10 @@ describe('User management module end to end test', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/user-worker')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1476,6 +1792,10 @@ describe('User management module end to end test', () => {
             });
           await supertest(app)
             .post('/user-worker')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1495,9 +1815,14 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          const response = await supertest(app).get('/user-workers');
+          const response = await supertest(app)
+            .get('/user-workers')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -1505,6 +1830,10 @@ describe('User management module end to end test', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-worker')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1527,6 +1856,10 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-worker/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1554,6 +1887,10 @@ describe('User management module end to end test', () => {
         it('should delete a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-worker')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -1574,7 +1911,12 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
             });
           const id = response.body.id;
-          const result = await supertest(app).delete(`/user-worker/${id}`);
+          const result = await supertest(app)
+            .delete(`/user-worker/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });

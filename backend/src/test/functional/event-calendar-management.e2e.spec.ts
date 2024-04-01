@@ -1,8 +1,10 @@
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 import CreateEvent from '@/application/usecases/event-calendar-management/event/createEvent.usecase';
 import DeleteEvent from '@/application/usecases/event-calendar-management/event/deleteEvent.usecase';
 import FindAllEvent from '@/application/usecases/event-calendar-management/event/findAllEvent.usecase';
 import FindEvent from '@/application/usecases/event-calendar-management/event/findEvent.usecase';
 import UpdateEvent from '@/application/usecases/event-calendar-management/event/updateEvent.usecase';
+import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import MemoryEventRepository from '@/infraestructure/repositories/event-calendar-management/memory-repository/event.repository';
 import { EventController } from '@/interface/controller/event-calendar-management/event.controller';
@@ -32,7 +34,21 @@ describe('Event calendar management module end to end test', () => {
     );
 
     const expressHttp = new ExpressHttp();
-    const eventRoute = new EventRoute(eventController, expressHttp);
+    const tokerService = tokenInstance();
+
+    const authUserMiddlewareEvent = new AuthUserMiddleware(tokerService, [
+      'master',
+      'administrator',
+      'student',
+      'teacher',
+      'worker',
+    ]);
+
+    const eventRoute = new EventRoute(
+      eventController,
+      expressHttp,
+      authUserMiddlewareEvent
+    );
     eventRoute.routes();
     app = expressHttp.getExpressInstance();
   });
@@ -43,6 +59,10 @@ describe('Event calendar management module end to end test', () => {
         it('should throw an error when the data to create an event is wrong', async () => {
           const response = await supertest(app)
             .post('/event')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               creator: new Id().id,
               name: 'Christmas',
@@ -59,6 +79,10 @@ describe('Event calendar management module end to end test', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/event')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               creator: new Id().id,
               name: 'Christmas',
@@ -68,15 +92,24 @@ describe('Event calendar management module end to end test', () => {
               type: 'event',
               place: 'school',
             });
-          const event = await supertest(app).get(`/event/123`);
+          const event = await supertest(app)
+            .get(`/event/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(event.status).toBe(400);
-          expect(event.body.error).toBeDefined;
+          expect(event.body.error).toBeDefined();
         });
       });
       describe('PATCH /event/:id', () => {
         it('should throw an error when the data to update a event is wrong', async () => {
           const response = await supertest(app)
             .post('/event')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               creator: new Id().id,
               name: 'Christmas',
@@ -87,9 +120,15 @@ describe('Event calendar management module end to end test', () => {
               place: 'school',
             });
           const id = response.body.id;
-          const updatedEvent = await supertest(app).patch(`/event/${id}`).send({
-            name: 'Chs',
-          });
+          const updatedEvent = await supertest(app)
+            .patch(`/event/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              name: 'Chs',
+            });
           expect(updatedEvent.status).toBe(404);
           expect(updatedEvent.body.error).toBeDefined();
         });
@@ -98,6 +137,10 @@ describe('Event calendar management module end to end test', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/event')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               creator: new Id().id,
               name: 'Christmas',
@@ -107,9 +150,14 @@ describe('Event calendar management module end to end test', () => {
               type: 'event',
               place: 'school',
             });
-          const result = await supertest(app).delete(`/event/123`);
+          const result = await supertest(app)
+            .delete(`/event/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -118,6 +166,10 @@ describe('Event calendar management module end to end test', () => {
         it('should create an event', async () => {
           const response = await supertest(app)
             .post('/event')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               creator: new Id().id,
               name: 'Christmas',
@@ -135,6 +187,10 @@ describe('Event calendar management module end to end test', () => {
         it('should find a user by ID', async () => {
           const response = await supertest(app)
             .post('/event')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               creator: new Id().id,
               name: 'Christmas',
@@ -145,7 +201,12 @@ describe('Event calendar management module end to end test', () => {
               place: 'school',
             });
           const id = response.body.id;
-          const event = await supertest(app).get(`/event/${id}`);
+          const event = await supertest(app)
+            .get(`/event/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(event.status).toBe(200);
           expect(event.body).toBeDefined();
         });
@@ -154,6 +215,10 @@ describe('Event calendar management module end to end test', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/event')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               creator: new Id().id,
               name: 'Christmas',
@@ -165,6 +230,10 @@ describe('Event calendar management module end to end test', () => {
             });
           await supertest(app)
             .post('/event')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               creator: new Id().id,
               name: 'Christmas',
@@ -174,9 +243,14 @@ describe('Event calendar management module end to end test', () => {
               type: 'event',
               place: 'school',
             });
-          const response = await supertest(app).get('/events');
+          const response = await supertest(app)
+            .get('/events')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -184,6 +258,10 @@ describe('Event calendar management module end to end test', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/event')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               creator: new Id().id,
               name: 'Christmas',
@@ -194,9 +272,15 @@ describe('Event calendar management module end to end test', () => {
               place: 'school',
             });
           const id = response.body.id;
-          const updatedEvent = await supertest(app).patch(`/event/${id}`).send({
-            creator: new Id().id,
-          });
+          const updatedEvent = await supertest(app)
+            .patch(`/event/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              creator: new Id().id,
+            });
           expect(updatedEvent.status).toBe(200);
           expect(updatedEvent.body).toBeDefined();
         });
@@ -205,6 +289,10 @@ describe('Event calendar management module end to end test', () => {
         it('should delete a user by ID', async () => {
           const response = await supertest(app)
             .post('/event')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               creator: new Id().id,
               name: 'Christmas',
@@ -215,7 +303,12 @@ describe('Event calendar management module end to end test', () => {
               place: 'school',
             });
           const id = response.body.id;
-          const result = await supertest(app).delete(`/event/${id}`);
+          const result = await supertest(app)
+            .delete(`/event/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });

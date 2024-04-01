@@ -62,19 +62,19 @@ describe('SubjectController unit test', () => {
       description: 'Described subject',
     });
 
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
     expect(createSubject.execute).toHaveBeenCalled();
   });
   it('should return a subject', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(findSubject.execute).toHaveBeenCalled();
   });
   it('should return all subjects', async () => {
     const result = await controller.findAll({});
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllSubject.execute).toHaveBeenCalled();
   });
@@ -84,7 +84,7 @@ describe('SubjectController unit test', () => {
       description: 'new description',
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(updateSubject.execute).toHaveBeenCalled();
   });
   it('should delete a subject', async () => {
@@ -92,7 +92,7 @@ describe('SubjectController unit test', () => {
       id: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(deleteSubject.execute).toHaveBeenCalled();
   });
 });

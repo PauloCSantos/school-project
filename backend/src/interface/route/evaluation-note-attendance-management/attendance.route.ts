@@ -1,34 +1,49 @@
 import { AttendanceController } from '@/interface/controller/evaluation-note-attendance-management/attendance.controller';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { validId } from '@/util/validations';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 
 export class AttendanceRoute {
   constructor(
     private readonly attendanceController: AttendanceController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/attendances', (req: any, res: any) =>
-      this.findAllAttendances(req, res)
-    );
-    this.httpGateway.post('/attendance', (req: any, res: any) =>
-      this.createAttendance(req, res)
-    );
-    this.httpGateway.get('/attendance/:id', (req: any, res: any) =>
-      this.findAttendance(req, res)
-    );
-    this.httpGateway.patch('/attendance/:id', (req: any, res: any) =>
-      this.updateAttendance(req, res)
-    );
-    this.httpGateway.delete('/attendance/:id', (req: any, res: any) =>
-      this.deleteAttendance(req, res)
-    );
-    this.httpGateway.post('/attendance/add/students', (req: any, res: any) =>
-      this.addStudents(req, res)
-    );
-    this.httpGateway.post('/attendance/remove/students', (req: any, res: any) =>
-      this.removeStudents(req, res)
+    this.httpGateway.get('/attendances', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.findAllAttendances(req, res)
+      );
+    });
+    this.httpGateway.post('/attendance', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.createAttendance(req, res)
+      );
+    });
+    this.httpGateway.get('/attendance/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findAttendance(req, res));
+    });
+    this.httpGateway.patch('/attendance/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.updateAttendance(req, res)
+      );
+    });
+    this.httpGateway.delete('/attendance/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.deleteAttendance(req, res)
+      );
+    });
+    this.httpGateway.post('/attendance/add/students', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.addStudents(req, res));
+    });
+    this.httpGateway.post(
+      '/attendance/remove/students',
+      (req: any, res: any) => {
+        this.authMiddleware.handle(req, res, () =>
+          this.removeStudents(req, res)
+        );
+      }
     );
   }
 

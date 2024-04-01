@@ -69,7 +69,7 @@ describe('createUserStudent usecase unit test', () => {
         expect.any(String)
       );
       expect(userStudentRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

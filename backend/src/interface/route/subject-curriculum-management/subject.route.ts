@@ -1,29 +1,33 @@
 import { SubjectController } from '@/interface/controller/subject-curriculum-management/subject.controller';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { validId } from '@/util/validations';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 
 export class SubjectRoute {
   constructor(
     private readonly subjectController: SubjectController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/subjects', (req: any, res: any) =>
-      this.findAllSubjects(req, res)
-    );
-    this.httpGateway.post('/subject', (req: any, res: any) =>
-      this.createSubject(req, res)
-    );
-    this.httpGateway.get('/subject/:id', (req: any, res: any) =>
-      this.findSubject(req, res)
-    );
-    this.httpGateway.patch('/subject/:id', (req: any, res: any) =>
-      this.updateSubject(req, res)
-    );
-    this.httpGateway.delete('/subject/:id', (req: any, res: any) =>
-      this.deleteSubject(req, res)
-    );
+    this.httpGateway.get('/subjects', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.findAllSubjects(req, res)
+      );
+    });
+    this.httpGateway.post('/subject', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.createSubject(req, res));
+    });
+    this.httpGateway.get('/subject/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findSubject(req, res));
+    });
+    this.httpGateway.patch('/subject/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.updateSubject(req, res));
+    });
+    this.httpGateway.delete('/subject/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.deleteSubject(req, res));
+    });
   }
 
   private async findAllSubjects(req: any, res: any): Promise<void> {

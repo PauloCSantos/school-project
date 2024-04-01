@@ -63,14 +63,14 @@ describe('User Worker facade integration test', () => {
     const facade = WorkerFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an user Worker using the facade', async () => {
     const facade = WorkerFacadeFactory.create();
     const result = await facade.create(input);
     const userWorker = await facade.find(result);
 
-    expect(userWorker).toBeDefined;
+    expect(userWorker).toBeDefined();
   });
   it('should find all users Worker using the facade', async () => {
     const facade = WorkerFacadeFactory.create();
@@ -108,6 +108,6 @@ describe('User Worker facade integration test', () => {
       },
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

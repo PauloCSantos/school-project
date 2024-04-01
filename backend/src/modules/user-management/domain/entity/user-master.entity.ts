@@ -10,6 +10,7 @@ type MasterUserProps = UserBaseProps & {
 export default class UserMaster extends UserBase {
   private _cnpj;
   constructor(input: MasterUserProps) {
+    if (input.id === undefined) throw new Error('Master user needs id');
     super(input);
     if (input.cnpj === undefined) throw new Error('Field CNPJ is mandatory');
     if (this.validateCnpj(input.cnpj))

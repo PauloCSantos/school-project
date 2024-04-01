@@ -3,6 +3,15 @@ import { UserAdministratorRoute } from '@/interface/route/user-management/user-a
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import ExpressHttp from '@/infraestructure/http/express-http';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
+
+const mockAuthUserMiddleware = jest.fn(
+  () =>
+    ({
+      //@ts-expect-error
+      handle: jest.fn((req: any, res: any, next: any) => next()),
+    }) as unknown as AuthUserMiddleware
+);
 
 const mockUserAdministratorController = jest.fn(() => {
   return {
@@ -81,10 +90,12 @@ const mockUserAdministratorController = jest.fn(() => {
 
 describe('UserAdministratorRoute unit test', () => {
   const userAdministratorController = mockUserAdministratorController();
+  const authUserMiddleware = mockAuthUserMiddleware();
   const expressHttp = new ExpressHttp();
   const userAdministratorRoute = new UserAdministratorRoute(
     userAdministratorController,
-    expressHttp
+    expressHttp,
+    authUserMiddleware
   );
   userAdministratorRoute.routes();
   const app = expressHttp.getExpressInstance();
@@ -133,7 +144,7 @@ describe('UserAdministratorRoute unit test', () => {
       const response = await supertest(app).get('/user-administrators');
       expect(response.status).toBe(200);
       expect(userAdministratorController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -163,7 +174,7 @@ describe('UserAdministratorRoute unit test', () => {
       );
       expect(response.status).toBe(200);
       expect(userAdministratorController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
 });

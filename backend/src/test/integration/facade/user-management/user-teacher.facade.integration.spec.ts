@@ -69,14 +69,14 @@ describe('User Teacher facade integration test', () => {
     const facade = TeacherFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an user Teacher using the facade', async () => {
     const facade = TeacherFacadeFactory.create();
     const result = await facade.create(input);
     const userTeacher = await facade.find(result);
 
-    expect(userTeacher).toBeDefined;
+    expect(userTeacher).toBeDefined();
   });
   it('should find all users Teacher using the facade', async () => {
     const facade = TeacherFacadeFactory.create();
@@ -114,6 +114,6 @@ describe('User Teacher facade integration test', () => {
       },
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

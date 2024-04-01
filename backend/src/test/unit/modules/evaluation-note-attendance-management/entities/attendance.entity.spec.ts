@@ -69,7 +69,7 @@ describe('Attendance unit test', () => {
       const attendanceInstance = new Attendance(attendanceData);
 
       expect(attendanceInstance).toBeInstanceOf(Attendance);
-      expect(attendanceInstance.id).toBeDefined;
+      expect(attendanceInstance.id).toBeDefined();
       expect(attendanceInstance.lesson).toBe(attendanceData.lesson);
       expect(attendanceInstance.date).toEqual(attendanceData.date);
       expect(attendanceInstance.hour).toBe(attendanceData.hour);

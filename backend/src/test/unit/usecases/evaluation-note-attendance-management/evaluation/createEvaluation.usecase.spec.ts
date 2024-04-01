@@ -51,7 +51,7 @@ describe('createEvaluation usecase unit test', () => {
         expect.any(String)
       );
       expect(evaluationRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

@@ -125,17 +125,17 @@ describe('UserWorkerController unit test', () => {
       email: 'teste1@test.com',
     });
 
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should return a user', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should return all users', async () => {
     const result = await controller.findAll({});
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(result.length).toBe(2);
   });
   it('should update an user', async () => {
@@ -146,13 +146,13 @@ describe('UserWorkerController unit test', () => {
       },
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should delete an users', async () => {
     const result = await controller.delete({
       id: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

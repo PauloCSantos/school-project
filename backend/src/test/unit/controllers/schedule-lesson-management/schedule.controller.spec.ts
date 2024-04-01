@@ -100,19 +100,19 @@ describe('ScheduleController unit test', () => {
       ],
     });
 
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
     expect(createSchedule.execute).toHaveBeenCalled();
   });
   it('should return a schedule', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(findSchedule.execute).toHaveBeenCalled();
   });
   it('should return all schedules', async () => {
     const result = await controller.findAll({});
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllSchedule.execute).toHaveBeenCalled();
   });
@@ -122,7 +122,7 @@ describe('ScheduleController unit test', () => {
       curriculum: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(updateSchedule.execute).toHaveBeenCalled();
   });
   it('should delete a schedule', async () => {
@@ -130,7 +130,7 @@ describe('ScheduleController unit test', () => {
       id: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(deleteSchedule.execute).toHaveBeenCalled();
   });
   it('should add a subject to the schedule', async () => {
@@ -139,7 +139,7 @@ describe('ScheduleController unit test', () => {
       newLessonsList: [new Id().id],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(addLessons.execute).toHaveBeenCalled();
   });
   it('should remove a subject from the schedule', async () => {
@@ -148,7 +148,7 @@ describe('ScheduleController unit test', () => {
       lessonsListToRemove: [new Id().id, new Id().id],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(removeLessons.execute).toHaveBeenCalled();
   });
 });

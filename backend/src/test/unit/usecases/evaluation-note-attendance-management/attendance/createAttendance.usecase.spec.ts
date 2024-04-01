@@ -53,7 +53,7 @@ describe('createAttendance usecase unit test', () => {
         expect.any(String)
       );
       expect(attendanceRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

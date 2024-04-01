@@ -3,6 +3,15 @@ import supertest from 'supertest';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import { AttendanceController } from '@/interface/controller/evaluation-note-attendance-management/attendance.controller';
 import { AttendanceRoute } from '@/interface/route/evaluation-note-attendance-management/attendance.route';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
+
+const mockAuthUserMiddleware = jest.fn(
+  () =>
+    ({
+      //@ts-expect-error
+      handle: jest.fn((req: any, res: any, next: any) => next()),
+    }) as unknown as AuthUserMiddleware
+);
 
 const mockAttendanceController = jest.fn(() => {
   return {
@@ -46,10 +55,12 @@ const mockAttendanceController = jest.fn(() => {
 
 describe('AttendanceRoute unit test', () => {
   const attendanceController = mockAttendanceController();
+  const authUserMiddleware = mockAuthUserMiddleware();
   const expressHttp = new ExpressHttp();
   const attendanceRoute = new AttendanceRoute(
     attendanceController,
-    expressHttp
+    expressHttp,
+    authUserMiddleware
   );
   attendanceRoute.routes();
   const app = expressHttp.getExpressInstance();
@@ -83,7 +94,7 @@ describe('AttendanceRoute unit test', () => {
       const response = await supertest(app).get('/attendances');
       expect(response.status).toBe(200);
       expect(attendanceController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -106,7 +117,7 @@ describe('AttendanceRoute unit test', () => {
       );
       expect(response.status).toBe(200);
       expect(attendanceController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
   describe('POST /attendance/add/students', () => {
@@ -119,7 +130,7 @@ describe('AttendanceRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(attendanceController.addStudents).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
   describe('POST /attendance/remove/students', () => {
@@ -132,7 +143,7 @@ describe('AttendanceRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(attendanceController.removeStudents).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
 });

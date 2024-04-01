@@ -25,14 +25,14 @@ describe('Evaluation facade integration test', () => {
     const facade = EvaluationFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an Evaluation using the facade', async () => {
     const facade = EvaluationFacadeFactory.create();
     const result = await facade.create(input);
     const Evaluation = await facade.find(result);
 
-    expect(Evaluation).toBeDefined;
+    expect(Evaluation).toBeDefined();
   });
   it('should find all Evaluation using the facade', async () => {
     const facade = EvaluationFacadeFactory.create();
@@ -63,6 +63,6 @@ describe('Evaluation facade integration test', () => {
       value: 9,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

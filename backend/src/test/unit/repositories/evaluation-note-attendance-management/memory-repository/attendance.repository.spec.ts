@@ -51,8 +51,7 @@ describe('MemoryAttendanceRepository unit test', () => {
     it('should received an undefined', async () => {
       const attendanceId = new Id().id;
       const attendanceFound = await repository.find(attendanceId);
-
-      expect(attendanceFound).toBeUndefined;
+      expect(attendanceFound).toBeUndefined();
     });
     it('should throw an error when the Id is wrong', async () => {
       const attendance = new Attendance({
@@ -96,9 +95,8 @@ describe('MemoryAttendanceRepository unit test', () => {
       const attendanceId = attendance1.id.id;
       const attendanceFound = await repository.find(attendanceId);
 
-      expect(attendanceFound).toBeDefined;
-      //@ts-expect-error
-      expect(attendanceFound.id).toBeUndefined;
+      expect(attendanceFound).toBeDefined();
+      expect(attendanceFound!.id).toBeDefined();
       expect(attendanceFound!.lesson).toBe(attendance1.lesson);
       expect(attendanceFound!.date).toBe(attendance1.date);
       expect(attendanceFound!.hour).toBe(attendance1.hour);

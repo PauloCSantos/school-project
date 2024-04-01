@@ -1,35 +1,39 @@
 import { ScheduleController } from '@/interface/controller/schedule-lesson-management/schedule.controller';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { validId } from '@/util/validations';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 
 export class ScheduleRoute {
   constructor(
     private readonly scheduleController: ScheduleController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/schedules', (req: any, res: any) =>
-      this.findAllSchedules(req, res)
-    );
-    this.httpGateway.post('/schedule', (req: any, res: any) =>
-      this.createSchedule(req, res)
-    );
-    this.httpGateway.get('/schedule/:id', (req: any, res: any) =>
-      this.findSchedule(req, res)
-    );
-    this.httpGateway.patch('/schedule/:id', (req: any, res: any) =>
-      this.updateSchedule(req, res)
-    );
-    this.httpGateway.delete('/schedule/:id', (req: any, res: any) =>
-      this.deleteSchedule(req, res)
-    );
-    this.httpGateway.post('/schedule/add', (req: any, res: any) =>
-      this.addLessons(req, res)
-    );
-    this.httpGateway.post('/schedule/remove', (req: any, res: any) =>
-      this.removeLessons(req, res)
-    );
+    this.httpGateway.get('/schedules', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.findAllSchedules(req, res)
+      );
+    });
+    this.httpGateway.post('/schedule', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.createSchedule(req, res));
+    });
+    this.httpGateway.get('/schedule/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findSchedule(req, res));
+    });
+    this.httpGateway.patch('/schedule/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.updateSchedule(req, res));
+    });
+    this.httpGateway.delete('/schedule/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.deleteSchedule(req, res));
+    });
+    this.httpGateway.post('/schedule/add', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.addLessons(req, res));
+    });
+    this.httpGateway.post('/schedule/remove', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.removeLessons(req, res));
+    });
   }
 
   private async findAllSchedules(req: any, res: any): Promise<void> {

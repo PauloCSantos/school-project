@@ -3,6 +3,15 @@ import supertest from 'supertest';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import { LessonController } from '@/interface/controller/schedule-lesson-management/lesson.controller';
 import { LessonRoute } from '@/interface/route/schedule-lesson-management/lesson.route';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
+
+const mockAuthUserMiddleware = jest.fn(
+  () =>
+    ({
+      //@ts-expect-error
+      handle: jest.fn((req: any, res: any, next: any) => next()),
+    }) as unknown as AuthUserMiddleware
+);
 
 const mockLessonController = jest.fn(() => {
   return {
@@ -60,8 +69,13 @@ const mockLessonController = jest.fn(() => {
 
 describe('LessonRoute unit test', () => {
   const lessonController = mockLessonController();
+  const authUserMiddleware = mockAuthUserMiddleware();
   const expressHttp = new ExpressHttp();
-  const lessonRoute = new LessonRoute(lessonController, expressHttp);
+  const lessonRoute = new LessonRoute(
+    lessonController,
+    expressHttp,
+    authUserMiddleware
+  );
   lessonRoute.routes();
   const app = expressHttp.getExpressInstance();
 
@@ -97,7 +111,7 @@ describe('LessonRoute unit test', () => {
       const response = await supertest(app).get('/lessons');
       expect(response.status).toBe(200);
       expect(lessonController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -118,7 +132,7 @@ describe('LessonRoute unit test', () => {
       const response = await supertest(app).delete(`/lesson/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(lessonController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
   describe('POST /lesson/add/students', () => {
@@ -131,7 +145,7 @@ describe('LessonRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(lessonController.addStudents).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
   describe('POST /lesson/remove/students', () => {
@@ -144,7 +158,7 @@ describe('LessonRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(lessonController.removeStudents).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
   describe('POST /lesson/add/day', () => {
@@ -157,7 +171,7 @@ describe('LessonRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(lessonController.addDay).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
   describe('POST /lesson/remove/day', () => {
@@ -170,7 +184,7 @@ describe('LessonRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(lessonController.removeDay).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
   describe('POST /lesson/add/time', () => {
@@ -183,7 +197,7 @@ describe('LessonRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(lessonController.addTime).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
   describe('POST /lesson/remove/time', () => {
@@ -196,7 +210,7 @@ describe('LessonRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(lessonController.removeTime).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
 });

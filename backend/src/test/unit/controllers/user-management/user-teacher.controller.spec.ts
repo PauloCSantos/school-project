@@ -135,19 +135,19 @@ describe('UserTeacherController unit test', () => {
       graduation: 'Math',
     });
 
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
     expect(createUserTeacher.execute).toHaveBeenCalled();
   });
   it('should return a user', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(findUserTeacher.execute).toHaveBeenCalled();
   });
   it('should return all users', async () => {
     const result = await controller.findAll({});
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllUserTeacher.execute).toHaveBeenCalled();
   });
@@ -159,7 +159,7 @@ describe('UserTeacherController unit test', () => {
       },
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(updateUserTeacher.execute).toHaveBeenCalled();
   });
   it('should delete an users', async () => {
@@ -167,7 +167,7 @@ describe('UserTeacherController unit test', () => {
       id: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(deleteUserTeacher.execute).toHaveBeenCalled();
   });
 });

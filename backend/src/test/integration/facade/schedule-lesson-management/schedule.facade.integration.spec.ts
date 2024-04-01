@@ -22,14 +22,14 @@ describe('Schedule facade integration test', () => {
     const facade = ScheduleFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an Schedule using the facade', async () => {
     const facade = ScheduleFacadeFactory.create();
     const result = await facade.create(input);
     const userSchedule = await facade.find(result);
 
-    expect(userSchedule).toBeDefined;
+    expect(userSchedule).toBeDefined();
   });
   it('should find all users Schedule using the facade', async () => {
     const facade = ScheduleFacadeFactory.create();
@@ -60,7 +60,7 @@ describe('Schedule facade integration test', () => {
       curriculum: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should add lessons to the Schedule using the facade', async () => {
     const facade = ScheduleFacadeFactory.create();
@@ -71,7 +71,7 @@ describe('Schedule facade integration test', () => {
       newLessonsList: [new Id().id],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should remove lessons to the Schedule using the facade', async () => {
     const facade = ScheduleFacadeFactory.create();
@@ -82,6 +82,6 @@ describe('Schedule facade integration test', () => {
       lessonsListToRemove: [input.lessonsList[0]],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

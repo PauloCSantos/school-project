@@ -39,7 +39,6 @@ export interface FindAllUserStudentOutputDto
   }> {}
 
 export interface CreateUserStudentInputDto {
-  id: string;
   name: { firstName: string; middleName?: string; lastName: string };
   address: {
     street: string;

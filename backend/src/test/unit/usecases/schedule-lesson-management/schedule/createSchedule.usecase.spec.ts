@@ -51,7 +51,7 @@ describe('createSchedule usecase unit test', () => {
 
       expect(scheduleRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(scheduleRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

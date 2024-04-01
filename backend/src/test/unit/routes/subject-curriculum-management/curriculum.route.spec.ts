@@ -3,6 +3,15 @@ import supertest from 'supertest';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import { CurriculumController } from '@/interface/controller/subject-curriculum-management/curriculum.controller';
 import { CurriculumRoute } from '@/interface/route/subject-curriculum-management/curriculum.route';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
+
+const mockAuthUserMiddleware = jest.fn(
+  () =>
+    ({
+      //@ts-expect-error
+      handle: jest.fn((req: any, res: any, next: any) => next()),
+    }) as unknown as AuthUserMiddleware
+);
 
 const mockCurriculumController = jest.fn(() => {
   return {
@@ -38,10 +47,12 @@ const mockCurriculumController = jest.fn(() => {
 
 describe('CurriculumRoute unit test', () => {
   const curriculumController = mockCurriculumController();
+  const authUserMiddleware = mockAuthUserMiddleware();
   const expressHttp = new ExpressHttp();
   const curriculumRoute = new CurriculumRoute(
     curriculumController,
-    expressHttp
+    expressHttp,
+    authUserMiddleware
   );
   curriculumRoute.routes();
   const app = expressHttp.getExpressInstance();
@@ -73,7 +84,7 @@ describe('CurriculumRoute unit test', () => {
       const response = await supertest(app).get('/curriculums');
       expect(response.status).toBe(200);
       expect(curriculumController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -96,7 +107,7 @@ describe('CurriculumRoute unit test', () => {
       );
       expect(response.status).toBe(200);
       expect(curriculumController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
   describe('POST /curriculum/add', () => {
@@ -109,7 +120,7 @@ describe('CurriculumRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(curriculumController.addSubjects).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
   describe('POST /curriculum/remove', () => {
@@ -122,7 +133,7 @@ describe('CurriculumRoute unit test', () => {
         });
       expect(response.status).toBe(201);
       expect(curriculumController.removeSubjects).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
     });
   });
 });

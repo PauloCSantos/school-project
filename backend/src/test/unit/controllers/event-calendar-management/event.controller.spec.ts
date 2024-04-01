@@ -95,19 +95,19 @@ describe('EventController unit test', () => {
       place: 'school',
     });
 
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
     expect(createEvent.execute).toHaveBeenCalled();
   });
   it('should return a event', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(findEvent.execute).toHaveBeenCalled();
   });
   it('should return all events', async () => {
     const result = await controller.findAll({});
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllEvent.execute).toHaveBeenCalled();
   });
@@ -117,7 +117,7 @@ describe('EventController unit test', () => {
       name: 'Holiday',
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(updateEvent.execute).toHaveBeenCalled();
   });
   it('should delete an event', async () => {
@@ -125,7 +125,7 @@ describe('EventController unit test', () => {
       id: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(deleteEvent.execute).toHaveBeenCalled();
   });
 });

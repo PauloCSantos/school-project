@@ -1,29 +1,39 @@
 import { EvaluationController } from '@/interface/controller/evaluation-note-attendance-management/evaluation.controller';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { validId } from '@/util/validations';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 
 export class EvaluationRoute {
   constructor(
     private readonly evaluationController: EvaluationController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/evaluations', (req: any, res: any) =>
-      this.findAllEvaluations(req, res)
-    );
-    this.httpGateway.post('/evaluation', (req: any, res: any) =>
-      this.createEvaluation(req, res)
-    );
-    this.httpGateway.get('/evaluation/:id', (req: any, res: any) =>
-      this.findEvaluation(req, res)
-    );
-    this.httpGateway.patch('/evaluation/:id', (req: any, res: any) =>
-      this.updateEvaluation(req, res)
-    );
-    this.httpGateway.delete('/evaluation/:id', (req: any, res: any) =>
-      this.deleteEvaluation(req, res)
-    );
+    this.httpGateway.get('/evaluations', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.findAllEvaluations(req, res)
+      );
+    });
+    this.httpGateway.post('/evaluation', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.createEvaluation(req, res)
+      );
+    });
+    this.httpGateway.get('/evaluation/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findEvaluation(req, res));
+    });
+    this.httpGateway.patch('/evaluation/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.updateEvaluation(req, res)
+      );
+    });
+    this.httpGateway.delete('/evaluation/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.deleteEvaluation(req, res)
+      );
+    });
   }
 
   private async findAllEvaluations(req: any, res: any): Promise<void> {

@@ -3,6 +3,15 @@ import supertest from 'supertest';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import { UserMasterController } from '@/interface/controller/user-management/user-master.controller';
 import { UserMasterRoute } from '@/interface/route/user-management/user-master.route';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
+
+const mockAuthUserMiddleware = jest.fn(
+  () =>
+    ({
+      //@ts-expect-error
+      handle: jest.fn((req: any, res: any, next: any) => next()),
+    }) as unknown as AuthUserMiddleware
+);
 
 const mockUserMasterController = jest.fn(() => {
   return {
@@ -46,10 +55,12 @@ const mockUserMasterController = jest.fn(() => {
 
 describe('UserMasterRoute unit test', () => {
   const userMasterController = mockUserMasterController();
+  const authUserMiddleware = mockAuthUserMiddleware();
   const expressHttp = new ExpressHttp();
   const userMasterRoute = new UserMasterRoute(
     userMasterController,
-    expressHttp
+    expressHttp,
+    authUserMiddleware
   );
   userMasterRoute.routes();
   const app = expressHttp.getExpressInstance();

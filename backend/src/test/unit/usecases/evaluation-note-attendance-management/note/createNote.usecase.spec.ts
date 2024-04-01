@@ -46,7 +46,7 @@ describe('createNote usecase unit test', () => {
 
       expect(noteRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(noteRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

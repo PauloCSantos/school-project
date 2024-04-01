@@ -3,6 +3,15 @@ import supertest from 'supertest';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import { EvaluationController } from '@/interface/controller/evaluation-note-attendance-management/evaluation.controller';
 import { EvaluationRoute } from '@/interface/route/evaluation-note-attendance-management/evaluation.route';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
+
+const mockAuthUserMiddleware = jest.fn(
+  () =>
+    ({
+      //@ts-expect-error
+      handle: jest.fn((req: any, res: any, next: any) => next()),
+    }) as unknown as AuthUserMiddleware
+);
 
 const mockEvaluationController = jest.fn(() => {
   return {
@@ -41,10 +50,12 @@ const mockEvaluationController = jest.fn(() => {
 
 describe('EvaluationRoute unit test', () => {
   const evaluationController = mockEvaluationController();
+  const authUserMiddleware = mockAuthUserMiddleware();
   const expressHttp = new ExpressHttp();
   const evaluationRoute = new EvaluationRoute(
     evaluationController,
-    expressHttp
+    expressHttp,
+    authUserMiddleware
   );
   evaluationRoute.routes();
   const app = expressHttp.getExpressInstance();
@@ -75,7 +86,7 @@ describe('EvaluationRoute unit test', () => {
       const response = await supertest(app).get('/evaluations');
       expect(response.status).toBe(200);
       expect(evaluationController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -98,7 +109,7 @@ describe('EvaluationRoute unit test', () => {
       );
       expect(response.status).toBe(200);
       expect(evaluationController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
 });

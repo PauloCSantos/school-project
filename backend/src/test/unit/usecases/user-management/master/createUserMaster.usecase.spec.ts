@@ -1,4 +1,5 @@
 import CreateUserMaster from '@/application/usecases/user-management/master/createUserMaster.usecase';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
 import UserMaster from '@/modules/user-management/domain/entity/user-master.entity';
@@ -13,6 +14,7 @@ const MockRepository = () => {
 
 describe('createUserMaster usecase unit test', () => {
   const input = {
+    id: new Id().id,
     name: {
       firstName: 'John',
       lastName: 'Doe',
@@ -31,6 +33,7 @@ describe('createUserMaster usecase unit test', () => {
   };
 
   const userMaster = new UserMaster({
+    id: new Id(input.id),
     name: new Name(input.name),
     address: new Address(input.address),
     birthday: input.birthday,
@@ -69,7 +72,7 @@ describe('createUserMaster usecase unit test', () => {
         expect.any(String)
       );
       expect(userMasterRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

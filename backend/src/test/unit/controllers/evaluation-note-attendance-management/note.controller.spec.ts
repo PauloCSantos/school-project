@@ -75,19 +75,19 @@ describe('NoteController unit test', () => {
       note: 10,
     });
 
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
     expect(createNote.execute).toHaveBeenCalled();
   });
   it('should return a note', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(findNote.execute).toHaveBeenCalled();
   });
   it('should return all notes', async () => {
     const result = await controller.findAll({});
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllNote.execute).toHaveBeenCalled();
   });
@@ -97,7 +97,7 @@ describe('NoteController unit test', () => {
       note: 8,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(updateNote.execute).toHaveBeenCalled();
   });
   it('should delete an note', async () => {
@@ -105,7 +105,7 @@ describe('NoteController unit test', () => {
       id: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(deleteNote.execute).toHaveBeenCalled();
   });
 });

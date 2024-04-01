@@ -97,20 +97,19 @@ describe('CurriculumController unit test', () => {
       ],
       yearsToComplete: 5,
     });
-
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
     expect(createCurriculum.execute).toHaveBeenCalled();
   });
   it('should return a curriculum', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(findCurriculum.execute).toHaveBeenCalled();
   });
   it('should return all curriculums', async () => {
     const result = await controller.findAll({});
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllCurriculum.execute).toHaveBeenCalled();
   });
@@ -120,7 +119,7 @@ describe('CurriculumController unit test', () => {
       yearsToComplete: 7,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(updateCurriculum.execute).toHaveBeenCalled();
   });
   it('should delete a curriculum', async () => {
@@ -128,7 +127,7 @@ describe('CurriculumController unit test', () => {
       id: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(deleteCurriculum.execute).toHaveBeenCalled();
   });
   it('should add a subject to the curriculum', async () => {
@@ -137,7 +136,7 @@ describe('CurriculumController unit test', () => {
       newSubjectsList: [new Id().id],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(addSubjects.execute).toHaveBeenCalled();
   });
   it('should remove a subject from the curriculum', async () => {
@@ -146,7 +145,7 @@ describe('CurriculumController unit test', () => {
       subjectsListToRemove: [new Id().id, new Id().id],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(removeSubjects.execute).toHaveBeenCalled();
   });
 });

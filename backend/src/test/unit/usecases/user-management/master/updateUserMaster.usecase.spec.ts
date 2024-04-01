@@ -1,4 +1,5 @@
 import UpdateUserMaster from '@/application/usecases/user-management/master/updateUserMaster.usecase';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Address from '@/modules/user-management/@shared/domain/value-object/address.value-object';
 import Name from '@/modules/user-management/@shared/domain/value-object/name.value-object';
 import UserMaster from '@/modules/user-management/domain/entity/user-master.entity';
@@ -35,6 +36,7 @@ describe('updateUserMaster usecase unit test', () => {
   };
 
   const userMaster1 = new UserMaster({
+    id: new Id(),
     name: new Name({
       firstName: 'John',
       middleName: 'David',
@@ -61,8 +63,8 @@ describe('updateUserMaster usecase unit test', () => {
 
       await expect(
         usecase.execute({
-          ...input,
           id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
+          ...input,
         })
       ).rejects.toThrow('User not found');
     });

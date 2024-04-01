@@ -131,19 +131,19 @@ describe('UserStudentController unit test', () => {
       paymentYear: 40000,
     });
 
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
     expect(createUserStudent.execute).toHaveBeenCalled();
   });
   it('should return a user', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(findUserStudent.execute).toHaveBeenCalled();
   });
   it('should return all users', async () => {
     const result = await controller.findAll({});
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllUserStudent.execute).toHaveBeenCalled();
   });
@@ -153,7 +153,7 @@ describe('UserStudentController unit test', () => {
       paymentYear: 42000,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(updateUserStudent.execute).toHaveBeenCalled();
   });
   it('should delete an user', async () => {
@@ -161,7 +161,7 @@ describe('UserStudentController unit test', () => {
       id: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(deleteUserStudent.execute).toHaveBeenCalled();
   });
 });

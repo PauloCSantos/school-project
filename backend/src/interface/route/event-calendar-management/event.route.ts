@@ -1,3 +1,4 @@
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { EventController } from '@/interface/controller/event-calendar-management/event.controller';
 import { validId } from '@/util/validations';
@@ -5,25 +6,26 @@ import { validId } from '@/util/validations';
 export class EventRoute {
   constructor(
     private readonly userStudentController: EventController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/events', (req: any, res: any) =>
-      this.findAllEvents(req, res)
-    );
-    this.httpGateway.post('/event', (req: any, res: any) =>
-      this.createEvent(req, res)
-    );
-    this.httpGateway.get('/event/:id', (req: any, res: any) =>
-      this.findEvent(req, res)
-    );
-    this.httpGateway.patch('/event/:id', (req: any, res: any) =>
-      this.updateEvent(req, res)
-    );
-    this.httpGateway.delete('/event/:id', (req: any, res: any) =>
-      this.deleteEvent(req, res)
-    );
+    this.httpGateway.get('/events', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findAllEvents(req, res));
+    });
+    this.httpGateway.post('/event', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.createEvent(req, res));
+    });
+    this.httpGateway.get('/event/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findEvent(req, res));
+    });
+    this.httpGateway.patch('/event/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.updateEvent(req, res));
+    });
+    this.httpGateway.delete('/event/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.deleteEvent(req, res));
+    });
   }
 
   private async findAllEvents(req: any, res: any): Promise<void> {

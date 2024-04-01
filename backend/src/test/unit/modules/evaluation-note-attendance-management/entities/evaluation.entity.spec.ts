@@ -35,7 +35,7 @@ describe('Evaluation unit test', () => {
     it('Create a valid evaluation', () => {
       const evaluationInstance = new Evaluation(evaluationData);
       expect(evaluationInstance).toBeInstanceOf(Evaluation);
-      expect(evaluationInstance.id).toBeDefined;
+      expect(evaluationInstance.id).toBeDefined();
       expect(evaluationInstance.teacher).toBe(evaluationData.teacher);
       expect(evaluationInstance.type).toBe(evaluationData.type);
       expect(evaluationInstance.lesson).toBe(evaluationData.lesson);

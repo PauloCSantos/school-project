@@ -1,29 +1,48 @@
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { UserAdministratorController } from '@/interface/controller/user-management/user-administrator.controller';
 import { validId } from '@/util/validations';
 export class UserAdministratorRoute {
   constructor(
     private readonly userAdministratorController: UserAdministratorController,
-    private readonly expressInstance: HttpInterface
+    private readonly expressInstance: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.expressInstance.get('/user-administrators', (req: any, res: any) =>
-      this.findAllUserAdministrators(req, res)
-    );
-    this.expressInstance.post('/user-administrator', (req: any, res: any) =>
-      this.createUserAdministrator(req, res)
-    );
-    this.expressInstance.get('/user-administrator/:id', (req: any, res: any) =>
-      this.findUserAdministrator(req, res)
+    this.expressInstance.get('/user-administrators', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.findAllUserAdministrators(req, res)
+      );
+    });
+    this.expressInstance.post('/user-administrator', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.createUserAdministrator(req, res)
+      );
+    });
+    this.expressInstance.get(
+      '/user-administrator/:id',
+      (req: any, res: any) => {
+        this.authMiddleware.handle(req, res, () =>
+          this.findUserAdministrator(req, res)
+        );
+      }
     );
     this.expressInstance.patch(
       '/user-administrator/:id',
-      (req: any, res: any) => this.updateUserAdministrator(req, res)
+      (req: any, res: any) => {
+        this.authMiddleware.handle(req, res, () =>
+          this.updateUserAdministrator(req, res)
+        );
+      }
     );
     this.expressInstance.delete(
       '/user-administrator/:id',
-      (req: any, res: any) => this.deleteUserAdministrator(req, res)
+      (req: any, res: any) => {
+        this.authMiddleware.handle(req, res, () =>
+          this.deleteUserAdministrator(req, res)
+        );
+      }
     );
   }
 

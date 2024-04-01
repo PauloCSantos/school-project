@@ -28,14 +28,14 @@ describe('Attendance facade integration test', () => {
     const facade = AttendanceFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an attendance using the facade', async () => {
     const facade = AttendanceFacadeFactory.create();
     const result = await facade.create(input);
     const userAttendance = await facade.find(result);
 
-    expect(userAttendance).toBeDefined;
+    expect(userAttendance).toBeDefined();
   });
   it('should find all attendance using the facade', async () => {
     const facade = AttendanceFacadeFactory.create();
@@ -66,7 +66,7 @@ describe('Attendance facade integration test', () => {
       lesson: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should add students to the attendance using the facade', async () => {
     const facade = AttendanceFacadeFactory.create();
@@ -77,7 +77,7 @@ describe('Attendance facade integration test', () => {
       newStudentsList: [new Id().id],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
   it('should remove students to the attendance using the facade', async () => {
     const facade = AttendanceFacadeFactory.create();
@@ -88,6 +88,6 @@ describe('Attendance facade integration test', () => {
       studentsListToRemove: [input.studentsPresent[0]],
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

@@ -81,7 +81,7 @@ describe('MemoryUserWorkerRepository unit test', () => {
       const userId = new Id().id;
       const userWorkerFound = await repository.find(userId);
 
-      expect(userWorkerFound).toBeUndefined;
+      expect(userWorkerFound).toBeUndefined();
     });
     it('should throw an error when the Id is wrong', async () => {
       const userWorker = new UserWorker({
@@ -108,9 +108,8 @@ describe('MemoryUserWorkerRepository unit test', () => {
       const userId = userWorker1.id.id;
       const userWorkerFound = await repository.find(userId);
 
-      expect(userWorkerFound).toBeDefined;
-      //@ts-expect-error
-      expect(userWorkerFound.id).toBeUndefined;
+      expect(userWorkerFound).toBeDefined();
+      expect(userWorkerFound!.id).toBeDefined();
       expect(userWorkerFound!.name).toBe(userWorker1.name);
       expect(userWorkerFound!.address).toBe(userWorker1.address);
       expect(userWorkerFound!.email).toBe(userWorker1.email);

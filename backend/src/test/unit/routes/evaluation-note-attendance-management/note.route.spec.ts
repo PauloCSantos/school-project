@@ -3,6 +3,15 @@ import supertest from 'supertest';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import { NoteController } from '@/interface/controller/evaluation-note-attendance-management/note.controller';
 import { NoteRoute } from '@/interface/route/evaluation-note-attendance-management/note.route';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
+
+const mockAuthUserMiddleware = jest.fn(
+  () =>
+    ({
+      //@ts-expect-error
+      handle: jest.fn((req: any, res: any, next: any) => next()),
+    }) as unknown as AuthUserMiddleware
+);
 
 const mockNoteController = jest.fn(() => {
   return {
@@ -37,8 +46,13 @@ const mockNoteController = jest.fn(() => {
 
 describe('NoteRoute unit test', () => {
   const noteController = mockNoteController();
+  const authUserMiddleware = mockAuthUserMiddleware();
   const expressHttp = new ExpressHttp();
-  const noteRoute = new NoteRoute(noteController, expressHttp);
+  const noteRoute = new NoteRoute(
+    noteController,
+    expressHttp,
+    authUserMiddleware
+  );
   noteRoute.routes();
   const app = expressHttp.getExpressInstance();
 
@@ -67,7 +81,7 @@ describe('NoteRoute unit test', () => {
       const response = await supertest(app).get('/notes');
       expect(response.status).toBe(200);
       expect(noteController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -86,7 +100,7 @@ describe('NoteRoute unit test', () => {
       const response = await supertest(app).delete(`/note/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(noteController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
 });

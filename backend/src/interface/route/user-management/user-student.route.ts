@@ -1,29 +1,41 @@
 import { UserStudentController } from '@/interface/controller/user-management/user-student.controller';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { validId } from '@/util/validations';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 
 export class UserStudentRoute {
   constructor(
     private readonly userStudentController: UserStudentController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/user-students', (req: any, res: any) =>
-      this.findAllUserStudents(req, res)
-    );
-    this.httpGateway.post('/user-student', (req: any, res: any) =>
-      this.createUserStudent(req, res)
-    );
-    this.httpGateway.get('/user-student/:id', (req: any, res: any) =>
-      this.findUserStudent(req, res)
-    );
-    this.httpGateway.patch('/user-student/:id', (req: any, res: any) =>
-      this.updateUserStudent(req, res)
-    );
-    this.httpGateway.delete('/user-student/:id', (req: any, res: any) =>
-      this.deleteUserStudent(req, res)
-    );
+    this.httpGateway.get('/user-students', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.findAllUserStudents(req, res)
+      );
+    });
+    this.httpGateway.post('/user-student', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.createUserStudent(req, res)
+      );
+    });
+    this.httpGateway.get('/user-student/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.findUserStudent(req, res)
+      );
+    });
+    this.httpGateway.patch('/user-student/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.updateUserStudent(req, res)
+      );
+    });
+    this.httpGateway.delete('/user-student/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () =>
+        this.deleteUserStudent(req, res)
+      );
+    });
   }
 
   private async findAllUserStudents(req: any, res: any): Promise<void> {

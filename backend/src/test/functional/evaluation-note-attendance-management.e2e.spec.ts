@@ -1,3 +1,4 @@
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 import AddStudents from '@/application/usecases/evaluation-note-attendance-management/attendance/addStudents.usecase';
 import CreateAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/createAttendance.usecase';
 import DeleteAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/deleteAttendance.usecase';
@@ -15,6 +16,7 @@ import DeleteNote from '@/application/usecases/evaluation-note-attendance-manage
 import FindAllNote from '@/application/usecases/evaluation-note-attendance-management/note/findAllNote.usecase';
 import FindNote from '@/application/usecases/evaluation-note-attendance-management/note/findNote.usecase';
 import UpdateNote from '@/application/usecases/evaluation-note-attendance-management/note/updateNote.usecase';
+import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import MemoryAttendanceRepository from '@/infraestructure/repositories/evaluation-note-attendance-management/memory-repository/attendance.repository';
 import MemoryEvaluationRepository from '@/infraestructure/repositories/evaluation-note-attendance-management/memory-repository/evaluation.repository';
@@ -87,15 +89,43 @@ describe('Evaluation note attendance management module end to end test', () => {
     );
 
     const expressHttp = new ExpressHttp();
+    const tokerService = tokenInstance();
+
+    const authUserMiddlewareEvaluation = new AuthUserMiddleware(tokerService, [
+      'master',
+      'administrator',
+      'student',
+      'teacher',
+    ]);
+
+    const authUserMiddlewareNote = new AuthUserMiddleware(tokerService, [
+      'master',
+      'administrator',
+      'student',
+      'teacher',
+    ]);
+
+    const authUserMiddlewareAttendance = new AuthUserMiddleware(tokerService, [
+      'master',
+      'administrator',
+      'student',
+      'teacher',
+    ]);
 
     const evaluationRoute = new EvaluationRoute(
       evaluationController,
-      expressHttp
+      expressHttp,
+      authUserMiddlewareEvaluation
     );
-    const noteRoute = new NoteRoute(noteController, expressHttp);
+    const noteRoute = new NoteRoute(
+      noteController,
+      expressHttp,
+      authUserMiddlewareNote
+    );
     const attendanceRoute = new AttendanceRoute(
       attendanceController,
-      expressHttp
+      expressHttp,
+      authUserMiddlewareAttendance
     );
 
     evaluationRoute.routes();
@@ -108,40 +138,67 @@ describe('Evaluation note attendance management module end to end test', () => {
     describe('On error', () => {
       describe('POST /evaluation', () => {
         it('should throw an error when the data to create an evaluation is wrong', async () => {
-          const response = await supertest(app).post('/evaluation').send({
-            lesson: new Id().id,
-            teacher: new Id().id,
-            type: 'evaluation',
-            value: 18,
-          });
+          const response = await supertest(app)
+            .post('/evaluation')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              lesson: new Id().id,
+              teacher: new Id().id,
+              type: 'evaluation',
+              value: 18,
+            });
           expect(response.status).toBe(400);
           expect(response.body.error).toBeDefined();
         });
       });
       describe('GET /evaluation/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
-          await supertest(app).post('/evaluation').send({
-            lesson: new Id().id,
-            teacher: new Id().id,
-            type: 'evaluation',
-            value: 10,
-          });
-          const evaluation = await supertest(app).get(`/evaluation/123`);
+          await supertest(app)
+            .post('/evaluation')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              lesson: new Id().id,
+              teacher: new Id().id,
+              type: 'evaluation',
+              value: 10,
+            });
+          const evaluation = await supertest(app)
+            .get(`/evaluation/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(evaluation.status).toBe(400);
-          expect(evaluation.body.error).toBeDefined;
+          expect(evaluation.body.error).toBeDefined();
         });
       });
       describe('PATCH /evaluation/:id', () => {
         it('should throw an error when the data to update an evaluation is wrong', async () => {
-          const response = await supertest(app).post('/evaluation').send({
-            lesson: new Id().id,
-            teacher: new Id().id,
-            type: 'evaluation',
-            value: 10,
-          });
+          const response = await supertest(app)
+            .post('/evaluation')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              lesson: new Id().id,
+              teacher: new Id().id,
+              type: 'evaluation',
+              value: 10,
+            });
           const id = response.body.id;
           const updatedEvaluation = await supertest(app)
             .patch(`/evaluation/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               lesson: 123,
             });
@@ -151,76 +208,131 @@ describe('Evaluation note attendance management module end to end test', () => {
       });
       describe('DELETE /evaluation/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
-          await supertest(app).post('/evaluation').send({
-            lesson: new Id().id,
-            teacher: new Id().id,
-            type: 'evaluation',
-            value: 10,
-          });
-          const result = await supertest(app).delete(`/evaluation/123`);
+          await supertest(app)
+            .post('/evaluation')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              lesson: new Id().id,
+              teacher: new Id().id,
+              type: 'evaluation',
+              value: 10,
+            });
+          const result = await supertest(app)
+            .delete(`/evaluation/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
     describe('On sucess', () => {
       describe('POST /evaluation', () => {
         it('should create an evaluation', async () => {
-          const response = await supertest(app).post('/evaluation').send({
-            lesson: new Id().id,
-            teacher: new Id().id,
-            type: 'evaluation',
-            value: 10,
-          });
+          const response = await supertest(app)
+            .post('/evaluation')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              lesson: new Id().id,
+              teacher: new Id().id,
+              type: 'evaluation',
+              value: 10,
+            });
           expect(response.status).toBe(201);
           expect(response.body.id).toBeDefined();
         });
       });
       describe('GET /evaluation/:id', () => {
         it('should find an evaluation by ID', async () => {
-          const response = await supertest(app).post('/evaluation').send({
-            lesson: new Id().id,
-            teacher: new Id().id,
-            type: 'evaluation',
-            value: 10,
-          });
+          const response = await supertest(app)
+            .post('/evaluation')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              lesson: new Id().id,
+              teacher: new Id().id,
+              type: 'evaluation',
+              value: 10,
+            });
           const id = response.body.id;
-          const evaluation = await supertest(app).get(`/evaluation/${id}`);
+          const evaluation = await supertest(app)
+            .get(`/evaluation/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(evaluation.status).toBe(200);
           expect(evaluation.body).toBeDefined();
         });
       });
       describe('GET /evaluations/', () => {
         it('should find all evaluations', async () => {
-          await supertest(app).post('/evaluation').send({
-            lesson: new Id().id,
-            teacher: new Id().id,
-            type: 'evaluation',
-            value: 10,
-          });
-          await supertest(app).post('/evaluation').send({
-            lesson: new Id().id,
-            teacher: new Id().id,
-            type: 'evaluation',
-            value: 10,
-          });
-          const response = await supertest(app).get('/evaluations');
+          await supertest(app)
+            .post('/evaluation')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              lesson: new Id().id,
+              teacher: new Id().id,
+              type: 'evaluation',
+              value: 10,
+            });
+          await supertest(app)
+            .post('/evaluation')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              lesson: new Id().id,
+              teacher: new Id().id,
+              type: 'evaluation',
+              value: 10,
+            });
+          const response = await supertest(app)
+            .get('/evaluations')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
       describe('PATCH /evaluation/:id', () => {
         it('should update an evaluation by ID', async () => {
-          const response = await supertest(app).post('/evaluation').send({
-            lesson: new Id().id,
-            teacher: new Id().id,
-            type: 'evaluation',
-            value: 10,
-          });
+          const response = await supertest(app)
+            .post('/evaluation')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              lesson: new Id().id,
+              teacher: new Id().id,
+              type: 'evaluation',
+              value: 10,
+            });
           const id = response.body.id;
           const updatedEvaluation = await supertest(app)
             .patch(`/evaluation/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               lesson: new Id().id,
               teacher: new Id().id,
@@ -233,14 +345,25 @@ describe('Evaluation note attendance management module end to end test', () => {
       });
       describe('DELETE /evaluation/:id', () => {
         it('should delete an evaluation by ID', async () => {
-          const response = await supertest(app).post('/evaluation').send({
-            lesson: new Id().id,
-            teacher: new Id().id,
-            type: 'evaluation',
-            value: 10,
-          });
+          const response = await supertest(app)
+            .post('/evaluation')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              lesson: new Id().id,
+              teacher: new Id().id,
+              type: 'evaluation',
+              value: 10,
+            });
           const id = response.body.id;
-          const result = await supertest(app).delete(`/evaluation/${id}`);
+          const result = await supertest(app)
+            .delete(`/evaluation/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -251,37 +374,64 @@ describe('Evaluation note attendance management module end to end test', () => {
     describe('On error', () => {
       describe('POST /note', () => {
         it('should throw an error when the data to create a note is wrong', async () => {
-          const response = await supertest(app).post('/note').send({
-            evaluation: new Id().id,
-            student: 123,
-            note: 10,
-          });
+          const response = await supertest(app)
+            .post('/note')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              evaluation: new Id().id,
+              student: 123,
+              note: 10,
+            });
           expect(response.status).toBe(400);
           expect(response.body.error).toBeDefined();
         });
       });
       describe('GET /note/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
-          await supertest(app).post('/note').send({
-            evaluation: new Id().id,
-            student: new Id().id,
-            note: 10,
-          });
-          const note = await supertest(app).get(`/note/123`);
+          await supertest(app)
+            .post('/note')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              evaluation: new Id().id,
+              student: new Id().id,
+              note: 10,
+            });
+          const note = await supertest(app)
+            .get(`/note/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(note.status).toBe(400);
-          expect(note.body.error).toBeDefined;
+          expect(note.body.error).toBeDefined();
         });
       });
       describe('PATCH /note/:id', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
-          const response = await supertest(app).post('/note').send({
-            evaluation: new Id().id,
-            student: new Id().id,
-            note: 10,
-          });
+          const response = await supertest(app)
+            .post('/note')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              evaluation: new Id().id,
+              student: new Id().id,
+              note: 10,
+            });
           const id = response.body.id;
           const updatedNote = await supertest(app)
             .patch(`/note/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({ note: 11 });
           expect(updatedNote.status).toBe(404);
           expect(updatedNote.body.error).toBeDefined();
@@ -289,84 +439,152 @@ describe('Evaluation note attendance management module end to end test', () => {
       });
       describe('DELETE /note/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
-          await supertest(app).post('/note').send({
-            evaluation: new Id().id,
-            student: new Id().id,
-            note: 10,
-          });
-          const result = await supertest(app).delete(`/note/123`);
+          await supertest(app)
+            .post('/note')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              evaluation: new Id().id,
+              student: new Id().id,
+              note: 10,
+            });
+          const result = await supertest(app)
+            .delete(`/note/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
     describe('On sucess', () => {
       describe('POST /note', () => {
         it('should create a note', async () => {
-          const response = await supertest(app).post('/note').send({
-            evaluation: new Id().id,
-            student: new Id().id,
-            note: 10,
-          });
+          const response = await supertest(app)
+            .post('/note')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              evaluation: new Id().id,
+              student: new Id().id,
+              note: 10,
+            });
           expect(response.status).toBe(201);
           expect(response.body.id).toBeDefined();
         });
       });
       describe('GET /note/:id', () => {
         it('should find a note by ID', async () => {
-          const response = await supertest(app).post('/note').send({
-            evaluation: new Id().id,
-            student: new Id().id,
-            note: 10,
-          });
+          const response = await supertest(app)
+            .post('/note')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              evaluation: new Id().id,
+              student: new Id().id,
+              note: 10,
+            });
           const id = response.body.id;
-          const note = await supertest(app).get(`/note/${id}`);
+          const note = await supertest(app)
+            .get(`/note/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(note.status).toBe(200);
           expect(note.body).toBeDefined();
         });
       });
       describe('GET /note/', () => {
         it('should find all users', async () => {
-          await supertest(app).post('/note').send({
-            evaluation: new Id().id,
-            student: new Id().id,
-            note: 10,
-          });
-          await supertest(app).post('/note').send({
-            evaluation: new Id().id,
-            student: new Id().id,
-            note: 10,
-          });
-          const response = await supertest(app).get('/notes');
+          await supertest(app)
+            .post('/note')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              evaluation: new Id().id,
+              student: new Id().id,
+              note: 10,
+            });
+          await supertest(app)
+            .post('/note')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              evaluation: new Id().id,
+              student: new Id().id,
+              note: 10,
+            });
+          const response = await supertest(app)
+            .get('/notes')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
       describe('PATCH /note/:id', () => {
         it('should update a user by ID', async () => {
-          const response = await supertest(app).post('/note').send({
-            evaluation: new Id().id,
-            student: new Id().id,
-            note: 10,
-          });
+          const response = await supertest(app)
+            .post('/note')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              evaluation: new Id().id,
+              student: new Id().id,
+              note: 10,
+            });
           const id = response.body.id;
-          const updatedNote = await supertest(app).patch(`/note/${id}`).send({
-            note: 5,
-          });
+          const updatedNote = await supertest(app)
+            .patch(`/note/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              note: 5,
+            });
           expect(updatedNote.status).toBe(200);
           expect(updatedNote.body).toBeDefined();
         });
       });
       describe('DELETE /note/:id', () => {
         it('should delete a user by ID', async () => {
-          const response = await supertest(app).post('/note').send({
-            evaluation: new Id().id,
-            student: new Id().id,
-            note: 10,
-          });
+          const response = await supertest(app)
+            .post('/note')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              evaluation: new Id().id,
+              student: new Id().id,
+              note: 10,
+            });
           const id = response.body.id;
-          const result = await supertest(app).delete(`/note/${id}`);
+          const result = await supertest(app)
+            .delete(`/note/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -379,6 +597,10 @@ describe('Evaluation note attendance management module end to end test', () => {
         it('should throw an error when the data to create an attendance is wrong', async () => {
           const response = await supertest(app)
             .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               date: new Date('02/10/26'),
               day: 'fri' as DayOfWeek,
@@ -394,6 +616,10 @@ describe('Evaluation note attendance management module end to end test', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               date: new Date(),
               day: 'fri' as DayOfWeek,
@@ -401,15 +627,24 @@ describe('Evaluation note attendance management module end to end test', () => {
               lesson: new Id().id,
               studentsPresent: [new Id().id, new Id().id, new Id().id],
             });
-          const response = await supertest(app).get(`/attendance/123`);
+          const response = await supertest(app)
+            .get(`/attendance/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined;
+          expect(response.body.error).toBeDefined();
         });
       });
       describe('PATCH /attendance/:id', () => {
         it('should throw an error when the data to update an attendance is wrong', async () => {
           const response = await supertest(app)
             .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               date: new Date(),
               day: 'fri' as DayOfWeek,
@@ -420,6 +655,10 @@ describe('Evaluation note attendance management module end to end test', () => {
           const id = response.body.id;
           const updatedAttendance = await supertest(app)
             .patch(`/attendance/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               day: '',
             });
@@ -431,6 +670,10 @@ describe('Evaluation note attendance management module end to end test', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               date: new Date(),
               day: 'fri' as DayOfWeek,
@@ -438,15 +681,24 @@ describe('Evaluation note attendance management module end to end test', () => {
               lesson: new Id().id,
               studentsPresent: [new Id().id, new Id().id, new Id().id],
             });
-          const result = await supertest(app).delete(`/attendance/123`);
+          const result = await supertest(app)
+            .delete(`/attendance/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /attendance/add/students', () => {
         it('should throw an error when the students`ID is incorrect', async () => {
           const response = await supertest(app)
             .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               date: new Date(),
               day: 'fri' as DayOfWeek,
@@ -457,12 +709,16 @@ describe('Evaluation note attendance management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .post('/attendance/add/students')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: id,
               newStudentsList: ['invalidId'],
             });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /attendance/remove/students', () => {
@@ -477,6 +733,10 @@ describe('Evaluation note attendance management module end to end test', () => {
           await supertest(app).post('/attendance').send(input);
           const result = await supertest(app)
             .post('/attendance/remove/students')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: new Id().id,
               date: new Date(),
@@ -486,7 +746,7 @@ describe('Evaluation note attendance management module end to end test', () => {
               studentsPresent: [new Id().id, new Id().id, new Id().id],
             });
           expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined;
+          expect(result.body.error).toBeDefined();
         });
       });
     });
@@ -495,6 +755,10 @@ describe('Evaluation note attendance management module end to end test', () => {
         it('should create an attendance', async () => {
           const response = await supertest(app)
             .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               date: new Date(),
               day: 'fri' as DayOfWeek,
@@ -510,6 +774,10 @@ describe('Evaluation note attendance management module end to end test', () => {
         it('should find an attendance by ID', async () => {
           const response = await supertest(app)
             .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               date: new Date(),
               day: 'fri' as DayOfWeek,
@@ -518,7 +786,12 @@ describe('Evaluation note attendance management module end to end test', () => {
               studentsPresent: [new Id().id, new Id().id, new Id().id],
             });
           const id = response.body.id;
-          const note = await supertest(app).get(`/attendance/${id}`);
+          const note = await supertest(app)
+            .get(`/attendance/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(note.status).toBe(200);
           expect(note.body).toBeDefined();
         });
@@ -527,6 +800,10 @@ describe('Evaluation note attendance management module end to end test', () => {
         it('should find all attendance', async () => {
           await supertest(app)
             .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               date: new Date(),
               day: 'fri' as DayOfWeek,
@@ -536,6 +813,10 @@ describe('Evaluation note attendance management module end to end test', () => {
             });
           await supertest(app)
             .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               date: new Date(),
               day: 'fri' as DayOfWeek,
@@ -543,9 +824,14 @@ describe('Evaluation note attendance management module end to end test', () => {
               lesson: new Id().id,
               studentsPresent: [new Id().id, new Id().id, new Id().id],
             });
-          const response = await supertest(app).get('/attendances');
+          const response = await supertest(app)
+            .get('/attendances')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(response.status).toBe(200);
-          expect(response.body).toBeDefined;
+          expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
         });
       });
@@ -553,6 +839,10 @@ describe('Evaluation note attendance management module end to end test', () => {
         it('should update an attendance by ID', async () => {
           const response = await supertest(app)
             .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               date: new Date(),
               day: 'fri' as DayOfWeek,
@@ -563,6 +853,10 @@ describe('Evaluation note attendance management module end to end test', () => {
           const id = response.body.id;
           const updatedAttendance = await supertest(app)
             .patch(`/attendance/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               hour: '12:00',
             });
@@ -574,6 +868,10 @@ describe('Evaluation note attendance management module end to end test', () => {
         it('should delete an attendance by ID', async () => {
           const response = await supertest(app)
             .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               date: new Date(),
               day: 'fri' as DayOfWeek,
@@ -582,7 +880,12 @@ describe('Evaluation note attendance management module end to end test', () => {
               studentsPresent: [new Id().id, new Id().id, new Id().id],
             });
           const id = response.body.id;
-          const result = await supertest(app).delete(`/attendance/${id}`);
+          const result = await supertest(app)
+            .delete(`/attendance/${id}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -591,6 +894,10 @@ describe('Evaluation note attendance management module end to end test', () => {
         it('should add students to the attendance', async () => {
           const response = await supertest(app)
             .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               date: new Date(),
               day: 'fri' as DayOfWeek,
@@ -601,12 +908,16 @@ describe('Evaluation note attendance management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .post('/attendance/add/students')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id,
               newStudentsList: [new Id().id],
             });
           expect(result.status).toBe(201);
-          expect(result.body).toBeDefined;
+          expect(result.body).toBeDefined();
         });
       });
       describe('POST /attendance/remove/students', () => {
@@ -618,16 +929,26 @@ describe('Evaluation note attendance management module end to end test', () => {
             lesson: new Id().id,
             studentsPresent: [new Id().id, new Id().id, new Id().id],
           };
-          const response = await supertest(app).post('/attendance').send(input);
+          const response = await supertest(app)
+            .post('/attendance')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send(input);
           const id = response.body.id;
           const result = await supertest(app)
             .post('/attendance/remove/students')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id,
               studentsListToRemove: [input.studentsPresent[0]],
             });
           expect(result.status).toBe(201);
-          expect(result.body.error).toBeDefined;
+          expect(result.body).toBeDefined();
         });
       });
     });

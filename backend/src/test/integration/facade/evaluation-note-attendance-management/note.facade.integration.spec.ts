@@ -22,14 +22,14 @@ describe('Note facade integration test', () => {
     const facade = NoteFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an Note using the facade', async () => {
     const facade = NoteFacadeFactory.create();
     const result = await facade.create(input);
     const Note = await facade.find(result);
 
-    expect(Note).toBeDefined;
+    expect(Note).toBeDefined();
   });
   it('should find all Note using the facade', async () => {
     const facade = NoteFacadeFactory.create();
@@ -60,6 +60,6 @@ describe('Note facade integration test', () => {
       note: 4,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

@@ -3,6 +3,15 @@ import supertest from 'supertest';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import { SubjectController } from '@/interface/controller/subject-curriculum-management/subject.controller';
 import { SubjectRoute } from '@/interface/route/subject-curriculum-management/subject.route';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
+
+const mockAuthUserMiddleware = jest.fn(
+  () =>
+    ({
+      //@ts-expect-error
+      handle: jest.fn((req: any, res: any, next: any) => next()),
+    }) as unknown as AuthUserMiddleware
+);
 
 const mockSubjectController = jest.fn(() => {
   return {
@@ -34,8 +43,13 @@ const mockSubjectController = jest.fn(() => {
 
 describe('SubjectRoute unit test', () => {
   const subjectController = mockSubjectController();
+  const authUserMiddleware = mockAuthUserMiddleware();
   const expressHttp = new ExpressHttp();
-  const subjectRoute = new SubjectRoute(subjectController, expressHttp);
+  const subjectRoute = new SubjectRoute(
+    subjectController,
+    expressHttp,
+    authUserMiddleware
+  );
   subjectRoute.routes();
   const app = expressHttp.getExpressInstance();
 
@@ -63,7 +77,7 @@ describe('SubjectRoute unit test', () => {
       const response = await supertest(app).get('/subjects');
       expect(response.status).toBe(200);
       expect(subjectController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -84,7 +98,7 @@ describe('SubjectRoute unit test', () => {
       const response = await supertest(app).delete(`/subject/${new Id().id}`);
       expect(response.status).toBe(200);
       expect(subjectController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
 });

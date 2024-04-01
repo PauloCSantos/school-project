@@ -3,6 +3,15 @@ import supertest from 'supertest';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import { UserStudentController } from '@/interface/controller/user-management/user-student.controller';
 import { UserStudentRoute } from '@/interface/route/user-management/user-student.route';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
+
+const mockAuthUserMiddleware = jest.fn(
+  () =>
+    ({
+      //@ts-expect-error
+      handle: jest.fn((req: any, res: any, next: any) => next()),
+    }) as unknown as AuthUserMiddleware
+);
 
 const mockUserStudentController = jest.fn(() => {
   return {
@@ -85,10 +94,12 @@ const mockUserStudentController = jest.fn(() => {
 
 describe('UserStudentRoute unit test', () => {
   const userStudentController = mockUserStudentController();
+  const authUserMiddleware = mockAuthUserMiddleware();
   const expressHttp = new ExpressHttp();
   const userStudentRoute = new UserStudentRoute(
     userStudentController,
-    expressHttp
+    expressHttp,
+    authUserMiddleware
   );
   userStudentRoute.routes();
   const app = expressHttp.getExpressInstance();
@@ -132,7 +143,7 @@ describe('UserStudentRoute unit test', () => {
       const response = await supertest(app).get('/user-students');
       expect(response.status).toBe(200);
       expect(userStudentController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined;
+      expect(response.body).toBeDefined();
       expect(response.body.length).toBe(2);
     });
   });
@@ -162,7 +173,7 @@ describe('UserStudentRoute unit test', () => {
       );
       expect(response.status).toBe(200);
       expect(userStudentController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined;
+      expect(response.body.message).toBeDefined();
     });
   });
 });

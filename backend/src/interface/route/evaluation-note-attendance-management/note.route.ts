@@ -1,29 +1,31 @@
 import { NoteController } from '@/interface/controller/evaluation-note-attendance-management/note.controller';
 import { HttpInterface } from '@/infraestructure/http/http.interface';
 import { validId } from '@/util/validations';
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 
 export class NoteRoute {
   constructor(
     private readonly noteController: NoteController,
-    private readonly httpGateway: HttpInterface
+    private readonly httpGateway: HttpInterface,
+    private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/notes', (req: any, res: any) =>
-      this.findAllNotes(req, res)
-    );
-    this.httpGateway.post('/note', (req: any, res: any) =>
-      this.createNote(req, res)
-    );
-    this.httpGateway.get('/note/:id', (req: any, res: any) =>
-      this.findNote(req, res)
-    );
-    this.httpGateway.patch('/note/:id', (req: any, res: any) =>
-      this.updateNote(req, res)
-    );
-    this.httpGateway.delete('/note/:id', (req: any, res: any) =>
-      this.deleteNote(req, res)
-    );
+    this.httpGateway.get('/notes', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findAllNotes(req, res));
+    });
+    this.httpGateway.post('/note', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.createNote(req, res));
+    });
+    this.httpGateway.get('/note/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.findNote(req, res));
+    });
+    this.httpGateway.patch('/note/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.updateNote(req, res));
+    });
+    this.httpGateway.delete('/note/:id', (req: any, res: any) => {
+      this.authMiddleware.handle(req, res, () => this.deleteNote(req, res));
+    });
   }
 
   private async findAllNotes(req: any, res: any): Promise<void> {

@@ -80,19 +80,19 @@ describe('EvaluationController unit test', () => {
       value: 10,
     });
 
-    expect(result.id).toBeDefined;
+    expect(result).toBeDefined();
     expect(createEvaluation.execute).toHaveBeenCalled();
   });
   it('should return a evaluation', async () => {
     const result = await controller.find(new Id());
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(findEvaluation.execute).toHaveBeenCalled();
   });
   it('should return all evaluations', async () => {
     const result = await controller.findAll({});
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllEvaluation.execute).toHaveBeenCalled();
   });
@@ -102,7 +102,7 @@ describe('EvaluationController unit test', () => {
       value: 7,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(updateEvaluation.execute).toHaveBeenCalled();
   });
   it('should delete an evaluation', async () => {
@@ -110,7 +110,7 @@ describe('EvaluationController unit test', () => {
       id: new Id().id,
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
     expect(deleteEvaluation.execute).toHaveBeenCalled();
   });
 });

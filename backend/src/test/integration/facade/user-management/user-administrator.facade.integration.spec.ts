@@ -66,14 +66,14 @@ describe('User Administrator facade integration test', () => {
     const facade = AdministratorFacadeFactory.create();
     const result = await facade.create(input);
 
-    expect(result.id).toBeDefined;
+    expect(result.id).toBeDefined();
   });
   it('should find an user Administrator using the facade', async () => {
     const facade = AdministratorFacadeFactory.create();
     const result = await facade.create(input);
     const userAdministrator = await facade.find(result);
 
-    expect(userAdministrator).toBeDefined;
+    expect(userAdministrator).toBeDefined();
   });
   it('should find all users Administrator using the facade', async () => {
     const facade = AdministratorFacadeFactory.create();
@@ -111,6 +111,6 @@ describe('User Administrator facade integration test', () => {
       },
     });
 
-    expect(result).toBeDefined;
+    expect(result).toBeDefined();
   });
 });

@@ -50,7 +50,7 @@ describe('createEvent usecase unit test', () => {
 
       expect(eventRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(eventRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });

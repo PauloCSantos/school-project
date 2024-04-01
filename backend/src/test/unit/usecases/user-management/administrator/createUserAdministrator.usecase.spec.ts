@@ -76,7 +76,7 @@ describe('createUserAdministrator usecase unit test', () => {
         expect.any(String)
       );
       expect(userAdministratorRepository.create).toHaveBeenCalled();
-      expect(result).toBeDefined;
+      expect(result).toBeDefined();
     });
   });
 });
