@@ -1,8 +1,10 @@
+import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
 import CreateAuthUser from '@/application/usecases/authentication-authorization-management/authUser/createAuthUser.usecase';
 import DeleteAuthUser from '@/application/usecases/authentication-authorization-management/authUser/deleteAuthUser.usecase';
 import FindAuthUser from '@/application/usecases/authentication-authorization-management/authUser/findAuthUser.usecase';
 import LoginAuthUser from '@/application/usecases/authentication-authorization-management/authUser/loginAuthUser.usecase';
 import UpdateAuthUser from '@/application/usecases/authentication-authorization-management/authUser/updateAuthUser.usecase';
+import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
 import ExpressHttp from '@/infraestructure/http/express-http';
 import MemoryAuthUserRepository from '@/infraestructure/repositories/authentication-authorization-management/authUser.repository';
 import AuthUserController from '@/interface/controller/authentication-authorization-management/authUser.controller';
@@ -32,7 +34,18 @@ describe('Authentication authorization management module end to end test', () =>
     );
 
     const expressHttp = new ExpressHttp();
-    const authUserRoute = new AuthUserRoute(authUserController, expressHttp);
+    const tokerService = tokenInstance();
+    const authUserMiddlewareAuthUser = new AuthUserMiddleware(tokerService, [
+      'master',
+      'administrator',
+      'student',
+      'teacher',
+    ]);
+    const authUserRoute = new AuthUserRoute(
+      authUserController,
+      expressHttp,
+      authUserMiddlewareAuthUser
+    );
     authUserRoute.routes();
     app = expressHttp.getExpressInstance();
   });
@@ -41,13 +54,19 @@ describe('Authentication authorization management module end to end test', () =>
     describe('On error', () => {
       describe('POST /register', () => {
         it('should throw an error when the data to create an authUser is wrong', async () => {
-          const response = await supertest(app).post('/register').send({
-            email: 'teste@teste.com.br',
-            password: 'XpA2Jjd4',
-            masterId: new Id().id,
-            role: 'unknow',
-            isHashed: false,
-          });
+          const response = await supertest(app)
+            .post('/register')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              email: 'teste@teste.com.br',
+              password: 'XpA2Jjd4',
+              masterId: new Id().id,
+              role: 'unknow',
+              isHashed: false,
+            });
           expect(response.status).toBe(400);
           expect(response.body.error).toBeDefined();
         });
@@ -56,6 +75,10 @@ describe('Authentication authorization management module end to end test', () =>
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/register')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               email: 'teste@teste.com.br',
               password: 'XpA2Jjd4',
@@ -63,9 +86,12 @@ describe('Authentication authorization management module end to end test', () =>
               role: 'master' as RoleUsers,
               isHashed: false,
             });
-          const authUser = await supertest(app).get(
-            `/authUser/wrongemateste.com`
-          );
+          const authUser = await supertest(app)
+            .get(`/authUser/wrongemateste.com`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(authUser.status).toBe(400);
           expect(authUser.body.error).toBeDefined();
         });
@@ -74,6 +100,10 @@ describe('Authentication authorization management module end to end test', () =>
         it('should throw an error when the data to update a authUser is wrong', async () => {
           const response = await supertest(app)
             .post('/register')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               email: 'teste@teste.com.br',
               password: 'XpA2Jjd4',
@@ -84,6 +114,10 @@ describe('Authentication authorization management module end to end test', () =>
           const email = response.body.email;
           const updatedAuthUser = await supertest(app)
             .patch(`/authUser/${email}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               email: 'teste@teste.com.br',
               authUserDataToUpdate: {
@@ -98,6 +132,10 @@ describe('Authentication authorization management module end to end test', () =>
         it('should throw an error when the email is wrong or non-standard', async () => {
           await supertest(app)
             .post('/authUser')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               email: 'teste@teste.com.br',
               password: 'XpA2Jjd4',
@@ -105,25 +143,42 @@ describe('Authentication authorization management module end to end test', () =>
               role: 'master' as RoleUsers,
               isHashed: false,
             });
-          const result = await supertest(app).delete(`/authUser/123`);
+          const result = await supertest(app)
+            .delete(`/authUser/123`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined();
         });
       });
       describe('POST /login', () => {
         it('should throw an error when the data to login is wrong', async () => {
-          await supertest(app).post('/register').send({
-            email: 'teste@teste.com.br',
-            password: 'XpA2Jjd4',
-            masterId: new Id().id,
-            role: 'master',
-            isHashed: false,
-          });
-          const response = await supertest(app).post('/login').send({
-            email: 'teste@teste.com.br',
-            password: 'XpA2Jjd6',
-            role: 'master',
-          });
+          await supertest(app)
+            .post('/register')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              email: 'teste@teste.com.br',
+              password: 'XpA2Jjd4',
+              masterId: new Id().id,
+              role: 'master',
+              isHashed: false,
+            });
+          const response = await supertest(app)
+            .post('/login')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              email: 'teste@teste.com.br',
+              password: 'XpA2Jjd6',
+              role: 'master',
+            });
           expect(response.status).toBe(400);
           expect(response.body.error).toBeDefined();
         });
@@ -134,6 +189,10 @@ describe('Authentication authorization management module end to end test', () =>
         it('should create an authUser', async () => {
           const response = await supertest(app)
             .post('/register')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               email: 'teste@teste.com.br',
               password: 'XpA2Jjd4',
@@ -150,6 +209,10 @@ describe('Authentication authorization management module end to end test', () =>
         it('should find a user by email', async () => {
           const response = await supertest(app)
             .post('/register')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               email: 'teste@teste.com.br',
               password: 'XpA2Jjd4',
@@ -158,7 +221,12 @@ describe('Authentication authorization management module end to end test', () =>
               isHashed: false,
             });
           const email = response.body.email;
-          const authUser = await supertest(app).get(`/authUser/${email}`);
+          const authUser = await supertest(app)
+            .get(`/authUser/${email}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(authUser.status).toBe(200);
           expect(authUser.body).toBeDefined();
         });
@@ -167,6 +235,10 @@ describe('Authentication authorization management module end to end test', () =>
         it('should update a user by email', async () => {
           const response = await supertest(app)
             .post('/register')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               email: 'teste@teste.com.br',
               password: 'XpA2Jjd4',
@@ -177,6 +249,10 @@ describe('Authentication authorization management module end to end test', () =>
           const email = response.body.email;
           const updatedAuthUser = await supertest(app)
             .patch(`/authUser/${email}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               email: 'teste@teste.com.br',
               authUserDataToUpdate: {
@@ -191,6 +267,10 @@ describe('Authentication authorization management module end to end test', () =>
         it('should delete a user by email', async () => {
           const response = await supertest(app)
             .post('/register')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               email: 'teste@teste.com.br',
               password: 'XpA2Jjd4',
@@ -199,25 +279,42 @@ describe('Authentication authorization management module end to end test', () =>
               isHashed: false,
             });
           const email = response.body.email;
-          const result = await supertest(app).delete(`/authUser/${email}`);
+          const result = await supertest(app)
+            .delete(`/authUser/${email}`)
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            );
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
       });
       describe('POST /login', () => {
         it('should login and received a token', async () => {
-          await supertest(app).post('/register').send({
-            email: 'teste@teste.com.br',
-            password: 'XpA2Jjd4',
-            masterId: new Id().id,
-            role: 'master',
-            isHashed: false,
-          });
-          const response = await supertest(app).post('/login').send({
-            email: 'teste@teste.com.br',
-            password: 'XpA2Jjd4',
-            role: 'master',
-          });
+          await supertest(app)
+            .post('/register')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              email: 'teste@teste.com.br',
+              password: 'XpA2Jjd4',
+              masterId: new Id().id,
+              role: 'master',
+              isHashed: false,
+            });
+          const response = await supertest(app)
+            .post('/login')
+            .set(
+              'authorization',
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
+            .send({
+              email: 'teste@teste.com.br',
+              password: 'XpA2Jjd4',
+              role: 'master',
+            });
           expect(response.status).toBe(200);
           expect(response.body.token).toBeDefined();
         });
