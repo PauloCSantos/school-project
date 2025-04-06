@@ -1,16 +1,16 @@
-import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
-import AddStudents from '@/application/usecases/evaluation-note-attendance-management/attendance/addStudents.usecase';
-import CreateAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/createAttendance.usecase';
-import DeleteAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/deleteAttendance.usecase';
-import FindAllAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/findAllAttendance.usecase';
-import FindAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/findAttendance.usecase';
-import RemoveStudents from '@/application/usecases/evaluation-note-attendance-management/attendance/removeStudents.usecase';
-import UpdateAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/updateAttendance.usecase';
-import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
-import ExpressHttp from '@/infraestructure/http/express-http';
-import MemoryAttendanceRepository from '@/infraestructure/repositories/evaluation-note-attendance-management/memory-repository/attendance.repository';
-import { AttendanceController } from '@/interface/controller/evaluation-note-attendance-management/attendance.controller';
-import { AttendanceRoute } from '@/interface/route/evaluation-note-attendance-management/attendance.route';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import MemoryAttendanceRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/attendance.repository';
+import CreateAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/createAttendance.usecase';
+import FindAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/findAttendance.usecase';
+import FindAllAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/findAllAttendance.usecase';
+import UpdateAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/updateAttendance.usecase';
+import DeleteAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/deleteAttendance.usecase';
+import AddStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/addStudents.usecase';
+import RemoveStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/removeStudents.usecase';
+import { AttendanceController } from '@/modules/evaluation-note-attendance-management/interface/controller/attendance.controller';
+import { AttendanceRoute } from '@/modules/evaluation-note-attendance-management/interface/route/attendance.route';
 
 export default function initializeAttendance(express: ExpressHttp): void {
   const attendanceRepository = new MemoryAttendanceRepository();

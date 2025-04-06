@@ -1,7 +1,5 @@
-import UserBase, {
-  UserBaseProps,
-} from '../../@shared/domain/entity/user-base.entity';
-import Salary from '../../@shared/domain/value-object/salary.value-object';
+import UserBase, { UserBaseProps } from '../@shared/entity/user-base.entity';
+import Salary from '../@shared/value-object/salary.value-object';
 
 type WorkerUserProps = UserBaseProps & {
   salary: Salary;

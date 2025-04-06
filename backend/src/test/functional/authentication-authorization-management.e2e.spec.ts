@@ -1,16 +1,16 @@
-import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
-import CreateAuthUser from '@/application/usecases/authentication-authorization-management/authUser/createAuthUser.usecase';
-import DeleteAuthUser from '@/application/usecases/authentication-authorization-management/authUser/deleteAuthUser.usecase';
-import FindAuthUser from '@/application/usecases/authentication-authorization-management/authUser/findAuthUser.usecase';
-import LoginAuthUser from '@/application/usecases/authentication-authorization-management/authUser/loginAuthUser.usecase';
-import UpdateAuthUser from '@/application/usecases/authentication-authorization-management/authUser/updateAuthUser.usecase';
-import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
-import ExpressHttp from '@/infraestructure/http/express-http';
-import MemoryAuthUserRepository from '@/infraestructure/repositories/authentication-authorization-management/authUser.repository';
-import AuthUserController from '@/interface/controller/authentication-authorization-management/authUser.controller';
-import AuthUserRoute from '@/interface/route/authentication-authorization-management/authUser.route';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import CreateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/createAuthUser.usecase';
+import DeleteAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/deleteAuthUser.usecase';
+import FindAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/findAuthUser.usecase';
+import LoginAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/loginAuthUser.usecase';
+import UpdateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/updateAuthUser.usecase';
+import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/authUser.repository';
+import AuthUserController from '@/modules/authentication-authorization-management/interface/controller/authUser.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
+import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/authUser.route';
 
 describe('Authentication authorization management module end to end test', () => {
   let authUserRepository = new MemoryAuthUserRepository();

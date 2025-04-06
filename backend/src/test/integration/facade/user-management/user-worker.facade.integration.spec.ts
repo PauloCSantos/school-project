@@ -1,4 +1,4 @@
-import WorkerFacadeFactory from '@/application/factory/user-management/worker-facade.factory';
+import WorkerFacadeFactory from '@/modules/user-management/application/factory/worker-facade.factory';
 
 describe('User Worker facade integration test', () => {
   const input = {

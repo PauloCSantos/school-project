@@ -1,5 +1,5 @@
-import AuthUserFacadeFactory from '@/application/factory/authentication-authorization-management/authUser-facade.factory';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import AuthUserFacadeFactory from '@/modules/authentication-authorization-management/application/factory/authUser-facade.factory';
 
 describe('AuthUser facade integration test', () => {
   const input = {

@@ -1,4 +1,4 @@
-import AdministratorFacadeFactory from '@/application/factory/user-management/administrator-facade.factory';
+import AdministratorFacadeFactory from '@/modules/user-management/application/factory/administrator-facade.factory';
 
 describe('User Administrator facade integration test', () => {
   const input = {

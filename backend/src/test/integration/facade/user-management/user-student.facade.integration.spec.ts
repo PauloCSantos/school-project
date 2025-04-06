@@ -1,4 +1,4 @@
-import StudentFacadeFactory from '@/application/factory/user-management/student-facade.factory';
+import StudentFacadeFactory from '@/modules/user-management/application/factory/student-facade.factory';
 
 describe('User Student facade integration test', () => {
   const input = {

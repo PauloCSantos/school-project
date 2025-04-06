@@ -1,5 +1,8 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import { areAllValuesUnique, validId } from '@/util/validations';
+import {
+  areAllValuesUnique,
+  validId,
+} from '../../../@shared/utils/validations';
 
 type ScheduleProps = {
   id?: Id;

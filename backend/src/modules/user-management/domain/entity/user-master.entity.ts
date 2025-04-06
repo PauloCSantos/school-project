@@ -1,7 +1,5 @@
-import { isString, validCNPJ } from '@/util/validations';
-import UserBase, {
-  UserBaseProps,
-} from '../../@shared/domain/entity/user-base.entity';
+import { isString, validCNPJ } from '@/modules/@shared/utils/validations';
+import UserBase, { UserBaseProps } from '../@shared/entity/user-base.entity';
 
 type MasterUserProps = UserBaseProps & {
   cnpj: string;

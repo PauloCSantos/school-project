@@ -1,6 +1,12 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import { isNotEmpty, validEmail, validId, validRole } from '@/util/validations';
+
 import AuthUserService from '../service/authUser-entity.service';
+import {
+  isNotEmpty,
+  validEmail,
+  validId,
+  validRole,
+} from '@/modules/@shared/utils/validations';
 
 type AuthUserProps = {
   email: string;

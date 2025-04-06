@@ -4,7 +4,7 @@ import {
   isString,
   maxLengthInclusive,
   minLength,
-} from '@/util/validations';
+} from '../../../@shared/utils/validations';
 
 type SubjectProps = {
   id?: Id;

@@ -1,16 +1,16 @@
-import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
-import AddSubjects from '@/application/usecases/subject-curriculum-management/curriculum/addSubjects.usecase';
-import CreateCurriculum from '@/application/usecases/subject-curriculum-management/curriculum/createCurriculum.usecase';
-import DeleteCurriculum from '@/application/usecases/subject-curriculum-management/curriculum/deleteCurriculum.usecase';
-import FindAllCurriculum from '@/application/usecases/subject-curriculum-management/curriculum/findAllCurriculum.usecase';
-import FindCurriculum from '@/application/usecases/subject-curriculum-management/curriculum/findCurriculum.usecase';
-import RemoveSubjects from '@/application/usecases/subject-curriculum-management/curriculum/removeSubjects.usecase';
-import UpdateCurriculum from '@/application/usecases/subject-curriculum-management/curriculum/updateCurriculum.usecase';
-import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
-import ExpressHttp from '@/infraestructure/http/express-http';
-import MemoryCurriculumRepository from '@/infraestructure/repositories/subject-curriculum-management/memory-repository/curriculum.repository';
-import { CurriculumController } from '@/interface/controller/subject-curriculum-management/curriculum.controller';
-import { CurriculumRoute } from '@/interface/route/subject-curriculum-management/curriculum.route';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import MemoryCurriculumRepository from '@/modules/subject-curriculum-management/infrastructure/repositories/memory-repository/curriculum.repository';
+import CreateCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/createCurriculum.usecase';
+import FindCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/findCurriculum.usecase';
+import FindAllCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/findAllCurriculum.usecase';
+import UpdateCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/updateCurriculum.usecase';
+import DeleteCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/deleteCurriculum.usecase';
+import AddSubjects from '@/modules/subject-curriculum-management/application/usecases/curriculum/addSubjects.usecase';
+import RemoveSubjects from '@/modules/subject-curriculum-management/application/usecases/curriculum/removeSubjects.usecase';
+import { CurriculumController } from '@/modules/subject-curriculum-management/interface/controller/curriculum.controller';
+import { CurriculumRoute } from '@/modules/subject-curriculum-management/interface/route/curriculum.route';
 
 export default function initializeCurriculum(express: ExpressHttp): void {
   const curriculumRepository = new MemoryCurriculumRepository();

@@ -7,7 +7,7 @@ import {
   validNote,
   validId,
   isString,
-} from '@/util/validations';
+} from '@/modules/@shared/utils/validations';
 
 type EvaluationProps = {
   id?: Id;

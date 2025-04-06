@@ -1,14 +1,15 @@
-import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
-import CreateNote from '@/application/usecases/evaluation-note-attendance-management/note/createNote.usecase';
-import DeleteNote from '@/application/usecases/evaluation-note-attendance-management/note/deleteNote.usecase';
-import FindAllNote from '@/application/usecases/evaluation-note-attendance-management/note/findAllNote.usecase';
-import FindNote from '@/application/usecases/evaluation-note-attendance-management/note/findNote.usecase';
-import UpdateNote from '@/application/usecases/evaluation-note-attendance-management/note/updateNote.usecase';
-import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
-import ExpressHttp from '@/infraestructure/http/express-http';
-import MemoryNoteRepository from '@/infraestructure/repositories/evaluation-note-attendance-management/memory-repository/note.repository';
-import { NoteController } from '@/interface/controller/evaluation-note-attendance-management/note.controller';
-import { NoteRoute } from '@/interface/route/evaluation-note-attendance-management/note.route';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+
+import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import MemoryNoteRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/note.repository';
+import CreateNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/createNote.usecase';
+import FindNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/findNote.usecase';
+import FindAllNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/findAllNote.usecase';
+import UpdateNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/updateNote.usecase';
+import DeleteNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/deleteNote.usecase';
+import { NoteController } from '@/modules/evaluation-note-attendance-management/interface/controller/note.controller';
+import { NoteRoute } from '@/modules/evaluation-note-attendance-management/interface/route/note.route';
 
 export default function initializeNote(express: ExpressHttp): void {
   const noteRepository = new MemoryNoteRepository();

@@ -4,11 +4,9 @@ import {
   isString,
   maxLengthInclusive,
   minLength,
-} from '@/util/validations';
-import UserBase, {
-  UserBaseProps,
-} from '../../@shared/domain/entity/user-base.entity';
-import Salary from '../../@shared/domain/value-object/salary.value-object';
+} from '@/modules/@shared/utils/validations';
+import UserBase, { UserBaseProps } from '../@shared/entity/user-base.entity';
+import Salary from '../@shared/value-object/salary.value-object';
 
 type TeacherUserProps = UserBaseProps & {
   salary: Salary;

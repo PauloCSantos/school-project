@@ -1,14 +1,14 @@
-import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
-import CreateUserTeacher from '@/application/usecases/user-management/teacher/createUserTeacher.usecase';
-import DeleteUserTeacher from '@/application/usecases/user-management/teacher/deleteUserTeacher.usecase';
-import FindAllUserTeacher from '@/application/usecases/user-management/teacher/findAllUserTeacher.usecase';
-import FindUserTeacher from '@/application/usecases/user-management/teacher/findUserTeacher.usecase';
-import UpdateUserTeacher from '@/application/usecases/user-management/teacher/updateUserTeacher.usecase';
-import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
-import ExpressHttp from '@/infraestructure/http/express-http';
-import MemoryUserTeacherRepository from '@/infraestructure/repositories/user-management-repository/memory-repository/user-teacher.repository';
-import { UserTeacherController } from '@/interface/controller/user-management/user-teacher.controller';
-import { UserTeacherRoute } from '@/interface/route/user-management/user-teacher.route';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import CreateUserTeacher from '@/modules/user-management/application/usecases/teacher/createUserTeacher.usecase';
+import DeleteUserTeacher from '@/modules/user-management/application/usecases/teacher/deleteUserTeacher.usecase';
+import FindAllUserTeacher from '@/modules/user-management/application/usecases/teacher/findAllUserTeacher.usecase';
+import FindUserTeacher from '@/modules/user-management/application/usecases/teacher/findUserTeacher.usecase';
+import UpdateUserTeacher from '@/modules/user-management/application/usecases/teacher/updateUserTeacher.usecase';
+import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import MemoryUserTeacherRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user-teacher.repository';
+import { UserTeacherController } from '@/modules/user-management/interface/controller/user-teacher.controller';
+import { UserTeacherRoute } from '@/modules/user-management/interface/route/user-teacher.route';
 
 export default function initializeUserTeacher(express: ExpressHttp): void {
   const userTeacherRepository = new MemoryUserTeacherRepository();

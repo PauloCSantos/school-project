@@ -1,5 +1,5 @@
-import NoteFacadeFactory from '@/application/factory/evaluation-note-attendance-management/note-facade.factory';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import NoteFacadeFactory from '@/modules/evaluation-note-attendance-management/application/factory/note-facade.factory';
 
 describe('Note facade integration test', () => {
   const input = {

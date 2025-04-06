@@ -1,14 +1,14 @@
-import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
-import CreateUserAdministrator from '@/application/usecases/user-management/administrator/createUserAdministrator.usecase';
-import DeleteUserAdministrator from '@/application/usecases/user-management/administrator/deleteUserAdministrator.usecase';
-import FindAllUserAdministrator from '@/application/usecases/user-management/administrator/findAllUserAdministrator.usecase';
-import FindUserAdministrator from '@/application/usecases/user-management/administrator/findUserAdministrator.usecase';
-import UpdateUserAdministrator from '@/application/usecases/user-management/administrator/updateUserAdministrator.usecase';
-import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
-import ExpressHttp from '@/infraestructure/http/express-http';
-import MemoryUserAdministratorRepository from '@/infraestructure/repositories/user-management-repository/memory-repository/user-administrator.repository';
-import { UserAdministratorController } from '@/interface/controller/user-management/user-administrator.controller';
-import { UserAdministratorRoute } from '@/interface/route/user-management/user-administrator.route';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import CreateUserAdministrator from '@/modules/user-management/application/usecases/administrator/createUserAdministrator.usecase';
+import DeleteUserAdministrator from '@/modules/user-management/application/usecases/administrator/deleteUserAdministrator.usecase';
+import FindAllUserAdministrator from '@/modules/user-management/application/usecases/administrator/findAllUserAdministrator.usecase';
+import FindUserAdministrator from '@/modules/user-management/application/usecases/administrator/findUserAdministrator.usecase';
+import UpdateUserAdministrator from '@/modules/user-management/application/usecases/administrator/updateUserAdministrator.usecase';
+import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import MemoryUserAdministratorRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user-administrator.repository';
+import { UserAdministratorController } from '@/modules/user-management/interface/controller/user-administrator.controller';
+import { UserAdministratorRoute } from '@/modules/user-management/interface/route/user-administrator.route';
 
 export default function initializeUserAdministrator(
   express: ExpressHttp

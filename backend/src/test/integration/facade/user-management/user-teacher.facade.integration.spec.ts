@@ -1,4 +1,4 @@
-import TeacherFacadeFactory from '@/application/factory/user-management/teacher-facade.factory';
+import TeacherFacadeFactory from '@/modules/user-management/application/factory/teacher-facade.factory';
 
 describe('User Teacher facade integration test', () => {
   const input = {
