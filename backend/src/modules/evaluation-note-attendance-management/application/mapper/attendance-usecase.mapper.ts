@@ -1,6 +1,6 @@
-import { FindAttendanceOutputDto } from '@/application/dto/evaluation-note-attendance-management/attendance-usecase.dto';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
+import { FindAttendanceOutputDto } from '../dto/attendance-usecase.dto';
 
 type AttendanceMapperProps = FindAttendanceOutputDto & {
   id: string;
@@ -8,7 +8,7 @@ type AttendanceMapperProps = FindAttendanceOutputDto & {
 export default class AttendanceMapper {
   static toObj(input: Attendance): AttendanceMapperProps {
     return {
-      id: input.id.id,
+      id: input.id.value,
       date: input.date,
       day: input.day,
       hour: input.hour,

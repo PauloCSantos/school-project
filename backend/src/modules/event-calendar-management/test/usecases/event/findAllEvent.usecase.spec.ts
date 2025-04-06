@@ -14,7 +14,7 @@ const MockRepository = () => {
 
 describe('findAllEvent usecase unit test', () => {
   const input1 = {
-    creator: new Id().id,
+    creator: new Id().value,
     name: 'Christmas',
     date: new Date(),
     hour: '08:00' as Hour,
@@ -23,7 +23,7 @@ describe('findAllEvent usecase unit test', () => {
     place: 'school',
   };
   const input2 = {
-    creator: new Id().id,
+    creator: new Id().value,
     name: 'Summer',
     date: new Date(),
     hour: '14:00' as Hour,

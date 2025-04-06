@@ -22,9 +22,9 @@ describe('deleteLesson usecase unit test', () => {
   const lesson = new Lesson({
     name: 'Math advanced I',
     duration: 60,
-    teacher: new Id().id,
-    studentsList: [new Id().id, new Id().id, new Id().id],
-    subject: new Id().id,
+    teacher: new Id().value,
+    studentsList: [new Id().value, new Id().value, new Id().value],
+    subject: new Id().value,
     days: ['mon', 'fri'] as DayOfWeek[],
     times: ['15:55', '19:00'] as Hour[],
     semester: 2 as 1 | 2,
@@ -48,7 +48,7 @@ describe('deleteLesson usecase unit test', () => {
       lessonRepository.find.mockResolvedValue(lesson);
       const usecase = new DeleteLesson(lessonRepository);
       const result = await usecase.execute({
-        id: lesson.id.id,
+        id: lesson.id.value,
       });
 
       expect(lessonRepository.delete).toHaveBeenCalled();

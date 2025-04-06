@@ -14,8 +14,8 @@ const MockRepository = () => {
 
 describe('findNote usecase unit test', () => {
   const note1 = new Note({
-    evaluation: new Id().id,
-    student: new Id().id,
+    evaluation: new Id().value,
+    student: new Id().value,
     note: 10,
   });
   describe('On success', () => {
@@ -24,7 +24,7 @@ describe('findNote usecase unit test', () => {
       noteRepository.find.mockResolvedValue(note1);
       const usecase = new FindNote(noteRepository);
 
-      const result = await usecase.execute({ id: note1.id.id });
+      const result = await usecase.execute({ id: note1.id.value });
 
       expect(noteRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();

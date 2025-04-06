@@ -1,5 +1,5 @@
-import NoteGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/note.gateway';
 import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
+import NoteGateway from '../../gateway/note.gateway';
 
 export default class MemoryNoteRepository implements NoteGateway {
   private _note: Note[];
@@ -9,7 +9,7 @@ export default class MemoryNoteRepository implements NoteGateway {
   }
 
   async find(id: string): Promise<Note | undefined> {
-    const note = this._note.find(note => note.id.id === id);
+    const note = this._note.find(note => note.id.value === id);
     if (note) {
       return note;
     } else {
@@ -28,11 +28,11 @@ export default class MemoryNoteRepository implements NoteGateway {
   }
   async create(note: Note): Promise<string> {
     this._note.push(note);
-    return note.id.id;
+    return note.id.value;
   }
   async update(note: Note): Promise<Note> {
     const noteIndex = this._note.findIndex(
-      dbNote => dbNote.id.id === note.id.id
+      dbNote => dbNote.id.value === note.id.value
     );
     if (noteIndex !== -1) {
       return (this._note[noteIndex] = note);
@@ -41,7 +41,7 @@ export default class MemoryNoteRepository implements NoteGateway {
     }
   }
   async delete(id: string): Promise<string> {
-    const noteIndex = this._note.findIndex(dbNote => dbNote.id.id === id);
+    const noteIndex = this._note.findIndex(dbNote => dbNote.id.value === id);
     if (noteIndex !== -1) {
       this._note.splice(noteIndex, 1);
       return 'Operação concluída com sucesso';

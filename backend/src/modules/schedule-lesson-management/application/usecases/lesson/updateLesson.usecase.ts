@@ -34,7 +34,7 @@ export default class UpdateLesson
       const result = await this._lessonRepository.update(lesson);
 
       return {
-        id: result.id.id,
+        id: result.id.value,
         name: result.name,
         duration: result.duration,
         teacher: result.teacher,

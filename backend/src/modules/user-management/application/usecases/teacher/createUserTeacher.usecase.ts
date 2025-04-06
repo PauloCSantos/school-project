@@ -38,7 +38,7 @@ export default class CreateUserTeacher
     });
 
     const userVerification = await this._userTeacherRepository.find(
-      userTeacher.id.id
+      userTeacher.id.value
     );
     if (userVerification) throw new Error('User already exists');
 

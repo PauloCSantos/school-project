@@ -1,8 +1,31 @@
+export interface HttpRequest {
+  params?: any;
+  query?: any;
+  body?: any;
+  headers?: any;
+  [key: string]: any;
+}
+
+export interface HttpResponse {
+  status(code: number): this;
+  json(data: any): void;
+}
+
 export interface HttpInterface {
-  get<Req, Res>(path: string, handler: (req: Req, res: Res) => void): void;
-  post<Req, Res>(path: string, handler: (req: Req, res: Res) => void): void;
-  put<Req, Res>(path: string, handler: (req: Req, res: Res) => void): void;
-  patch<Req, Res>(path: string, handler: (req: Req, res: Res) => void): void;
-  delete<Req, Res>(path: string, handler: (req: Req, res: Res) => void): void;
-  listen(port: number): void;
+  get(
+    path: string,
+    handler: (req: HttpRequest, res: HttpResponse) => void
+  ): void;
+  post(
+    path: string,
+    handler: (req: HttpRequest, res: HttpResponse) => void
+  ): void;
+  patch(
+    path: string,
+    handler: (req: HttpRequest, res: HttpResponse) => void
+  ): void;
+  delete(
+    path: string,
+    handler: (req: HttpRequest, res: HttpResponse) => void
+  ): void;
 }

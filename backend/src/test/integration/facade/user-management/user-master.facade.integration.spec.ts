@@ -3,7 +3,7 @@ import MasterFacadeFactory from '@/modules/user-management/application/factory/m
 
 describe('User master facade integration test', () => {
   const input = {
-    id: new Id().id,
+    id: new Id().value,
     name: {
       firstName: 'John',
       lastName: 'Doe',

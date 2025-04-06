@@ -20,7 +20,7 @@ export default class FindAllLesson
     const results = await this._lessonRepository.findAll(offset, quantity);
 
     const result = results.map(lesson => ({
-      id: lesson.id.id,
+      id: lesson.id.value,
       name: lesson.name,
       duration: lesson.duration,
       teacher: lesson.teacher,

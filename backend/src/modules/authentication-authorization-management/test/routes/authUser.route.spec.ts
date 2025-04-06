@@ -2,8 +2,8 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import AuthUserController from '../../interface/controller/authUser.controller';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
 import AuthUserRoute from '../../interface/route/authUser.route';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 
 const mockAuthUserMiddleware = jest.fn(
   () =>
@@ -17,11 +17,11 @@ const mockAuthUserController = jest.fn(() => {
   return {
     create: jest.fn().mockResolvedValue({
       email: 'teste1@teste.com',
-      masterId: new Id().id,
+      masterId: new Id().value,
     }),
     find: jest.fn().mockResolvedValue({
       email: 'teste1@teste.com',
-      masterId: new Id().id,
+      masterId: new Id().value,
       role: 'master',
       isHashed: true,
     }),

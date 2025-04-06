@@ -35,7 +35,9 @@ export default class CreateLesson
       times,
     });
 
-    const lessonVerification = await this._lessonRepository.find(lesson.id.id);
+    const lessonVerification = await this._lessonRepository.find(
+      lesson.id.value
+    );
     if (lessonVerification) throw new Error('Lesson already exists');
 
     const result = await this._lessonRepository.create(lesson);

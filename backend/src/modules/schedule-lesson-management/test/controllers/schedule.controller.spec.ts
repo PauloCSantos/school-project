@@ -12,7 +12,7 @@ import { ScheduleController } from '../../interface/controller/schedule.controll
 describe('ScheduleController unit test', () => {
   const mockCreateSchedule = jest.fn(() => {
     return {
-      execute: jest.fn().mockResolvedValue(new Id().id),
+      execute: jest.fn().mockResolvedValue(new Id().value),
     } as unknown as CreateSchedule;
   });
   const mockFindSchedule = jest.fn(() => {
@@ -32,14 +32,14 @@ describe('ScheduleController unit test', () => {
     return {
       execute: jest.fn().mockResolvedValue([
         {
-          student: new Id().id,
-          curriculum: new Id().id,
-          lessonsList: [new Id().id, new Id().id, new Id().id],
+          student: new Id().value,
+          curriculum: new Id().value,
+          lessonsList: [new Id().value, new Id().value, new Id().value],
         },
         {
-          student: new Id().id,
-          curriculum: new Id().id,
-          lessonsList: [new Id().id, new Id().id, new Id().id],
+          student: new Id().value,
+          curriculum: new Id().value,
+          lessonsList: [new Id().value, new Id().value, new Id().value],
         },
       ]),
     } as unknown as FindAllSchedule;
@@ -47,8 +47,8 @@ describe('ScheduleController unit test', () => {
   const mockUpdateSchedule = jest.fn(() => {
     return {
       execute: jest.fn().mockResolvedValue({
-        student: new Id().id,
-        curriculum: new Id().id,
+        student: new Id().value,
+        curriculum: new Id().value,
       }),
     } as unknown as UpdateSchedule;
   });
@@ -119,8 +119,8 @@ describe('ScheduleController unit test', () => {
   });
   it('should update a schedule', async () => {
     const result = await controller.update({
-      id: new Id().id,
-      curriculum: new Id().id,
+      id: new Id().value,
+      curriculum: new Id().value,
     });
 
     expect(result).toBeDefined();
@@ -128,7 +128,7 @@ describe('ScheduleController unit test', () => {
   });
   it('should delete a schedule', async () => {
     const result = await controller.delete({
-      id: new Id().id,
+      id: new Id().value,
     });
 
     expect(result).toBeDefined();
@@ -136,8 +136,8 @@ describe('ScheduleController unit test', () => {
   });
   it('should add a subject to the schedule', async () => {
     const result = await controller.addLessons({
-      id: new Id().id,
-      newLessonsList: [new Id().id],
+      id: new Id().value,
+      newLessonsList: [new Id().value],
     });
 
     expect(result).toBeDefined();
@@ -145,8 +145,8 @@ describe('ScheduleController unit test', () => {
   });
   it('should remove a subject from the schedule', async () => {
     const result = await controller.removeLessons({
-      id: new Id().id,
-      lessonsListToRemove: [new Id().id, new Id().id],
+      id: new Id().value,
+      lessonsListToRemove: [new Id().value, new Id().value],
     });
 
     expect(result).toBeDefined();

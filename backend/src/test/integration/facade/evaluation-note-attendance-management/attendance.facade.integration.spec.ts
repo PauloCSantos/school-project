@@ -6,22 +6,22 @@ describe('Attendance facade integration test', () => {
     date: new Date(),
     day: 'fri' as DayOfWeek,
     hour: '06:50' as Hour,
-    lesson: new Id().id,
-    studentsPresent: [new Id().id, new Id().id, new Id().id],
+    lesson: new Id().value,
+    studentsPresent: [new Id().value, new Id().value, new Id().value],
   };
   const input2 = {
     date: new Date(),
     day: 'fri' as DayOfWeek,
     hour: '06:50' as Hour,
-    lesson: new Id().id,
-    studentsPresent: [new Id().id, new Id().id, new Id().id],
+    lesson: new Id().value,
+    studentsPresent: [new Id().value, new Id().value, new Id().value],
   };
   const input3 = {
     date: new Date(),
     day: 'fri' as DayOfWeek,
     hour: '06:50' as Hour,
-    lesson: new Id().id,
-    studentsPresent: [new Id().id, new Id().id, new Id().id],
+    lesson: new Id().value,
+    studentsPresent: [new Id().value, new Id().value, new Id().value],
   };
 
   it('should create an attendance using the facade', async () => {
@@ -63,7 +63,7 @@ describe('Attendance facade integration test', () => {
 
     const result = await facade.update({
       id: id.id,
-      lesson: new Id().id,
+      lesson: new Id().value,
     });
 
     expect(result).toBeDefined();
@@ -74,7 +74,7 @@ describe('Attendance facade integration test', () => {
 
     const result = await facade.addStudents({
       id: id.id,
-      newStudentsList: [new Id().id],
+      newStudentsList: [new Id().value],
     });
 
     expect(result).toBeDefined();

@@ -6,7 +6,7 @@ const MockRepository = () => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
-    create: jest.fn(lesson => Promise.resolve(lesson.id.id)),
+    create: jest.fn(lesson => Promise.resolve(lesson.id.value)),
     update: jest.fn(),
     delete: jest.fn(),
     addStudents: jest.fn(),
@@ -22,9 +22,9 @@ describe('createLesson usecase unit test', () => {
   const input = {
     name: 'Math advanced I',
     duration: 60,
-    teacher: new Id().id,
-    studentsList: [new Id().id, new Id().id, new Id().id],
-    subject: new Id().id,
+    teacher: new Id().value,
+    studentsList: [new Id().value, new Id().value, new Id().value],
+    subject: new Id().value,
     days: ['mon', 'fri'] as DayOfWeek[],
     times: ['15:55', '19:00'] as Hour[],
     semester: 2 as 1 | 2,

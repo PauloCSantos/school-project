@@ -31,7 +31,7 @@ export default class CreateAttendance
     });
 
     const attendanceVerification = await this._attendanceRepository.find(
-      attendance.id.id
+      attendance.id.value
     );
     if (attendanceVerification) throw new Error('Attendance already exists');
 

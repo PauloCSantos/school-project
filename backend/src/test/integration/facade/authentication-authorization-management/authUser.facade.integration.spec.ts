@@ -5,14 +5,14 @@ describe('AuthUser facade integration test', () => {
   const input = {
     email: 'teste@teste.com.br',
     password: 'XpA2Jjd4',
-    masterId: new Id().id,
+    masterId: new Id().value,
     role: 'master' as RoleUsers,
     isHashed: false,
   };
   const input2 = {
     email: 'teste2@teste.com.br',
     password: 'XpA2Jjd4',
-    masterId: new Id().id,
+    masterId: new Id().value,
     role: 'administrator' as RoleUsers,
     isHashed: false,
   };

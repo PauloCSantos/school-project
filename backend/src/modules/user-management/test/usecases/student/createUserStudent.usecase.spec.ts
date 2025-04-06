@@ -7,7 +7,7 @@ const MockRepository = () => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
-    create: jest.fn(userStudent => Promise.resolve(userStudent.id.id)),
+    create: jest.fn(userStudent => Promise.resolve(userStudent.id.value)),
     update: jest.fn(),
     delete: jest.fn(),
   };

@@ -22,7 +22,7 @@ describe('updateCurriculum usecase unit test', () => {
 
   const curriculum1 = new Curriculum({
     name: 'Math',
-    subjectsList: [new Id().id, new Id().id],
+    subjectsList: [new Id().value, new Id().value],
     yearsToComplete: 5,
   });
 
@@ -47,7 +47,7 @@ describe('updateCurriculum usecase unit test', () => {
       const usecase = new UpdateCurriculum(curriculumRepository);
 
       const result = await usecase.execute({
-        id: curriculum1.id.id,
+        id: curriculum1.id.value,
         name: input.name,
         yearsToComplete: input.yearsToComplete,
       });
@@ -55,7 +55,7 @@ describe('updateCurriculum usecase unit test', () => {
       expect(curriculumRepository.update).toHaveBeenCalled();
       expect(curriculumRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
-        id: curriculum1.id.id,
+        id: curriculum1.id.value,
         name: input.name,
         yearsToComplete: input.yearsToComplete,
       });

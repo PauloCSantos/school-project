@@ -14,14 +14,14 @@ const MockRepository = () => {
 
 describe('findAllEvaluation usecase unit test', () => {
   const evaluation1 = new Evaluation({
-    lesson: new Id().id,
-    teacher: new Id().id,
+    lesson: new Id().value,
+    teacher: new Id().value,
     type: 'evaluation',
     value: 10,
   });
   const evaluation2 = new Evaluation({
-    lesson: new Id().id,
-    teacher: new Id().id,
+    lesson: new Id().value,
+    teacher: new Id().value,
     type: 'home work',
     value: 10,
   });

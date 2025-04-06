@@ -7,14 +7,14 @@ import UserMaster from '@/modules/user-management/domain/entity/user-master.enti
 const MockRepository = () => {
   return {
     find: jest.fn(),
-    create: jest.fn(userMaster => Promise.resolve(userMaster.id.id)),
+    create: jest.fn(userMaster => Promise.resolve(userMaster.id.value)),
     update: jest.fn(),
   };
 };
 
 describe('createUserMaster usecase unit test', () => {
   const input = {
-    id: new Id().id,
+    id: new Id().value,
     name: {
       firstName: 'John',
       lastName: 'Doe',

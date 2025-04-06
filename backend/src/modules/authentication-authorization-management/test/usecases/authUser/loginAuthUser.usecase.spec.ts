@@ -20,7 +20,7 @@ describe('loginAuthUser usecase unit test', () => {
     {
       email: 'teste@teste.com.br',
       password: 'ioNO9V',
-      masterId: new Id().id,
+      masterId: new Id().value,
       role: 'master' as RoleUsers,
       isHashed: false,
     },

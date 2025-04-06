@@ -6,7 +6,7 @@ const MockRepository = () => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
-    create: jest.fn(evaluation => Promise.resolve(evaluation.id.id)),
+    create: jest.fn(evaluation => Promise.resolve(evaluation.id.value)),
     update: jest.fn(),
     delete: jest.fn(),
   };
@@ -14,8 +14,8 @@ const MockRepository = () => {
 
 describe('createEvaluation usecase unit test', () => {
   const input = {
-    lesson: new Id().id,
-    teacher: new Id().id,
+    lesson: new Id().value,
+    teacher: new Id().value,
     type: 'evaluation',
     value: 10,
   };

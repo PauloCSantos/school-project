@@ -9,7 +9,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 describe('UserTeacherController unit test', () => {
   const mockCreateUserTeacher = jest.fn(() => {
     return {
-      execute: jest.fn().mockResolvedValue(new Id().id),
+      execute: jest.fn().mockResolvedValue(new Id().value),
     } as unknown as CreateUserTeacher;
   });
   const mockFindUserTeacher = jest.fn(() => {
@@ -139,7 +139,7 @@ describe('UserTeacherController unit test', () => {
     expect(createUserTeacher.execute).toHaveBeenCalled();
   });
   it('should return a user', async () => {
-    const result = await controller.find(new Id());
+    const result = await controller.find({ id: new Id().value });
 
     expect(result).toBeDefined();
     expect(findUserTeacher.execute).toHaveBeenCalled();
@@ -153,7 +153,7 @@ describe('UserTeacherController unit test', () => {
   });
   it('should update an user', async () => {
     const result = await controller.update({
-      id: new Id().id,
+      id: new Id().value,
       salary: {
         salary: 500,
       },
@@ -164,7 +164,7 @@ describe('UserTeacherController unit test', () => {
   });
   it('should delete an users', async () => {
     const result = await controller.delete({
-      id: new Id().id,
+      id: new Id().value,
     });
 
     expect(result).toBeDefined();

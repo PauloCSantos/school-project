@@ -1,7 +1,7 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryLessonRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/lesson.repository';
 import CreateLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/createLesson.usecase';
 import FindLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/findLesson.usecase';

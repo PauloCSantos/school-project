@@ -1,7 +1,7 @@
 import {
-  CreateAttendanceInputDto,
   AddStudentsInputDto,
   AddStudentsOutputDto,
+  CreateAttendanceInputDto,
   CreateAttendanceOutputDto,
   DeleteAttendanceInputDto,
   DeleteAttendanceOutputDto,
@@ -13,7 +13,7 @@ import {
   RemoveStudentsOutputDto,
   UpdateAttendanceInputDto,
   UpdateAttendanceOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/attendance-facade.dto';
+} from '../../dto/attendance-facade.dto';
 
 export default interface AttendanceFacadeInterface {
   create(input: CreateAttendanceInputDto): Promise<CreateAttendanceOutputDto>;

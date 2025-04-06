@@ -14,7 +14,7 @@ const MockRepository = () => {
 
 describe('deleteEvent usecase unit test', () => {
   const input = {
-    creator: new Id().id,
+    creator: new Id().value,
     name: 'Christmas',
     date: new Date(),
     hour: '08:00' as Hour,
@@ -43,7 +43,7 @@ describe('deleteEvent usecase unit test', () => {
       eventRepository.find.mockResolvedValue(event);
       const usecase = new DeleteEvent(eventRepository);
       const result = await usecase.execute({
-        id: event.id.id,
+        id: event.id.value,
       });
 
       expect(eventRepository.delete).toHaveBeenCalled();

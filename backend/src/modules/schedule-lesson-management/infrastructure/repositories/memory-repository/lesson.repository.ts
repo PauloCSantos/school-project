@@ -9,7 +9,7 @@ export default class MemoryLessonRepository implements LessonGateway {
   }
 
   async find(id: string): Promise<Lesson | undefined> {
-    const lesson = this._lessons.find(lesson => lesson.id.id === id);
+    const lesson = this._lessons.find(lesson => lesson.id.value === id);
     if (lesson) {
       return lesson;
     } else {
@@ -28,11 +28,11 @@ export default class MemoryLessonRepository implements LessonGateway {
   }
   async create(lesson: Lesson): Promise<string> {
     this._lessons.push(lesson);
-    return lesson.id.id;
+    return lesson.id.value;
   }
   async update(lesson: Lesson): Promise<Lesson> {
     const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.id === lesson.id.id
+      dbLesson => dbLesson.id.value === lesson.id.value
     );
     if (lessonIndex !== -1) {
       return (this._lessons[lessonIndex] = lesson);
@@ -42,7 +42,7 @@ export default class MemoryLessonRepository implements LessonGateway {
   }
   async delete(id: string): Promise<string> {
     const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.id === id
+      dbLesson => dbLesson.id.value === id
     );
     if (lessonIndex !== -1) {
       this._lessons.splice(lessonIndex, 1);
@@ -53,7 +53,7 @@ export default class MemoryLessonRepository implements LessonGateway {
   }
   async addStudents(id: string, newStudentsList: string[]): Promise<string> {
     const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.id === id
+      dbLesson => dbLesson.id.value === id
     );
     if (lessonIndex !== -1) {
       try {
@@ -77,7 +77,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     studentsListToRemove: string[]
   ): Promise<string> {
     const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.id === id
+      dbLesson => dbLesson.id.value === id
     );
     if (lessonIndex !== -1) {
       try {
@@ -99,7 +99,7 @@ export default class MemoryLessonRepository implements LessonGateway {
 
   async addDay(id: string, newDaysList: string[]): Promise<string> {
     const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.id === id
+      dbLesson => dbLesson.id.value === id
     );
     if (lessonIndex !== -1) {
       try {
@@ -120,7 +120,7 @@ export default class MemoryLessonRepository implements LessonGateway {
   }
   async removeDay(id: string, daysListToRemove: string[]): Promise<string> {
     const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.id === id
+      dbLesson => dbLesson.id.value === id
     );
     if (lessonIndex !== -1) {
       try {
@@ -141,7 +141,7 @@ export default class MemoryLessonRepository implements LessonGateway {
   }
   async addTime(id: string, newTimesList: string[]): Promise<string> {
     const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.id === id
+      dbLesson => dbLesson.id.value === id
     );
     if (lessonIndex !== -1) {
       try {
@@ -162,7 +162,7 @@ export default class MemoryLessonRepository implements LessonGateway {
   }
   async removeTime(id: string, timesListToRemove: string[]): Promise<string> {
     const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.id === id
+      dbLesson => dbLesson.id.value === id
     );
     if (lessonIndex !== -1) {
       try {

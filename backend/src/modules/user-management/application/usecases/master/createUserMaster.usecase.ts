@@ -36,7 +36,7 @@ export default class CreateUserMaster
     });
 
     const userVerification = await this._userMasterRepository.find(
-      userMaster.id.id
+      userMaster.id.value
     );
     if (userVerification) throw new Error('User already exists');
 

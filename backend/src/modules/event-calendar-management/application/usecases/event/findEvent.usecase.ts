@@ -20,7 +20,7 @@ export default class FindEvent
     const response = await this._eventRepository.find(id);
     if (response) {
       return {
-        id: response.id.id,
+        id: response.id.value,
         creator: response.creator,
         name: response.name,
         date: response.date,

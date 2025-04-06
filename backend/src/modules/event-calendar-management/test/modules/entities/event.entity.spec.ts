@@ -4,7 +4,7 @@ import Event from '@/modules/event-calendar-management/domain/entity/event.entit
 describe('Event unit test', () => {
   const eventData = {
     id: new Id(),
-    creator: new Id().id,
+    creator: new Id().value,
     name: 'Formatura',
     date: new Date(),
     hour: '12:00' as Hour,

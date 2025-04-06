@@ -9,12 +9,12 @@ import {
   FindNoteOutputDto,
   UpdateNoteInputDto,
   UpdateNoteOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/note-usecase.dto';
-import CreateNote from '@/application/usecases/evaluation-note-attendance-management/note/createNote.usecase';
-import DeleteNote from '@/application/usecases/evaluation-note-attendance-management/note/deleteNote.usecase';
-import FindAllNote from '@/application/usecases/evaluation-note-attendance-management/note/findAllNote.usecase';
-import FindNote from '@/application/usecases/evaluation-note-attendance-management/note/findNote.usecase';
-import UpdateNote from '@/application/usecases/evaluation-note-attendance-management/note/updateNote.usecase';
+} from '../../application/dto/note-usecase.dto';
+import CreateNote from '../../application/usecases/note/createNote.usecase';
+import DeleteNote from '../../application/usecases/note/deleteNote.usecase';
+import FindAllNote from '../../application/usecases/note/findAllNote.usecase';
+import FindNote from '../../application/usecases/note/findNote.usecase';
+import UpdateNote from '../../application/usecases/note/updateNote.usecase';
 
 export class NoteController {
   constructor(

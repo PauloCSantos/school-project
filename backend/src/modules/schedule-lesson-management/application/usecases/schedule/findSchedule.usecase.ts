@@ -20,7 +20,7 @@ export default class FindSchedule
     const response = await this._scheduleRepository.find(id);
     if (response) {
       return {
-        id: response.id.id,
+        id: response.id.value,
         student: response.student,
         curriculum: response.curriculum,
         lessonsList: response.lessonsList,

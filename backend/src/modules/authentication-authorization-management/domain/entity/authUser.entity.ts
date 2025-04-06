@@ -59,7 +59,7 @@ export default class AuthUser {
     this._email = input.email;
     this._role = input.role;
     this._masterId =
-      input.masterId !== undefined ? input.masterId : new Id().id;
+      input.masterId !== undefined ? input.masterId : new Id().value;
     this._password = input.password;
   }
 

@@ -9,7 +9,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 describe('NoteController unit test', () => {
   const mockCreateNote = jest.fn(() => {
     return {
-      execute: jest.fn().mockResolvedValue(new Id().id),
+      execute: jest.fn().mockResolvedValue(new Id().value),
     } as unknown as CreateNote;
   });
   const mockFindNote = jest.fn(() => {
@@ -70,8 +70,8 @@ describe('NoteController unit test', () => {
 
   it('should return a id for the new note created', async () => {
     const result = await controller.create({
-      evaluation: new Id().id,
-      student: new Id().id,
+      evaluation: new Id().value,
+      student: new Id().value,
       note: 10,
     });
 
@@ -93,7 +93,7 @@ describe('NoteController unit test', () => {
   });
   it('should update an note', async () => {
     const result = await controller.update({
-      id: new Id().id,
+      id: new Id().value,
       note: 8,
     });
 
@@ -102,7 +102,7 @@ describe('NoteController unit test', () => {
   });
   it('should delete an note', async () => {
     const result = await controller.delete({
-      id: new Id().id,
+      id: new Id().value,
     });
 
     expect(result).toBeDefined();

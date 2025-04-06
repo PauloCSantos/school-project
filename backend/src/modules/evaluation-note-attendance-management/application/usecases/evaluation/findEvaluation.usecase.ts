@@ -1,9 +1,9 @@
+import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
 import {
   FindEvaluationInputDto,
   FindEvaluationOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/evaluation-usecase.dto';
-import UseCaseInterface from '../../@shared/use-case.interface';
-import EvaluationGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/evaluation.gateway';
+} from '../../dto/evaluation-usecase.dto';
+import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
 
 export default class FindEvaluation
   implements
@@ -23,7 +23,7 @@ export default class FindEvaluation
     const response = await this._evaluationRepository.find(id);
     if (response) {
       return {
-        id: response.id.id,
+        id: response.id.value,
         teacher: response.teacher,
         lesson: response.lesson,
         type: response.type,

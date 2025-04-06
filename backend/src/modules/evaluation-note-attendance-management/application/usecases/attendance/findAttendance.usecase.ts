@@ -23,7 +23,7 @@ export default class FindAttendance
     const response = await this._attendanceRepository.find(id);
     if (response) {
       return {
-        id: response.id.id,
+        id: response.id.value,
         lesson: response.lesson,
         date: response.date,
         hour: response.hour,

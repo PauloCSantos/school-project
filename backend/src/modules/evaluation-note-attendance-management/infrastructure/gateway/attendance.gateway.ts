@@ -1,4 +1,4 @@
-import Attendance from '../../../modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
+import Attendance from '../../domain/entity/attendance.entity';
 
 export default interface AttendanceGateway {
   find(id: string): Promise<Attendance | undefined>;

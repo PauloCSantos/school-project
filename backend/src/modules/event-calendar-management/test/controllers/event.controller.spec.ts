@@ -9,7 +9,7 @@ import { EventController } from '../../interface/controller/event.controller';
 describe('EventController unit test', () => {
   const mockCreateEvent = jest.fn(() => {
     return {
-      execute: jest.fn().mockResolvedValue(new Id().id),
+      execute: jest.fn().mockResolvedValue(new Id().value),
     } as unknown as CreateEvent;
   });
   const mockFindEvent = jest.fn(() => {
@@ -86,7 +86,7 @@ describe('EventController unit test', () => {
 
   it('should return a id for the new event created', async () => {
     const result = await controller.create({
-      creator: new Id().id,
+      creator: new Id().value,
       name: 'Christmas',
       date: new Date(),
       hour: '08:00' as Hour,
@@ -99,7 +99,7 @@ describe('EventController unit test', () => {
     expect(createEvent.execute).toHaveBeenCalled();
   });
   it('should return a event', async () => {
-    const result = await controller.find(new Id());
+    const result = await controller.find({ id: new Id().value });
 
     expect(result).toBeDefined();
     expect(findEvent.execute).toHaveBeenCalled();
@@ -113,7 +113,7 @@ describe('EventController unit test', () => {
   });
   it('should update an event', async () => {
     const result = await controller.update({
-      id: new Id().id,
+      id: new Id().value,
       name: 'Holiday',
     });
 
@@ -122,7 +122,7 @@ describe('EventController unit test', () => {
   });
   it('should delete an event', async () => {
     const result = await controller.delete({
-      id: new Id().id,
+      id: new Id().value,
     });
 
     expect(result).toBeDefined();

@@ -22,7 +22,7 @@ describe('findSubject usecase unit test', () => {
       subjectRepository.find.mockResolvedValue(subject1);
       const usecase = new FindSubject(subjectRepository);
 
-      const result = await usecase.execute({ id: subject1.id.id });
+      const result = await usecase.execute({ id: subject1.id.value });
 
       expect(subjectRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();

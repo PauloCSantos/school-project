@@ -63,7 +63,7 @@ describe('deleteUserAdministrator usecase unit test', () => {
       userAdministratorRepository.find.mockResolvedValue(userAdministrator);
       const usecase = new DeleteUserAdministrator(userAdministratorRepository);
       const result = await usecase.execute({
-        id: userAdministrator.id.id,
+        id: userAdministrator.id.value,
       });
 
       expect(userAdministratorRepository.delete).toHaveBeenCalled();

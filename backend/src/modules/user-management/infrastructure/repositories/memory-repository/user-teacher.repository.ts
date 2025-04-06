@@ -11,7 +11,7 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
   }
 
   async find(id: string): Promise<UserTeacher | undefined> {
-    const user = this._teacherUsers.find(user => user.id.id === id);
+    const user = this._teacherUsers.find(user => user.id.value === id);
     if (user) {
       return user;
     } else {
@@ -30,11 +30,11 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
   }
   async create(userTeacher: UserTeacher): Promise<string> {
     this._teacherUsers.push(userTeacher);
-    return userTeacher.id.id;
+    return userTeacher.id.value;
   }
   async update(userTeacher: UserTeacher): Promise<UserTeacher> {
     const teacherUserIndex = this._teacherUsers.findIndex(
-      user => user.id.id === userTeacher.id?.id
+      user => user.id.value === userTeacher.id?.value
     );
     if (teacherUserIndex !== -1) {
       return (this._teacherUsers[teacherUserIndex] = userTeacher);
@@ -44,7 +44,7 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
   }
   async delete(id: string): Promise<string> {
     const teacherUserIndex = this._teacherUsers.findIndex(
-      user => user.id.id === id
+      user => user.id.value === id
     );
     if (teacherUserIndex !== -1) {
       this._teacherUsers.splice(teacherUserIndex, 1);

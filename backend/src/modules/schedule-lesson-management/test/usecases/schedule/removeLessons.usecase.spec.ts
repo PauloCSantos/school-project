@@ -22,12 +22,12 @@ const MockRepository = () => {
 
 describe('RemoveLessons use case unit test', () => {
   const schedule = new Schedule({
-    student: new Id().id,
-    curriculum: new Id().id,
-    lessonsList: [new Id().id, new Id().id, new Id().id],
+    student: new Id().value,
+    curriculum: new Id().value,
+    lessonsList: [new Id().value, new Id().value, new Id().value],
   });
   const input = {
-    id: schedule.id.id,
+    id: schedule.id.value,
     lessonsListToRemove: [schedule.lessonsList[0]],
   };
 
@@ -51,7 +51,7 @@ describe('RemoveLessons use case unit test', () => {
       const usecase = new RemoveLessons(scheduleRepository);
 
       await expect(
-        usecase.execute({ ...input, lessonsListToRemove: [new Id().id] })
+        usecase.execute({ ...input, lessonsListToRemove: [new Id().value] })
       ).rejects.toThrow('This lesson is not included in the schedule');
       expect(scheduleRepository.find).toHaveBeenCalledWith(input.id);
       expect(scheduleRepository.removeLessons).not.toHaveBeenCalled();

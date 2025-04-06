@@ -9,7 +9,7 @@ import { SubjectController } from '../../interface/controller/subject.controller
 describe('SubjectController unit test', () => {
   const mockCreateSubject = jest.fn(() => {
     return {
-      execute: jest.fn().mockResolvedValue(new Id().id),
+      execute: jest.fn().mockResolvedValue(new Id().value),
     } as unknown as CreateSubject;
   });
   const mockFindSubject = jest.fn(() => {
@@ -66,7 +66,7 @@ describe('SubjectController unit test', () => {
     expect(createSubject.execute).toHaveBeenCalled();
   });
   it('should return a subject', async () => {
-    const result = await controller.find(new Id());
+    const result = await controller.find({ id: new Id().value });
 
     expect(result).toBeDefined();
     expect(findSubject.execute).toHaveBeenCalled();
@@ -80,7 +80,7 @@ describe('SubjectController unit test', () => {
   });
   it('should update a subject', async () => {
     const result = await controller.update({
-      id: new Id().id,
+      id: new Id().value,
       description: 'new description',
     });
 
@@ -89,7 +89,7 @@ describe('SubjectController unit test', () => {
   });
   it('should delete a subject', async () => {
     const result = await controller.delete({
-      id: new Id().id,
+      id: new Id().value,
     });
 
     expect(result).toBeDefined();

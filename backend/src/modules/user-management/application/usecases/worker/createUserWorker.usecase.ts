@@ -34,7 +34,7 @@ export default class CreateUserWorker
     });
 
     const userVerification = await this._userWorkerRepository.find(
-      userWorker.id.id
+      userWorker.id.value
     );
     if (userVerification) throw new Error('User already exists');
 

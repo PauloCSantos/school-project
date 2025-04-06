@@ -14,15 +14,15 @@ const MockRepository = () => {
 
 describe('updateEvaluation usecase unit test', () => {
   const input = {
-    lesson: new Id().id,
-    teacher: new Id().id,
+    lesson: new Id().value,
+    teacher: new Id().value,
     type: 'evaluation',
     value: 10,
   };
 
   const evaluation1 = new Evaluation({
-    lesson: new Id().id,
-    teacher: new Id().id,
+    lesson: new Id().value,
+    teacher: new Id().value,
     type: 'home work',
     value: 5,
   });
@@ -48,14 +48,14 @@ describe('updateEvaluation usecase unit test', () => {
       const usecase = new UpdateEvaluation(evaluationRepository);
 
       const result = await usecase.execute({
-        id: evaluation1.id.id,
+        id: evaluation1.id.value,
         ...input,
       });
 
       expect(evaluationRepository.update).toHaveBeenCalled();
       expect(evaluationRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
-        id: evaluation1.id.id,
+        id: evaluation1.id.value,
         lesson: input.lesson,
         teacher: input.teacher,
         type: input.type,

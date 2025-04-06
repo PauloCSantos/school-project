@@ -17,12 +17,12 @@ const MockRepository = () => {
 describe('findAllCurriculum usecase unit test', () => {
   const curriculum1 = new Curriculum({
     name: 'Software Eng',
-    subjectsList: [new Id().id, new Id().id],
+    subjectsList: [new Id().value, new Id().value],
     yearsToComplete: 5,
   });
   const curriculum2 = new Curriculum({
     name: 'Chemistry Eng',
-    subjectsList: [new Id().id, new Id().id],
+    subjectsList: [new Id().value, new Id().value],
     yearsToComplete: 5,
   });
 

@@ -82,7 +82,7 @@ describe('MemoryUserMasterRepository unit test', () => {
 
   describe('On fail', () => {
     it('should received an undefined', async () => {
-      const userId = new Id().id;
+      const userId = new Id().value;
       const userMasterFound = await repository.find(userId);
 
       expect(userMasterFound).toBeUndefined();
@@ -104,7 +104,7 @@ describe('MemoryUserMasterRepository unit test', () => {
   });
   describe('On success', () => {
     it('should find a user master', async () => {
-      const userId = userMaster1.id.id;
+      const userId = userMaster1.id.value;
       const userMasterFound = await repository.find(userId);
 
       expect(userMasterFound).toBeDefined();
@@ -126,7 +126,7 @@ describe('MemoryUserMasterRepository unit test', () => {
       });
       const result = await repository.create(userMaster);
 
-      expect(result).toBe(userMaster.id.id);
+      expect(result).toBe(userMaster.id.value);
     });
     it('should update a user and return its new informations', async () => {
       const updatedUserMaster: UserMaster = userMaster2;

@@ -1,7 +1,7 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import { UserMasterController } from '../../interface/controller/user-master.controller';
 import { UserMasterRoute } from '../../interface/route/user-master.route';
 
@@ -15,7 +15,7 @@ const mockAuthUserMiddleware = jest.fn(
 
 const mockUserMasterController = jest.fn(() => {
   return {
-    create: jest.fn().mockResolvedValue({ id: new Id().id }),
+    create: jest.fn().mockResolvedValue({ id: new Id().value }),
     find: jest.fn().mockResolvedValue({
       name: {
         firstName: 'John',
@@ -93,7 +93,9 @@ describe('UserMasterRoute unit test', () => {
   });
   describe('GET /user-master/:id', () => {
     it('should find a user by ID', async () => {
-      const response = await supertest(app).get(`/user-master/${new Id().id}`);
+      const response = await supertest(app).get(
+        `/user-master/${new Id().value}`
+      );
       expect(response.status).toBe(200);
       expect(userMasterController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -102,7 +104,7 @@ describe('UserMasterRoute unit test', () => {
   describe('PATCH /user-master/:id', () => {
     it('should update a user by ID', async () => {
       const response = await supertest(app)
-        .patch(`/user-master/${new Id().id}`)
+        .patch(`/user-master/${new Id().value}`)
         .send({
           address: {
             street: 'Street B',

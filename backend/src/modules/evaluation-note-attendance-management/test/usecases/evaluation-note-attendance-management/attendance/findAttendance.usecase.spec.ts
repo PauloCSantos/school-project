@@ -19,8 +19,8 @@ describe('findAttendance usecase unit test', () => {
     date: new Date(),
     day: 'fri',
     hour: '06:50',
-    lesson: new Id().id,
-    studentsPresent: [new Id().id, new Id().id, new Id().id],
+    lesson: new Id().value,
+    studentsPresent: [new Id().value, new Id().value, new Id().value],
   });
 
   describe('On success', () => {
@@ -29,7 +29,7 @@ describe('findAttendance usecase unit test', () => {
       attendanceRepository.find.mockResolvedValue(attendance1);
       const usecase = new FindAttendance(attendanceRepository);
 
-      const result = await usecase.execute({ id: attendance1.id.id });
+      const result = await usecase.execute({ id: attendance1.id.value });
 
       expect(attendanceRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();

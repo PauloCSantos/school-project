@@ -19,11 +19,11 @@ describe('updateAttendance usecase unit test', () => {
     date: new Date(),
     day: 'fri',
     hour: '06:50',
-    lesson: new Id().id,
-    studentsPresent: [new Id().id, new Id().id, new Id().id],
+    lesson: new Id().value,
+    studentsPresent: [new Id().value, new Id().value, new Id().value],
   });
   const input = {
-    id: attendance.id.id,
+    id: attendance.id.value,
     day: 'thu' as DayOfWeek,
     hour: '13:40' as Hour,
   };
@@ -53,7 +53,7 @@ describe('updateAttendance usecase unit test', () => {
       expect(attendanceRepository.update).toHaveBeenCalled();
       expect(attendanceRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
-        id: attendance.id.id,
+        id: attendance.id.value,
         date: result.date,
         day: result.day,
         hour: result.hour,

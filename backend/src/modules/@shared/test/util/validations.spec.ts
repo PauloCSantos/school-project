@@ -138,7 +138,7 @@ describe('Testing validation functions', () => {
       expect(validId(123)).toBeFalsy;
     });
     it('validId should return true for valid id', () => {
-      expect(validId(new Id().id)).toBeTruthy;
+      expect(validId(new Id().value)).toBeTruthy;
     });
   });
 

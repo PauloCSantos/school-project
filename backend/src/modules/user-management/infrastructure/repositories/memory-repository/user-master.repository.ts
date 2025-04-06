@@ -9,7 +9,7 @@ export default class MemoryUserMasterRepository implements UserMasterGateway {
   }
 
   async find(id: string): Promise<UserMaster | undefined> {
-    const user = this._masterUsers.find(user => user.id.id === id);
+    const user = this._masterUsers.find(user => user.id.value === id);
     if (user) {
       return user;
     } else {
@@ -18,11 +18,11 @@ export default class MemoryUserMasterRepository implements UserMasterGateway {
   }
   async create(userMaster: UserMaster): Promise<string> {
     this._masterUsers.push(userMaster);
-    return userMaster.id.id;
+    return userMaster.id.value;
   }
   async update(userMaster: UserMaster): Promise<UserMaster> {
     const masterUserIndex = this._masterUsers.findIndex(
-      user => user.id.id === userMaster.id.id
+      user => user.id.value === userMaster.id.value
     );
     if (masterUserIndex !== -1) {
       this._masterUsers[masterUserIndex] = userMaster;

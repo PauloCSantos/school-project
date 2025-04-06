@@ -9,7 +9,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
   }
 
   async find(id: string): Promise<Schedule | undefined> {
-    const schedule = this._schedule.find(schedule => schedule.id.id === id);
+    const schedule = this._schedule.find(schedule => schedule.id.value === id);
     if (schedule) {
       return schedule;
     } else {
@@ -28,11 +28,11 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
   }
   async create(schedule: Schedule): Promise<string> {
     this._schedule.push(schedule);
-    return schedule.id.id;
+    return schedule.id.value;
   }
   async update(schedule: Schedule): Promise<Schedule> {
     const scheduleIndex = this._schedule.findIndex(
-      dbSchedule => dbSchedule.id.id === schedule.id.id
+      dbSchedule => dbSchedule.id.value === schedule.id.value
     );
     if (scheduleIndex !== -1) {
       return (this._schedule[scheduleIndex] = schedule);
@@ -42,7 +42,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
   }
   async delete(id: string): Promise<string> {
     const scheduleIndex = this._schedule.findIndex(
-      dbSchedule => dbSchedule.id.id === id
+      dbSchedule => dbSchedule.id.value === id
     );
     if (scheduleIndex !== -1) {
       this._schedule.splice(scheduleIndex, 1);
@@ -53,7 +53,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
   }
   async addLessons(id: string, newSchedulesList: string[]): Promise<string> {
     const scheduleIndex = this._schedule.findIndex(
-      dbSchedule => dbSchedule.id.id === id
+      dbSchedule => dbSchedule.id.value === id
     );
     if (scheduleIndex !== -1) {
       try {
@@ -77,7 +77,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
     schedulesListToRemove: string[]
   ): Promise<string> {
     const scheduleIndex = this._schedule.findIndex(
-      dbSchedule => dbSchedule.id.id === id
+      dbSchedule => dbSchedule.id.value === id
     );
     if (scheduleIndex !== -1) {
       try {

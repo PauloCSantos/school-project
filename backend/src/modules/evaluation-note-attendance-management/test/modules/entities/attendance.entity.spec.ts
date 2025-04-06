@@ -3,11 +3,11 @@ import Attendance from '@/modules/evaluation-note-attendance-management/domain/e
 
 describe('Attendance unit test', () => {
   const attendanceData = {
-    lesson: new Id().id,
+    lesson: new Id().value,
     date: new Date('2024-01-12'),
     hour: '14:00',
     day: 'mon',
-    studentsPresent: [new Id().id, new Id().id, new Id().id],
+    studentsPresent: [new Id().value, new Id().value, new Id().value],
   };
 
   describe('On fail', () => {
@@ -55,7 +55,7 @@ describe('Attendance unit test', () => {
     it('should throw error when removing non-existent student', () => {
       //@ts-expect-error
       const attendanceInstance = new Attendance(attendanceData);
-      const studentId = new Id().id;
+      const studentId = new Id().value;
 
       expect(() => {
         attendanceInstance.removeStudent(studentId);
@@ -82,7 +82,7 @@ describe('Attendance unit test', () => {
     it('should add and remove students successfully', () => {
       //@ts-expect-error
       const attendanceInstance = new Attendance(attendanceData);
-      const newStudentId = new Id().id;
+      const newStudentId = new Id().value;
       attendanceInstance.addStudent(newStudentId);
       expect(attendanceInstance.studentsPresent).toContain(newStudentId);
 

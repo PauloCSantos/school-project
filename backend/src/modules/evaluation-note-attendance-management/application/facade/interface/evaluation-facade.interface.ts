@@ -9,7 +9,7 @@ import {
   FindEvaluationOutputDto,
   UpdateEvaluationInputDto,
   UpdateEvaluationOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/evaluation-facade.dto';
+} from '../../dto/evaluation-facade.dto';
 
 export default interface EvaluationFacadeInterface {
   create(input: CreateEvaluationInputDto): Promise<CreateEvaluationOutputDto>;

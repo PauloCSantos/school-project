@@ -8,7 +8,7 @@ type ScheduleMapperProps = FindScheduleOutputDto & {
 export default class ScheduleMapper {
   static toObj(input: Schedule): ScheduleMapperProps {
     return {
-      id: input.id.id,
+      id: input.id.value,
       curriculum: input.curriculum,
       lessonsList: input.lessonsList,
       student: input.student,

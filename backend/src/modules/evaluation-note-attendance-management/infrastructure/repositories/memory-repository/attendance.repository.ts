@@ -1,5 +1,5 @@
-import AttendanceGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/attendance.gateway';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
+import AttendanceGateway from '../../gateway/attendance.gateway';
 
 export default class MemoryAttendanceRepository implements AttendanceGateway {
   private _attendance: Attendance[];
@@ -10,7 +10,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
 
   async find(id: string): Promise<Attendance | undefined> {
     const attendance = this._attendance.find(
-      attendance => attendance.id.id === id
+      attendance => attendance.id.value === id
     );
     if (attendance) {
       return attendance;
@@ -30,11 +30,11 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
   }
   async create(attendance: Attendance): Promise<string> {
     this._attendance.push(attendance);
-    return attendance.id.id;
+    return attendance.id.value;
   }
   async update(attendance: Attendance): Promise<Attendance> {
     const attendanceIndex = this._attendance.findIndex(
-      dbAttendance => dbAttendance.id.id === attendance.id.id
+      dbAttendance => dbAttendance.id.value === attendance.id.value
     );
     if (attendanceIndex !== -1) {
       return (this._attendance[attendanceIndex] = attendance);
@@ -44,7 +44,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
   }
   async delete(id: string): Promise<string> {
     const attendanceIndex = this._attendance.findIndex(
-      dbAttendance => dbAttendance.id.id === id
+      dbAttendance => dbAttendance.id.value === id
     );
     if (attendanceIndex !== -1) {
       this._attendance.splice(attendanceIndex, 1);
@@ -55,7 +55,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
   }
   async addStudent(id: string, newAttendancesList: string[]): Promise<string> {
     const attendanceIndex = this._attendance.findIndex(
-      dbAttendance => dbAttendance.id.id === id
+      dbAttendance => dbAttendance.id.value === id
     );
     if (attendanceIndex !== -1) {
       try {
@@ -79,7 +79,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
     attendancesListToRemove: string[]
   ): Promise<string> {
     const attendanceIndex = this._attendance.findIndex(
-      dbAttendance => dbAttendance.id.id === id
+      dbAttendance => dbAttendance.id.value === id
     );
     if (attendanceIndex !== -1) {
       try {

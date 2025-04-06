@@ -25,12 +25,12 @@ describe('AddStudents use case unit test', () => {
     date: new Date(),
     day: 'fri',
     hour: '06:50',
-    lesson: new Id().id,
-    studentsPresent: [new Id().id, new Id().id, new Id().id],
+    lesson: new Id().value,
+    studentsPresent: [new Id().value, new Id().value, new Id().value],
   });
   const input = {
-    id: attendance.id.id,
-    newStudentsList: [new Id().id, new Id().id],
+    id: attendance.id.value,
+    newStudentsList: [new Id().value, new Id().value],
   };
 
   describe('On fail', () => {

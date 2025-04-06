@@ -26,7 +26,7 @@ export default class CreateSchedule
     });
 
     const scheduleVerification = await this._scheduleRepository.find(
-      schedule.id.id
+      schedule.id.value
     );
     if (scheduleVerification) throw new Error('Schedule already exists');
 

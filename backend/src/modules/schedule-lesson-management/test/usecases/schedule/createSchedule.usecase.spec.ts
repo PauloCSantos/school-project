@@ -6,7 +6,7 @@ const MockRepository = () => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
-    create: jest.fn(schedule => Promise.resolve(schedule.id.id)),
+    create: jest.fn(schedule => Promise.resolve(schedule.id.value)),
     update: jest.fn(),
     delete: jest.fn(),
     addLessons: jest.fn(),
@@ -16,14 +16,14 @@ const MockRepository = () => {
 
 describe('createSchedule usecase unit test', () => {
   const schedule = new Schedule({
-    student: new Id().id,
-    curriculum: new Id().id,
-    lessonsList: [new Id().id, new Id().id, new Id().id],
+    student: new Id().value,
+    curriculum: new Id().value,
+    lessonsList: [new Id().value, new Id().value, new Id().value],
   });
   const input = {
-    student: new Id().id,
-    curriculum: new Id().id,
-    lessonsList: [new Id().id, new Id().id, new Id().id],
+    student: new Id().value,
+    curriculum: new Id().value,
+    lessonsList: [new Id().value, new Id().value, new Id().value],
   };
 
   describe('On fail', () => {

@@ -14,7 +14,7 @@ const MockRepository = () => {
 
 describe('updateEvent usecase unit test', () => {
   const input1 = {
-    creator: new Id().id,
+    creator: new Id().value,
     name: 'Christmas',
     date: new Date(),
     hour: '08:00' as Hour,
@@ -53,14 +53,14 @@ describe('updateEvent usecase unit test', () => {
       const usecase = new UpdateEvent(eventRepository);
 
       const result = await usecase.execute({
-        id: event1.id.id,
+        id: event1.id.value,
         ...dataToUpdate,
       });
 
       expect(eventRepository.update).toHaveBeenCalled();
       expect(eventRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
-        id: event1.id.id,
+        id: event1.id.value,
         creator: result.creator,
         name: result.name,
         date: result.date,

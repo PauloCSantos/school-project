@@ -77,7 +77,7 @@ describe('MemoryUserStudentRepository unit test', () => {
 
   describe('On fail', () => {
     it('should received an undefined', async () => {
-      const userId = new Id().id;
+      const userId = new Id().value;
       const userStudentFound = await repository.find(userId);
 
       expect(userStudentFound).toBeUndefined();
@@ -97,14 +97,14 @@ describe('MemoryUserStudentRepository unit test', () => {
       );
     });
     it('should generate an error when trying to remove the user with the wrong ID', async () => {
-      await expect(repository.delete(new Id().id)).rejects.toThrow(
+      await expect(repository.delete(new Id().value)).rejects.toThrow(
         'User not found'
       );
     });
   });
   describe('On success', () => {
     it('should find a user student', async () => {
-      const userId = userStudent1.id.id;
+      const userId = userStudent1.id.value;
       const userStudentFound = await repository.find(userId);
 
       expect(userStudentFound).toBeDefined();
@@ -125,7 +125,7 @@ describe('MemoryUserStudentRepository unit test', () => {
       });
       const result = await repository.create(userStudent);
 
-      expect(result).toBe(userStudent.id.id);
+      expect(result).toBe(userStudent.id.value);
     });
     it('should update a user and return its new informations', async () => {
       const updateduserStudent: UserStudent = userStudent2;
@@ -155,7 +155,7 @@ describe('MemoryUserStudentRepository unit test', () => {
       expect(allStudentUsers[1].paymentYear).toBe(userStudent2.paymentYear);
     });
     it('should remove the user', async () => {
-      const response = await repository.delete(userStudent1.id.id);
+      const response = await repository.delete(userStudent1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });

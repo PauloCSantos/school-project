@@ -1,6 +1,6 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryAttendanceRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/attendance.repository';
 import CreateAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/createAttendance.usecase';
 import FindAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/findAttendance.usecase';

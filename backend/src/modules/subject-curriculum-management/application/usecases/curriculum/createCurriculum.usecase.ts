@@ -27,7 +27,7 @@ export default class CreateCurriculum
     });
 
     const curriculumVerification = await this._curriculumRepository.find(
-      curriculum.id.id
+      curriculum.id.value
     );
     if (curriculumVerification) throw new Error('Curriculum already exists');
 

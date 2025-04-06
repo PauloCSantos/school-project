@@ -38,7 +38,7 @@ export default class UpdateEvent
       const result = await this._eventRepository.update(event);
 
       return {
-        id: result.id.id,
+        id: result.id.value,
         creator: result.creator,
         name: result.name,
         date: result.date,

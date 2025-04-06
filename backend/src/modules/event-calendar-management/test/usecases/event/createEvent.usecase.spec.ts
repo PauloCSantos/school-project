@@ -6,7 +6,7 @@ const MockRepository = () => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
-    create: jest.fn(event => Promise.resolve(event.id.id)),
+    create: jest.fn(event => Promise.resolve(event.id.value)),
     update: jest.fn(),
     delete: jest.fn(),
   };
@@ -14,7 +14,7 @@ const MockRepository = () => {
 
 describe('createEvent usecase unit test', () => {
   const input = {
-    creator: new Id().id,
+    creator: new Id().value,
     name: 'Christmas',
     date: new Date(),
     hour: '08:00' as Hour,

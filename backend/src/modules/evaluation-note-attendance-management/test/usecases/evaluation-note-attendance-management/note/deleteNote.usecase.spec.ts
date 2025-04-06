@@ -14,8 +14,8 @@ const MockRepository = () => {
 
 describe('deleteNote usecase unit test', () => {
   const input = {
-    evaluation: new Id().id,
-    student: new Id().id,
+    evaluation: new Id().value,
+    student: new Id().value,
     note: 10,
   };
 
@@ -39,7 +39,7 @@ describe('deleteNote usecase unit test', () => {
       noteRepository.find.mockResolvedValue(note);
       const usecase = new DeleteNote(noteRepository);
       const result = await usecase.execute({
-        id: note.id.id,
+        id: note.id.value,
       });
 
       expect(noteRepository.delete).toHaveBeenCalled();

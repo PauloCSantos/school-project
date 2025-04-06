@@ -2,7 +2,7 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { UserAdministratorController } from '../../interface/controller/user-administrator.controller';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import { UserAdministratorRoute } from '../../interface/route/user-administrator.route';
 
 const mockAuthUserMiddleware = jest.fn(
@@ -15,9 +15,9 @@ const mockAuthUserMiddleware = jest.fn(
 
 const mockUserAdministratorController = jest.fn(() => {
   return {
-    create: jest.fn().mockResolvedValue({ id: new Id().id }),
+    create: jest.fn().mockResolvedValue({ id: new Id().value }),
     find: jest.fn().mockResolvedValue({
-      id: new Id().id,
+      id: new Id().value,
       name: { fullName: 'John David Doe', shortName: 'John D D' },
       address: {
         street: 'Street A',
@@ -34,7 +34,7 @@ const mockUserAdministratorController = jest.fn(() => {
     }),
     findAll: jest.fn().mockResolvedValue([
       {
-        id: new Id().id,
+        id: new Id().value,
         name: { fullName: 'John David Doe', shortName: 'John D D' },
         address: {
           street: 'Street A',
@@ -50,7 +50,7 @@ const mockUserAdministratorController = jest.fn(() => {
         graduation: 'Math',
       },
       {
-        id: new Id().id,
+        id: new Id().value,
         name: { fullName: 'John David Doe', shortName: 'John D D' },
         address: {
           street: 'Street A',
@@ -67,7 +67,7 @@ const mockUserAdministratorController = jest.fn(() => {
       },
     ]),
     update: jest.fn().mockResolvedValue({
-      id: new Id().id,
+      id: new Id().value,
       name: { fullName: 'John David Doe', shortName: 'John D D' },
       address: {
         street: 'Street A',
@@ -132,7 +132,7 @@ describe('UserAdministratorRoute unit test', () => {
   describe('GET /user-administrator/:id', () => {
     it('should find a user by ID', async () => {
       const response = await supertest(app).get(
-        `/user-administrator/${new Id().id}`
+        `/user-administrator/${new Id().value}`
       );
       expect(response.status).toBe(200);
       expect(userAdministratorController.find).toHaveBeenCalled();
@@ -151,7 +151,7 @@ describe('UserAdministratorRoute unit test', () => {
   describe('PATCH /user-administrator/:id', () => {
     it('should update a user by ID', async () => {
       const response = await supertest(app)
-        .patch(`/user-administrator/${new Id().id}`)
+        .patch(`/user-administrator/${new Id().value}`)
         .send({
           address: {
             street: 'Street B',
@@ -170,7 +170,7 @@ describe('UserAdministratorRoute unit test', () => {
   describe('DELETE /user-administrator/:id', () => {
     it('should delete a user by ID', async () => {
       const response = await supertest(app).delete(
-        `/user-administrator/${new Id().id}`
+        `/user-administrator/${new Id().value}`
       );
       expect(response.status).toBe(200);
       expect(userAdministratorController.delete).toHaveBeenCalled();

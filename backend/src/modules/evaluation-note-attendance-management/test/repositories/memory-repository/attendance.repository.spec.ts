@@ -5,9 +5,9 @@ import MemoryAttendanceRepository from '@/modules/evaluation-note-attendance-man
 describe('MemoryAttendanceRepository unit test', () => {
   let repository: MemoryAttendanceRepository;
 
-  const lesson1 = new Id().id;
-  const lesson2 = new Id().id;
-  const lesson3 = new Id().id;
+  const lesson1 = new Id().value;
+  const lesson2 = new Id().value;
+  const lesson3 = new Id().value;
   const date1 = new Date();
   const date2 = new Date();
   const date3 = new Date();
@@ -17,9 +17,9 @@ describe('MemoryAttendanceRepository unit test', () => {
   const day1: DayOfWeek = 'fri';
   const day2: DayOfWeek = 'mon';
   const day3: DayOfWeek = 'wed';
-  const studentsPresent1 = [new Id().id, new Id().id, new Id().id];
-  const studentsPresent2 = [new Id().id, new Id().id, new Id().id];
-  const studentsPresent3 = [new Id().id, new Id().id, new Id().id];
+  const studentsPresent1 = [new Id().value, new Id().value, new Id().value];
+  const studentsPresent2 = [new Id().value, new Id().value, new Id().value];
+  const studentsPresent3 = [new Id().value, new Id().value, new Id().value];
 
   const attendance1 = new Attendance({
     lesson: lesson1,
@@ -49,7 +49,7 @@ describe('MemoryAttendanceRepository unit test', () => {
 
   describe('On fail', () => {
     it('should received an undefined', async () => {
-      const attendanceId = new Id().id;
+      const attendanceId = new Id().value;
       const attendanceFound = await repository.find(attendanceId);
       expect(attendanceFound).toBeUndefined();
     });
@@ -68,31 +68,31 @@ describe('MemoryAttendanceRepository unit test', () => {
       );
     });
     it('should generate an error when trying to remove the attendance with the wrong ID', async () => {
-      await expect(repository.delete(new Id().id)).rejects.toThrow(
+      await expect(repository.delete(new Id().value)).rejects.toThrow(
         'Attendance not found'
       );
     });
     it('should generate an error when trying to remove the student from attendance with the wrong attendance ID', async () => {
       await expect(
-        repository.removeStudent(new Id().id, [new Id().id])
+        repository.removeStudent(new Id().value, [new Id().value])
       ).rejects.toThrow('Attendance not found');
     });
     it('should generate an error when trying to remove the student from attendance with the wrong student ID', async () => {
       await expect(
-        repository.removeStudent(attendance1.id.id, [new Id().id])
+        repository.removeStudent(attendance1.id.value, [new Id().value])
       ).rejects.toThrow('This student is not included in the attendance');
     });
 
     it('should generate an error when trying to add the student to the attendance with the wrong student ID', async () => {
       await expect(
-        repository.addStudent(attendance1.id.id, ['asdasd'])
+        repository.addStudent(attendance1.id.value, ['asdasd'])
       ).rejects.toThrow('Student id is not valid');
     });
   });
 
   describe('On success', () => {
     it('should find a attendance', async () => {
-      const attendanceId = attendance1.id.id;
+      const attendanceId = attendance1.id.value;
       const attendanceFound = await repository.find(attendanceId);
 
       expect(attendanceFound).toBeDefined();
@@ -108,7 +108,7 @@ describe('MemoryAttendanceRepository unit test', () => {
     it('should create a new attendance and return its id', async () => {
       const result = await repository.create(attendance3);
 
-      expect(result).toBe(attendance3.id.id);
+      expect(result).toBe(attendance3.id.value);
     });
     it('should update a attendance and return its new informations', async () => {
       const updatedAttendance: Attendance = attendance2;
@@ -134,21 +134,21 @@ describe('MemoryAttendanceRepository unit test', () => {
       );
     });
     it('should remove the attendance', async () => {
-      const response = await repository.delete(attendance1.id.id);
+      const response = await repository.delete(attendance1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });
 
     it('should add a new student to the attendance', async () => {
-      const response = await repository.addStudent(attendance1.id.id, [
-        new Id().id,
-        new Id().id,
+      const response = await repository.addStudent(attendance1.id.value, [
+        new Id().value,
+        new Id().value,
       ]);
 
       expect(response).toBe('2 values were entered');
     });
     it('should remove a student from the attendance', async () => {
-      const response = await repository.removeStudent(attendance1.id.id, [
+      const response = await repository.removeStudent(attendance1.id.value, [
         attendance1.studentsPresent[0],
       ]);
 

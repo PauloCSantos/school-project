@@ -2,7 +2,7 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { CurriculumController } from '../../interface/controller/curriculum.controller';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import { CurriculumRoute } from '../../interface/route/curriculum.route';
 
 const mockAuthUserMiddleware = jest.fn(
@@ -15,21 +15,21 @@ const mockAuthUserMiddleware = jest.fn(
 
 const mockCurriculumController = jest.fn(() => {
   return {
-    create: jest.fn().mockResolvedValue({ id: new Id().id }),
+    create: jest.fn().mockResolvedValue({ id: new Id().value }),
     find: jest.fn().mockResolvedValue({
       name: 'Math',
-      subjectsList: [new Id().id, new Id().id, new Id().id],
+      subjectsList: [new Id().value, new Id().value, new Id().value],
       yearsToComplete: 5,
     }),
     findAll: jest.fn().mockResolvedValue([
       {
         name: 'Math',
-        subjectsList: [new Id().id, new Id().id, new Id().id],
+        subjectsList: [new Id().value, new Id().value, new Id().value],
         yearsToComplete: 5,
       },
       {
         name: 'Spanish',
-        subjectsList: [new Id().id, new Id().id, new Id().id],
+        subjectsList: [new Id().value, new Id().value, new Id().value],
         yearsToComplete: 5,
       },
     ]),
@@ -63,7 +63,7 @@ describe('CurriculumRoute unit test', () => {
         .post('/curriculum')
         .send({
           name: 'Math',
-          subjectsList: [new Id().id, new Id().id, new Id().id],
+          subjectsList: [new Id().value, new Id().value, new Id().value],
           yearsToComplete: 5,
         });
       expect(response.status).toBe(201);
@@ -73,7 +73,9 @@ describe('CurriculumRoute unit test', () => {
   });
   describe('GET /curriculum/:id', () => {
     it('should find a curriculum by ID', async () => {
-      const response = await supertest(app).get(`/curriculum/${new Id().id}`);
+      const response = await supertest(app).get(
+        `/curriculum/${new Id().value}`
+      );
       expect(response.status).toBe(200);
       expect(curriculumController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -91,7 +93,7 @@ describe('CurriculumRoute unit test', () => {
   describe('PATCH /curriculum/:id', () => {
     it('should update a curriculum by ID', async () => {
       const response = await supertest(app)
-        .patch(`/curriculum/${new Id().id}`)
+        .patch(`/curriculum/${new Id().value}`)
         .send({
           yearsToComplete: 6,
         });
@@ -103,7 +105,7 @@ describe('CurriculumRoute unit test', () => {
   describe('DELETE /curriculum/:id', () => {
     it('should delete a curriculum by ID', async () => {
       const response = await supertest(app).delete(
-        `/curriculum/${new Id().id}`
+        `/curriculum/${new Id().value}`
       );
       expect(response.status).toBe(200);
       expect(curriculumController.delete).toHaveBeenCalled();
@@ -115,8 +117,8 @@ describe('CurriculumRoute unit test', () => {
       const response = await supertest(app)
         .post('/curriculum/add')
         .send({
-          id: new Id().id,
-          newSubjectsList: [new Id().id],
+          id: new Id().value,
+          newSubjectsList: [new Id().value],
         });
       expect(response.status).toBe(201);
       expect(curriculumController.addSubjects).toHaveBeenCalled();
@@ -128,8 +130,8 @@ describe('CurriculumRoute unit test', () => {
       const response = await supertest(app)
         .post('/curriculum/remove')
         .send({
-          id: new Id().id,
-          subjectsListToRemove: [new Id().id, new Id().id],
+          id: new Id().value,
+          subjectsListToRemove: [new Id().value, new Id().value],
         });
       expect(response.status).toBe(201);
       expect(curriculumController.removeSubjects).toHaveBeenCalled();

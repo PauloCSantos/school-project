@@ -5,15 +5,15 @@ import MemoryScheduleRepository from '@/modules/schedule-lesson-management/infra
 describe('MemoryScheduleRepository unit test', () => {
   let repository: MemoryScheduleRepository;
 
-  const student1 = new Id().id;
-  const student2 = new Id().id;
-  const student3 = new Id().id;
-  const curriculum1 = new Id().id;
-  const curriculum2 = new Id().id;
-  const curriculum3 = new Id().id;
-  const lessonsList1 = [new Id().id, new Id().id, new Id().id];
-  const lessonsList2 = [new Id().id, new Id().id, new Id().id];
-  const lessonsList3 = [new Id().id, new Id().id, new Id().id];
+  const student1 = new Id().value;
+  const student2 = new Id().value;
+  const student3 = new Id().value;
+  const curriculum1 = new Id().value;
+  const curriculum2 = new Id().value;
+  const curriculum3 = new Id().value;
+  const lessonsList1 = [new Id().value, new Id().value, new Id().value];
+  const lessonsList2 = [new Id().value, new Id().value, new Id().value];
+  const lessonsList3 = [new Id().value, new Id().value, new Id().value];
 
   const schedule1 = new Schedule({
     student: student1,
@@ -37,7 +37,7 @@ describe('MemoryScheduleRepository unit test', () => {
 
   describe('On fail', () => {
     it('should received an undefined', async () => {
-      const scheduleId = new Id().id;
+      const scheduleId = new Id().value;
       const scheduleFound = await repository.find(scheduleId);
 
       expect(scheduleFound).toBeUndefined();
@@ -55,31 +55,31 @@ describe('MemoryScheduleRepository unit test', () => {
       );
     });
     it('should generate an error when trying to remove the schedule with the wrong ID', async () => {
-      await expect(repository.delete(new Id().id)).rejects.toThrow(
+      await expect(repository.delete(new Id().value)).rejects.toThrow(
         'Schedule not found'
       );
     });
     it('should generate an error when trying to remove the lesson from schedule with the wrong schedule ID', async () => {
       await expect(
-        repository.removeLessons(new Id().id, [new Id().id])
+        repository.removeLessons(new Id().value, [new Id().value])
       ).rejects.toThrow('Schedule not found');
     });
     it('should generate an error when trying to remove the lesson from schedule with the wrong lesson ID', async () => {
       await expect(
-        repository.removeLessons(schedule1.id.id, [new Id().id])
+        repository.removeLessons(schedule1.id.value, [new Id().value])
       ).rejects.toThrow('This lesson is not included in the schedule');
     });
 
     it('should generate an error when trying to add the lesson to the schedule with the wrong lesson ID', async () => {
       await expect(
-        repository.addLessons(schedule1.id.id, ['asdasd'])
+        repository.addLessons(schedule1.id.value, ['asdasd'])
       ).rejects.toThrow('Lesson id is not valid');
     });
   });
 
   describe('On success', () => {
     it('should find a schedule', async () => {
-      const scheduleId = schedule1.id.id;
+      const scheduleId = schedule1.id.value;
       const scheduleFound = await repository.find(scheduleId);
 
       expect(scheduleFound).toBeDefined();
@@ -91,11 +91,11 @@ describe('MemoryScheduleRepository unit test', () => {
     it('should create a new schedule and return its id', async () => {
       const result = await repository.create(schedule3);
 
-      expect(result).toBe(schedule3.id.id);
+      expect(result).toBe(schedule3.id.value);
     });
     it('should update a schedule and return its new informations', async () => {
       const updatedSchedule: Schedule = schedule2;
-      updatedSchedule.curriculum = new Id().id;
+      updatedSchedule.curriculum = new Id().value;
 
       const result = await repository.update(updatedSchedule);
 
@@ -113,20 +113,20 @@ describe('MemoryScheduleRepository unit test', () => {
       expect(allSchedules[1].lessonsList).toBe(schedule2.lessonsList);
     });
     it('should remove the schedule', async () => {
-      const response = await repository.delete(schedule1.id.id);
+      const response = await repository.delete(schedule1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });
 
     it('should add a new student to the schedule', async () => {
-      const response = await repository.addLessons(schedule1.id.id, [
-        new Id().id,
+      const response = await repository.addLessons(schedule1.id.value, [
+        new Id().value,
       ]);
 
       expect(response).toBe('1 value was entered');
     });
     it('should remove a student from the schedule', async () => {
-      const response = await repository.removeLessons(schedule1.id.id, [
+      const response = await repository.removeLessons(schedule1.id.value, [
         schedule1.lessonsList[0],
       ]);
 

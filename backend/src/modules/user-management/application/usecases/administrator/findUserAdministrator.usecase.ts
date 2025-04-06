@@ -25,7 +25,7 @@ export default class FindUserAdministrator
     const response = await this._userAdministratorRepository.find(id);
     if (response) {
       return {
-        id: response.id.id,
+        id: response.id.value,
         name: {
           fullName: response.name.fullName(),
           shortName: response.name.shortName(),

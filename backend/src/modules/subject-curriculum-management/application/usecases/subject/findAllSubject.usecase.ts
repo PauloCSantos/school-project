@@ -20,7 +20,7 @@ export default class FindAllSubject
     const results = await this._subjectRepository.findAll(offset, quantity);
 
     const result = results.map(subject => ({
-      id: subject.id.id,
+      id: subject.id.value,
       name: subject.name,
       description: subject.description,
     }));

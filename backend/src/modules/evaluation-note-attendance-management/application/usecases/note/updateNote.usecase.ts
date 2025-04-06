@@ -1,9 +1,9 @@
+import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
 import {
   UpdateNoteInputDto,
   UpdateNoteOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/note-usecase.dto';
-import UseCaseInterface from '../../@shared/use-case.interface';
-import NoteGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/note.gateway';
+} from '../../dto/note-usecase.dto';
+import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
 
 export default class UpdateNote
   implements UseCaseInterface<UpdateNoteInputDto, UpdateNoteOutputDto>
@@ -29,7 +29,7 @@ export default class UpdateNote
       const result = await this._noteRepository.update(noteInstance);
 
       return {
-        id: result.id.id,
+        id: result.id.value,
         evaluation: result.evaluation,
         note: result.note,
         student: result.student,

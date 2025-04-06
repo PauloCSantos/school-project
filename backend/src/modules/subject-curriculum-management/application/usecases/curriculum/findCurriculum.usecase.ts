@@ -23,7 +23,7 @@ export default class FindCurriculum
     const response = await this._curriculumRepository.find(id);
     if (response) {
       return {
-        id: response.id.id,
+        id: response.id.value,
         name: response.name,
         subjectsList: response.subjectList,
         yearsToComplete: response.yearsToComplete,

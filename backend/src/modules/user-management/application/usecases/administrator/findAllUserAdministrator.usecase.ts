@@ -27,7 +27,7 @@ export default class FindAllUserAdministrator
     );
 
     const result = results.map(userAdministrator => ({
-      id: userAdministrator.id.id,
+      id: userAdministrator.id.value,
       name: {
         fullName: userAdministrator.name.fullName(),
         shortName: userAdministrator.name.shortName(),

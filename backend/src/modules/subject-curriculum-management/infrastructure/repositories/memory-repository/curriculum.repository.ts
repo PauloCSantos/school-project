@@ -10,7 +10,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
 
   async find(id: string): Promise<Curriculum | undefined> {
     const curriculum = this._curriculums.find(
-      curriculum => curriculum.id.id === id
+      curriculum => curriculum.id.value === id
     );
     if (curriculum) {
       return curriculum;
@@ -30,11 +30,11 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
   }
   async create(curriculum: Curriculum): Promise<string> {
     this._curriculums.push(curriculum);
-    return curriculum.id.id;
+    return curriculum.id.value;
   }
   async update(curriculum: Curriculum): Promise<Curriculum> {
     const curriculumIndex = this._curriculums.findIndex(
-      dbCurriculum => dbCurriculum.id.id === curriculum.id.id
+      dbCurriculum => dbCurriculum.id.value === curriculum.id.value
     );
     if (curriculumIndex !== -1) {
       return (this._curriculums[curriculumIndex] = curriculum);
@@ -44,7 +44,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
   }
   async delete(id: string): Promise<string> {
     const curriculumIndex = this._curriculums.findIndex(
-      dbCurriculum => dbCurriculum.id.id === id
+      dbCurriculum => dbCurriculum.id.value === id
     );
     if (curriculumIndex !== -1) {
       this._curriculums.splice(curriculumIndex, 1);
@@ -55,7 +55,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
   }
   async addSubjects(id: string, newSubjectsList: string[]): Promise<string> {
     const curriculumIndex = this._curriculums.findIndex(
-      dbCurriculum => dbCurriculum.id.id === id
+      dbCurriculum => dbCurriculum.id.value === id
     );
     if (curriculumIndex !== -1) {
       try {
@@ -79,7 +79,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     subjectsListToRemove: string[]
   ): Promise<string> {
     const curriculumIndex = this._curriculums.findIndex(
-      dbCurriculum => dbCurriculum.id.id === id
+      dbCurriculum => dbCurriculum.id.value === id
     );
     if (curriculumIndex !== -1) {
       try {

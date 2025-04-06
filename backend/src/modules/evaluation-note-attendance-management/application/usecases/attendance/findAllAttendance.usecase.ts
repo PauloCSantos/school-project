@@ -21,7 +21,7 @@ export default class FindAllAttendance
     const results = await this._attendanceRepository.findAll(offset, quantity);
 
     const result = results.map(attendance => ({
-      id: attendance.id.id,
+      id: attendance.id.value,
       lesson: attendance.lesson,
       date: attendance.date,
       hour: attendance.hour,

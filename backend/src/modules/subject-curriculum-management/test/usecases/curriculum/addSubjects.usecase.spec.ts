@@ -23,12 +23,12 @@ const MockRepository = () => {
 describe('AddSubjects use case unit test', () => {
   const curriculum = new Curriculum({
     name: 'Math',
-    subjectsList: [new Id().id, new Id().id],
+    subjectsList: [new Id().value, new Id().value],
     yearsToComplete: 5,
   });
   const input = {
-    id: curriculum.id.id,
-    newSubjectsList: [new Id().id, new Id().id, new Id().id],
+    id: curriculum.id.value,
+    newSubjectsList: [new Id().value, new Id().value, new Id().value],
   };
 
   describe('On fail', () => {

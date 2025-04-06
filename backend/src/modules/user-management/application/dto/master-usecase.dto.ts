@@ -39,7 +39,7 @@ export interface FindAllUserMasterOutputDto
   }> {}
 
 export interface CreateUserMasterInputDto {
-  id: string;
+  id?: string;
   name: { firstName: string; middleName?: string; lastName: string };
   address: {
     street: string;

@@ -1,9 +1,9 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
 import { UserStudentController } from '../../interface/controller/user-student.controller';
 import { UserStudentRoute } from '../../interface/route/user-student.route';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 
 const mockAuthUserMiddleware = jest.fn(
   () =>
@@ -15,7 +15,7 @@ const mockAuthUserMiddleware = jest.fn(
 
 const mockUserStudentController = jest.fn(() => {
   return {
-    create: jest.fn().mockResolvedValue({ id: new Id().id }),
+    create: jest.fn().mockResolvedValue({ id: new Id().value }),
     find: jest.fn().mockResolvedValue({
       name: {
         firstName: 'John',
@@ -132,7 +132,9 @@ describe('UserStudentRoute unit test', () => {
   });
   describe('GET /user-student/:id', () => {
     it('should find a user by ID', async () => {
-      const response = await supertest(app).get(`/user-student/${new Id().id}`);
+      const response = await supertest(app).get(
+        `/user-student/${new Id().value}`
+      );
       expect(response.status).toBe(200);
       expect(userStudentController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -150,7 +152,7 @@ describe('UserStudentRoute unit test', () => {
   describe('PATCH /user-student/:id', () => {
     it('should update a user by ID', async () => {
       const response = await supertest(app)
-        .patch(`/user-student/${new Id().id}`)
+        .patch(`/user-student/${new Id().value}`)
         .send({
           address: {
             street: 'Street B',
@@ -169,7 +171,7 @@ describe('UserStudentRoute unit test', () => {
   describe('DELETE /user-student/:id', () => {
     it('should delete a user by ID', async () => {
       const response = await supertest(app).delete(
-        `/user-student/${new Id().id}`
+        `/user-student/${new Id().value}`
       );
       expect(response.status).toBe(200);
       expect(userStudentController.delete).toHaveBeenCalled();

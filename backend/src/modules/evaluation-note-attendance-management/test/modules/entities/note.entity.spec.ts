@@ -4,8 +4,8 @@ import Note from '@/modules/evaluation-note-attendance-management/domain/entity/
 describe('Note unit test', () => {
   const noteData = {
     id: new Id(),
-    evaluation: new Id().id,
-    student: new Id().id,
+    evaluation: new Id().value,
+    student: new Id().value,
     note: 8.5,
   };
 

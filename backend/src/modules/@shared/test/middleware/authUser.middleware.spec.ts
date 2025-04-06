@@ -1,19 +1,28 @@
 import TokenService from '@/modules/authentication-authorization-management/domain/service/token.service';
-import AuthUserMiddleware from '../../application/middleware/authUser.middleware';
+import AuthUserMiddleware, {
+  AuthRequest,
+} from '../../application/middleware/authUser.middleware';
+import { Response, NextFunction } from 'express';
 
 describe('AuthUserMiddleware unit test', () => {
-  const mockNext = jest.fn();
+  const mockNext = jest.fn() as NextFunction;
 
+  // Criar um mock mais completo que corresponda à interface AuthRequest
   const mockReq = {
     headers: {
       authorization: '',
     },
-  };
+    // Adicionar propriedades mínimas necessárias da interface Request
+    body: {},
+    params: {},
+    query: {},
+    // Outras propriedades podem ser necessárias dependendo do uso
+  } as unknown as AuthRequest;
 
   const mockRes = {
     status: jest.fn().mockReturnThis(),
     json: jest.fn(),
-  };
+  } as unknown as Response;
 
   let middleware: AuthUserMiddleware;
 
@@ -53,7 +62,7 @@ describe('AuthUserMiddleware unit test', () => {
   test('should call next if token is valid and user has access permission', async () => {
     mockReq.headers.authorization =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng';
-    const next = jest.fn();
+    const next = jest.fn() as NextFunction;
     await middleware.handle(mockReq, mockRes, next);
     expect(next).toHaveBeenCalled();
   });
