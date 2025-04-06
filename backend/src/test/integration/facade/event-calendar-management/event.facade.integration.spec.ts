@@ -1,5 +1,5 @@
-import EventFacadeFactory from '@/application/factory/event-calendar-management/event-facade.factory';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import EventFacadeFactory from '@/modules/event-calendar-management/application/factory/event-facade.factory';
 
 describe('Event facade integration test', () => {
   const input = {

@@ -10,7 +10,7 @@ import {
   validDay,
   validHour24h,
   validId,
-} from '@/util/validations';
+} from '../../../@shared/utils/validations';
 
 type LessonProps = {
   id?: Id;

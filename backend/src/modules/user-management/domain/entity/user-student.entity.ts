@@ -1,7 +1,5 @@
-import { isGreaterZero, isNumeric } from '@/util/validations';
-import UserBase, {
-  UserBaseProps,
-} from '../../@shared/domain/entity/user-base.entity';
+import { isGreaterZero, isNumeric } from '@/modules/@shared/utils/validations';
+import UserBase, { UserBaseProps } from '../@shared/entity/user-base.entity';
 
 type StudentUserProps = UserBaseProps & {
   paymentYear: number;

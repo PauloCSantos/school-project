@@ -1,14 +1,14 @@
-import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
-import CreateEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/createEvaluation.usecase';
-import DeleteEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/deleteEvaluation.usecase';
-import FindAllEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/findAllEvaluation.usecase';
-import FindEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/findEvaluation.usecase';
-import UpdateEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/updateEvaluation.usecase';
-import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
-import ExpressHttp from '@/infraestructure/http/express-http';
-import MemoryEvaluationRepository from '@/infraestructure/repositories/evaluation-note-attendance-management/memory-repository/evaluation.repository';
-import { EvaluationController } from '@/interface/controller/evaluation-note-attendance-management/evaluation.controller';
-import { EvaluationRoute } from '@/interface/route/evaluation-note-attendance-management/evaluation.route';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import MemoryEvaluationRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/evaluation.repository';
+import CreateEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/createEvaluation.usecase';
+import FindEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/findEvaluation.usecase';
+import FindAllEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/findAllEvaluation.usecase';
+import UpdateEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/updateEvaluation.usecase';
+import DeleteEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/deleteEvaluation.usecase';
+import { EvaluationController } from '@/modules/evaluation-note-attendance-management/interface/controller/evaluation.controller';
+import { EvaluationRoute } from '@/modules/evaluation-note-attendance-management/interface/route/evaluation.route';
 
 export default function initializeEvaluation(express: ExpressHttp): void {
   const evaluationRepository = new MemoryEvaluationRepository();

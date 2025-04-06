@@ -1,5 +1,5 @@
-import LessonFacadeFactory from '@/application/factory/schedule-lesson-management/lesson-facade.factory';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import LessonFacadeFactory from '@/modules/schedule-lesson-management/application/factory/lesson-facade.factory';
 
 describe('Lesson facade integration test', () => {
   const input = {

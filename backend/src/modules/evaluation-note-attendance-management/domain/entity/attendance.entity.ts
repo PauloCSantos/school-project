@@ -5,7 +5,7 @@ import {
   validDay,
   validHour24h,
   validId,
-} from '@/util/validations';
+} from '@/modules/@shared/utils/validations';
 
 type AttendanceProps = {
   id?: Id;

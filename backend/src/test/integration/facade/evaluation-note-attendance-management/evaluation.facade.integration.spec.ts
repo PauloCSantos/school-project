@@ -1,5 +1,5 @@
-import EvaluationFacadeFactory from '@/application/factory/evaluation-note-attendance-management/evaluation-facade.factory';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import EvaluationFacadeFactory from '@/modules/evaluation-note-attendance-management/application/factory/evaluation-facade.factory';
 
 describe('Evaluation facade integration test', () => {
   const input = {

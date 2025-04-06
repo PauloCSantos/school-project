@@ -1,4 +1,4 @@
-import ExpressHttp from '@/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
 import initializeUserMaster from './setups/user-management/user-master.setup';
 import initializeUserAdministrator from './setups/user-management/user-administrator.setup';
 import initializeUserStudent from './setups/user-management/user-student.setup';

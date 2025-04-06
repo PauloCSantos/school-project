@@ -1,14 +1,14 @@
-import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
-import CreateUserStudent from '@/application/usecases/user-management/student/createUserStudent.usecase';
-import DeleteUserStudent from '@/application/usecases/user-management/student/deleteUserStudent.usecase';
-import FindAllUserStudent from '@/application/usecases/user-management/student/findAllUserStudent.usecase';
-import FindUserStudent from '@/application/usecases/user-management/student/findUserStudent.usecase';
-import UpdateUserStudent from '@/application/usecases/user-management/student/updateUserStudent.usecase';
-import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
-import ExpressHttp from '@/infraestructure/http/express-http';
-import MemoryUserStudentRepository from '@/infraestructure/repositories/user-management-repository/memory-repository/user-student.repository';
-import { UserStudentController } from '@/interface/controller/user-management/user-student.controller';
-import { UserStudentRoute } from '@/interface/route/user-management/user-student.route';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import CreateUserStudent from '@/modules/user-management/application/usecases/student/createUserStudent.usecase';
+import DeleteUserStudent from '@/modules/user-management/application/usecases/student/deleteUserStudent.usecase';
+import FindAllUserStudent from '@/modules/user-management/application/usecases/student/findAllUserStudent.usecase';
+import FindUserStudent from '@/modules/user-management/application/usecases/student/findUserStudent.usecase';
+import UpdateUserStudent from '@/modules/user-management/application/usecases/student/updateUserStudent.usecase';
+import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import MemoryUserStudentRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user-student.repository';
+import { UserStudentController } from '@/modules/user-management/interface/controller/user-student.controller';
+import { UserStudentRoute } from '@/modules/user-management/interface/route/user-student.route';
 
 export default function initializeUserStudent(express: ExpressHttp): void {
   const userStudentRepository = new MemoryUserStudentRepository();

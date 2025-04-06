@@ -1,12 +1,12 @@
-import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
-import CreateUserMaster from '@/application/usecases/user-management/master/createUserMaster.usecase';
-import FindUserMaster from '@/application/usecases/user-management/master/findUserMaster.usecase';
-import UpdateUserMaster from '@/application/usecases/user-management/master/updateUserMaster.usecase';
-import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
-import ExpressHttp from '@/infraestructure/http/express-http';
-import MemoryUserMasterRepository from '@/infraestructure/repositories/user-management-repository/memory-repository/user-master.repository';
-import { UserMasterController } from '@/interface/controller/user-management/user-master.controller';
-import { UserMasterRoute } from '@/interface/route/user-management/user-master.route';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import CreateUserMaster from '@/modules/user-management/application/usecases/master/createUserMaster.usecase';
+import FindUserMaster from '@/modules/user-management/application/usecases/master/findUserMaster.usecase';
+import UpdateUserMaster from '@/modules/user-management/application/usecases/master/updateUserMaster.usecase';
+import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import MemoryUserMasterRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user-master.repository';
+import { UserMasterController } from '@/modules/user-management/interface/controller/user-master.controller';
+import { UserMasterRoute } from '@/modules/user-management/interface/route/user-master.route';
 
 export default function initializeUserMaster(express: ExpressHttp): void {
   const userMasterRepository = new MemoryUserMasterRepository();

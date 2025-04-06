@@ -1,20 +1,21 @@
-import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
-import AddDay from '@/application/usecases/schedule-lesson-management/lesson/addDay.usecase';
-import AddStudents from '@/application/usecases/schedule-lesson-management/lesson/addStudents.usecase';
-import AddTime from '@/application/usecases/schedule-lesson-management/lesson/addTime.usecase';
-import CreateLesson from '@/application/usecases/schedule-lesson-management/lesson/createLesson.usecase';
-import DeleteLesson from '@/application/usecases/schedule-lesson-management/lesson/deleteLesson.usecase';
-import FindAllLesson from '@/application/usecases/schedule-lesson-management/lesson/findAllLesson.usecase';
-import FindLesson from '@/application/usecases/schedule-lesson-management/lesson/findLesson.usecase';
-import RemoveDay from '@/application/usecases/schedule-lesson-management/lesson/removeDay.usecase';
-import RemoveStudents from '@/application/usecases/schedule-lesson-management/lesson/removeStudents.usecase';
-import RemoveTime from '@/application/usecases/schedule-lesson-management/lesson/removeTime.usecase';
-import UpdateLesson from '@/application/usecases/schedule-lesson-management/lesson/updateLesson.usecase';
-import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
-import ExpressHttp from '@/infraestructure/http/express-http';
-import MemoryLessonRepository from '@/infraestructure/repositories/schedule-lesson-management/memory-repository/lesson.repository';
-import { LessonController } from '@/interface/controller/schedule-lesson-management/lesson.controller';
-import { LessonRoute } from '@/interface/route/schedule-lesson-management/lesson.route';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+
+import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import MemoryLessonRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/lesson.repository';
+import CreateLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/createLesson.usecase';
+import FindLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/findLesson.usecase';
+import FindAllLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/findAllLesson.usecase';
+import UpdateLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/updateLesson.usecase';
+import DeleteLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/deleteLesson.usecase';
+import AddStudents from '@/modules/schedule-lesson-management/application/usecases/lesson/addStudents.usecase';
+import RemoveStudents from '@/modules/schedule-lesson-management/application/usecases/lesson/removeStudents.usecase';
+import AddDay from '@/modules/schedule-lesson-management/application/usecases/lesson/addDay.usecase';
+import RemoveDay from '@/modules/schedule-lesson-management/application/usecases/lesson/removeDay.usecase';
+import AddTime from '@/modules/schedule-lesson-management/application/usecases/lesson/addTime.usecase';
+import RemoveTime from '@/modules/schedule-lesson-management/application/usecases/lesson/removeTime.usecase';
+import { LessonController } from '@/modules/schedule-lesson-management/interface/controller/lesson.controller';
+import { LessonRoute } from '@/modules/schedule-lesson-management/interface/route/lesson.route';
 
 export default function initializeLesson(express: ExpressHttp): void {
   const lessonRepository = new MemoryLessonRepository();

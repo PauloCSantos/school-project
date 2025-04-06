@@ -1,16 +1,18 @@
-import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
-import CreateEvent from '@/application/usecases/event-calendar-management/event/createEvent.usecase';
-import DeleteEvent from '@/application/usecases/event-calendar-management/event/deleteEvent.usecase';
-import FindAllEvent from '@/application/usecases/event-calendar-management/event/findAllEvent.usecase';
-import FindEvent from '@/application/usecases/event-calendar-management/event/findEvent.usecase';
-import UpdateEvent from '@/application/usecases/event-calendar-management/event/updateEvent.usecase';
-import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
-import ExpressHttp from '@/infraestructure/http/express-http';
-import MemoryEventRepository from '@/infraestructure/repositories/event-calendar-management/memory-repository/event.repository';
-import { EventController } from '@/interface/controller/event-calendar-management/event.controller';
-import { EventRoute } from '@/interface/route/event-calendar-management/event.route';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+
+import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
+import MemoryEventRepository from '@/modules/event-calendar-management/infrastructure/repositories/memory-repository/event.repository';
+import CreateEvent from '@/modules/event-calendar-management/application/usecases/event/createEvent.usecase';
+import FindEvent from '@/modules/event-calendar-management/application/usecases/event/findEvent.usecase';
+import FindAllEvent from '@/modules/event-calendar-management/application/usecases/event/findAllEvent.usecase';
+import UpdateEvent from '@/modules/event-calendar-management/application/usecases/event/updateEvent.usecase';
+import DeleteEvent from '@/modules/event-calendar-management/application/usecases/event/deleteEvent.usecase';
+import { EventController } from '@/modules/event-calendar-management/interface/controller/event.controller';
+import { EventRoute } from '@/modules/event-calendar-management/interface/route/event.route';
 
 describe('Event calendar management module end to end test', () => {
   let eventRepository = new MemoryEventRepository();

@@ -1,14 +1,14 @@
-import AuthUserMiddleware from '@/application/middleware/authUser.middleware';
-import CreateSubject from '@/application/usecases/subject-curriculum-management/subject/createSubject.usecase';
-import DeleteSubject from '@/application/usecases/subject-curriculum-management/subject/deleteSubject.usecase';
-import FindAllSubject from '@/application/usecases/subject-curriculum-management/subject/findAllSubject.usecase';
-import FindSubject from '@/application/usecases/subject-curriculum-management/subject/findSubject.usecase';
-import UpdateSubject from '@/application/usecases/subject-curriculum-management/subject/updateSubject.usecase';
-import tokenInstance from '@/infraestructure/config/tokenService/token-service.instance';
-import ExpressHttp from '@/infraestructure/http/express-http';
-import MemorySubjectRepository from '@/infraestructure/repositories/subject-curriculum-management/memory-repository/subject.repository';
-import { SubjectController } from '@/interface/controller/subject-curriculum-management/subject.controller';
-import { SubjectRoute } from '@/interface/route/subject-curriculum-management/subject.route';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import MemorySubjectRepository from '@/modules/subject-curriculum-management/infrastructure/repositories/memory-repository/subject.repository';
+import CreateSubject from '@/modules/subject-curriculum-management/application/usecases/subject/createSubject.usecase';
+import FindSubject from '@/modules/subject-curriculum-management/application/usecases/subject/findSubject.usecase';
+import FindAllSubject from '@/modules/subject-curriculum-management/application/usecases/subject/findAllSubject.usecase';
+import UpdateSubject from '@/modules/subject-curriculum-management/application/usecases/subject/updateSubject.usecase';
+import DeleteSubject from '@/modules/subject-curriculum-management/application/usecases/subject/deleteSubject.usecase';
+import { SubjectController } from '@/modules/subject-curriculum-management/interface/controller/subject.controller';
+import { SubjectRoute } from '@/modules/subject-curriculum-management/interface/route/subject.route';
 
 export default function initializeSubject(express: ExpressHttp): void {
   const subjectRepository = new MemorySubjectRepository();

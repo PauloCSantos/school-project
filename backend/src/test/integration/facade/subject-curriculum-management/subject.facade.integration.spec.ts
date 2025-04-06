@@ -1,4 +1,4 @@
-import SubjectFacadeFactory from '@/application/factory/subject-curriculum-management/subject-facade.factory';
+import SubjectFacadeFactory from '@/modules/subject-curriculum-management/application/factory/subject-facade.factory';
 
 describe('Subject facade integration test', () => {
   const input = {

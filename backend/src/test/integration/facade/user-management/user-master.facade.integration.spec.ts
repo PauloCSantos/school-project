@@ -1,5 +1,5 @@
-import MasterFacadeFactory from '@/application/factory/user-management/master-facade.factory';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import MasterFacadeFactory from '@/modules/user-management/application/factory/master-facade.factory';
 
 describe('User master facade integration test', () => {
   const input = {

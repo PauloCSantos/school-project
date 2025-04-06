@@ -1,4 +1,4 @@
-import { validId } from '@/util/validations';
+import { validId } from '../../utils/validations';
 
 export default class Id {
   private _id: string;

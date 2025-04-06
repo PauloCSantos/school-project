@@ -8,7 +8,7 @@ import {
   maxLengthInclusive,
   minLength,
   validId,
-} from '@/util/validations';
+} from '../../../@shared/utils/validations';
 
 type CurriculumProps = {
   id?: Id;

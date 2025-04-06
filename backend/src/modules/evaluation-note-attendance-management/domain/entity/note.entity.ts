@@ -1,5 +1,9 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import { isNumeric, validId, validNote } from '@/util/validations';
+import {
+  isNumeric,
+  validId,
+  validNote,
+} from '@/modules/@shared/utils/validations';
 
 type NoteProps = {
   id?: Id;

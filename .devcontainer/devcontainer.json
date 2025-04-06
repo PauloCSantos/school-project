@@ -1,0 +1,32 @@
+{
+    "name": "Node.js 20 TypeScript Development",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+    "workspaceMount": "source=${localWorkspaceFolder}/backend,target=/workspace,type=bind,consistency=cached",
+    "workspaceFolder": "/workspace",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "ms-vscode.vscode-typescript-next",
+                "bradlc.vscode-tailwindcss"
+            ],
+            "settings": {
+                "editor.formatOnSave": true,
+                "editor.defaultFormatter": "esbenp.prettier-vscode",
+                "typescript.tsdk": "node_modules/typescript/lib",
+                "eslint.validate": [
+                    "typescript",
+                    "javascript"
+                ]
+            }
+        }
+    },
+    "forwardPorts": [
+        3003
+    ],
+    "remoteUser": "node",
+    "features": {
+        "git": "latest"
+    }
+}
