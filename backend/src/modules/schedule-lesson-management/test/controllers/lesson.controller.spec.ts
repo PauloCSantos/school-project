@@ -164,7 +164,7 @@ describe('LessonController unit test', () => {
     expect(createLesson.execute).toHaveBeenCalled();
   });
   it('should return a lesson', async () => {
-    const result = await controller.find(new Id());
+    const result = await controller.find({ id: new Id().value });
 
     expect(result).toBeDefined();
     expect(findLesson.execute).toHaveBeenCalled();

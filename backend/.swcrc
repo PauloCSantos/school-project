@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json.schemastore.org/swcrc",
   "jsc": {
     "parser": {
       "syntax": "typescript"
@@ -12,10 +11,14 @@
     "loose": false,
     "externalHelpers": false,
     "paths": {
-      "@/*": ["*"]
+      "@/*": [
+        "*"
+      ]
     },
     "baseUrl": "./src"
   },
   "minify": false,
-  "module": { "type": "commonjs" }
+  "module": {
+    "type": "commonjs"
+  }
 }

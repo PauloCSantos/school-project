@@ -1,6 +1,10 @@
 import TokenService from '@/modules/authentication-authorization-management/domain/service/token.service';
 import { isNotEmpty } from '../../utils/validations';
-import { Request, Response, NextFunction } from 'express';
+import {
+  HttpRequest,
+  HttpResponse,
+} from '../../infraestructure/http/http.interface';
+import { HttpMiddleware } from '../../infraestructure/http/express.adapter';
 
 export enum HttpStatus {
   OK = 200,
@@ -22,11 +26,13 @@ export interface TokenData {
   masterId: string;
 }
 
-export interface AuthRequest extends Request {
+export interface AuthHttpRequest extends HttpRequest {
   tokenData?: TokenData;
 }
 
-export default class AuthUserMiddleware {
+export type NextFunction = () => void;
+
+export default class AuthUserMiddleware implements HttpMiddleware {
   private readonly logger: Console;
 
   constructor(
@@ -38,8 +44,8 @@ export default class AuthUserMiddleware {
   }
 
   public async handle(
-    req: AuthRequest,
-    res: Response,
+    req: AuthHttpRequest,
+    res: HttpResponse,
     next: NextFunction
   ): Promise<void> {
     try {
@@ -59,8 +65,10 @@ export default class AuthUserMiddleware {
     }
   }
 
-  private async extractAndValidateToken(req: AuthRequest): Promise<TokenData> {
-    const authorizationHeader = req.headers.authorization;
+  private async extractAndValidateToken(
+    req: AuthHttpRequest
+  ): Promise<TokenData> {
+    const authorizationHeader = req.headers?.authorization;
 
     if (!authorizationHeader || !isNotEmpty(authorizationHeader)) {
       throw new Error(ErrorMessage.MISSING_TOKEN);
@@ -91,7 +99,7 @@ export default class AuthUserMiddleware {
     return this.allowedRoles.includes(role);
   }
 
-  private handleError(error: unknown, res: Response): void {
+  private handleError(error: unknown, res: HttpResponse): void {
     if (error instanceof Error) {
       switch (error.message) {
         case ErrorMessage.MISSING_TOKEN:
@@ -126,7 +134,7 @@ export default class AuthUserMiddleware {
   }
 
   private sendErrorResponse(
-    res: Response,
+    res: HttpResponse,
     statusCode: HttpStatus,
     message: string
   ): void {
