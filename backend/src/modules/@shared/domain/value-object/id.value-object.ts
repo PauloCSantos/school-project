@@ -18,7 +18,20 @@ export class InvalidIdError extends Error {
 /**
  * @class Id
  * @description Value Object representing a unique identifier, implemented as UUID v4
- * Follows the principles of Domain-Driven Design for Value Objects
+ * Follows the principles of Domain-Driven Design for Value Objects:
+ * - Immutability: Once created, an ID cannot be changed
+ * - Value equality: IDs with the same value are considered equal
+ * - Self-validation: IDs validate themselves upon creation
+ *
+ * @example
+ * // Create a new random ID
+ * const id1 = Id.create();
+ *
+ * // Create from an existing UUID string
+ * const id2 = new Id('123e4567-e89b-12d3-a456-426614174000');
+ *
+ * // Safe creation (no exceptions)
+ * const id3 = Id.fromString('invalid-id'); // Returns null if invalid
  */
 export default class Id {
   private readonly _value: string;
@@ -38,6 +51,9 @@ export default class Id {
     } else {
       this._value = randomUUID();
     }
+
+    // Ensure immutability
+    Object.freeze(this);
   }
 
   /**
@@ -63,8 +79,12 @@ export default class Id {
    * @param other - Another ID to compare with
    * @returns true if both IDs have the same value
    */
-  equals(other: Id | null | undefined): boolean {
+  equals(other: unknown): boolean {
     if (other === null || other === undefined) {
+      return false;
+    }
+
+    if (!(other instanceof Id)) {
       return false;
     }
 
@@ -88,11 +108,42 @@ export default class Id {
   }
 
   /**
+   * Computes a hash code for this ID
+   * Simple implementation that can be improved if needed
+   * @returns A numeric hash code
+   */
+  hashCode(): number {
+    let hash = 0;
+    for (let i = 0; i < this._value.length; i++) {
+      const char = this._value.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+  }
+
+  /**
+   * Checks if this ID is the nil/empty UUID
+   * @returns true if this ID is the nil UUID (all zeros)
+   */
+  isNil(): boolean {
+    return this._value === '00000000-0000-0000-0000-000000000000';
+  }
+
+  /**
    * Creates a new ID instance
    * @returns A new ID with a randomly generated UUID
    */
   static create(): Id {
     return new Id();
+  }
+
+  /**
+   * Creates the nil/empty UUID
+   * @returns An ID with the nil UUID value
+   */
+  static createNil(): Id {
+    return new Id('00000000-0000-0000-0000-000000000000');
   }
 
   /**
@@ -106,5 +157,14 @@ export default class Id {
     } catch (error) {
       return null;
     }
+  }
+
+  /**
+   * Checks if a string is a valid UUID without throwing exceptions
+   * @param id - The string to validate
+   * @returns true if the string is a valid UUID
+   */
+  static isValid(id: string): boolean {
+    return typeof id === 'string' && validId(id);
   }
 }

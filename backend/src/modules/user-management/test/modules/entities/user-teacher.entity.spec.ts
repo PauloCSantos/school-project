@@ -50,7 +50,8 @@ describe('UserTeacher class', () => {
         academicDegrees: 'M',
       };
       expect(() => {
-        new UserTeacher(invalidUser);
+        const a = new UserTeacher(invalidUser);
+        console.log(a);
       }).toThrow('Field academic degrees is not valid');
     });
   });
