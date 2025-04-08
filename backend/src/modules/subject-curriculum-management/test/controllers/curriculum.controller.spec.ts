@@ -11,7 +11,7 @@ import { CurriculumController } from '../../interface/controller/curriculum.cont
 describe('CurriculumController unit test', () => {
   const mockCreateCurriculum = jest.fn(() => {
     return {
-      execute: jest.fn().mockResolvedValue(new Id().id),
+      execute: jest.fn().mockResolvedValue(new Id().value),
     } as unknown as CreateCurriculum;
   });
   const mockFindCurriculum = jest.fn(() => {
@@ -31,12 +31,12 @@ describe('CurriculumController unit test', () => {
       execute: jest.fn().mockResolvedValue([
         {
           name: 'Software Eng',
-          subjectsList: [new Id().id, new Id().id],
+          subjectsList: [new Id().value, new Id().value],
           yearsToComplete: 5,
         },
         {
           name: 'Math',
-          subjectsList: [new Id().id, new Id().id],
+          subjectsList: [new Id().value, new Id().value],
           yearsToComplete: 5,
         },
       ]),
@@ -101,7 +101,7 @@ describe('CurriculumController unit test', () => {
     expect(createCurriculum.execute).toHaveBeenCalled();
   });
   it('should return a curriculum', async () => {
-    const result = await controller.find(new Id());
+    const result = await controller.find({ id: new Id().value });
 
     expect(result).toBeDefined();
     expect(findCurriculum.execute).toHaveBeenCalled();
@@ -115,7 +115,7 @@ describe('CurriculumController unit test', () => {
   });
   it('should update a curriculum', async () => {
     const result = await controller.update({
-      id: new Id().id,
+      id: new Id().value,
       yearsToComplete: 7,
     });
 
@@ -124,7 +124,7 @@ describe('CurriculumController unit test', () => {
   });
   it('should delete a curriculum', async () => {
     const result = await controller.delete({
-      id: new Id().id,
+      id: new Id().value,
     });
 
     expect(result).toBeDefined();
@@ -132,8 +132,8 @@ describe('CurriculumController unit test', () => {
   });
   it('should add a subject to the curriculum', async () => {
     const result = await controller.addSubjects({
-      id: new Id().id,
-      newSubjectsList: [new Id().id],
+      id: new Id().value,
+      newSubjectsList: [new Id().value],
     });
 
     expect(result).toBeDefined();
@@ -141,8 +141,8 @@ describe('CurriculumController unit test', () => {
   });
   it('should remove a subject from the curriculum', async () => {
     const result = await controller.removeSubjects({
-      id: new Id().id,
-      subjectsListToRemove: [new Id().id, new Id().id],
+      id: new Id().value,
+      subjectsListToRemove: [new Id().value, new Id().value],
     });
 
     expect(result).toBeDefined();

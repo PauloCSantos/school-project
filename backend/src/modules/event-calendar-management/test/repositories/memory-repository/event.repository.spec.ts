@@ -5,9 +5,9 @@ import MemoryEventRepository from '@/modules/event-calendar-management/infrastru
 describe('MemoryEventRepository unit test', () => {
   let repository: MemoryEventRepository;
 
-  const creator1 = new Id().id;
-  const creator2 = new Id().id;
-  const creator3 = new Id().id;
+  const creator1 = new Id().value;
+  const creator2 = new Id().value;
+  const creator3 = new Id().value;
   const name1 = 'Event';
   const name2 = 'Party';
   const name3 = 'Graduation';
@@ -61,7 +61,7 @@ describe('MemoryEventRepository unit test', () => {
 
   describe('On fail', () => {
     it('should received an undefined', async () => {
-      const eventId = new Id().id;
+      const eventId = new Id().value;
       const eventFound = await repository.find(eventId);
 
       expect(eventFound).toBeUndefined();
@@ -81,14 +81,14 @@ describe('MemoryEventRepository unit test', () => {
       await expect(repository.update(event)).rejects.toThrow('Event not found');
     });
     it('should generate an error when trying to remove the event with the wrong ID', async () => {
-      await expect(repository.delete(new Id().id)).rejects.toThrow(
+      await expect(repository.delete(new Id().value)).rejects.toThrow(
         'Event not found'
       );
     });
   });
   describe('On success', () => {
     it('should find a event', async () => {
-      const eventId = event1.id.id;
+      const eventId = event1.id.value;
       const eventFound = await repository.find(eventId);
 
       expect(eventFound).toBeDefined();
@@ -103,7 +103,7 @@ describe('MemoryEventRepository unit test', () => {
     it('should create a new event and return its id', async () => {
       const result = await repository.create(event3);
 
-      expect(result).toBe(event3.id.id);
+      expect(result).toBe(event3.id.value);
     });
     it('should update a event and return its new informations', async () => {
       const updatedevent: Event = event2;
@@ -126,7 +126,7 @@ describe('MemoryEventRepository unit test', () => {
       expect(allEvents[1].creator).toBe(event2.creator);
     });
     it('should remove the user', async () => {
-      const response = await repository.delete(event1.id.id);
+      const response = await repository.delete(event1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });

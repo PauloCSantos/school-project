@@ -3,19 +3,19 @@ import ScheduleFacadeFactory from '@/modules/schedule-lesson-management/applicat
 
 describe('Schedule facade integration test', () => {
   const input = {
-    student: new Id().id,
-    curriculum: new Id().id,
-    lessonsList: [new Id().id, new Id().id, new Id().id],
+    student: new Id().value,
+    curriculum: new Id().value,
+    lessonsList: [new Id().value, new Id().value, new Id().value],
   };
   const input2 = {
-    student: new Id().id,
-    curriculum: new Id().id,
-    lessonsList: [new Id().id, new Id().id, new Id().id],
+    student: new Id().value,
+    curriculum: new Id().value,
+    lessonsList: [new Id().value, new Id().value, new Id().value],
   };
   const input3 = {
-    student: new Id().id,
-    curriculum: new Id().id,
-    lessonsList: [new Id().id, new Id().id, new Id().id],
+    student: new Id().value,
+    curriculum: new Id().value,
+    lessonsList: [new Id().value, new Id().value, new Id().value],
   };
 
   it('should create an Schedule using the facade', async () => {
@@ -57,7 +57,7 @@ describe('Schedule facade integration test', () => {
 
     const result = await facade.update({
       id: id.id,
-      curriculum: new Id().id,
+      curriculum: new Id().value,
     });
 
     expect(result).toBeDefined();
@@ -68,7 +68,7 @@ describe('Schedule facade integration test', () => {
 
     const result = await facade.addLessons({
       id: id.id,
-      newLessonsList: [new Id().id],
+      newLessonsList: [new Id().value],
     });
 
     expect(result).toBeDefined();

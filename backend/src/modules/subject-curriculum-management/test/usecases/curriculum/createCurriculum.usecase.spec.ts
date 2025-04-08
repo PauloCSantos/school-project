@@ -6,7 +6,7 @@ const MockRepository = () => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
-    create: jest.fn(curriculum => Promise.resolve(curriculum.id.id)),
+    create: jest.fn(curriculum => Promise.resolve(curriculum.id.value)),
     update: jest.fn(),
     delete: jest.fn(),
     addSubjects: jest.fn(),
@@ -17,7 +17,7 @@ const MockRepository = () => {
 describe('createCurriculum usecase unit test', () => {
   const input = {
     name: 'Math',
-    subjectsList: [new Id().id, new Id().id, new Id().id],
+    subjectsList: [new Id().value, new Id().value, new Id().value],
     yearsToComplete: 5,
   };
 

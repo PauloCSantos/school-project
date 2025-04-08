@@ -3,20 +3,20 @@ import EvaluationFacadeFactory from '@/modules/evaluation-note-attendance-manage
 
 describe('Evaluation facade integration test', () => {
   const input = {
-    lesson: new Id().id,
-    teacher: new Id().id,
+    lesson: new Id().value,
+    teacher: new Id().value,
     type: 'evaluation',
     value: 10,
   };
   const input2 = {
-    lesson: new Id().id,
-    teacher: new Id().id,
+    lesson: new Id().value,
+    teacher: new Id().value,
     type: 'evaluation',
     value: 10,
   };
   const input3 = {
-    lesson: new Id().id,
-    teacher: new Id().id,
+    lesson: new Id().value,
+    teacher: new Id().value,
     type: 'evaluation',
     value: 10,
   };

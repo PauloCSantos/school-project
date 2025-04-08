@@ -11,7 +11,7 @@ import { AttendanceController } from '../../interface/controller/attendance.cont
 describe('AttendanceController unit test', () => {
   const mockCreateAttendance = jest.fn(() => {
     return {
-      execute: jest.fn().mockResolvedValue(new Id().id),
+      execute: jest.fn().mockResolvedValue(new Id().value),
     } as unknown as CreateAttendance;
   });
   const mockFindAttendance = jest.fn(() => {
@@ -115,8 +115,8 @@ describe('AttendanceController unit test', () => {
       date: new Date(),
       day: 'fri' as DayOfWeek,
       hour: '06:50' as Hour,
-      lesson: new Id().id,
-      studentsPresent: [new Id().id, new Id().id, new Id().id],
+      lesson: new Id().value,
+      studentsPresent: [new Id().value, new Id().value, new Id().value],
     });
 
     expect(result).toBeDefined();
@@ -137,7 +137,7 @@ describe('AttendanceController unit test', () => {
   });
   it('should update a attendance', async () => {
     const result = await controller.update({
-      id: new Id().id,
+      id: new Id().value,
       hour: '14:00',
     });
 
@@ -146,7 +146,7 @@ describe('AttendanceController unit test', () => {
   });
   it('should delete a attendance', async () => {
     const result = await controller.delete({
-      id: new Id().id,
+      id: new Id().value,
     });
 
     expect(result).toBeDefined();
@@ -154,8 +154,8 @@ describe('AttendanceController unit test', () => {
   });
   it('should add students to the attendance', async () => {
     const result = await controller.addStudents({
-      id: new Id().id,
-      newStudentsList: [new Id().id],
+      id: new Id().value,
+      newStudentsList: [new Id().value],
     });
 
     expect(result).toBeDefined();
@@ -163,8 +163,8 @@ describe('AttendanceController unit test', () => {
   });
   it('should remove students from the attendance', async () => {
     const result = await controller.removeStudents({
-      id: new Id().id,
-      studentsListToRemove: [new Id().id, new Id().id],
+      id: new Id().value,
+      studentsListToRemove: [new Id().value, new Id().value],
     });
 
     expect(result).toBeDefined();

@@ -1,5 +1,5 @@
-import EvaluationGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/evaluation.gateway';
 import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
+import EvaluationGateway from '../../gateway/evaluation.gateway';
 
 export default class MemoryEvaluationRepository implements EvaluationGateway {
   private _evaluation: Evaluation[];
@@ -10,7 +10,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
 
   async find(id: string): Promise<Evaluation | undefined> {
     const evaluation = this._evaluation.find(
-      evaluation => evaluation.id.id === id
+      evaluation => evaluation.id.value === id
     );
     if (evaluation) {
       return evaluation;
@@ -30,11 +30,11 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
   }
   async create(evaluation: Evaluation): Promise<string> {
     this._evaluation.push(evaluation);
-    return evaluation.id.id;
+    return evaluation.id.value;
   }
   async update(evaluation: Evaluation): Promise<Evaluation> {
     const evaluationIndex = this._evaluation.findIndex(
-      dbEvaluation => dbEvaluation.id.id === evaluation.id.id
+      dbEvaluation => dbEvaluation.id.value === evaluation.id.value
     );
     if (evaluationIndex !== -1) {
       return (this._evaluation[evaluationIndex] = evaluation);
@@ -44,7 +44,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
   }
   async delete(id: string): Promise<string> {
     const evaluationIndex = this._evaluation.findIndex(
-      dbEvaluation => dbEvaluation.id.id === id
+      dbEvaluation => dbEvaluation.id.value === id
     );
     if (evaluationIndex !== -1) {
       this._evaluation.splice(evaluationIndex, 1);

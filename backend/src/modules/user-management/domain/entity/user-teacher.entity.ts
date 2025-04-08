@@ -76,7 +76,7 @@ export default class UserTeacher extends UserBase {
     return (
       isString(input) &&
       isNotEmpty(input) &&
-      minLength(input, 1) &&
+      minLength(input, 2) &&
       maxLengthInclusive(input, 255)
     );
   }

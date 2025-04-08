@@ -20,7 +20,7 @@ export default class FindAllEvent
     const results = await this._eventRepository.findAll(offset, quantity);
 
     const result = results.map(event => ({
-      id: event.id.id,
+      id: event.id.value,
       creator: event.creator,
       name: event.name,
       date: event.date,

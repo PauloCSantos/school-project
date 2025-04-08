@@ -3,8 +3,8 @@ import Evaluation from '@/modules/evaluation-note-attendance-management/domain/e
 
 describe('Evaluation unit test', () => {
   const evaluationData = {
-    teacher: new Id().id,
-    lesson: new Id().id,
+    teacher: new Id().value,
+    lesson: new Id().value,
     type: 'Exame',
     value: 10,
   };

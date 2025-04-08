@@ -38,7 +38,7 @@ describe('findUserMaster usecase unit test', () => {
       userMasterRepository.find.mockResolvedValue(userMaster1);
       const usecase = new FindUserMaster(userMasterRepository);
 
-      const result = await usecase.execute({ id: userMaster1.id.id });
+      const result = await usecase.execute({ id: userMaster1.id.value });
 
       expect(userMasterRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();

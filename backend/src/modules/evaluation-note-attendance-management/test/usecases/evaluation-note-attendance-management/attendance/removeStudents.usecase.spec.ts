@@ -25,11 +25,11 @@ describe('RemoveStudent use case unit test', () => {
     date: new Date(),
     day: 'fri',
     hour: '06:50',
-    lesson: new Id().id,
-    studentsPresent: [new Id().id, new Id().id, new Id().id],
+    lesson: new Id().value,
+    studentsPresent: [new Id().value, new Id().value, new Id().value],
   });
   const input = {
-    id: attendance.id.id,
+    id: attendance.id.value,
     studentsListToRemove: [
       attendance.studentsPresent[0],
       attendance.studentsPresent[1],
@@ -58,7 +58,7 @@ describe('RemoveStudent use case unit test', () => {
       await expect(
         usecase.execute({
           ...input,
-          studentsListToRemove: [new Id().id],
+          studentsListToRemove: [new Id().value],
         })
       ).rejects.toThrow(`This student is not included in the attendance`);
       expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);

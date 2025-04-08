@@ -1,9 +1,3 @@
-import CreateNote from '@/application/usecases/evaluation-note-attendance-management/note/createNote.usecase';
-import DeleteNote from '@/application/usecases/evaluation-note-attendance-management/note/deleteNote.usecase';
-import FindAllNote from '@/application/usecases/evaluation-note-attendance-management/note/findAllNote.usecase';
-import FindNote from '@/application/usecases/evaluation-note-attendance-management/note/findNote.usecase';
-import UpdateNote from '@/application/usecases/evaluation-note-attendance-management/note/updateNote.usecase';
-import NoteFacadeInterface from '../interface/note-facade.interface';
 import {
   CreateNoteInputDto,
   CreateNoteOutputDto,
@@ -15,7 +9,13 @@ import {
   FindNoteOutputDto,
   UpdateNoteInputDto,
   UpdateNoteOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/note-facade.dto';
+} from '../../dto/note-facade.dto';
+import CreateNote from '../../usecases/note/createNote.usecase';
+import DeleteNote from '../../usecases/note/deleteNote.usecase';
+import FindAllNote from '../../usecases/note/findAllNote.usecase';
+import FindNote from '../../usecases/note/findNote.usecase';
+import UpdateNote from '../../usecases/note/updateNote.usecase';
+import NoteFacadeInterface from '../interface/note-facade.interface';
 
 type NoteFacadeProps = {
   createNote: CreateNote;

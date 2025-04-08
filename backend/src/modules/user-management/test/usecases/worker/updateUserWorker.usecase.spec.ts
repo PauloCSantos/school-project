@@ -76,7 +76,7 @@ describe('updateUserWorker usecase unit test', () => {
       const usecase = new UpdateUserWorker(userWorkerRepository);
 
       const result = await usecase.execute({
-        id: userWorker1.id.id,
+        id: userWorker1.id.value,
         address: {
           street: 'Street B',
           city: 'City B',
@@ -90,7 +90,7 @@ describe('updateUserWorker usecase unit test', () => {
       expect(userWorkerRepository.update).toHaveBeenCalled();
       expect(userWorkerRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
-        id: userWorker1.id.id,
+        id: userWorker1.id.value,
         name: {
           fullName: userWorker1.name.fullName(),
           shortName: userWorker1.name.shortName(),

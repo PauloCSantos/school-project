@@ -1,7 +1,7 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryEventRepository from '@/modules/event-calendar-management/infrastructure/repositories/memory-repository/event.repository';
 import CreateEvent from '@/modules/event-calendar-management/application/usecases/event/createEvent.usecase';
 import FindEvent from '@/modules/event-calendar-management/application/usecases/event/findEvent.usecase';

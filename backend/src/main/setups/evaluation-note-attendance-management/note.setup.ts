@@ -1,7 +1,7 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryNoteRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/note.repository';
 import CreateNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/createNote.usecase';
 import FindNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/findNote.usecase';

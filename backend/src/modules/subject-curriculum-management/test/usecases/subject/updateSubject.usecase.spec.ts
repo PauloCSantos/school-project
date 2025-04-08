@@ -43,14 +43,14 @@ describe('updateSubject usecase unit test', () => {
       const usecase = new UpdateSubject(subjectRepository);
 
       const result = await usecase.execute({
-        id: subject1.id.id,
+        id: subject1.id.value,
         name: input.name,
       });
 
       expect(subjectRepository.update).toHaveBeenCalled();
       expect(subjectRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
-        id: subject1.id.id,
+        id: subject1.id.value,
         name: input.name,
         description: subject1.description,
       });

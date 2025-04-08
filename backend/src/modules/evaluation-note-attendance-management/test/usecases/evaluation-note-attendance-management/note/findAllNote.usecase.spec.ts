@@ -14,13 +14,13 @@ const MockRepository = () => {
 
 describe('findAllNote usecase unit test', () => {
   const note1 = new Note({
-    evaluation: new Id().id,
-    student: new Id().id,
+    evaluation: new Id().value,
+    student: new Id().value,
     note: 10,
   });
   const note2 = new Note({
-    evaluation: new Id().id,
-    student: new Id().id,
+    evaluation: new Id().value,
+    student: new Id().value,
     note: 8,
   });
 

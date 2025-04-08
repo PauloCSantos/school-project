@@ -9,7 +9,7 @@ import {
   FindNoteOutputDto,
   UpdateNoteInputDto,
   UpdateNoteOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/note-facade.dto';
+} from '../../dto/note-facade.dto';
 
 export default interface NoteFacadeInterface {
   create(input: CreateNoteInputDto): Promise<CreateNoteOutputDto>;

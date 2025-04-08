@@ -1,15 +1,7 @@
-import AddStudents from '@/application/usecases/evaluation-note-attendance-management/attendance/addStudents.usecase';
-import CreateAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/createAttendance.usecase';
-import DeleteAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/deleteAttendance.usecase';
-import FindAllAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/findAllAttendance.usecase';
-import FindAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/findAttendance.usecase';
-import RemoveStudents from '@/application/usecases/evaluation-note-attendance-management/attendance/removeStudents.usecase';
-import UpdateAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/updateAttendance.usecase';
-import AttendanceFacadeInterface from '../interface/attendance-facade.interface';
 import {
-  CreateAttendanceInputDto,
   AddStudentsInputDto,
   AddStudentsOutputDto,
+  CreateAttendanceInputDto,
   CreateAttendanceOutputDto,
   DeleteAttendanceInputDto,
   DeleteAttendanceOutputDto,
@@ -21,7 +13,15 @@ import {
   RemoveStudentsOutputDto,
   UpdateAttendanceInputDto,
   UpdateAttendanceOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/attendance-facade.dto';
+} from '../../dto/attendance-facade.dto';
+import AddStudents from '../../usecases/attendance/addStudents.usecase';
+import CreateAttendance from '../../usecases/attendance/createAttendance.usecase';
+import DeleteAttendance from '../../usecases/attendance/deleteAttendance.usecase';
+import FindAllAttendance from '../../usecases/attendance/findAllAttendance.usecase';
+import FindAttendance from '../../usecases/attendance/findAttendance.usecase';
+import RemoveStudents from '../../usecases/attendance/removeStudents.usecase';
+import UpdateAttendance from '../../usecases/attendance/updateAttendance.usecase';
+import AttendanceFacadeInterface from '../interface/attendance-facade.interface';
 
 type AttendanceFacadeProps = {
   createAttendance: CreateAttendance;

@@ -5,7 +5,7 @@ import FindAuthUser from '@/modules/authentication-authorization-management/appl
 import LoginAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/loginAuthUser.usecase';
 import UpdateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/updateAuthUser.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/authUser.repository';
 import AuthUserController from '@/modules/authentication-authorization-management/interface/controller/authUser.controller';
 import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/authUser.route';

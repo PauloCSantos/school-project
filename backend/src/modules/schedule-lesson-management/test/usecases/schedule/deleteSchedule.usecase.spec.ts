@@ -16,9 +16,9 @@ const MockRepository = () => {
 
 describe('deleteSchedule usecase unit test', () => {
   const schedule = new Schedule({
-    student: new Id().id,
-    curriculum: new Id().id,
-    lessonsList: [new Id().id, new Id().id, new Id().id],
+    student: new Id().value,
+    curriculum: new Id().value,
+    lessonsList: [new Id().value, new Id().value, new Id().value],
   });
 
   describe('On fail', () => {
@@ -39,7 +39,7 @@ describe('deleteSchedule usecase unit test', () => {
       scheduleRepository.find.mockResolvedValue(schedule);
       const usecase = new DeleteSchedule(scheduleRepository);
       const result = await usecase.execute({
-        id: schedule.id.id,
+        id: schedule.id.value,
       });
 
       expect(scheduleRepository.delete).toHaveBeenCalled();

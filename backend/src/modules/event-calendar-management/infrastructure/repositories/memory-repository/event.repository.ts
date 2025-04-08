@@ -9,7 +9,7 @@ export default class MemoryEventRepository implements EventGateway {
   }
 
   async find(id: string): Promise<Event | undefined> {
-    const event = this._events.find(event => event.id.id === id);
+    const event = this._events.find(event => event.id.value === id);
     if (event) {
       return event;
     } else {
@@ -28,11 +28,11 @@ export default class MemoryEventRepository implements EventGateway {
   }
   async create(event: Event): Promise<string> {
     this._events.push(event);
-    return event.id.id;
+    return event.id.value;
   }
   async update(event: Event): Promise<Event> {
     const eventIndex = this._events.findIndex(
-      dBevent => dBevent.id.id === event.id.id
+      dBevent => dBevent.id.value === event.id.value
     );
     if (eventIndex !== -1) {
       return (this._events[eventIndex] = event);
@@ -41,7 +41,9 @@ export default class MemoryEventRepository implements EventGateway {
     }
   }
   async delete(id: string): Promise<string> {
-    const eventIndex = this._events.findIndex(dBevent => dBevent.id.id === id);
+    const eventIndex = this._events.findIndex(
+      dBevent => dBevent.id.value === id
+    );
     if (eventIndex !== -1) {
       this._events.splice(eventIndex, 1);
       return 'Operação concluída com sucesso';

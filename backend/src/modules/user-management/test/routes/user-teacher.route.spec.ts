@@ -1,7 +1,7 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import { UserTeacherController } from '../../interface/controller/user-teacher.controller';
 import { UserTeacherRoute } from '../../interface/route/user-teacher.route';
 
@@ -15,7 +15,7 @@ const mockAuthUserMiddleware = jest.fn(
 
 const mockUserTeacherController = jest.fn(() => {
   return {
-    create: jest.fn().mockResolvedValue({ id: new Id().id }),
+    create: jest.fn().mockResolvedValue({ id: new Id().value }),
     find: jest.fn().mockResolvedValue({
       name: {
         firstName: 'John',
@@ -152,7 +152,9 @@ describe('UserTeacherRoute unit test', () => {
   });
   describe('GET /user-teacher/:id', () => {
     it('should find a user by ID', async () => {
-      const response = await supertest(app).get(`/user-teacher/${new Id().id}`);
+      const response = await supertest(app).get(
+        `/user-teacher/${new Id().value}`
+      );
       expect(response.status).toBe(200);
       expect(userTeacherController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -170,7 +172,7 @@ describe('UserTeacherRoute unit test', () => {
   describe('PATCH /user-teacher/:id', () => {
     it('should update a user by ID', async () => {
       const response = await supertest(app)
-        .patch(`/user-teacher/${new Id().id}`)
+        .patch(`/user-teacher/${new Id().value}`)
         .send({
           address: {
             street: 'Street B',
@@ -189,7 +191,7 @@ describe('UserTeacherRoute unit test', () => {
   describe('DELETE /user-teacher/:id', () => {
     it('should delete a user by ID', async () => {
       const response = await supertest(app).delete(
-        `/user-teacher/${new Id().id}`
+        `/user-teacher/${new Id().value}`
       );
       expect(response.status).toBe(200);
       expect(userTeacherController.delete).toHaveBeenCalled();

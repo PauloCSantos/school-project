@@ -1,9 +1,3 @@
-import CreateEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/createEvaluation.usecase';
-import DeleteEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/deleteEvaluation.usecase';
-import FindAllEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/findAllEvaluation.usecase';
-import FindEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/findEvaluation.usecase';
-import UpdateEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/updateEvaluation.usecase';
-import EvaluationFacadeInterface from '../interface/evaluation-facade.interface';
 import {
   CreateEvaluationInputDto,
   CreateEvaluationOutputDto,
@@ -15,7 +9,13 @@ import {
   FindEvaluationOutputDto,
   UpdateEvaluationInputDto,
   UpdateEvaluationOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/evaluation-facade.dto';
+} from '../../dto/evaluation-facade.dto';
+import CreateEvaluation from '../../usecases/evaluation/createEvaluation.usecase';
+import DeleteEvaluation from '../../usecases/evaluation/deleteEvaluation.usecase';
+import FindAllEvaluation from '../../usecases/evaluation/findAllEvaluation.usecase';
+import FindEvaluation from '../../usecases/evaluation/findEvaluation.usecase';
+import UpdateEvaluation from '../../usecases/evaluation/updateEvaluation.usecase';
+import EvaluationFacadeInterface from '../interface/evaluation-facade.interface';
 
 type EvaluationFacadeProps = {
   createEvaluation: CreateEvaluation;

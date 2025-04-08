@@ -54,7 +54,7 @@ export default class UpdateUserAdministrator
       const result = await this._userAdministratorRepository.update(userAdm);
 
       return {
-        id: result.id.id,
+        id: result.id.value,
         name: {
           fullName: result.name.fullName(),
           shortName: result.name.shortName(),

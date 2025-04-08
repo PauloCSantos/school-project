@@ -1,4 +1,4 @@
-import Note from '../../../modules/evaluation-note-attendance-management/domain/entity/note.entity';
+import Note from '../../domain/entity/note.entity';
 
 export default interface NoteGateway {
   find(id: string): Promise<Note | undefined>;

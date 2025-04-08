@@ -8,7 +8,7 @@ type LessonMapperProps = FindLessonOutputDto & {
 export default class LessonMapper {
   static toObj(input: Lesson): LessonMapperProps {
     return {
-      id: input.id.id,
+      id: input.id.value,
       days: input.days,
       duration: input.duration,
       name: input.name,

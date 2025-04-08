@@ -11,7 +11,7 @@ export default class MemoryUserStudentRepository implements UserStudentGateway {
   }
 
   async find(id: string): Promise<UserStudent | undefined> {
-    const user = this._studentUsers.find(user => user.id.id === id);
+    const user = this._studentUsers.find(user => user.id.value === id);
     if (user) {
       return user;
     } else {
@@ -29,11 +29,11 @@ export default class MemoryUserStudentRepository implements UserStudentGateway {
   }
   async create(userStudent: UserStudent): Promise<string> {
     this._studentUsers.push(userStudent);
-    return userStudent.id.id;
+    return userStudent.id.value;
   }
   async update(userStudent: UserStudent): Promise<UserStudent> {
     const studentUserIndex = this._studentUsers.findIndex(
-      user => user.id.id === userStudent.id.id
+      user => user.id.value === userStudent.id.value
     );
     if (studentUserIndex !== -1) {
       return (this._studentUsers[studentUserIndex] = userStudent);
@@ -43,7 +43,7 @@ export default class MemoryUserStudentRepository implements UserStudentGateway {
   }
   async delete(id: string): Promise<string> {
     const studentUserIndex = this._studentUsers.findIndex(
-      user => user.id.id === id
+      user => user.id.value === id
     );
     if (studentUserIndex !== -1) {
       this._studentUsers.splice(studentUserIndex, 1);

@@ -7,7 +7,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 describe('UserMasterController unit test', () => {
   const mockCreateUserMaster = jest.fn(() => {
     return {
-      execute: jest.fn().mockResolvedValue(new Id().id),
+      execute: jest.fn().mockResolvedValue(new Id().value),
     } as unknown as CreateUserMaster;
   });
   const mockFindUserMaster = jest.fn(() => {
@@ -80,14 +80,14 @@ describe('UserMasterController unit test', () => {
     expect(createUserMaster.execute).toHaveBeenCalled();
   });
   it('should return a user', async () => {
-    const result = await controller.find(new Id());
+    const result = await controller.find({ id: new Id().value });
 
     expect(result).toBeDefined();
     expect(findUserMaster.execute).toHaveBeenCalled();
   });
   it('should update an user', async () => {
     const result = await controller.update({
-      id: new Id().id,
+      id: new Id().value,
       address: {
         street: 'Street B',
       },

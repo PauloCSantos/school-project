@@ -3,7 +3,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { LessonController } from '../../interface/controller/lesson.controller';
 import { LessonRoute } from '../../interface/route/lesson.route';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 
 const mockAuthUserMiddleware = jest.fn(
   () =>
@@ -15,13 +15,13 @@ const mockAuthUserMiddleware = jest.fn(
 
 const mockLessonController = jest.fn(() => {
   return {
-    create: jest.fn().mockResolvedValue({ id: new Id().id }),
+    create: jest.fn().mockResolvedValue({ id: new Id().value }),
     find: jest.fn().mockResolvedValue({
       name: 'Math advanced I',
       duration: 60,
-      teacher: new Id().id,
-      studentsList: [new Id().id, new Id().id, new Id().id],
-      subject: new Id().id,
+      teacher: new Id().value,
+      studentsList: [new Id().value, new Id().value, new Id().value],
+      subject: new Id().value,
       days: ['mon', 'fri'] as DayOfWeek[],
       times: ['15:55', '19:00'] as Hour[],
       semester: 2 as 1 | 2,
@@ -30,9 +30,9 @@ const mockLessonController = jest.fn(() => {
       {
         name: 'Math advanced I',
         duration: 60,
-        teacher: new Id().id,
-        studentsList: [new Id().id, new Id().id, new Id().id],
-        subject: new Id().id,
+        teacher: new Id().value,
+        studentsList: [new Id().value, new Id().value, new Id().value],
+        subject: new Id().value,
         days: ['mon', 'fri'] as DayOfWeek[],
         times: ['15:55', '19:00'] as Hour[],
         semester: 2 as 1 | 2,
@@ -40,9 +40,9 @@ const mockLessonController = jest.fn(() => {
       {
         name: 'Math advanced II',
         duration: 60,
-        teacher: new Id().id,
-        studentsList: [new Id().id, new Id().id, new Id().id],
-        subject: new Id().id,
+        teacher: new Id().value,
+        studentsList: [new Id().value, new Id().value, new Id().value],
+        subject: new Id().value,
         days: ['mon', 'fri'] as DayOfWeek[],
         times: ['15:55', '19:00'] as Hour[],
         semester: 2 as 1 | 2,
@@ -51,8 +51,8 @@ const mockLessonController = jest.fn(() => {
     update: jest.fn().mockResolvedValue({
       name: 'Math advanced I',
       duration: 60,
-      teacher: new Id().id,
-      subject: new Id().id,
+      teacher: new Id().value,
+      subject: new Id().value,
       semester: 2 as 1 | 2,
     }),
     delete: jest.fn().mockResolvedValue({
@@ -86,9 +86,9 @@ describe('LessonRoute unit test', () => {
         .send({
           name: 'Math advanced I',
           duration: 60,
-          teacher: new Id().id,
-          studentsList: [new Id().id, new Id().id, new Id().id],
-          subject: new Id().id,
+          teacher: new Id().value,
+          studentsList: [new Id().value, new Id().value, new Id().value],
+          subject: new Id().value,
           days: ['mon', 'fri'] as DayOfWeek[],
           times: ['15:55', '19:00'] as Hour[],
           semester: 2 as 1 | 2,
@@ -100,7 +100,7 @@ describe('LessonRoute unit test', () => {
   });
   describe('GET /lesson/:id', () => {
     it('should find a lesson by ID', async () => {
-      const response = await supertest(app).get(`/lesson/${new Id().id}`);
+      const response = await supertest(app).get(`/lesson/${new Id().value}`);
       expect(response.status).toBe(200);
       expect(lessonController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -118,7 +118,7 @@ describe('LessonRoute unit test', () => {
   describe('PATCH /lesson/:id', () => {
     it('should update a lesson by ID', async () => {
       const response = await supertest(app)
-        .patch(`/lesson/${new Id().id}`)
+        .patch(`/lesson/${new Id().value}`)
         .send({
           duration: 50,
         });
@@ -129,7 +129,7 @@ describe('LessonRoute unit test', () => {
   });
   describe('DELETE /lesson/:id', () => {
     it('should delete a lesson by ID', async () => {
-      const response = await supertest(app).delete(`/lesson/${new Id().id}`);
+      const response = await supertest(app).delete(`/lesson/${new Id().value}`);
       expect(response.status).toBe(200);
       expect(lessonController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined();
@@ -140,8 +140,8 @@ describe('LessonRoute unit test', () => {
       const response = await supertest(app)
         .post('/lesson/add/students')
         .send({
-          id: new Id().id,
-          newStudentsList: [new Id().id],
+          id: new Id().value,
+          newStudentsList: [new Id().value],
         });
       expect(response.status).toBe(201);
       expect(lessonController.addStudents).toHaveBeenCalled();
@@ -153,8 +153,8 @@ describe('LessonRoute unit test', () => {
       const response = await supertest(app)
         .post('/lesson/remove/students')
         .send({
-          id: new Id().id,
-          studentsListToRemove: [new Id().id, new Id().id],
+          id: new Id().value,
+          studentsListToRemove: [new Id().value, new Id().value],
         });
       expect(response.status).toBe(201);
       expect(lessonController.removeStudents).toHaveBeenCalled();
@@ -166,7 +166,7 @@ describe('LessonRoute unit test', () => {
       const response = await supertest(app)
         .post('/lesson/add/day')
         .send({
-          id: new Id().id,
+          id: new Id().value,
           newDaysList: ['sun'],
         });
       expect(response.status).toBe(201);
@@ -179,7 +179,7 @@ describe('LessonRoute unit test', () => {
       const response = await supertest(app)
         .post('/lesson/remove/day')
         .send({
-          id: new Id().id,
+          id: new Id().value,
           daysListToRemove: ['mon', 'fri'],
         });
       expect(response.status).toBe(201);
@@ -192,7 +192,7 @@ describe('LessonRoute unit test', () => {
       const response = await supertest(app)
         .post('/lesson/add/time')
         .send({
-          id: new Id().id,
+          id: new Id().value,
           newTimesList: ['22:00'],
         });
       expect(response.status).toBe(201);
@@ -205,7 +205,7 @@ describe('LessonRoute unit test', () => {
       const response = await supertest(app)
         .post('/lesson/remove/time')
         .send({
-          id: new Id().id,
+          id: new Id().value,
           timesListToRemove: ['13:00', '19:00'],
         });
       expect(response.status).toBe(201);

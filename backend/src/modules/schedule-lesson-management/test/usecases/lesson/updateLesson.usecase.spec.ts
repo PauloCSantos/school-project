@@ -22,15 +22,15 @@ describe('updateLesson usecase unit test', () => {
   const lesson = new Lesson({
     name: 'Math advanced I',
     duration: 60,
-    teacher: new Id().id,
-    studentsList: [new Id().id, new Id().id, new Id().id],
-    subject: new Id().id,
+    teacher: new Id().value,
+    studentsList: [new Id().value, new Id().value, new Id().value],
+    subject: new Id().value,
     days: ['mon', 'fri'],
     times: ['15:55', '19:00'],
     semester: 2,
   });
   const input = {
-    id: lesson.id.id,
+    id: lesson.id.value,
     duration: 65,
   };
 

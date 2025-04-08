@@ -13,14 +13,14 @@ import {
   RemoveStudentsOutputDto,
   UpdateAttendanceInputDto,
   UpdateAttendanceOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/attendance-usecase.dto';
-import AddStudents from '@/application/usecases/evaluation-note-attendance-management/attendance/addStudents.usecase';
-import CreateAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/createAttendance.usecase';
-import DeleteAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/deleteAttendance.usecase';
-import FindAllAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/findAllAttendance.usecase';
-import FindAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/findAttendance.usecase';
-import RemoveStudents from '@/application/usecases/evaluation-note-attendance-management/attendance/removeStudents.usecase';
-import UpdateAttendance from '@/application/usecases/evaluation-note-attendance-management/attendance/updateAttendance.usecase';
+} from '../../application/dto/attendance-usecase.dto';
+import AddStudents from '../../application/usecases/attendance/addStudents.usecase';
+import CreateAttendance from '../../application/usecases/attendance/createAttendance.usecase';
+import DeleteAttendance from '../../application/usecases/attendance/deleteAttendance.usecase';
+import FindAllAttendance from '../../application/usecases/attendance/findAllAttendance.usecase';
+import FindAttendance from '../../application/usecases/attendance/findAttendance.usecase';
+import RemoveStudents from '../../application/usecases/attendance/removeStudents.usecase';
+import UpdateAttendance from '../../application/usecases/attendance/updateAttendance.usecase';
 
 export class AttendanceController {
   constructor(

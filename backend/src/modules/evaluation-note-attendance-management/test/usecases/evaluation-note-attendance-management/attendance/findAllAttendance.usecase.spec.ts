@@ -19,15 +19,15 @@ describe('findAllAttendance usecase unit test', () => {
     date: new Date(),
     day: 'fri',
     hour: '06:50',
-    lesson: new Id().id,
-    studentsPresent: [new Id().id, new Id().id, new Id().id],
+    lesson: new Id().value,
+    studentsPresent: [new Id().value, new Id().value, new Id().value],
   });
   const attendance2 = new Attendance({
     date: new Date(),
     day: 'sat',
     hour: '13:50',
-    lesson: new Id().id,
-    studentsPresent: [new Id().id, new Id().id, new Id().id],
+    lesson: new Id().value,
+    studentsPresent: [new Id().value, new Id().value, new Id().value],
   });
 
   describe('On success', () => {

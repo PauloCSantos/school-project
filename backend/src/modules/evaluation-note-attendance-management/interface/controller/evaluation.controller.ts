@@ -9,12 +9,12 @@ import {
   FindEvaluationOutputDto,
   UpdateEvaluationInputDto,
   UpdateEvaluationOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/evaluation-usecase.dto';
-import CreateEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/createEvaluation.usecase';
-import DeleteEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/deleteEvaluation.usecase';
-import FindAllEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/findAllEvaluation.usecase';
-import FindEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/findEvaluation.usecase';
-import UpdateEvaluation from '@/application/usecases/evaluation-note-attendance-management/evaluation/updateEvaluation.usecase';
+} from '../../application/dto/evaluation-usecase.dto';
+import CreateEvaluation from '../../application/usecases/evaluation/createEvaluation.usecase';
+import DeleteEvaluation from '../../application/usecases/evaluation/deleteEvaluation.usecase';
+import FindAllEvaluation from '../../application/usecases/evaluation/findAllEvaluation.usecase';
+import FindEvaluation from '../../application/usecases/evaluation/findEvaluation.usecase';
+import UpdateEvaluation from '../../application/usecases/evaluation/updateEvaluation.usecase';
 
 export class EvaluationController {
   constructor(

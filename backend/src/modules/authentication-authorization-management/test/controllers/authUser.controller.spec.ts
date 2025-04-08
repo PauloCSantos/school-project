@@ -11,7 +11,7 @@ describe('AuthUserController unit test', () => {
     return {
       execute: jest.fn().mockResolvedValue({
         email: 'teste1@teste.com',
-        masterId: new Id().id,
+        masterId: new Id().value,
       }),
     } as unknown as CreateAuthUser;
   });
@@ -19,7 +19,7 @@ describe('AuthUserController unit test', () => {
     return {
       execute: jest.fn().mockResolvedValue({
         email: 'teste1@teste.com',
-        masterId: new Id().id,
+        masterId: new Id().value,
         role: 'master',
         isHashed: true,
       }),
@@ -67,7 +67,7 @@ describe('AuthUserController unit test', () => {
     const result = await controller.create({
       email: 'teste@teste.com.br',
       password: 'XpA2Jjd4',
-      masterId: new Id().id,
+      masterId: new Id().value,
       role: 'master' as RoleUsers,
       isHashed: false,
     });

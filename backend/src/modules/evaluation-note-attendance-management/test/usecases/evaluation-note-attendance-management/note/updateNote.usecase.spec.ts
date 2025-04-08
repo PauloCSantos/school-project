@@ -18,8 +18,8 @@ describe('updateNote usecase unit test', () => {
   };
 
   const note1 = new Note({
-    evaluation: new Id().id,
-    student: new Id().id,
+    evaluation: new Id().value,
+    student: new Id().value,
     note: 10,
   });
 
@@ -44,14 +44,14 @@ describe('updateNote usecase unit test', () => {
       const usecase = new UpdateNote(noteRepository);
 
       const result = await usecase.execute({
-        id: note1.id.id,
+        id: note1.id.value,
         ...input,
       });
 
       expect(noteRepository.update).toHaveBeenCalled();
       expect(noteRepository.find).toHaveBeenCalled();
       expect(result).toStrictEqual({
-        id: note1.id.id,
+        id: note1.id.value,
         evaluation: note1.evaluation,
         student: note1.student,
         note: input.note,

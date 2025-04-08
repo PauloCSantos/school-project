@@ -9,7 +9,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
   }
 
   async find(id: string): Promise<Subject | undefined> {
-    const subject = this._subjects.find(subject => subject.id.id === id);
+    const subject = this._subjects.find(subject => subject.id.value === id);
     if (subject) {
       return subject;
     } else {
@@ -28,11 +28,11 @@ export default class MemorySubjectRepository implements SubjectGateway {
   }
   async create(subject: Subject): Promise<string> {
     this._subjects.push(subject);
-    return subject.id.id;
+    return subject.id.value;
   }
   async update(subject: Subject): Promise<Subject> {
     const subjectIndex = this._subjects.findIndex(
-      dbSubject => dbSubject.id.id === subject.id.id
+      dbSubject => dbSubject.id.value === subject.id.value
     );
     if (subjectIndex !== -1) {
       return (this._subjects[subjectIndex] = subject);
@@ -42,7 +42,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
   }
   async delete(id: string): Promise<string> {
     const subjectIndex = this._subjects.findIndex(
-      dbSubject => dbSubject.id.id === id
+      dbSubject => dbSubject.id.value === id
     );
     if (subjectIndex !== -1) {
       this._subjects.splice(subjectIndex, 1);

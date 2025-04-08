@@ -14,7 +14,7 @@ const MockRepository = () => {
 
 describe('findEvent usecase unit test', () => {
   const input1 = {
-    creator: new Id().id,
+    creator: new Id().value,
     name: 'Christmas',
     date: new Date(),
     hour: '08:00' as Hour,
@@ -31,7 +31,7 @@ describe('findEvent usecase unit test', () => {
       eventRepository.find.mockResolvedValue(event1);
       const usecase = new FindEvent(eventRepository);
 
-      const result = await usecase.execute({ id: event1.id.id });
+      const result = await usecase.execute({ id: event1.id.value });
 
       expect(eventRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();

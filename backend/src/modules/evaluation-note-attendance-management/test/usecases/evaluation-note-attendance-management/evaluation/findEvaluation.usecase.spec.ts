@@ -14,8 +14,8 @@ const MockRepository = () => {
 
 describe('findEvaluation usecase unit test', () => {
   const evaluation1 = new Evaluation({
-    lesson: new Id().id,
-    teacher: new Id().id,
+    lesson: new Id().value,
+    teacher: new Id().value,
     type: 'evaluation',
     value: 10,
   });
@@ -25,7 +25,7 @@ describe('findEvaluation usecase unit test', () => {
       evaluationRepository.find.mockResolvedValue(evaluation1);
       const usecase = new FindEvaluation(evaluationRepository);
 
-      const result = await usecase.execute({ id: evaluation1.id.id });
+      const result = await usecase.execute({ id: evaluation1.id.value });
 
       expect(evaluationRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();

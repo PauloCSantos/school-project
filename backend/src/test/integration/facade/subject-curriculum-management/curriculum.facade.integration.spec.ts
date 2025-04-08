@@ -4,17 +4,17 @@ import CurriculumFacadeFactory from '@/modules/subject-curriculum-management/app
 describe('Curriculum facade integration test', () => {
   const input = {
     name: 'Math',
-    subjectsList: [new Id().id, new Id().id],
+    subjectsList: [new Id().value, new Id().value],
     yearsToComplete: 5,
   };
   const input2 = {
     name: 'Portuguese',
-    subjectsList: [new Id().id, new Id().id],
+    subjectsList: [new Id().value, new Id().value],
     yearsToComplete: 5,
   };
   const input3 = {
     name: 'Japanese',
-    subjectsList: [new Id().id, new Id().id],
+    subjectsList: [new Id().value, new Id().value],
     yearsToComplete: 5,
   };
 
@@ -68,7 +68,7 @@ describe('Curriculum facade integration test', () => {
 
     const result = await facade.addSubjects({
       id: id.id,
-      newSubjectsList: [new Id().id],
+      newSubjectsList: [new Id().value],
     });
 
     expect(result).toBeDefined();

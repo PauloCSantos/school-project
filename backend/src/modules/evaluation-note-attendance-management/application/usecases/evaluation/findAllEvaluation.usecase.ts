@@ -1,9 +1,9 @@
+import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
 import {
   FindAllEvaluationInputDto,
   FindAllEvaluationOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/evaluation-usecase.dto';
-import UseCaseInterface from '../../@shared/use-case.interface';
-import EvaluationGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/evaluation.gateway';
+} from '../../dto/evaluation-usecase.dto';
+import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
 
 export default class FindAllEvaluation
   implements
@@ -21,7 +21,7 @@ export default class FindAllEvaluation
     const results = await this._evaluationRepository.findAll(offset, quantity);
 
     const result = results.map(evaluation => ({
-      id: evaluation.id.id,
+      id: evaluation.id.value,
       teacher: evaluation.teacher,
       lesson: evaluation.lesson,
       type: evaluation.type,

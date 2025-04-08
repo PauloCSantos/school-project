@@ -1,7 +1,7 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import { UserWorkerController } from '../../interface/controller/user-worker.controller';
 import { UserWorkerRoute } from '../../interface/route/user-worker.route';
 
@@ -15,7 +15,7 @@ const mockAuthUserMiddleware = jest.fn(
 
 const mockUserWorkerController = jest.fn(() => {
   return {
-    create: jest.fn().mockResolvedValue({ id: new Id().id }),
+    create: jest.fn().mockResolvedValue({ id: new Id().value }),
     find: jest.fn().mockResolvedValue({
       name: {
         firstName: 'John',
@@ -142,7 +142,9 @@ describe('UserWorkerRoute unit test', () => {
   });
   describe('GET /user-worker/:id', () => {
     it('should find a user by ID', async () => {
-      const response = await supertest(app).get(`/user-worker/${new Id().id}`);
+      const response = await supertest(app).get(
+        `/user-worker/${new Id().value}`
+      );
       expect(response.status).toBe(200);
       expect(userWorkerController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -160,7 +162,7 @@ describe('UserWorkerRoute unit test', () => {
   describe('PATCH /user-worker/:id', () => {
     it('should update a user by ID', async () => {
       const response = await supertest(app)
-        .patch(`/user-worker/${new Id().id}`)
+        .patch(`/user-worker/${new Id().value}`)
         .send({
           address: {
             street: 'Street B',
@@ -179,7 +181,7 @@ describe('UserWorkerRoute unit test', () => {
   describe('DELETE /user-worker/:id', () => {
     it('should delete a user by ID', async () => {
       const response = await supertest(app).delete(
-        `/user-worker/${new Id().id}`
+        `/user-worker/${new Id().value}`
       );
       expect(response.status).toBe(200);
       expect(userWorkerController.delete).toHaveBeenCalled();

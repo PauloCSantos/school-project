@@ -6,7 +6,7 @@ describe('AuthUser unit test', () => {
   const authUserData = {
     email: 'teste@teste.com.br',
     password: 'XpA2Jjd4',
-    masterId: new Id().id,
+    masterId: new Id().value,
     role: 'master' as RoleUsers,
     isHashed: false,
   };

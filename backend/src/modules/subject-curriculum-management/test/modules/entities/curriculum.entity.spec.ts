@@ -10,7 +10,7 @@ describe('Curriculum unit test', () => {
     id: validId,
     name: 'Valid Curriculum',
     yearsToComplete: 5,
-    subjectsList: [id1.id, id2.id, id3.id],
+    subjectsList: [id1.value, id2.value, id3.value],
   };
 
   describe('On fail', () => {
@@ -55,18 +55,22 @@ describe('Curriculum unit test', () => {
   describe('On success', () => {
     it('should add and remove subjects correctly', () => {
       const curriculum = new Curriculum(validCurriculumProps);
-      expect(curriculum.subjectList).toEqual([id1.id, id2.id, id3.id]);
+      expect(curriculum.subjectList).toEqual([id1.value, id2.value, id3.value]);
       const newId = new Id();
-      curriculum.addSubject(newId.id);
+      curriculum.addSubject(newId.value);
       expect(curriculum.subjectList).toEqual([
-        id1.id,
-        id2.id,
-        id3.id,
-        newId.id,
+        id1.value,
+        id2.value,
+        id3.value,
+        newId.value,
       ]);
 
-      curriculum.removeSubject(id2.id);
-      expect(curriculum.subjectList).toEqual([id1.id, id3.id, newId.id]);
+      curriculum.removeSubject(id2.value);
+      expect(curriculum.subjectList).toEqual([
+        id1.value,
+        id3.value,
+        newId.value,
+      ]);
     });
   });
 });

@@ -39,7 +39,7 @@ export default class CreateUserAdministrator
     });
 
     const userVerification = await this._userAdministratorRepository.find(
-      userAdministrator.id.id
+      userAdministrator.id.value
     );
     if (userVerification) throw new Error('User already exists');
 

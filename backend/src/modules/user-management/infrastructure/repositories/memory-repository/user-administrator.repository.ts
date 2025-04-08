@@ -13,7 +13,7 @@ export default class MemoryUserAdministratorRepository
   }
 
   async find(id: string): Promise<UserAdministrator | undefined> {
-    const user = this._administratorUsers.find(user => user.id.id === id);
+    const user = this._administratorUsers.find(user => user.id.value === id);
     if (user) {
       return user;
     } else {
@@ -32,13 +32,13 @@ export default class MemoryUserAdministratorRepository
   }
   async create(userAdministrator: UserAdministrator): Promise<string> {
     this._administratorUsers.push(userAdministrator);
-    return userAdministrator.id.id;
+    return userAdministrator.id.value;
   }
   async update(
     userAdministrator: UserAdministrator
   ): Promise<UserAdministrator> {
     const administratorUserIndex = this._administratorUsers.findIndex(
-      user => user.id.id === userAdministrator.id.id
+      user => user.id.value === userAdministrator.id.value
     );
     if (administratorUserIndex !== -1) {
       return (this._administratorUsers[administratorUserIndex] =
@@ -49,7 +49,7 @@ export default class MemoryUserAdministratorRepository
   }
   async delete(id: string): Promise<string> {
     const administratorUserIndex = this._administratorUsers.findIndex(
-      user => user.id.id === id
+      user => user.id.value === id
     );
     if (administratorUserIndex !== -1) {
       this._administratorUsers.splice(administratorUserIndex, 1);

@@ -9,7 +9,7 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
   }
 
   async find(id: string): Promise<UserWorker | undefined> {
-    const user = this._workerUsers.find(user => user.id.id === id);
+    const user = this._workerUsers.find(user => user.id.value === id);
     if (user) {
       return user;
     } else {
@@ -28,11 +28,11 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
   }
   async create(UserWorker: UserWorker): Promise<string> {
     this._workerUsers.push(UserWorker);
-    return UserWorker.id.id;
+    return UserWorker.id.value;
   }
   async update(UserWorker: UserWorker): Promise<UserWorker> {
     const workerUserIndex = this._workerUsers.findIndex(
-      user => user.id.id === UserWorker.id?.id
+      user => user.id.value === UserWorker.id?.value
     );
     if (workerUserIndex !== -1) {
       return (this._workerUsers[workerUserIndex] = UserWorker);
@@ -42,7 +42,7 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
   }
   async delete(id: string): Promise<string> {
     const workerUserIndex = this._workerUsers.findIndex(
-      user => user.id.id === id
+      user => user.id.value === id
     );
     if (workerUserIndex !== -1) {
       this._workerUsers.splice(workerUserIndex, 1);

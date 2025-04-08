@@ -2,7 +2,7 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { SubjectController } from '../../interface/controller/subject.controller';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import { SubjectRoute } from '../../interface/route/subject.route';
 
 const mockAuthUserMiddleware = jest.fn(
@@ -15,7 +15,7 @@ const mockAuthUserMiddleware = jest.fn(
 
 const mockSubjectController = jest.fn(() => {
   return {
-    create: jest.fn().mockResolvedValue({ id: new Id().id }),
+    create: jest.fn().mockResolvedValue({ id: new Id().value }),
     find: jest.fn().mockResolvedValue({
       name: 'Math',
       description: 'Described a subject',
@@ -32,7 +32,7 @@ const mockSubjectController = jest.fn(() => {
     ]),
     update: jest.fn().mockResolvedValue({
       name: 'Math',
-      subjectsList: [new Id().id, new Id().id, new Id().id],
+      subjectsList: [new Id().value, new Id().value, new Id().value],
       yearsToComplete: 5,
     }),
     delete: jest.fn().mockResolvedValue({
@@ -66,7 +66,7 @@ describe('SubjectRoute unit test', () => {
   });
   describe('GET /subject/:id', () => {
     it('should find a subject by ID', async () => {
-      const response = await supertest(app).get(`/subject/${new Id().id}`);
+      const response = await supertest(app).get(`/subject/${new Id().value}`);
       expect(response.status).toBe(200);
       expect(subjectController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -84,7 +84,7 @@ describe('SubjectRoute unit test', () => {
   describe('PATCH /subject/:id', () => {
     it('should update a subject by ID', async () => {
       const response = await supertest(app)
-        .patch(`/subject/${new Id().id}`)
+        .patch(`/subject/${new Id().value}`)
         .send({
           description: 'New description',
         });
@@ -95,7 +95,9 @@ describe('SubjectRoute unit test', () => {
   });
   describe('DELETE /subject/:id', () => {
     it('should delete a subject by ID', async () => {
-      const response = await supertest(app).delete(`/subject/${new Id().id}`);
+      const response = await supertest(app).delete(
+        `/subject/${new Id().value}`
+      );
       expect(response.status).toBe(200);
       expect(subjectController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined();

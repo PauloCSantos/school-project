@@ -33,7 +33,7 @@ export default class CreateEvent
       type,
     });
 
-    const eventVerification = await this._eventRepository.find(event.id.id);
+    const eventVerification = await this._eventRepository.find(event.id.value);
     if (eventVerification) throw new Error('Event already exists');
 
     const result = await this._eventRepository.create(event);

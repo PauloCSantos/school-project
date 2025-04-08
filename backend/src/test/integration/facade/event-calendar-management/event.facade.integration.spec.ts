@@ -3,7 +3,7 @@ import EventFacadeFactory from '@/modules/event-calendar-management/application/
 
 describe('Event facade integration test', () => {
   const input = {
-    creator: new Id().id,
+    creator: new Id().value,
     name: 'Christmas',
     date: new Date(),
     hour: '08:00' as Hour,
@@ -12,7 +12,7 @@ describe('Event facade integration test', () => {
     place: 'school',
   };
   const input2 = {
-    creator: new Id().id,
+    creator: new Id().value,
     name: 'Party',
     date: new Date(),
     hour: '08:00' as Hour,
@@ -21,7 +21,7 @@ describe('Event facade integration test', () => {
     place: 'school',
   };
   const input3 = {
-    creator: new Id().id,
+    creator: new Id().value,
     name: 'School event',
     date: new Date(),
     hour: '08:00' as Hour,

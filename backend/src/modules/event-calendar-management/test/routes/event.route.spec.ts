@@ -2,7 +2,7 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { EventController } from '../../interface/controller/event.controller';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import { EventRoute } from '../../interface/route/event.route';
 
 const mockAuthUserMiddleware = jest.fn(
@@ -15,9 +15,9 @@ const mockAuthUserMiddleware = jest.fn(
 
 const mockEventController = jest.fn(() => {
   return {
-    create: jest.fn().mockResolvedValue({ id: new Id().id }),
+    create: jest.fn().mockResolvedValue({ id: new Id().value }),
     find: jest.fn().mockResolvedValue({
-      creator: new Id().id,
+      creator: new Id().value,
       name: 'Christmas',
       date: new Date(),
       hour: '08:00' as Hour,
@@ -27,7 +27,7 @@ const mockEventController = jest.fn(() => {
     }),
     findAll: jest.fn().mockResolvedValue([
       {
-        creator: new Id().id,
+        creator: new Id().value,
         name: 'Christmas',
         date: new Date(),
         hour: '08:00' as Hour,
@@ -36,7 +36,7 @@ const mockEventController = jest.fn(() => {
         place: 'school',
       },
       {
-        creator: new Id().id,
+        creator: new Id().value,
         name: 'Holiday',
         date: new Date(),
         hour: '08:00' as Hour,
@@ -46,7 +46,7 @@ const mockEventController = jest.fn(() => {
       },
     ]),
     update: jest.fn().mockResolvedValue({
-      creator: new Id().id,
+      creator: new Id().value,
       name: 'Christmas',
       date: new Date(),
       hour: '08:00' as Hour,
@@ -77,7 +77,7 @@ describe('EventRoute unit test', () => {
       const response = await supertest(app)
         .post('/event')
         .send({
-          creator: new Id().id,
+          creator: new Id().value,
           name: 'Christmas',
           date: new Date(),
           hour: '08:00' as Hour,
@@ -92,7 +92,7 @@ describe('EventRoute unit test', () => {
   });
   describe('GET /event/:id', () => {
     it('should find a event by ID', async () => {
-      const response = await supertest(app).get(`/event/${new Id().id}`);
+      const response = await supertest(app).get(`/event/${new Id().value}`);
       expect(response.status).toBe(200);
       expect(eventController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -110,7 +110,7 @@ describe('EventRoute unit test', () => {
   describe('PATCH /event/:id', () => {
     it('should update a event by ID', async () => {
       const response = await supertest(app)
-        .patch(`/event/${new Id().id}`)
+        .patch(`/event/${new Id().value}`)
         .send({
           description: 'New description',
         });
@@ -121,7 +121,7 @@ describe('EventRoute unit test', () => {
   });
   describe('DELETE /event/:id', () => {
     it('should delete a event by ID', async () => {
-      const response = await supertest(app).delete(`/event/${new Id().id}`);
+      const response = await supertest(app).delete(`/event/${new Id().value}`);
       expect(response.status).toBe(200);
       expect(eventController.delete).toHaveBeenCalled();
       expect(response.body.message).toBeDefined();

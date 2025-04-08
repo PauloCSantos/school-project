@@ -53,7 +53,7 @@ describe('TokenService unit test', () => {
           email: 'teste@teste.com.br',
           password: 'XpA2Jjd4',
           role: 'teacher' as RoleUsers,
-          masterId: new Id().id,
+          masterId: new Id().value,
         },
         authUserService
       );

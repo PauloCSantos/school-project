@@ -8,7 +8,7 @@ type CurriculumMapperProps = FindCurriculumOutputDto & {
 export default class CurriculumMapper {
   static toObj(input: Curriculum): CurriculumMapperProps {
     return {
-      id: input.id.id,
+      id: input.id.value,
       name: input.name,
       yearsToComplete: input.yearsToComplete,
       subjectsList: input.subjectList,

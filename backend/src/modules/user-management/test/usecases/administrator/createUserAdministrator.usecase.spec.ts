@@ -9,7 +9,7 @@ const MockRepository = () => {
     find: jest.fn(),
     findAll: jest.fn(),
     create: jest.fn(userAdministrator =>
-      Promise.resolve(userAdministrator.id.id)
+      Promise.resolve(userAdministrator.id.value)
     ),
     update: jest.fn(),
     delete: jest.fn(),

@@ -5,12 +5,12 @@ import MemoryNoteRepository from '@/modules/evaluation-note-attendance-managemen
 describe('MemoryNoteRepository unit test', () => {
   let repository: MemoryNoteRepository;
 
-  const evaluation1 = new Id().id;
-  const evaluation2 = new Id().id;
-  const evaluation3 = new Id().id;
-  const student1 = new Id().id;
-  const student2 = new Id().id;
-  const student3 = new Id().id;
+  const evaluation1 = new Id().value;
+  const evaluation2 = new Id().value;
+  const evaluation3 = new Id().value;
+  const student1 = new Id().value;
+  const student2 = new Id().value;
+  const student3 = new Id().value;
   const noteValue1 = 10;
   const noteValue2 = 5;
   const noteValue3 = 10;
@@ -37,7 +37,7 @@ describe('MemoryNoteRepository unit test', () => {
 
   describe('On fail', () => {
     it('should received an undefined', async () => {
-      const noteId = new Id().id;
+      const noteId = new Id().value;
       const noteFound = await repository.find(noteId);
 
       expect(noteFound).toBeUndefined();
@@ -53,7 +53,7 @@ describe('MemoryNoteRepository unit test', () => {
       await expect(repository.update(note)).rejects.toThrow('Note not found');
     });
     it('should generate an error when trying to remove the note with the wrong ID', async () => {
-      await expect(repository.delete(new Id().id)).rejects.toThrow(
+      await expect(repository.delete(new Id().value)).rejects.toThrow(
         'Note not found'
       );
     });
@@ -61,7 +61,7 @@ describe('MemoryNoteRepository unit test', () => {
 
   describe('On success', () => {
     it('should find a note', async () => {
-      const noteId = note1.id.id;
+      const noteId = note1.id.value;
       const noteFound = await repository.find(noteId);
 
       expect(noteFound).toBeDefined();
@@ -73,11 +73,11 @@ describe('MemoryNoteRepository unit test', () => {
     it('should create a new note and return its id', async () => {
       const result = await repository.create(note3);
 
-      expect(result).toBe(note3.id.id);
+      expect(result).toBe(note3.id.value);
     });
     it('should update a note and return its new informations', async () => {
       const updatedNote: Note = note2;
-      updatedNote.evaluation = new Id().id;
+      updatedNote.evaluation = new Id().value;
 
       const result = await repository.update(updatedNote);
 
@@ -95,7 +95,7 @@ describe('MemoryNoteRepository unit test', () => {
       expect(allNotes[1].note).toBe(note2.note);
     });
     it('should remove the note', async () => {
-      const response = await repository.delete(note1.id.id);
+      const response = await repository.delete(note1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });

@@ -6,7 +6,7 @@ const MockRepository = () => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
-    create: jest.fn(attendance => Promise.resolve(attendance.id.id)),
+    create: jest.fn(attendance => Promise.resolve(attendance.id.value)),
     update: jest.fn(),
     delete: jest.fn(),
     addStudent: jest.fn(),
@@ -19,8 +19,8 @@ describe('createAttendance usecase unit test', () => {
     date: new Date(),
     day: 'fri' as DayOfWeek,
     hour: '06:50' as Hour,
-    lesson: new Id().id,
-    studentsPresent: [new Id().id, new Id().id, new Id().id],
+    lesson: new Id().value,
+    studentsPresent: [new Id().value, new Id().value, new Id().value],
   };
   const attendance = new Attendance(input);
 

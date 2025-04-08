@@ -86,7 +86,7 @@ describe('MemoryUserAdministratorRepository unit test', () => {
 
   describe('On fail', () => {
     it('should received an undefined', async () => {
-      const userId = new Id().id;
+      const userId = new Id().value;
       const userAdministratorFound = await repository.find(userId);
 
       expect(userAdministratorFound).toBeUndefined();
@@ -107,14 +107,14 @@ describe('MemoryUserAdministratorRepository unit test', () => {
       );
     });
     it('should generate an error when trying to remove the user with the wrong ID', async () => {
-      await expect(repository.delete(new Id().id)).rejects.toThrow(
+      await expect(repository.delete(new Id().value)).rejects.toThrow(
         'User not found'
       );
     });
   });
   describe('On success', () => {
     it('should find a user administrator', async () => {
-      const userId = userAdministrator1.id.id;
+      const userId = userAdministrator1.id.value;
       const userAdministratorFound = await repository.find(userId);
 
       expect(userAdministratorFound).toBeDefined();
@@ -141,7 +141,7 @@ describe('MemoryUserAdministratorRepository unit test', () => {
       });
       const result = await repository.create(userAdministrator);
 
-      expect(result).toBe(userAdministrator.id.id);
+      expect(result).toBe(userAdministrator.id.value);
     });
     it('should update a user and return its new informations', async () => {
       const updateduserAdministrator: UserAdministrator = userAdministrator2;
@@ -171,7 +171,7 @@ describe('MemoryUserAdministratorRepository unit test', () => {
       expect(allAdministratorUsers[1].salary).toBe(userAdministrator2.salary);
     });
     it('should remove the user', async () => {
-      const response = await repository.delete(userAdministrator1.id.id);
+      const response = await repository.delete(userAdministrator1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });

@@ -16,7 +16,7 @@ import { LessonController } from '../../interface/controller/lesson.controller';
 describe('LessonController unit test', () => {
   const mockCreateLesson = jest.fn(() => {
     return {
-      execute: jest.fn().mockResolvedValue(new Id().id),
+      execute: jest.fn().mockResolvedValue(new Id().value),
     } as unknown as CreateLesson;
   });
   const mockFindLesson = jest.fn(() => {
@@ -57,9 +57,9 @@ describe('LessonController unit test', () => {
         {
           name: 'Math advanced II',
           duration: 60,
-          teacher: new Id().id,
-          studentsList: [new Id().id, new Id().id],
-          subject: new Id().id,
+          teacher: new Id().value,
+          studentsList: [new Id().value, new Id().value],
+          subject: new Id().value,
           days: ['mon', 'fri'],
           times: ['15:55', '19:00'],
           semester: 2,
@@ -72,8 +72,8 @@ describe('LessonController unit test', () => {
       execute: jest.fn().mockResolvedValue({
         name: 'Math advanced II',
         duration: 60,
-        teacher: new Id().id,
-        subject: new Id().id,
+        teacher: new Id().value,
+        subject: new Id().value,
         semester: 2,
       }),
     } as unknown as UpdateLesson;
@@ -152,9 +152,9 @@ describe('LessonController unit test', () => {
     const result = await controller.create({
       name: 'Math advanced I',
       duration: 60,
-      teacher: new Id().id,
-      studentsList: [new Id().id, new Id().id, new Id().id],
-      subject: new Id().id,
+      teacher: new Id().value,
+      studentsList: [new Id().value, new Id().value, new Id().value],
+      subject: new Id().value,
       days: ['mon', 'fri'],
       times: ['15:55', '19:00'],
       semester: 2,
@@ -164,7 +164,7 @@ describe('LessonController unit test', () => {
     expect(createLesson.execute).toHaveBeenCalled();
   });
   it('should return a lesson', async () => {
-    const result = await controller.find(new Id());
+    const result = await controller.find({ id: new Id().value });
 
     expect(result).toBeDefined();
     expect(findLesson.execute).toHaveBeenCalled();
@@ -178,7 +178,7 @@ describe('LessonController unit test', () => {
   });
   it('should update a lesson', async () => {
     const result = await controller.update({
-      id: new Id().id,
+      id: new Id().value,
       semester: 1,
     });
 
@@ -187,7 +187,7 @@ describe('LessonController unit test', () => {
   });
   it('should delete a lesson', async () => {
     const result = await controller.delete({
-      id: new Id().id,
+      id: new Id().value,
     });
 
     expect(result).toBeDefined();
@@ -195,8 +195,8 @@ describe('LessonController unit test', () => {
   });
   it('should add students to the curriculum', async () => {
     const result = await controller.addStudents({
-      id: new Id().id,
-      newStudentsList: [new Id().id],
+      id: new Id().value,
+      newStudentsList: [new Id().value],
     });
 
     expect(result).toBeDefined();
@@ -204,8 +204,8 @@ describe('LessonController unit test', () => {
   });
   it('should remove students from the curriculum', async () => {
     const result = await controller.removeStudents({
-      id: new Id().id,
-      studentsListToRemove: [new Id().id, new Id().id],
+      id: new Id().value,
+      studentsListToRemove: [new Id().value, new Id().value],
     });
 
     expect(result).toBeDefined();
@@ -214,7 +214,7 @@ describe('LessonController unit test', () => {
 
   it('should add day to the curriculum', async () => {
     const result = await controller.addDay({
-      id: new Id().id,
+      id: new Id().value,
       newDaysList: ['wed'],
     });
 
@@ -223,7 +223,7 @@ describe('LessonController unit test', () => {
   });
   it('should remove day from the curriculum', async () => {
     const result = await controller.removeDay({
-      id: new Id().id,
+      id: new Id().value,
       daysListToRemove: ['mon', 'fri'],
     });
 
@@ -233,7 +233,7 @@ describe('LessonController unit test', () => {
 
   it('should add time to the curriculum', async () => {
     const result = await controller.addTime({
-      id: new Id().id,
+      id: new Id().value,
       newTimesList: ['20:00'],
     });
 
@@ -242,7 +242,7 @@ describe('LessonController unit test', () => {
   });
   it('should remove time from the curriculum', async () => {
     const result = await controller.removeTime({
-      id: new Id().id,
+      id: new Id().value,
       timesListToRemove: ['15:55', '19:00'],
     });
 

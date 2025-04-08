@@ -33,7 +33,7 @@ export default class UpdateAttendance
       const result = await this._attendanceRepository.update(attendance);
 
       return {
-        id: result.id.id,
+        id: result.id.value,
         lesson: result.lesson,
         date: result.date,
         hour: result.hour,

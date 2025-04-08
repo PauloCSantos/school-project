@@ -26,7 +26,7 @@ export default class CreateNote
     });
 
     const noteVerification = await this._noteRepository.find(
-      noteInstance.id.id
+      noteInstance.id.value
     );
     if (noteVerification) throw new Error('Note already exists');
 

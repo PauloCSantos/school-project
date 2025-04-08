@@ -1,6 +1,6 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { EvaluationController } from '@/modules/evaluation-note-attendance-management/interface/controller/evaluation.controller';
 import { EvaluationRoute } from '@/modules/evaluation-note-attendance-management/interface/route/evaluation.route';
@@ -15,30 +15,30 @@ const mockAuthUserMiddleware = jest.fn(
 
 const mockEvaluationController = jest.fn(() => {
   return {
-    create: jest.fn().mockResolvedValue({ id: new Id().id }),
+    create: jest.fn().mockResolvedValue({ id: new Id().value }),
     find: jest.fn().mockResolvedValue({
-      lesson: new Id().id,
-      teacher: new Id().id,
+      lesson: new Id().value,
+      teacher: new Id().value,
       type: 'evaluation',
       value: 10,
     }),
     findAll: jest.fn().mockResolvedValue([
       {
-        lesson: new Id().id,
-        teacher: new Id().id,
+        lesson: new Id().value,
+        teacher: new Id().value,
         type: 'evaluation',
         value: 10,
       },
       {
-        lesson: new Id().id,
-        teacher: new Id().id,
+        lesson: new Id().value,
+        teacher: new Id().value,
         type: 'evaluation',
         value: 10,
       },
     ]),
     update: jest.fn().mockResolvedValue({
-      lesson: new Id().id,
-      teacher: new Id().id,
+      lesson: new Id().value,
+      teacher: new Id().value,
       type: 'evaluation',
       value: 10,
     }),
@@ -63,8 +63,8 @@ describe('EvaluationRoute unit test', () => {
   describe('POST /evaluation', () => {
     it('should create a evaluation', async () => {
       const response = await supertest(app).post('/evaluation').send({
-        lesson: new Id().id,
-        teacher: new Id().id,
+        lesson: new Id().value,
+        teacher: new Id().value,
         type: 'evaluation',
         value: 10,
       });
@@ -75,7 +75,9 @@ describe('EvaluationRoute unit test', () => {
   });
   describe('GET /evaluation/:id', () => {
     it('should find a evaluation by ID', async () => {
-      const response = await supertest(app).get(`/evaluation/${new Id().id}`);
+      const response = await supertest(app).get(
+        `/evaluation/${new Id().value}`
+      );
       expect(response.status).toBe(200);
       expect(evaluationController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -93,7 +95,7 @@ describe('EvaluationRoute unit test', () => {
   describe('PATCH /evaluation/:id', () => {
     it('should update a evaluation by ID', async () => {
       const response = await supertest(app)
-        .patch(`/evaluation/${new Id().id}`)
+        .patch(`/evaluation/${new Id().value}`)
         .send({
           description: 'New description',
         });
@@ -105,7 +107,7 @@ describe('EvaluationRoute unit test', () => {
   describe('DELETE /evaluation/:id', () => {
     it('should delete a evaluation by ID', async () => {
       const response = await supertest(app).delete(
-        `/evaluation/${new Id().id}`
+        `/evaluation/${new Id().value}`
       );
       expect(response.status).toBe(200);
       expect(evaluationController.delete).toHaveBeenCalled();

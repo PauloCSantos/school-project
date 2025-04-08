@@ -23,11 +23,11 @@ const MockRepository = () => {
 describe('RemoveSubjects use case unit test', () => {
   const curriculum = new Curriculum({
     name: 'Math',
-    subjectsList: [new Id().id, new Id().id],
+    subjectsList: [new Id().value, new Id().value],
     yearsToComplete: 5,
   });
   const input = {
-    id: curriculum.id.id,
+    id: curriculum.id.value,
     subjectsListToRemove: [curriculum.subjectList[0]],
   };
 
@@ -51,7 +51,7 @@ describe('RemoveSubjects use case unit test', () => {
       const usecase = new RemoveSubjects(curriculumRepository);
 
       await expect(
-        usecase.execute({ ...input, subjectsListToRemove: [new Id().id] })
+        usecase.execute({ ...input, subjectsListToRemove: [new Id().value] })
       ).rejects.toThrow('This subject is not included in the curriculum');
       expect(curriculumRepository.find).toHaveBeenCalledWith(input.id);
       expect(curriculumRepository.removeSubjects).not.toHaveBeenCalled();

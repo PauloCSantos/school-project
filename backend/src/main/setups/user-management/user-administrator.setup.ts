@@ -5,7 +5,7 @@ import FindAllUserAdministrator from '@/modules/user-management/application/usec
 import FindUserAdministrator from '@/modules/user-management/application/usecases/administrator/findUserAdministrator.usecase';
 import UpdateUserAdministrator from '@/modules/user-management/application/usecases/administrator/updateUserAdministrator.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryUserAdministratorRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user-administrator.repository';
 import { UserAdministratorController } from '@/modules/user-management/interface/controller/user-administrator.controller';
 import { UserAdministratorRoute } from '@/modules/user-management/interface/route/user-administrator.route';

@@ -17,7 +17,7 @@ const MockRepository = () => {
 describe('findCurriculum usecase unit test', () => {
   const curriculum1 = new Curriculum({
     name: 'Software Eng',
-    subjectsList: [new Id().id, new Id().id],
+    subjectsList: [new Id().value, new Id().value],
     yearsToComplete: 5,
   });
 
@@ -27,7 +27,7 @@ describe('findCurriculum usecase unit test', () => {
       curriculumRepository.find.mockResolvedValue(curriculum1);
       const usecase = new FindCurriculum(curriculumRepository);
 
-      const result = await usecase.execute({ id: curriculum1.id.id });
+      const result = await usecase.execute({ id: curriculum1.id.value });
 
       expect(curriculumRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();

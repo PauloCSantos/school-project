@@ -23,7 +23,7 @@ export default class FindUserMaster
     const response = await this._userMasterRepository.find(id);
     if (response) {
       return {
-        id: response.id.id,
+        id: response.id.value,
         name: {
           fullName: response.name.fullName(),
           shortName: response.name.shortName(),

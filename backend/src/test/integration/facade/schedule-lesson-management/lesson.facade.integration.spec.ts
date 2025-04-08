@@ -5,9 +5,9 @@ describe('Lesson facade integration test', () => {
   const input = {
     name: 'Math advanced I',
     duration: 60,
-    teacher: new Id().id,
-    studentsList: [new Id().id, new Id().id, new Id().id],
-    subject: new Id().id,
+    teacher: new Id().value,
+    studentsList: [new Id().value, new Id().value, new Id().value],
+    subject: new Id().value,
     days: ['sun', 'wed'] as DayOfWeek[],
     times: ['15:55', '07:00'] as Hour[],
     semester: 1 as 1 | 2,
@@ -15,9 +15,9 @@ describe('Lesson facade integration test', () => {
   const input2 = {
     name: 'Math advanced II',
     duration: 60,
-    teacher: new Id().id,
-    studentsList: [new Id().id, new Id().id, new Id().id],
-    subject: new Id().id,
+    teacher: new Id().value,
+    studentsList: [new Id().value, new Id().value, new Id().value],
+    subject: new Id().value,
     days: ['mon', 'fri'] as DayOfWeek[],
     times: ['15:55', '19:00'] as Hour[],
     semester: 2 as 1 | 2,
@@ -25,9 +25,9 @@ describe('Lesson facade integration test', () => {
   const input3 = {
     name: 'Math advanced III',
     duration: 60,
-    teacher: new Id().id,
-    studentsList: [new Id().id, new Id().id, new Id().id],
-    subject: new Id().id,
+    teacher: new Id().value,
+    studentsList: [new Id().value, new Id().value, new Id().value],
+    subject: new Id().value,
     days: ['mon'] as DayOfWeek[],
     times: ['13:00'] as Hour[],
     semester: 2 as 1 | 2,
@@ -83,7 +83,7 @@ describe('Lesson facade integration test', () => {
 
     const result = await facade.addStudents({
       id: id.id,
-      newStudentsList: [new Id().id],
+      newStudentsList: [new Id().value],
     });
 
     expect(result).toBeDefined();

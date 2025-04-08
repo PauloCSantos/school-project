@@ -14,8 +14,8 @@ const MockRepository = () => {
 
 describe('deleteEvaluation usecase unit test', () => {
   const input = {
-    lesson: new Id().id,
-    teacher: new Id().id,
+    lesson: new Id().value,
+    teacher: new Id().value,
     type: 'evaluation',
     value: 10,
   };
@@ -40,7 +40,7 @@ describe('deleteEvaluation usecase unit test', () => {
       evaluationRepository.find.mockResolvedValue(evaluation);
       const usecase = new DeleteEvaluation(evaluationRepository);
       const result = await usecase.execute({
-        id: evaluation.id.id,
+        id: evaluation.id.value,
       });
 
       expect(evaluationRepository.delete).toHaveBeenCalled();

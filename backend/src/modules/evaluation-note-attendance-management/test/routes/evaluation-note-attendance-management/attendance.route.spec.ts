@@ -1,6 +1,6 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express-http';
+import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { AttendanceController } from '@/modules/evaluation-note-attendance-management/interface/controller/attendance.controller';
 import { AttendanceRoute } from '@/modules/evaluation-note-attendance-management/interface/route/attendance.route';
@@ -15,35 +15,35 @@ const mockAuthUserMiddleware = jest.fn(
 
 const mockAttendanceController = jest.fn(() => {
   return {
-    create: jest.fn().mockResolvedValue({ id: new Id().id }),
+    create: jest.fn().mockResolvedValue({ id: new Id().value }),
     find: jest.fn().mockResolvedValue({
       date: new Date(),
       day: 'fri' as DayOfWeek,
       hour: '06:50' as Hour,
-      lesson: new Id().id,
-      studentsPresent: [new Id().id, new Id().id, new Id().id],
+      lesson: new Id().value,
+      studentsPresent: [new Id().value, new Id().value, new Id().value],
     }),
     findAll: jest.fn().mockResolvedValue([
       {
         date: new Date(),
         day: 'fri' as DayOfWeek,
         hour: '06:50' as Hour,
-        lesson: new Id().id,
-        studentsPresent: [new Id().id, new Id().id, new Id().id],
+        lesson: new Id().value,
+        studentsPresent: [new Id().value, new Id().value, new Id().value],
       },
       {
         date: new Date(),
         day: 'fri' as DayOfWeek,
         hour: '06:50' as Hour,
-        lesson: new Id().id,
-        studentsPresent: [new Id().id, new Id().id, new Id().id],
+        lesson: new Id().value,
+        studentsPresent: [new Id().value, new Id().value, new Id().value],
       },
     ]),
     update: jest.fn().mockResolvedValue({
       date: new Date(),
       day: 'fri' as DayOfWeek,
       hour: '06:50' as Hour,
-      lesson: new Id().id,
+      lesson: new Id().value,
     }),
     delete: jest.fn().mockResolvedValue({
       message: 'Operação concluída com sucesso',
@@ -73,8 +73,8 @@ describe('AttendanceRoute unit test', () => {
           date: new Date('02/10/26'),
           day: 'fri' as DayOfWeek,
           hour: '06:50' as Hour,
-          lesson: new Id().id,
-          studentsPresent: [new Id().id, new Id().id, new Id().id],
+          lesson: new Id().value,
+          studentsPresent: [new Id().value, new Id().value, new Id().value],
         });
       expect(response.status).toBe(201);
       expect(attendanceController.create).toHaveBeenCalled();
@@ -83,7 +83,9 @@ describe('AttendanceRoute unit test', () => {
   });
   describe('GET /attendance/:id', () => {
     it('should find a attendance by ID', async () => {
-      const response = await supertest(app).get(`/attendance/${new Id().id}`);
+      const response = await supertest(app).get(
+        `/attendance/${new Id().value}`
+      );
       expect(response.status).toBe(200);
       expect(attendanceController.find).toHaveBeenCalled();
       expect(response.body).toBeDefined();
@@ -101,7 +103,7 @@ describe('AttendanceRoute unit test', () => {
   describe('PATCH /attendance/:id', () => {
     it('should update a attendance by ID', async () => {
       const response = await supertest(app)
-        .patch(`/attendance/${new Id().id}`)
+        .patch(`/attendance/${new Id().value}`)
         .send({
           date: new Date(),
         });
@@ -113,7 +115,7 @@ describe('AttendanceRoute unit test', () => {
   describe('DELETE /attendance/:id', () => {
     it('should delete a attendance by ID', async () => {
       const response = await supertest(app).delete(
-        `/attendance/${new Id().id}`
+        `/attendance/${new Id().value}`
       );
       expect(response.status).toBe(200);
       expect(attendanceController.delete).toHaveBeenCalled();
@@ -125,8 +127,8 @@ describe('AttendanceRoute unit test', () => {
       const response = await supertest(app)
         .post('/attendance/add/students')
         .send({
-          id: new Id().id,
-          newStudentsList: [new Id().id],
+          id: new Id().value,
+          newStudentsList: [new Id().value],
         });
       expect(response.status).toBe(201);
       expect(attendanceController.addStudents).toHaveBeenCalled();
@@ -138,8 +140,8 @@ describe('AttendanceRoute unit test', () => {
       const response = await supertest(app)
         .post('/attendance/remove/students')
         .send({
-          id: new Id().id,
-          studentsListToRemove: [new Id().id, new Id().id],
+          id: new Id().value,
+          studentsListToRemove: [new Id().value, new Id().value],
         });
       expect(response.status).toBe(201);
       expect(attendanceController.removeStudents).toHaveBeenCalled();

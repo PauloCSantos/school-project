@@ -1,9 +1,9 @@
+import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
 import {
   FindAllNoteInputDto,
   FindAllNoteOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/note-usecase.dto';
-import UseCaseInterface from '../../@shared/use-case.interface';
-import NoteGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/note.gateway';
+} from '../../dto/note-usecase.dto';
+import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
 
 export default class FindAllNote
   implements UseCaseInterface<FindAllNoteInputDto, FindAllNoteOutputDto>
@@ -20,7 +20,7 @@ export default class FindAllNote
     const results = await this._noteRepository.findAll(offset, quantity);
 
     const result = results.map(note => ({
-      id: note.id.id,
+      id: note.id.value,
       evaluation: note.evaluation,
       note: note.note,
       student: note.student,

@@ -17,7 +17,7 @@ const MockRepository = () => {
 describe('deleteCurriculum usecase unit test', () => {
   const input = {
     name: 'Math',
-    subjectsList: [new Id().id, new Id().id, new Id().id],
+    subjectsList: [new Id().value, new Id().value, new Id().value],
     yearsToComplete: 5,
   };
 
@@ -45,7 +45,7 @@ describe('deleteCurriculum usecase unit test', () => {
       curriculumRepository.find.mockResolvedValue(curriculum);
       const usecase = new DeleteCurriculum(curriculumRepository);
       const result = await usecase.execute({
-        id: curriculum.id.id,
+        id: curriculum.id.value,
       });
 
       expect(curriculumRepository.delete).toHaveBeenCalled();

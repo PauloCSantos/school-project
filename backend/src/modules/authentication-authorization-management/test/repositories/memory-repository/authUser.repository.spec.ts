@@ -19,7 +19,7 @@ describe('MemoryAuthUserRepository unit test', () => {
       email: 'teste2@teste.com.br',
       password: '123456',
       role: 'administrator',
-      masterId: new Id().id,
+      masterId: new Id().value,
     },
     authUserService
   );

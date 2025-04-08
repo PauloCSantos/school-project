@@ -22,13 +22,13 @@ const MockRepository = () => {
 
 describe('AddLessons use case unit test', () => {
   const schedule = new Schedule({
-    student: new Id().id,
-    curriculum: new Id().id,
-    lessonsList: [new Id().id, new Id().id, new Id().id],
+    student: new Id().value,
+    curriculum: new Id().value,
+    lessonsList: [new Id().value, new Id().value, new Id().value],
   });
   const input = {
-    id: schedule.id.id,
-    newLessonsList: [new Id().id, new Id().id, new Id().id],
+    id: schedule.id.value,
+    newLessonsList: [new Id().value, new Id().value, new Id().value],
   };
 
   describe('On fail', () => {

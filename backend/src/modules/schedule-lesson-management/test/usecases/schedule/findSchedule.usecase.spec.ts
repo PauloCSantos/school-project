@@ -16,9 +16,9 @@ const MockRepository = () => {
 
 describe('findSchedule usecase unit test', () => {
   const schedule1 = new Schedule({
-    student: new Id().id,
-    curriculum: new Id().id,
-    lessonsList: [new Id().id, new Id().id, new Id().id],
+    student: new Id().value,
+    curriculum: new Id().value,
+    lessonsList: [new Id().value, new Id().value, new Id().value],
   });
 
   describe('On success', () => {
@@ -27,7 +27,7 @@ describe('findSchedule usecase unit test', () => {
       scheduleRepository.find.mockResolvedValue(schedule1);
       const usecase = new FindSchedule(scheduleRepository);
 
-      const result = await usecase.execute({ id: schedule1.id.id });
+      const result = await usecase.execute({ id: schedule1.id.value });
 
       expect(scheduleRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();

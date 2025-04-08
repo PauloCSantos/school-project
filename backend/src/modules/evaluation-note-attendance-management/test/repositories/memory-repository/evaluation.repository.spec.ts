@@ -5,12 +5,12 @@ import MemoryEvaluationRepository from '@/modules/evaluation-note-attendance-man
 describe('MemoryEvaluationRepository unit test', () => {
   let repository: MemoryEvaluationRepository;
 
-  const teacher1 = new Id().id;
-  const teacher2 = new Id().id;
-  const teacher3 = new Id().id;
-  const lesson1 = new Id().id;
-  const lesson2 = new Id().id;
-  const lesson3 = new Id().id;
+  const teacher1 = new Id().value;
+  const teacher2 = new Id().value;
+  const teacher3 = new Id().value;
+  const lesson1 = new Id().value;
+  const lesson2 = new Id().value;
+  const lesson3 = new Id().value;
   const type1 = 'test';
   const type2 = 'homework';
   const type3 = 'homework';
@@ -43,7 +43,7 @@ describe('MemoryEvaluationRepository unit test', () => {
 
   describe('On fail', () => {
     it('should received an undefined', async () => {
-      const evaluationId = new Id().id;
+      const evaluationId = new Id().value;
       const evaluationFound = await repository.find(evaluationId);
 
       expect(evaluationFound).toBeUndefined();
@@ -62,7 +62,7 @@ describe('MemoryEvaluationRepository unit test', () => {
       );
     });
     it('should generate an error when trying to remove the evaluation with the wrong ID', async () => {
-      await expect(repository.delete(new Id().id)).rejects.toThrow(
+      await expect(repository.delete(new Id().value)).rejects.toThrow(
         'Evaluation not found'
       );
     });
@@ -70,7 +70,7 @@ describe('MemoryEvaluationRepository unit test', () => {
 
   describe('On success', () => {
     it('should find a evaluation', async () => {
-      const evaluationId = evaluation1.id.id;
+      const evaluationId = evaluation1.id.value;
       const evaluationFound = await repository.find(evaluationId);
 
       expect(evaluationFound).toBeDefined();
@@ -83,11 +83,11 @@ describe('MemoryEvaluationRepository unit test', () => {
     it('should create a new evaluation and return its id', async () => {
       const result = await repository.create(evaluation3);
 
-      expect(result).toBe(evaluation3.id.id);
+      expect(result).toBe(evaluation3.id.value);
     });
     it('should update a evaluation and return its new informations', async () => {
       const updatedEvaluation: Evaluation = evaluation2;
-      updatedEvaluation.teacher = new Id().id;
+      updatedEvaluation.teacher = new Id().value;
 
       const result = await repository.update(updatedEvaluation);
 
@@ -107,7 +107,7 @@ describe('MemoryEvaluationRepository unit test', () => {
       expect(allEvaluations[1].value).toBe(evaluation2.value);
     });
     it('should remove the evaluation', async () => {
-      const response = await repository.delete(evaluation1.id.id);
+      const response = await repository.delete(evaluation1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });

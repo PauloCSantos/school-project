@@ -40,7 +40,7 @@ describe('findUserAdministrator usecase unit test', () => {
       userAdministratorRepository.find.mockResolvedValue(userAdministrator1);
       const usecase = new FindUserAdministrator(userAdministratorRepository);
 
-      const result = await usecase.execute({ id: userAdministrator1.id.id });
+      const result = await usecase.execute({ id: userAdministrator1.id.value });
 
       expect(userAdministratorRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();

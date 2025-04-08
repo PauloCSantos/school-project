@@ -1,9 +1,9 @@
+import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
 import {
   UpdateEvaluationInputDto,
   UpdateEvaluationOutputDto,
-} from '@/application/dto/evaluation-note-attendance-management/evaluation-usecase.dto';
-import UseCaseInterface from '../../@shared/use-case.interface';
-import EvaluationGateway from '@/infraestructure/gateway/evaluation-note-attendance-management/evaluation.gateway';
+} from '../../dto/evaluation-usecase.dto';
+import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
 
 export default class UpdateEvaluation
   implements
@@ -33,7 +33,7 @@ export default class UpdateEvaluation
       const result = await this._evaluationRepository.update(evaluation);
 
       return {
-        id: result.id.id,
+        id: result.id.value,
         teacher: result.teacher,
         lesson: result.lesson,
         type: result.type,

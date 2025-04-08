@@ -25,7 +25,7 @@ export default class CreateSubject
     });
 
     const subjectVerification = await this._subjectRepository.find(
-      subject.id.id
+      subject.id.value
     );
     if (subjectVerification) throw new Error('Subject already exists');
 

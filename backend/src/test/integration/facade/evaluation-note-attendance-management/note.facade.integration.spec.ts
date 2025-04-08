@@ -3,18 +3,18 @@ import NoteFacadeFactory from '@/modules/evaluation-note-attendance-management/a
 
 describe('Note facade integration test', () => {
   const input = {
-    evaluation: new Id().id,
-    student: new Id().id,
+    evaluation: new Id().value,
+    student: new Id().value,
     note: 10,
   };
   const input2 = {
-    evaluation: new Id().id,
-    student: new Id().id,
+    evaluation: new Id().value,
+    student: new Id().value,
     note: 10,
   };
   const input3 = {
-    evaluation: new Id().id,
-    student: new Id().id,
+    evaluation: new Id().value,
+    student: new Id().value,
     note: 10,
   };
 

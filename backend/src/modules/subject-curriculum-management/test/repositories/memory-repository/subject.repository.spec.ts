@@ -31,7 +31,7 @@ describe('MemorySubjectRepository unit test', () => {
 
   describe('On fail', () => {
     it('should received an undefined', async () => {
-      const subjectId = new Id().id;
+      const subjectId = new Id().value;
       const subjectFound = await repository.find(subjectId);
 
       expect(subjectFound).toBeUndefined();
@@ -48,14 +48,14 @@ describe('MemorySubjectRepository unit test', () => {
       );
     });
     it('should generate an error when trying to remove the subject with the wrong ID', async () => {
-      await expect(repository.delete(new Id().id)).rejects.toThrow(
+      await expect(repository.delete(new Id().value)).rejects.toThrow(
         'Subject not found'
       );
     });
   });
   describe('On success', () => {
     it('should find a subject', async () => {
-      const subjectId = subject1.id.id;
+      const subjectId = subject1.id.value;
       const subjectFound = await repository.find(subjectId);
 
       expect(subjectFound).toBeDefined();
@@ -67,7 +67,7 @@ describe('MemorySubjectRepository unit test', () => {
     it('should create a new subject and return its id', async () => {
       const result = await repository.create(subject3);
 
-      expect(result).toBe(subject3.id.id);
+      expect(result).toBe(subject3.id.value);
     });
     it('should update a subject and return its new informations', async () => {
       const updatedSubject: Subject = subject2;
@@ -88,7 +88,7 @@ describe('MemorySubjectRepository unit test', () => {
       expect(allSubjects[1].description).toBe(subject2.description);
     });
     it('should remove the subject', async () => {
-      const response = await repository.delete(subject1.id.id);
+      const response = await repository.delete(subject1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });
