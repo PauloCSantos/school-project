@@ -2,8 +2,8 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
-import UserWorker from '@/modules/user-management/domain/entity/user-worker.entity';
-import MemoryUserWorkerRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user-worker.repository';
+import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
+import MemoryUserWorkerRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/worker.repository';
 
 describe('MemoryUserWorkerRepository unit test', () => {
   let repository: MemoryUserWorkerRepository;

@@ -3,7 +3,7 @@ import DeleteUserStudent from '../../application/usecases/student/deleteUserStud
 import FindAllUserStudent from '../../application/usecases/student/findAllUserStudent.usecase';
 import FindUserStudent from '../../application/usecases/student/findUserStudent.usecase';
 import UpdateUserStudent from '../../application/usecases/student/updateUserStudent.usecase';
-import { UserStudentController } from '../../interface/controller/user-student.controller';
+import { UserStudentController } from '../../interface/controller/student.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
 describe('UserStudentController unit test', () => {

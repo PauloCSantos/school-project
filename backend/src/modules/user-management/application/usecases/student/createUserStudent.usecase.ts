@@ -1,10 +1,10 @@
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
-import UserStudent from '@/modules/user-management/domain/entity/user-student.entity';
+import UserStudent from '@/modules/user-management/domain/entity/student.entity';
 import {
   CreateUserStudentInputDto,
   CreateUserStudentOutputDto,
 } from '../../dto/student-usecase.dto';
-import UserStudentGateway from '@/modules/user-management/infrastructure/gateway/user-student.gateway';
+import UserStudentGateway from '@/modules/user-management/infrastructure/gateway/student.gateway';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 

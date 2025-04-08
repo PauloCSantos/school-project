@@ -3,7 +3,7 @@ import {
   FindUserTeacherInputDto,
   FindUserTeacherOutputDto,
 } from '../../dto/teacher-usecase.dto';
-import UserTeacherGateway from '@/modules/user-management/infrastructure/gateway/user-teacher.gateway';
+import UserTeacherGateway from '@/modules/user-management/infrastructure/gateway/teacher.gateway';
 
 export default class FindUserTeacher
   implements

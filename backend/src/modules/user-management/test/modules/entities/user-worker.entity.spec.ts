@@ -1,7 +1,7 @@
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
-import UserWorker from '@/modules/user-management/domain/entity/user-worker.entity';
+import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
 
 describe('UserWorker unit test', () => {
   const validSalary = new Salary({ salary: 5000, currency: 'R$' });

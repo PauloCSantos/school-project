@@ -1,10 +1,10 @@
+import MemoryUserWorkerRepository from '../../infrastructure/repositories/memory-repository/worker.repository';
 import WorkerFacade from '../facade/facade/worker.facade';
 import CreateUserWorker from '../usecases/worker/createUserWorker.usecase';
 import DeleteUserWorker from '../usecases/worker/deleteUserWorker.usecase';
 import FindAllUserWorker from '../usecases/worker/findAllUserWorker.usecase';
 import FindUserWorker from '../usecases/worker/findUserWorker.usecase';
 import UpdateUserWorker from '../usecases/worker/updateUserWorker.usecase';
-import MemoryUserWorkerRepository from '../../infrastructure/repositories/memory-repository/user-worker.repository';
 
 export default class WorkerFacadeFactory {
   static create(): WorkerFacade {

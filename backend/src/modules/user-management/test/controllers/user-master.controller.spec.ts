@@ -1,7 +1,7 @@
 import CreateUserMaster from '../../application/usecases/master/createUserMaster.usecase';
 import FindUserMaster from '../../application/usecases/master/findUserMaster.usecase';
 import UpdateUserMaster from '../../application/usecases/master/updateUserMaster.usecase';
-import { UserMasterController } from '../../interface/controller/user-master.controller';
+import { UserMasterController } from '../../interface/controller/master.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
 describe('UserMasterController unit test', () => {

@@ -1,8 +1,8 @@
+import MemoryUserMasterRepository from '../../infrastructure/repositories/memory-repository/master.repository';
 import MasterFacade from '../facade/facade/master.facade';
 import CreateUserMaster from '../usecases/master/createUserMaster.usecase';
 import FindUserMaster from '../usecases/master/findUserMaster.usecase';
 import UpdateUserMaster from '../usecases/master/updateUserMaster.usecase';
-import MemoryUserMasterRepository from '../../infrastructure/repositories/memory-repository/user-master.repository';
 
 export default class MasterFacadeFactory {
   static create(): MasterFacade {

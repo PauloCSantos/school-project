@@ -2,7 +2,7 @@ import FindUserTeacher from '@/modules/user-management/application/usecases/teac
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
-import UserTeacher from '@/modules/user-management/domain/entity/user-teacher.entity';
+import UserTeacher from '@/modules/user-management/domain/entity/teacher.entity';
 
 const MockRepository = () => {
   return {

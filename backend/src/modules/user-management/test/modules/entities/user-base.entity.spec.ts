@@ -1,7 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import UserBase, {
   UserBaseProps,
-} from '@/modules/user-management/domain/@shared/entity/user-base.entity';
+} from '@/modules/user-management/domain/@shared/entity/base-user.entity';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 

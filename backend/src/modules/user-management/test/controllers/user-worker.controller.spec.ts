@@ -3,7 +3,7 @@ import DeleteUserWorker from '../../application/usecases/worker/deleteUserWorker
 import FindAllUserWorker from '../../application/usecases/worker/findAllUserWorker.usecase';
 import FindUserWorker from '../../application/usecases/worker/findUserWorker.usecase';
 import UpdateUserWorker from '../../application/usecases/worker/updateUserWorker.usecase';
-import { UserWorkerController } from '../../interface/controller/user-worker.controller';
+import { UserWorkerController } from '../../interface/controller/worker.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
 describe('UserWorkerController unit test', () => {

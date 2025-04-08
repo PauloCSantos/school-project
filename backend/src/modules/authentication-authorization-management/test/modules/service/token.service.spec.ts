@@ -1,6 +1,6 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import AuthUser from '@/modules/authentication-authorization-management/domain/entity/authUser.entity';
-import AuthUserService from '@/modules/authentication-authorization-management/domain/service/authUser-entity.service';
+import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
+import AuthUserService from '@/modules/authentication-authorization-management/domain/service/user-entity.service';
 import TokenService from '@/modules/authentication-authorization-management/domain/service/token.service';
 
 describe('TokenService unit test', () => {

@@ -6,9 +6,9 @@ import FindUserStudent from '@/modules/user-management/application/usecases/stud
 import UpdateUserStudent from '@/modules/user-management/application/usecases/student/updateUserStudent.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
-import MemoryUserStudentRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user-student.repository';
-import { UserStudentController } from '@/modules/user-management/interface/controller/user-student.controller';
-import { UserStudentRoute } from '@/modules/user-management/interface/route/user-student.route';
+import MemoryUserStudentRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/student.repository';
+import { UserStudentController } from '@/modules/user-management/interface/controller/student.controller';
+import { UserStudentRoute } from '@/modules/user-management/interface/route/student.route';
 
 export default function initializeUserStudent(express: ExpressHttp): void {
   const userStudentRepository = new MemoryUserStudentRepository();

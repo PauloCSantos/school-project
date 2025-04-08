@@ -1,14 +1,14 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import CreateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/createAuthUser.usecase';
-import DeleteAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/deleteAuthUser.usecase';
-import FindAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/findAuthUser.usecase';
-import LoginAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/loginAuthUser.usecase';
-import UpdateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/updateAuthUser.usecase';
+import CreateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/create-user.usecase';
+import DeleteAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/delete-user.usecase';
+import FindAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/find-user.usecase';
+import LoginAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/login-user.usecase';
+import UpdateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/update-user.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
-import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/authUser.repository';
-import AuthUserController from '@/modules/authentication-authorization-management/interface/controller/authUser.controller';
-import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/authUser.route';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/user.repository';
+import AuthUserController from '@/modules/authentication-authorization-management/interface/controller/user.controller';
+import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/user.route';
 
 export default function initializeAuthUser(express: ExpressHttp): void {
   const authUserRepository = new MemoryAuthUserRepository();

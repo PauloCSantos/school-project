@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import AuthUser from '../entity/authUser.entity';
+import AuthUser from '../entity/user.entity';
 
 type TokenDecodedProps = {
   email: string;

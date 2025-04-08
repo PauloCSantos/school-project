@@ -3,7 +3,7 @@ import {
   UpdateUserWorkerInputDto,
   UpdateUserWorkerOutputDto,
 } from '../../dto/worker-usecase.dto';
-import UserWorkerGateway from '@/modules/user-management/infrastructure/gateway/user-worker.gateway';
+import UserWorkerGateway from '@/modules/user-management/infrastructure/gateway/worker.gateway';
 
 export default class UpdateUserWorker
   implements
