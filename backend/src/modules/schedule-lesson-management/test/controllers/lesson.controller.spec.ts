@@ -1,16 +1,16 @@
-import AddStudents from '../../application/usecases/lesson/addStudents.usecase';
-import AddTime from '../../application/usecases/lesson/addTime.usecase';
-import CreateLesson from '../../application/usecases/lesson/createLesson.usecase';
-import DeleteLesson from '../../application/usecases/lesson/deleteLesson.usecase';
-import FindAllLesson from '../../application/usecases/lesson/findAllLesson.usecase';
-import FindLesson from '../../application/usecases/lesson/findLesson.usecase';
-import RemoveDay from '../../application/usecases/lesson/removeDay.usecase';
-import RemoveStudents from '../../application/usecases/lesson/removeStudents.usecase';
-import RemoveTime from '../../application/usecases/lesson/removeTime.usecase';
-import UpdateLesson from '../../application/usecases/lesson/updateLesson.usecase';
+import AddStudents from '../../application/usecases/lesson/add-students.usecase';
+import AddTime from '../../application/usecases/lesson/add-time.usecase';
+import CreateLesson from '../../application/usecases/lesson/create.usecase';
+import DeleteLesson from '../../application/usecases/lesson/delete.usecase';
+import FindAllLesson from '../../application/usecases/lesson/find-all.usecase';
+import FindLesson from '../../application/usecases/lesson/find.usecase';
+import RemoveDay from '../../application/usecases/lesson/remove-day.usecase';
+import RemoveStudents from '../../application/usecases/lesson/remove-students.usecase';
+import RemoveTime from '../../application/usecases/lesson/remove-time.usecase';
+import UpdateLesson from '../../application/usecases/lesson/update.usecase';
 
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import AddDay from '../../application/usecases/lesson/addDay.usecase';
+import AddDay from '../../application/usecases/lesson/add-day.usecase';
 import { LessonController } from '../../interface/controller/lesson.controller';
 
 describe('LessonController unit test', () => {

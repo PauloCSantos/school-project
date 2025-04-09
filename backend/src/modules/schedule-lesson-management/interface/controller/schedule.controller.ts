@@ -14,13 +14,13 @@ import {
   UpdateScheduleInputDto,
   UpdateScheduleOutputDto,
 } from '../../application/dto/schedule-usecase.dto';
-import AddLessons from '../../application/usecases/schedule/addLessons.usecase';
-import CreateSchedule from '../../application/usecases/schedule/createSchedule.usecase';
-import DeleteSchedule from '../../application/usecases/schedule/deleteSchedule.usecase';
-import FindAllSchedule from '../../application/usecases/schedule/findAllSchedule.usecase';
-import FindSchedule from '../../application/usecases/schedule/findSchedule.usecase';
-import RemoveLessons from '../../application/usecases/schedule/removeLessons.usecase';
-import UpdateSchedule from '../../application/usecases/schedule/updateSchedule.usecase';
+import AddLessons from '../../application/usecases/schedule/add-lessons.usecase';
+import CreateSchedule from '../../application/usecases/schedule/create.usecase';
+import DeleteSchedule from '../../application/usecases/schedule/delete.usecase';
+import FindAllSchedule from '../../application/usecases/schedule/find-all.usecase';
+import FindSchedule from '../../application/usecases/schedule/find.usecase';
+import RemoveLessons from '../../application/usecases/schedule/remove-lessons.usecase';
+import UpdateSchedule from '../../application/usecases/schedule/update.usecase';
 
 export class ScheduleController {
   constructor(

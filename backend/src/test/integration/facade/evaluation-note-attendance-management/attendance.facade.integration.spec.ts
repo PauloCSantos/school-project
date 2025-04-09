@@ -1,5 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import AttendanceFacadeFactory from '@/modules/evaluation-note-attendance-management/application/factory/attendance-facade.factory';
+import AttendanceFacadeFactory from '@/modules/evaluation-note-attendance-management/application/factory/attendance.factory';
 
 describe('Attendance facade integration test', () => {
   const input = {

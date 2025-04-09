@@ -1,5 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import CurriculumFacadeFactory from '@/modules/subject-curriculum-management/application/factory/curriculum-facade.factory';
+import CurriculumFacadeFactory from '@/modules/subject-curriculum-management/application/factory/curriculum.factory';
 
 describe('Curriculum facade integration test', () => {
   const input = {

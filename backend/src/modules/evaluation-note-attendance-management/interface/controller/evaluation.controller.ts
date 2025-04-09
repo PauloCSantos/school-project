@@ -10,11 +10,11 @@ import {
   UpdateEvaluationInputDto,
   UpdateEvaluationOutputDto,
 } from '../../application/dto/evaluation-usecase.dto';
-import CreateEvaluation from '../../application/usecases/evaluation/createEvaluation.usecase';
-import DeleteEvaluation from '../../application/usecases/evaluation/deleteEvaluation.usecase';
-import FindAllEvaluation from '../../application/usecases/evaluation/findAllEvaluation.usecase';
-import FindEvaluation from '../../application/usecases/evaluation/findEvaluation.usecase';
-import UpdateEvaluation from '../../application/usecases/evaluation/updateEvaluation.usecase';
+import CreateEvaluation from '../../application/usecases/evaluation/create.usecase';
+import DeleteEvaluation from '../../application/usecases/evaluation/delete.usecase';
+import FindAllEvaluation from '../../application/usecases/evaluation/find-all.usecase';
+import FindEvaluation from '../../application/usecases/evaluation/find.usecase';
+import UpdateEvaluation from '../../application/usecases/evaluation/update.usecase';
 
 export class EvaluationController {
   constructor(

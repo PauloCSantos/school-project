@@ -1,59 +1,47 @@
-#!/bin/bash
-
-# -----------------------------
-# MODULE: event-calendar-management
-# -----------------------------
-
-# DOMAIN - ENTITY
-mv src/modules/event-calendar-management/domain/entity/calendar.entity.ts src/modules/event-calendar-management/domain/entity/calendar.entity.ts
-
-# INTERFACE - CONTROLLER
-mv src/modules/event-calendar-management/interface/controller/calendar.controller.ts src/modules/event-calendar-management/interface/controller/calendar.controller.ts
-
-# INTERFACE - ROUTE
-mv src/modules/event-calendar-management/interface/route/calendar.route.ts src/modules/event-calendar-management/interface/route/calendar.route.ts
-
-# INFRASTRUCTURE - GATEWAY
-mv src/modules/event-calendar-management/infrastructure/gateway/calendar.gateway.ts src/modules/event-calendar-management/infrastructure/gateway/calendar.gateway.ts
-
-# INFRASTRUCTURE - MEMORY REPOSITORY
-mv src/modules/event-calendar-management/infrastructure/repositories/memory-repository/calendar.repository.ts src/modules/event-calendar-management/infrastructure/repositories/memory-repository/calendar.repository.ts
-
-# TESTS - ROUTES
-mv src/modules/event-calendar-management/test/routes/calendar.route.spec.ts src/modules/event-calendar-management/test/routes/calendar.route.spec.ts
-
-# TESTS - CONTROLLERS
-mv src/modules/event-calendar-management/test/controllers/calendar.controller.spec.ts src/modules/event-calendar-management/test/controllers/calendar.controller.spec.ts
-
-# TESTS - USECASES
-mv src/modules/event-calendar-management/test/usecases/event/find-all.usecase.spec.ts src/modules/event-calendar-management/test/usecases/event/find-all.usecase.spec.ts
-mv src/modules/event-calendar-management/test/usecases/event/create.usecase.spec.ts src/modules/event-calendar-management/test/usecases/event/create.usecase.spec.ts
-mv src/modules/event-calendar-management/test/usecases/event/update.usecase.spec.ts src/modules/event-calendar-management/test/usecases/event/update.usecase.spec.ts
-mv src/modules/event-calendar-management/test/usecases/event/delete.usecase.spec.ts src/modules/event-calendar-management/test/usecases/event/delete.usecase.spec.ts
-mv src/modules/event-calendar-management/test/usecases/event/find.usecase.spec.ts src/modules/event-calendar-management/test/usecases/event/find.usecase.spec.ts
-
-# TESTS - MEMORY REPOSITORY
-mv src/modules/event-calendar-management/test/repositories/memory-repository/calendar.repository.spec.ts src/modules/event-calendar-management/test/repositories/memory-repository/calendar.repository.spec.ts
-
-# TESTS - ENTITIES
-mv src/modules/event-calendar-management/test/modules/entities/calendar.entity.spec.ts src/modules/event-calendar-management/test/modules/entities/calendar.entity.spec.ts
-
-# APPLICATION - FACADE INTERFACE
-mv src/modules/event-calendar-management/application/facade/interface/event-facade.interface.ts src/modules/event-calendar-management/application/facade/interface/calendar-facade.interface.ts
-
-# APPLICATION - FACADE
-mv src/modules/event-calendar-management/application/facade/facade/event.facade.ts src/modules/event-calendar-management/application/facade/facade/calendar.facade.ts
-
-# APPLICATION - USECASES
-mv src/modules/event-calendar-management/application/usecases/event/update.usecase.ts src/modules/event-calendar-management/application/usecases/event/update.usecase.ts
-mv src/modules/event-calendar-management/application/usecases/event/find-all.usecase.ts src/modules/event-calendar-management/application/usecases/event/find-all.usecase.ts
-mv src/modules/event-calendar-management/application/usecases/event/create.usecase.ts src/modules/event-calendar-management/application/usecases/event/create.usecase.ts
-mv src/modules/event-calendar-management/application/usecases/event/delete.usecase.ts src/modules/event-calendar-management/application/usecases/event/delete.usecase.ts
-mv src/modules/event-calendar-management/application/usecases/event/find.usecase.ts src/modules/event-calendar-management/application/usecases/event/find.usecase.ts
-
-# APPLICATION - FACTORY
-mv src/modules/event-calendar-management/application/factory/event-facade.factory.ts src/modules/event-calendar-management/application/factory/calendar-facade.factory.ts
-
-# APPLICATION - DTOs
-mv src/modules/event-calendar-management/application/dto/calendar-usecase.dto.ts src/modules/event-calendar-management/application/dto/calendar-usecase.dto.ts
-mv src/modules/event-calendar-management/application/dto/calendar-facade.dto.ts src/modules/event-calendar-management/application/dto/calendar-facade.dto.ts
+./src/test/functional/evaluation-note-attendance-management.e2e.spec.ts
+./src/test/functional/schedule-lesson-management.e2e.spec.ts
+./src/test/functional/event-calendar-management.e2e.spec.ts
+./src/test/functional/user-management.e2e.spec.ts
+./src/test/functional/subject-curriculum-management.e2e.spec.ts
+./src/test/functional/authentication-authorization-management.e2e.spec.ts
+./src/test/integration/facade/evaluation-note-attendance-management/evaluation.facade.integration.spec.ts
+./src/test/integration/facade/evaluation-note-attendance-management/note.facade.integration.spec.ts
+./src/test/integration/facade/evaluation-note-attendance-management/attendance.facade.integration.spec.ts
+./src/test/integration/facade/schedule-lesson-management/lesson.facade.integration.spec.ts
+./src/test/integration/facade/schedule-lesson-management/schedule.facade.integration.spec.ts
+./src/test/integration/facade/subject-curriculum-management/subject.facade.integration.spec.ts
+./src/test/integration/facade/subject-curriculum-management/curriculum.facade.integration.spec.ts
+./src/test/integration/facade/event-calendar-management/event.facade.integration.spec.ts
+./src/test/integration/facade/authentication-authorization-management/authUser.facade.integration.spec.ts
+./src/test/integration/facade/user-management/user-administrator.facade.integration.spec.ts
+./src/test/integration/facade/user-management/user-teacher.facade.integration.spec.ts
+./src/test/integration/facade/user-management/user-student.facade.integration.spec.ts
+./src/test/integration/facade/user-management/user-master.facade.integration.spec.ts
+./src/test/integration/facade/user-management/user-worker.facade.integration.spec.ts
+./src/main/config/tokenService/token-service.instance.ts
+./src/main/setups/evaluation-note-attendance-management/evaluation.setup.ts
+./src/main/setups/evaluation-note-attendance-management/attendance.setup.ts
+./src/main/setups/evaluation-note-attendance-management/note.setup.ts
+./src/main/setups/schedule-lesson-management/schedule.setup.ts
+./src/main/setups/schedule-lesson-management/lesson.setup.ts
+./src/main/setups/subject-curriculum-management/subject.setup.ts
+./src/main/setups/subject-curriculum-management/curriculum.setup.ts
+./src/main/setups/event-calendar-management/event.setup.ts
+./src/main/setups/authentication-authorization-management/authUser.setup.ts
+./src/main/setups/user-management/user-student.setup.ts
+./src/main/setups/user-management/user-worker.setup.ts
+./src/main/setups/user-management/user-administrator.setup.ts
+./src/main/setups/user-management/user-teacher.setup.ts
+./src/main/setups/user-management/user-master.setup.ts
+./src/main/app.ts
+./src/modules/@shared/domain/value-object/id.value-object.ts
+./src/modules/@shared/type/types.d.ts
+./src/modules/@shared/infraestructure/http/express.adapter.ts
+./src/modules/@shared/infraestructure/http/http.interface.ts
+./src/modules/@shared/utils/formatting.ts
+./src/modules/@shared/utils/validations.ts
+./src/modules/@shared/test/value-object/id.value-object.spec.ts
+./src/modules/@shared/test/util/validations.spec.ts
+./src/modules/@shared/test/middleware/authUser.middleware.spec.ts
+./src/modules/@shared/application/usecases/use-case.interface.ts
+./src/modules/@shared/application/middleware/authUser.middleware.ts

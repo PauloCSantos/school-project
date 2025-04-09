@@ -10,12 +10,12 @@ import {
   UpdateNoteInputDto,
   UpdateNoteOutputDto,
 } from '../../dto/note-facade.dto';
-import CreateNote from '../../usecases/note/createNote.usecase';
-import DeleteNote from '../../usecases/note/deleteNote.usecase';
-import FindAllNote from '../../usecases/note/findAllNote.usecase';
-import FindNote from '../../usecases/note/findNote.usecase';
-import UpdateNote from '../../usecases/note/updateNote.usecase';
-import NoteFacadeInterface from '../interface/note-facade.interface';
+import CreateNote from '../../usecases/note/create.usecase';
+import DeleteNote from '../../usecases/note/delete.usecase';
+import FindAllNote from '../../usecases/note/find-all.usecase';
+import FindNote from '../../usecases/note/find.usecase';
+import UpdateNote from '../../usecases/note/update.usecase';
+import NoteFacadeInterface from '../interface/note.interface';
 
 type NoteFacadeProps = {
   createNote: CreateNote;

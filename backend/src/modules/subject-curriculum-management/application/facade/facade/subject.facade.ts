@@ -1,8 +1,9 @@
-import DeleteSubject from '../../usecases/subject/deleteSubject.usecase';
-import FindAllSubject from '../../usecases/subject/findAllSubject.usecase';
-import FindSubject from '../../usecases/subject/findSubject.usecase';
-import UpdateSubject from '../../usecases/subject/updateSubject.usecase';
-import SubjectFacadeInterface from '../interface/subject-facade.interface';
+import CreateSubject from '../../usecases/subject/create.usecase';
+import DeleteSubject from '../../usecases/subject/delete.usecase';
+import FindAllSubject from '../../usecases/subject/find-all.usecase';
+import FindSubject from '../../usecases/subject/find.usecase';
+import UpdateSubject from '../../usecases/subject/update.usecase';
+import SubjectFacadeInterface from '../interface/subject.interface';
 import {
   CreateSubjectInputDto,
   CreateSubjectOutputDto,
@@ -15,7 +16,6 @@ import {
   UpdateSubjectInputDto,
   UpdateSubjectOutputDto,
 } from '../../dto/subject-facade.dto';
-import CreateSubject from '../../usecases/subject/createSubject.usecase';
 
 type SubjectFacadeProps = {
   createSubject: CreateSubject;

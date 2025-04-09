@@ -2,11 +2,11 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryEvaluationRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/evaluation.repository';
-import CreateEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/createEvaluation.usecase';
-import FindEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/findEvaluation.usecase';
-import FindAllEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/findAllEvaluation.usecase';
-import UpdateEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/updateEvaluation.usecase';
-import DeleteEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/deleteEvaluation.usecase';
+import CreateEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/create.usecase';
+import FindEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/find.usecase';
+import FindAllEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/find-all.usecase';
+import UpdateEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/update.usecase';
+import DeleteEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/delete.usecase';
 import { EvaluationController } from '@/modules/evaluation-note-attendance-management/interface/controller/evaluation.controller';
 import { EvaluationRoute } from '@/modules/evaluation-note-attendance-management/interface/route/evaluation.route';
 

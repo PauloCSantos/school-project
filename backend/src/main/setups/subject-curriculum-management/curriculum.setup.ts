@@ -2,13 +2,13 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryCurriculumRepository from '@/modules/subject-curriculum-management/infrastructure/repositories/memory-repository/curriculum.repository';
-import CreateCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/createCurriculum.usecase';
-import FindCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/findCurriculum.usecase';
-import FindAllCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/findAllCurriculum.usecase';
-import UpdateCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/updateCurriculum.usecase';
-import DeleteCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/deleteCurriculum.usecase';
-import AddSubjects from '@/modules/subject-curriculum-management/application/usecases/curriculum/addSubjects.usecase';
-import RemoveSubjects from '@/modules/subject-curriculum-management/application/usecases/curriculum/removeSubjects.usecase';
+import CreateCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/create.usecase';
+import FindCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/find.usecase';
+import FindAllCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/find-all.usecase';
+import UpdateCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/update.usecase';
+import DeleteCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/delete.usecase';
+import AddSubjects from '@/modules/subject-curriculum-management/application/usecases/curriculum/add-subjects.usecase';
+import RemoveSubjects from '@/modules/subject-curriculum-management/application/usecases/curriculum/remove-subjects.usecase';
 import { CurriculumController } from '@/modules/subject-curriculum-management/interface/controller/curriculum.controller';
 import { CurriculumRoute } from '@/modules/subject-curriculum-management/interface/route/curriculum.route';
 

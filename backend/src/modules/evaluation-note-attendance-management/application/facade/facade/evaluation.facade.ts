@@ -10,12 +10,12 @@ import {
   UpdateEvaluationInputDto,
   UpdateEvaluationOutputDto,
 } from '../../dto/evaluation-facade.dto';
-import CreateEvaluation from '../../usecases/evaluation/createEvaluation.usecase';
-import DeleteEvaluation from '../../usecases/evaluation/deleteEvaluation.usecase';
-import FindAllEvaluation from '../../usecases/evaluation/findAllEvaluation.usecase';
-import FindEvaluation from '../../usecases/evaluation/findEvaluation.usecase';
-import UpdateEvaluation from '../../usecases/evaluation/updateEvaluation.usecase';
-import EvaluationFacadeInterface from '../interface/evaluation-facade.interface';
+import CreateEvaluation from '../../usecases/evaluation/create.usecase';
+import DeleteEvaluation from '../../usecases/evaluation/delete.usecase';
+import FindAllEvaluation from '../../usecases/evaluation/find-all.usecase';
+import FindEvaluation from '../../usecases/evaluation/find.usecase';
+import UpdateEvaluation from '../../usecases/evaluation/update.usecase';
+import EvaluationFacadeInterface from '../interface/evaluation.interface';
 
 type EvaluationFacadeProps = {
   createEvaluation: CreateEvaluation;

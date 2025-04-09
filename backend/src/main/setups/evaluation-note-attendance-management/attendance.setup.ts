@@ -2,13 +2,13 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryAttendanceRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/attendance.repository';
-import CreateAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/createAttendance.usecase';
-import FindAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/findAttendance.usecase';
-import FindAllAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/findAllAttendance.usecase';
-import UpdateAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/updateAttendance.usecase';
-import DeleteAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/deleteAttendance.usecase';
-import AddStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/addStudents.usecase';
-import RemoveStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/removeStudents.usecase';
+import CreateAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/create.usecase';
+import FindAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/find.usecase';
+import FindAllAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/find-all.usecase';
+import UpdateAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/update.usecase';
+import DeleteAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/delete.usecase';
+import AddStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/add-students.usecase';
+import RemoveStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/remove-students.usecase';
 import { AttendanceController } from '@/modules/evaluation-note-attendance-management/interface/controller/attendance.controller';
 import { AttendanceRoute } from '@/modules/evaluation-note-attendance-management/interface/route/attendance.route';
 
