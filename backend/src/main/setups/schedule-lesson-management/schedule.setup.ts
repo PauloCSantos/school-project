@@ -7,8 +7,8 @@ import FindSchedule from '@/modules/schedule-lesson-management/application/useca
 import FindAllSchedule from '@/modules/schedule-lesson-management/application/usecases/schedule/find-all.usecase';
 import UpdateSchedule from '@/modules/schedule-lesson-management/application/usecases/schedule/update.usecase';
 import DeleteSchedule from '@/modules/schedule-lesson-management/application/usecases/schedule/delete.usecase';
-import AddLessons from '@/modules/schedule-lesson-management/application/usecases/schedule/addLessons.usecase';
-import RemoveLessons from '@/modules/schedule-lesson-management/application/usecases/schedule/removeLessons.usecase';
+import AddLessons from '@/modules/schedule-lesson-management/application/usecases/schedule/add-lessons.usecase';
+import RemoveLessons from '@/modules/schedule-lesson-management/application/usecases/schedule/remove-lessons.usecase';
 import { ScheduleController } from '@/modules/schedule-lesson-management/interface/controller/schedule.controller';
 import { ScheduleRoute } from '@/modules/schedule-lesson-management/interface/route/schedule.route';
 

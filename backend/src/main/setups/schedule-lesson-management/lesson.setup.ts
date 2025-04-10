@@ -10,10 +10,10 @@ import UpdateLesson from '@/modules/schedule-lesson-management/application/useca
 import DeleteLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/delete.usecase';
 import AddStudents from '@/modules/schedule-lesson-management/application/usecases/lesson/add-students.usecase';
 import RemoveStudents from '@/modules/schedule-lesson-management/application/usecases/lesson/remove-students.usecase';
-import AddDay from '@/modules/schedule-lesson-management/application/usecases/lesson/addDay.usecase';
-import RemoveDay from '@/modules/schedule-lesson-management/application/usecases/lesson/removeDay.usecase';
-import AddTime from '@/modules/schedule-lesson-management/application/usecases/lesson/addTime.usecase';
-import RemoveTime from '@/modules/schedule-lesson-management/application/usecases/lesson/removeTime.usecase';
+import AddDay from '@/modules/schedule-lesson-management/application/usecases/lesson/add-day.usecase';
+import RemoveDay from '@/modules/schedule-lesson-management/application/usecases/lesson/remove-day.usecase';
+import AddTime from '@/modules/schedule-lesson-management/application/usecases/lesson/add-time.usecase';
+import RemoveTime from '@/modules/schedule-lesson-management/application/usecases/lesson/remove-time.usecase';
 import { LessonController } from '@/modules/schedule-lesson-management/interface/controller/lesson.controller';
 import { LessonRoute } from '@/modules/schedule-lesson-management/interface/route/lesson.route';
 
