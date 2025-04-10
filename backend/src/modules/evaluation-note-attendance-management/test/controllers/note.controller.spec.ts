@@ -1,8 +1,8 @@
-import CreateNote from '../../application/usecases/note/createNote.usecase';
-import DeleteNote from '../../application/usecases/note/deleteNote.usecase';
-import FindAllNote from '../../application/usecases/note/findAllNote.usecase';
-import FindNote from '../../application/usecases/note/findNote.usecase';
-import UpdateNote from '../../application/usecases/note/updateNote.usecase';
+import CreateNote from '../../application/usecases/note/create.usecase';
+import DeleteNote from '../../application/usecases/note/delete.usecase';
+import FindAllNote from '../../application/usecases/note/find-all.usecase';
+import FindNote from '../../application/usecases/note/find.usecase';
+import UpdateNote from '../../application/usecases/note/update.usecase';
 import { NoteController } from '../../interface/controller/note.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
@@ -79,7 +79,7 @@ describe('NoteController unit test', () => {
     expect(createNote.execute).toHaveBeenCalled();
   });
   it('should return a note', async () => {
-    const result = await controller.find(new Id());
+    const result = await controller.find({ id: new Id().value });
 
     expect(result).toBeDefined();
     expect(findNote.execute).toHaveBeenCalled();

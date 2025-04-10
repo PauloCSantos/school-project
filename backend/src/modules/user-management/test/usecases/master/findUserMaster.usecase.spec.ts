@@ -2,7 +2,7 @@ import FindUserMaster from '@/modules/user-management/application/usecases/maste
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
-import UserMaster from '@/modules/user-management/domain/entity/user-master.entity';
+import UserMaster from '@/modules/user-management/domain/entity/master.entity';
 
 const MockRepository = () => {
   return {

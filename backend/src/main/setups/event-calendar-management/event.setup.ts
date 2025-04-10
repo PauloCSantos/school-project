@@ -2,14 +2,14 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
-import MemoryEventRepository from '@/modules/event-calendar-management/infrastructure/repositories/memory-repository/event.repository';
-import CreateEvent from '@/modules/event-calendar-management/application/usecases/event/createEvent.usecase';
-import FindEvent from '@/modules/event-calendar-management/application/usecases/event/findEvent.usecase';
-import FindAllEvent from '@/modules/event-calendar-management/application/usecases/event/findAllEvent.usecase';
-import UpdateEvent from '@/modules/event-calendar-management/application/usecases/event/updateEvent.usecase';
-import DeleteEvent from '@/modules/event-calendar-management/application/usecases/event/deleteEvent.usecase';
-import { EventController } from '@/modules/event-calendar-management/interface/controller/event.controller';
-import { EventRoute } from '@/modules/event-calendar-management/interface/route/event.route';
+import MemoryEventRepository from '@/modules/event-calendar-management/infrastructure/repositories/memory-repository/calendar.repository';
+import CreateEvent from '@/modules/event-calendar-management/application/usecases/event/create.usecase';
+import FindEvent from '@/modules/event-calendar-management/application/usecases/event/find.usecase';
+import FindAllEvent from '@/modules/event-calendar-management/application/usecases/event/find-all.usecase';
+import UpdateEvent from '@/modules/event-calendar-management/application/usecases/event/update.usecase';
+import DeleteEvent from '@/modules/event-calendar-management/application/usecases/event/delete.usecase';
+import { EventController } from '@/modules/event-calendar-management/interface/controller/calendar.controller';
+import { EventRoute } from '@/modules/event-calendar-management/interface/route/calendar.route';
 
 export default function initializeEvent(express: ExpressHttp): void {
   const eventRepository = new MemoryEventRepository();

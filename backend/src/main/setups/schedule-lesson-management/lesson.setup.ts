@@ -3,17 +3,17 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryLessonRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/lesson.repository';
-import CreateLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/createLesson.usecase';
-import FindLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/findLesson.usecase';
-import FindAllLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/findAllLesson.usecase';
-import UpdateLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/updateLesson.usecase';
-import DeleteLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/deleteLesson.usecase';
-import AddStudents from '@/modules/schedule-lesson-management/application/usecases/lesson/addStudents.usecase';
-import RemoveStudents from '@/modules/schedule-lesson-management/application/usecases/lesson/removeStudents.usecase';
-import AddDay from '@/modules/schedule-lesson-management/application/usecases/lesson/addDay.usecase';
-import RemoveDay from '@/modules/schedule-lesson-management/application/usecases/lesson/removeDay.usecase';
-import AddTime from '@/modules/schedule-lesson-management/application/usecases/lesson/addTime.usecase';
-import RemoveTime from '@/modules/schedule-lesson-management/application/usecases/lesson/removeTime.usecase';
+import CreateLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/create.usecase';
+import FindLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/find.usecase';
+import FindAllLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/find-all.usecase';
+import UpdateLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/update.usecase';
+import DeleteLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/delete.usecase';
+import AddStudents from '@/modules/schedule-lesson-management/application/usecases/lesson/add-students.usecase';
+import RemoveStudents from '@/modules/schedule-lesson-management/application/usecases/lesson/remove-students.usecase';
+import AddDay from '@/modules/schedule-lesson-management/application/usecases/lesson/add-day.usecase';
+import RemoveDay from '@/modules/schedule-lesson-management/application/usecases/lesson/remove-day.usecase';
+import AddTime from '@/modules/schedule-lesson-management/application/usecases/lesson/add-time.usecase';
+import RemoveTime from '@/modules/schedule-lesson-management/application/usecases/lesson/remove-time.usecase';
 import { LessonController } from '@/modules/schedule-lesson-management/interface/controller/lesson.controller';
 import { LessonRoute } from '@/modules/schedule-lesson-management/interface/route/lesson.route';
 

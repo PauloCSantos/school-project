@@ -10,11 +10,11 @@ import {
   UpdateSubjectInputDto,
   UpdateSubjectOutputDto,
 } from '../../application/dto/subject-usecase.dto';
-import CreateSubject from '../../application/usecases/subject/createSubject.usecase';
-import DeleteSubject from '../../application/usecases/subject/deleteSubject.usecase';
-import FindAllSubject from '../../application/usecases/subject/findAllSubject.usecase';
-import FindSubject from '../../application/usecases/subject/findSubject.usecase';
-import UpdateSubject from '../../application/usecases/subject/updateSubject.usecase';
+import CreateSubject from '../../application/usecases/subject/create.usecase';
+import DeleteSubject from '../../application/usecases/subject/delete.usecase';
+import FindAllSubject from '../../application/usecases/subject/find-all.usecase';
+import FindSubject from '../../application/usecases/subject/find.usecase';
+import UpdateSubject from '../../application/usecases/subject/update.usecase';
 
 export class SubjectController {
   constructor(

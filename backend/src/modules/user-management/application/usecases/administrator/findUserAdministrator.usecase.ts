@@ -3,7 +3,7 @@ import {
   FindUserAdministratorInputDto,
   FindUserAdministratorOutputDto,
 } from '../../dto/administrator-usecase.dto';
-import UserAdministratorGateway from '@/modules/user-management/infrastructure/gateway/user-administrator.gateway';
+import UserAdministratorGateway from '@/modules/user-management/infrastructure/gateway/administrator.gateway';
 
 export default class FindUserAdministrator
   implements

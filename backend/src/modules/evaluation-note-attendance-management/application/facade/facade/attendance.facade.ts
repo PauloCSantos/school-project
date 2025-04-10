@@ -14,14 +14,14 @@ import {
   UpdateAttendanceInputDto,
   UpdateAttendanceOutputDto,
 } from '../../dto/attendance-facade.dto';
-import AddStudents from '../../usecases/attendance/addStudents.usecase';
-import CreateAttendance from '../../usecases/attendance/createAttendance.usecase';
-import DeleteAttendance from '../../usecases/attendance/deleteAttendance.usecase';
-import FindAllAttendance from '../../usecases/attendance/findAllAttendance.usecase';
-import FindAttendance from '../../usecases/attendance/findAttendance.usecase';
-import RemoveStudents from '../../usecases/attendance/removeStudents.usecase';
-import UpdateAttendance from '../../usecases/attendance/updateAttendance.usecase';
-import AttendanceFacadeInterface from '../interface/attendance-facade.interface';
+import AddStudents from '../../usecases/attendance/add-students.usecase';
+import CreateAttendance from '../../usecases/attendance/create.usecase';
+import DeleteAttendance from '../../usecases/attendance/delete.usecase';
+import FindAllAttendance from '../../usecases/attendance/find-all.usecase';
+import FindAttendance from '../../usecases/attendance/find.usecase';
+import RemoveStudents from '../../usecases/attendance/remove-students.usecase';
+import UpdateAttendance from '../../usecases/attendance/update.usecase';
+import AttendanceFacadeInterface from '../interface/attendance.interface';
 
 type AttendanceFacadeProps = {
   createAttendance: CreateAttendance;

@@ -1,11 +1,11 @@
-import AddLessons from '../../usecases/schedule/addLessons.usecase';
-import CreateSchedule from '../../usecases/schedule/createSchedule.usecase';
-import DeleteSchedule from '../../usecases/schedule/deleteSchedule.usecase';
-import FindAllSchedule from '../../usecases/schedule/findAllSchedule.usecase';
-import FindSchedule from '../../usecases/schedule/findSchedule.usecase';
-import RemoveLessons from '../../usecases/schedule/removeLessons.usecase';
-import UpdateSchedule from '../../usecases/schedule/updateSchedule.usecase';
-import ScheduleFacadeInterface from '../interface/schedule-facade.interface';
+import AddLessons from '../../usecases/schedule/add-lessons.usecase';
+import CreateSchedule from '../../usecases/schedule/create.usecase';
+import DeleteSchedule from '../../usecases/schedule/delete.usecase';
+import FindAllSchedule from '../../usecases/schedule/find-all.usecase';
+import FindSchedule from '../../usecases/schedule/find.usecase';
+import RemoveLessons from '../../usecases/schedule/remove-lessons.usecase';
+import UpdateSchedule from '../../usecases/schedule/update.usecase';
+import ScheduleFacadeInterface from '../interface/schedule.interface';
 import {
   CreateScheduleInputDto,
   AddLessonsInputDto,

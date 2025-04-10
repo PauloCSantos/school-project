@@ -1,8 +1,8 @@
-import CreateEvaluation from '../../application/usecases/evaluation/createEvaluation.usecase';
-import DeleteEvaluation from '../../application/usecases/evaluation/deleteEvaluation.usecase';
-import FindAllEvaluation from '../../application/usecases/evaluation/findAllEvaluation.usecase';
-import FindEvaluation from '../../application/usecases/evaluation/findEvaluation.usecase';
-import UpdateEvaluation from '../../application/usecases/evaluation/updateEvaluation.usecase';
+import CreateEvaluation from '../../application/usecases/evaluation/create.usecase';
+import DeleteEvaluation from '../../application/usecases/evaluation/delete.usecase';
+import FindAllEvaluation from '../../application/usecases/evaluation/find-all.usecase';
+import FindEvaluation from '../../application/usecases/evaluation/find.usecase';
+import UpdateEvaluation from '../../application/usecases/evaluation/update.usecase';
 import { EvaluationController } from '../../interface/controller/evaluation.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
@@ -84,7 +84,7 @@ describe('EvaluationController unit test', () => {
     expect(createEvaluation.execute).toHaveBeenCalled();
   });
   it('should return a evaluation', async () => {
-    const result = await controller.find(new Id());
+    const result = await controller.find({ id: new Id().value });
 
     expect(result).toBeDefined();
     expect(findEvaluation.execute).toHaveBeenCalled();

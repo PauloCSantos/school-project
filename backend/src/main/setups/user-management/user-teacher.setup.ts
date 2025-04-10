@@ -6,9 +6,9 @@ import FindUserTeacher from '@/modules/user-management/application/usecases/teac
 import UpdateUserTeacher from '@/modules/user-management/application/usecases/teacher/updateUserTeacher.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
-import MemoryUserTeacherRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user-teacher.repository';
-import { UserTeacherController } from '@/modules/user-management/interface/controller/user-teacher.controller';
-import { UserTeacherRoute } from '@/modules/user-management/interface/route/user-teacher.route';
+import MemoryUserTeacherRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/teacher.repository';
+import { UserTeacherController } from '@/modules/user-management/interface/controller/teacher.controller';
+import { UserTeacherRoute } from '@/modules/user-management/interface/route/teacher.route';
 
 export default function initializeUserTeacher(express: ExpressHttp): void {
   const userTeacherRepository = new MemoryUserTeacherRepository();

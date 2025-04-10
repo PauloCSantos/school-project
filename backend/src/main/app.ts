@@ -12,7 +12,7 @@ import initializeEvent from './setups/event-calendar-management/event.setup';
 import initializeEvaluation from './setups/evaluation-note-attendance-management/evaluation.setup';
 import initializeNote from './setups/evaluation-note-attendance-management/note.setup';
 import initializeAttendance from './setups/evaluation-note-attendance-management/attendance.setup';
-import initializeAuthUser from './setups/authentication-authorization-management/authUser.setup';
+import initializeAuthUser from './setups/authentication-authorization-management/auth-user.setup';
 
 async function startServer() {
   const expressHttp = new ExpressHttp();

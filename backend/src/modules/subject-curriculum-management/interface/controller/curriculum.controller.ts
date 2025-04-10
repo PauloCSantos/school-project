@@ -14,13 +14,13 @@ import {
   UpdateCurriculumInputDto,
   UpdateCurriculumOutputDto,
 } from '../../application/dto/curriculum-usecase.dto';
-import AddSubjects from '../../application/usecases/curriculum/addSubjects.usecase';
-import CreateCurriculum from '../../application/usecases/curriculum/createCurriculum.usecase';
-import DeleteCurriculum from '../../application/usecases/curriculum/deleteCurriculum.usecase';
-import FindAllCurriculum from '../../application/usecases/curriculum/findAllCurriculum.usecase';
-import FindCurriculum from '../../application/usecases/curriculum/findCurriculum.usecase';
-import RemoveSubjects from '../../application/usecases/curriculum/removeSubjects.usecase';
-import UpdateCurriculum from '../../application/usecases/curriculum/updateCurriculum.usecase';
+import AddSubjects from '../../application/usecases/curriculum/add-subjects.usecase';
+import CreateCurriculum from '../../application/usecases/curriculum/create.usecase';
+import DeleteCurriculum from '../../application/usecases/curriculum/delete.usecase';
+import FindAllCurriculum from '../../application/usecases/curriculum/find-all.usecase';
+import FindCurriculum from '../../application/usecases/curriculum/find.usecase';
+import RemoveSubjects from '../../application/usecases/curriculum/remove-subjects.usecase';
+import UpdateCurriculum from '../../application/usecases/curriculum/update.usecase';
 
 export class CurriculumController {
   constructor(

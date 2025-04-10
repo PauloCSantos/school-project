@@ -1,12 +1,12 @@
-import AddTime from '../../usecases/lesson/addTime.usecase';
-import CreateLesson from '../../usecases/lesson/createLesson.usecase';
-import DeleteLesson from '../../usecases/lesson/deleteLesson.usecase';
-import FindAllLesson from '../../usecases/lesson/findAllLesson.usecase';
-import FindLesson from '../../usecases/lesson/findLesson.usecase';
-import RemoveDay from '../../usecases/lesson/removeDay.usecase';
-import RemoveTime from '../../usecases/lesson/removeTime.usecase';
-import UpdateLesson from '../../usecases/lesson/updateLesson.usecase';
-import LessonFacadeInterface from '../interface/lesson-facade.interface';
+import AddTime from '../../usecases/lesson/add-time.usecase';
+import CreateLesson from '../../usecases/lesson/create.usecase';
+import DeleteLesson from '../../usecases/lesson/delete.usecase';
+import FindAllLesson from '../../usecases/lesson/find-all.usecase';
+import FindLesson from '../../usecases/lesson/find.usecase';
+import RemoveDay from '../../usecases/lesson/remove-day.usecase';
+import RemoveTime from '../../usecases/lesson/remove-time.usecase';
+import UpdateLesson from '../../usecases/lesson/update.usecase';
+import LessonFacadeInterface from '../interface/lesson.interface';
 import {
   AddDayInputDto,
   AddDayOutputDto,
@@ -32,9 +32,9 @@ import {
   UpdateLessonOutputDto,
 } from '../../dto/lesson-facade.dto';
 
-import AddDay from '../../usecases/lesson/addDay.usecase';
-import AddStudents from '../../usecases/lesson/addStudents.usecase';
-import RemoveStudents from '../../usecases/lesson/removeStudents.usecase';
+import AddDay from '../../usecases/lesson/add-day.usecase';
+import AddStudents from '../../usecases/lesson/add-students.usecase';
+import RemoveStudents from '../../usecases/lesson/remove-students.usecase';
 
 type LessonFacadeProps = {
   createLesson: CreateLesson;

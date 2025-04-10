@@ -3,7 +3,7 @@ import {
   FindUserMasterInputDto,
   FindUserMasterOutputDto,
 } from '../../dto/master-usecase.dto';
-import UserMasterGateway from '@/modules/user-management/infrastructure/gateway/user-master.gateway';
+import UserMasterGateway from '@/modules/user-management/infrastructure/gateway/master.gateway';
 
 export default class FindUserMaster
   implements

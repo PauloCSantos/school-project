@@ -1,9 +1,9 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
-import { UserAdministratorController } from '../../interface/controller/user-administrator.controller';
+import { UserAdministratorController } from '../../interface/controller/administrator.controller';
 import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
-import { UserAdministratorRoute } from '../../interface/route/user-administrator.route';
+import { UserAdministratorRoute } from '../../interface/route/administrator.route';
 
 const mockAuthUserMiddleware = jest.fn(
   () =>

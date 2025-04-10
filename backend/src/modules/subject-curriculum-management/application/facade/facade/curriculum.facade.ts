@@ -1,10 +1,11 @@
-import CreateCurriculum from '../../usecases/curriculum/createCurriculum.usecase';
-import DeleteCurriculum from '../../usecases/curriculum/deleteCurriculum.usecase';
-import FindAllCurriculum from '../../usecases/curriculum/findAllCurriculum.usecase';
-import FindCurriculum from '../../usecases/curriculum/findCurriculum.usecase';
-import RemoveSubjects from '../../usecases/curriculum/removeSubjects.usecase';
-import UpdateCurriculum from '../../usecases/curriculum/updateCurriculum.usecase';
-import CurriculumFacadeInterface from '../interface/curriculum-facade.interface';
+import CreateCurriculum from '../../usecases/curriculum/create.usecase';
+import DeleteCurriculum from '../../usecases/curriculum/delete.usecase';
+import FindAllCurriculum from '../../usecases/curriculum/find-all.usecase';
+import FindCurriculum from '../../usecases/curriculum/find.usecase';
+import RemoveSubjects from '../../usecases/curriculum/remove-subjects.usecase';
+import UpdateCurriculum from '../../usecases/curriculum/update.usecase';
+import CurriculumFacadeInterface from '../interface/curriculum.interface';
+import AddSubjects from '../../usecases/curriculum/add-subjects.usecase';
 import {
   AddSubjectsInputDto,
   AddSubjectsOutputDto,
@@ -21,7 +22,6 @@ import {
   UpdateCurriculumInputDto,
   UpdateCurriculumOutputDto,
 } from '../../dto/curriculum-facade.dto';
-import AddSubjects from '../../usecases/curriculum/addSubjects.usecase';
 
 type CurriculumFacadeProps = {
   createCurriculum: CreateCurriculum;

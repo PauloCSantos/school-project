@@ -2,11 +2,11 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemorySubjectRepository from '@/modules/subject-curriculum-management/infrastructure/repositories/memory-repository/subject.repository';
-import CreateSubject from '@/modules/subject-curriculum-management/application/usecases/subject/createSubject.usecase';
-import FindSubject from '@/modules/subject-curriculum-management/application/usecases/subject/findSubject.usecase';
-import FindAllSubject from '@/modules/subject-curriculum-management/application/usecases/subject/findAllSubject.usecase';
-import UpdateSubject from '@/modules/subject-curriculum-management/application/usecases/subject/updateSubject.usecase';
-import DeleteSubject from '@/modules/subject-curriculum-management/application/usecases/subject/deleteSubject.usecase';
+import CreateSubject from '@/modules/subject-curriculum-management/application/usecases/subject/create.usecase';
+import FindSubject from '@/modules/subject-curriculum-management/application/usecases/subject/find.usecase';
+import FindAllSubject from '@/modules/subject-curriculum-management/application/usecases/subject/find-all.usecase';
+import UpdateSubject from '@/modules/subject-curriculum-management/application/usecases/subject/update.usecase';
+import DeleteSubject from '@/modules/subject-curriculum-management/application/usecases/subject/delete.usecase';
 import { SubjectController } from '@/modules/subject-curriculum-management/interface/controller/subject.controller';
 import { SubjectRoute } from '@/modules/subject-curriculum-management/interface/route/subject.route';
 

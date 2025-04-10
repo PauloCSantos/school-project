@@ -1,10 +1,10 @@
+import MemoryUserTeacherRepository from '../../infrastructure/repositories/memory-repository/teacher.repository';
 import TeacherFacade from '../facade/facade/teacher.facade';
 import CreateUserTeacher from '../usecases/teacher/createUserTeacher.usecase';
 import DeleteUserTeacher from '../usecases/teacher/deleteUserTeacher.usecase';
 import FindAllUserTeacher from '../usecases/teacher/findAllUserTeacher.usecase';
 import FindUserTeacher from '../usecases/teacher/findUserTeacher.usecase';
 import UpdateUserTeacher from '../usecases/teacher/updateUserTeacher.usecase';
-import MemoryUserTeacherRepository from '../../infrastructure/repositories/memory-repository/user-teacher.repository';
 
 export default class TeacherFacadeFactory {
   static create(): TeacherFacade {

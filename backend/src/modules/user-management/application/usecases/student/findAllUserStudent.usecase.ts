@@ -3,7 +3,7 @@ import {
   FindAllUserStudentInputDto,
   FindAllUserStudentOutputDto,
 } from '../../dto/student-usecase.dto';
-import UserStudentGateway from '@/modules/user-management/infrastructure/gateway/user-student.gateway';
+import UserStudentGateway from '@/modules/user-management/infrastructure/gateway/student.gateway';
 
 export default class FindAllUserStudent
   implements

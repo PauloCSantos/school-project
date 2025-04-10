@@ -10,11 +10,11 @@ import {
   UpdateNoteInputDto,
   UpdateNoteOutputDto,
 } from '../../application/dto/note-usecase.dto';
-import CreateNote from '../../application/usecases/note/createNote.usecase';
-import DeleteNote from '../../application/usecases/note/deleteNote.usecase';
-import FindAllNote from '../../application/usecases/note/findAllNote.usecase';
-import FindNote from '../../application/usecases/note/findNote.usecase';
-import UpdateNote from '../../application/usecases/note/updateNote.usecase';
+import CreateNote from '../../application/usecases/note/create.usecase';
+import DeleteNote from '../../application/usecases/note/delete.usecase';
+import FindAllNote from '../../application/usecases/note/find-all.usecase';
+import FindNote from '../../application/usecases/note/find.usecase';
+import UpdateNote from '../../application/usecases/note/update.usecase';
 
 export class NoteController {
   constructor(

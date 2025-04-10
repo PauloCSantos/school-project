@@ -3,7 +3,7 @@ import DeleteUserAdministrator from '../../application/usecases/administrator/de
 import FindAllUserAdministrator from '../../application/usecases/administrator/findAllUserAdministrator.usecase';
 import FindUserAdministrator from '../../application/usecases/administrator/findUserAdministrator.usecase';
 import UpdateUserAdministrator from '../../application/usecases/administrator/updateUserAdministrator.usecase';
-import { UserAdministratorController } from '../../interface/controller/user-administrator.controller';
+import { UserAdministratorController } from '../../interface/controller/administrator.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
 describe('UserAdministratorController unit test', () => {

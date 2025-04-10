@@ -1,11 +1,11 @@
-import CreateCurriculum from '../../application/usecases/curriculum/createCurriculum.usecase';
-import DeleteCurriculum from '../../application/usecases/curriculum/deleteCurriculum.usecase';
-import FindAllCurriculum from '../../application/usecases/curriculum/findAllCurriculum.usecase';
-import FindCurriculum from '../../application/usecases/curriculum/findCurriculum.usecase';
-import RemoveSubjects from '../../application/usecases/curriculum/removeSubjects.usecase';
-import UpdateCurriculum from '../../application/usecases/curriculum/updateCurriculum.usecase';
+import CreateCurriculum from '../../application/usecases/curriculum/create.usecase';
+import DeleteCurriculum from '../../application/usecases/curriculum/delete.usecase';
+import FindAllCurriculum from '../../application/usecases/curriculum/find-all.usecase';
+import FindCurriculum from '../../application/usecases/curriculum/find.usecase';
+import RemoveSubjects from '../../application/usecases/curriculum/remove-subjects.usecase';
+import UpdateCurriculum from '../../application/usecases/curriculum/update.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import AddSubjects from '../../application/usecases/curriculum/addSubjects.usecase';
+import AddSubjects from '../../application/usecases/curriculum/add-subjects.usecase';
 import { CurriculumController } from '../../interface/controller/curriculum.controller';
 
 describe('CurriculumController unit test', () => {

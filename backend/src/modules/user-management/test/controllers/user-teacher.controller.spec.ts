@@ -3,7 +3,7 @@ import DeleteUserTeacher from '../../application/usecases/teacher/deleteUserTeac
 import FindAllUserTeacher from '../../application/usecases/teacher/findAllUserTeacher.usecase';
 import FindUserTeacher from '../../application/usecases/teacher/findUserTeacher.usecase';
 import UpdateUserTeacher from '../../application/usecases/teacher/updateUserTeacher.usecase';
-import { UserTeacherController } from '../../interface/controller/user-teacher.controller';
+import { UserTeacherController } from '../../interface/controller/teacher.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
 describe('UserTeacherController unit test', () => {

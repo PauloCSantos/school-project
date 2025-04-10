@@ -1,10 +1,10 @@
+import MemoryUserStudentRepository from '../../infrastructure/repositories/memory-repository/student.repository';
 import StudentFacade from '../facade/facade/student.facade';
 import CreateUserStudent from '../usecases/student/createUserStudent.usecase';
 import DeleteUserStudent from '../usecases/student/deleteUserStudent.usecase';
 import FindAllUserStudent from '../usecases/student/findAllUserStudent.usecase';
 import FindUserStudent from '../usecases/student/findUserStudent.usecase';
 import UpdateUserStudent from '../usecases/student/updateUserStudent.usecase';
-import MemoryUserStudentRepository from '../../infrastructure/repositories/memory-repository/user-student.repository';
 
 export default class StudentFacadeFactory {
   static create(): StudentFacade {
