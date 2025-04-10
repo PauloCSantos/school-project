@@ -5,6 +5,7 @@ import DeleteAuthUser from '../usecases/authUser/delete-user.usecase';
 import FindAuthUser from '../usecases/authUser/find-user.usecase';
 import UpdateAuthUser from '../usecases/authUser/update-user.usecase';
 import LoginAuthUser from '../usecases/authUser/login-user.usecase';
+import AuthUserService from '../../domain/service/user-entity.service';
 
 /**
  * Factory responsible for creating AuthUserFacade instances
@@ -19,9 +20,10 @@ export default class AuthUserFacadeFactory {
     // Currently using memory repository only
     // Future implementation will use environment variables to determine repository type
     const repository = new MemoryAuthUserRepository();
+    const authUserService = new AuthUserService();
 
     // Create all required use cases
-    const createAuthUser = new CreateAuthUser(repository);
+    const createAuthUser = new CreateAuthUser(repository, authUserService);
     const deleteAuthUser = new DeleteAuthUser(repository);
     const findAuthUser = new FindAuthUser(repository);
     const updateAuthUser = new UpdateAuthUser(repository);

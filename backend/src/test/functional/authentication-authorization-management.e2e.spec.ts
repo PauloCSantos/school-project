@@ -11,15 +11,20 @@ import AuthUserController from '@/modules/authentication-authorization-managemen
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/user.route';
+import AuthUserService from '@/modules/authentication-authorization-management/domain/service/user-entity.service';
 
 describe('Authentication authorization management module end to end test', () => {
   let authUserRepository = new MemoryAuthUserRepository();
+  let authUserService = new AuthUserService();
 
   let app: any;
   beforeEach(() => {
     authUserRepository = new MemoryAuthUserRepository();
 
-    const createAuthUserUsecase = new CreateAuthUser(authUserRepository);
+    const createAuthUserUsecase = new CreateAuthUser(
+      authUserRepository,
+      authUserService
+    );
     const findAuthUserUsecase = new FindAuthUser(authUserRepository);
     const updateAuthUserUsecase = new UpdateAuthUser(authUserRepository);
     const deleteAuthUserUsecase = new DeleteAuthUser(authUserRepository);

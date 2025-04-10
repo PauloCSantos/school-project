@@ -12,6 +12,16 @@ const MockRepository = () => {
   };
 };
 
+class MockAuthUserService extends AuthUserService {
+  async generateHash(): Promise<string> {
+    return 'hashed_password';
+  }
+
+  async comparePassword(): Promise<boolean> {
+    return true;
+  }
+}
+
 describe('createAuthUser usecase unit test', () => {
   const input = {
     email: 'teste@teste.com.br',
@@ -20,16 +30,22 @@ describe('createAuthUser usecase unit test', () => {
     role: 'master' as RoleUsers,
     isHashed: false,
   };
-  const authUserService = new AuthUserService();
-
-  const authUser = new AuthUser(input, authUserService);
 
   describe('On fail', () => {
     it('should throw an error if the authUser already exists', async () => {
       const authUserRepository = MockRepository();
+      const authUserService = new MockAuthUserService();
+
+      const authUser = new AuthUser(
+        input,
+        authUserService as unknown as AuthUserService
+      );
       authUserRepository.find.mockResolvedValue(authUser);
 
-      const usecase = new CreateAuthUser(authUserRepository);
+      const usecase = new CreateAuthUser(
+        authUserRepository,
+        authUserService as unknown as AuthUserService
+      );
 
       await expect(usecase.execute(input)).rejects.toThrow(
         'AuthUser already exists'
@@ -42,9 +58,15 @@ describe('createAuthUser usecase unit test', () => {
   describe('On success', () => {
     it('should create a authUser', async () => {
       const authUserRepository = MockRepository();
+      const authUserService = new MockAuthUserService();
+
       authUserRepository.find.mockResolvedValue(undefined);
 
-      const usecase = new CreateAuthUser(authUserRepository);
+      const usecase = new CreateAuthUser(
+        authUserRepository,
+        authUserService as unknown as AuthUserService
+      );
+
       const result = await usecase.execute(input);
 
       expect(authUserRepository.find).toHaveBeenCalledWith(expect.any(String));

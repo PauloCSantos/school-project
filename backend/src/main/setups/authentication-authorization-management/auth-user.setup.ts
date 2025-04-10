@@ -9,10 +9,15 @@ import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter'
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/user.repository';
 import AuthUserController from '@/modules/authentication-authorization-management/interface/controller/user.controller';
 import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/user.route';
+import AuthUserService from '@/modules/authentication-authorization-management/domain/service/user-entity.service';
 
 export default function initializeAuthUser(express: ExpressHttp): void {
   const authUserRepository = new MemoryAuthUserRepository();
-  const createAuthUser = new CreateAuthUser(authUserRepository);
+  const authUserService = new AuthUserService();
+  const createAuthUser = new CreateAuthUser(
+    authUserRepository,
+    authUserService
+  );
   const updateAuthUser = new UpdateAuthUser(authUserRepository);
   const findAuthUser = new FindAuthUser(authUserRepository);
   const deleteAuthUser = new DeleteAuthUser(authUserRepository);
