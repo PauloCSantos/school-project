@@ -13,6 +13,16 @@ const MockRepository = () => {
   };
 };
 
+class MockAuthUserService extends AuthUserService {
+  async generateHash(): Promise<string> {
+    return 'hashed_password';
+  }
+
+  async comparePassword(): Promise<boolean> {
+    return true;
+  }
+}
+
 describe('updateAuthUser usecase unit test', () => {
   const input = {
     email: 'teste@teste.com.br',
@@ -31,9 +41,11 @@ describe('updateAuthUser usecase unit test', () => {
 
   describe('On fail', () => {
     it('should throw an error if the authUser does not exist', async () => {
+      await authUser.hashPassword();
       const authUserRepository = MockRepository();
+      const authUserService = new MockAuthUserService();
       authUserRepository.find.mockResolvedValue(undefined);
-      const usecase = new UpdateAuthUser(authUserRepository);
+      const usecase = new UpdateAuthUser(authUserRepository, authUserService);
 
       await expect(
         usecase.execute({
@@ -45,9 +57,11 @@ describe('updateAuthUser usecase unit test', () => {
   });
   describe('On success', () => {
     it('should update an authUser', async () => {
+      await authUser.hashPassword();
       const authUserRepository = MockRepository();
+      const authUserService = new MockAuthUserService();
       authUserRepository.find.mockResolvedValue(authUser);
-      const usecase = new UpdateAuthUser(authUserRepository);
+      const usecase = new UpdateAuthUser(authUserRepository, authUserService);
 
       const result = await usecase.execute({
         authUserDataToUpdate: { ...dataToUpdate },

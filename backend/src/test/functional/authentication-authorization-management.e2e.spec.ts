@@ -12,10 +12,12 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/user.route';
 import AuthUserService from '@/modules/authentication-authorization-management/domain/service/user-entity.service';
+import TokenService from '@/modules/authentication-authorization-management/domain/service/token.service';
 
 describe('Authentication authorization management module end to end test', () => {
   let authUserRepository = new MemoryAuthUserRepository();
   let authUserService = new AuthUserService();
+  const tokenService = new TokenService('PxHf3H7');
 
   let app: any;
   beforeEach(() => {
@@ -26,9 +28,16 @@ describe('Authentication authorization management module end to end test', () =>
       authUserService
     );
     const findAuthUserUsecase = new FindAuthUser(authUserRepository);
-    const updateAuthUserUsecase = new UpdateAuthUser(authUserRepository);
+    const updateAuthUserUsecase = new UpdateAuthUser(
+      authUserRepository,
+      authUserService
+    );
     const deleteAuthUserUsecase = new DeleteAuthUser(authUserRepository);
-    const loginAuthUserUsecase = new LoginAuthUser(authUserRepository);
+    const loginAuthUserUsecase = new LoginAuthUser(
+      authUserRepository,
+      authUserService,
+      tokenService
+    );
 
     const authUserController = new AuthUserController(
       createAuthUserUsecase,

@@ -42,6 +42,7 @@ export default class CreateAuthUser
    * @param input - Input data including email, password, role, master ID, and whether the password is already hashed
    * @returns Output data of the created user
    * @throws Error if a user with the same email already exists
+   * @throws ValidationError if any of the input data fails validation during entity creation
    */
   async execute({
     email,
