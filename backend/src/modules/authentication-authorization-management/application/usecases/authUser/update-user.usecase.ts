@@ -5,7 +5,7 @@ import {
 } from '../../dto/user-usecase.dto';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import AuthUserService from '@/modules/authentication-authorization-management/domain/service/user-entity.service';
+import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 
 /**
  * Use case responsible for updating an authenticated user.
@@ -53,7 +53,6 @@ export default class UpdateAuthUser
       throw new Error('AuthUser not found');
     }
 
-    // Create a proper AuthUser entity instead of using Object.create
     const authUser = new AuthUser(
       {
         email: existingUser.email,
@@ -65,7 +64,6 @@ export default class UpdateAuthUser
       this._authUserService
     );
 
-    // Apply updates
     if (authUserDataToUpdate.email !== undefined) {
       authUser.email = authUserDataToUpdate.email;
     }
@@ -79,7 +77,6 @@ export default class UpdateAuthUser
       await authUser.hashPassword();
     }
 
-    // Persist the updated user
     const result = await this._authUserRepository.update(authUser, email);
 
     return {

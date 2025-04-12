@@ -4,7 +4,7 @@ import {
   CreateAuthUserOutputDto,
 } from '../../dto/user-usecase.dto';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
-import AuthUserService from '@/modules/authentication-authorization-management/domain/service/user-entity.service';
+import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
 
 /**

@@ -1,7 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import LoginAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/login-user.usecase';
-import AuthUserService from '@/modules/authentication-authorization-management/domain/service/user-entity.service';
-import TokenService from '@/modules/authentication-authorization-management/domain/service/token.service';
+import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/service/token.service';
 
 // Mock do repositório
 const MockRepository = () => {
@@ -16,12 +16,12 @@ const MockRepository = () => {
 
 // Mock para o AuthUserService implementando a classe corretamente
 jest.mock(
-  '@/modules/authentication-authorization-management/domain/service/user-entity.service'
+  '@/modules/authentication-authorization-management/application/service/user-entity.service'
 );
 
 // Mock para o TokenService
 jest.mock(
-  '@/modules/authentication-authorization-management/domain/service/token.service'
+  '@/modules/authentication-authorization-management/infrastructure/service/token.service'
 );
 
 describe('LoginAuthUser usecase unit test', () => {

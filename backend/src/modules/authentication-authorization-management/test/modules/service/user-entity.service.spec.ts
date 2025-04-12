@@ -1,4 +1,4 @@
-import AuthUserService from '@/modules/authentication-authorization-management/domain/service/user-entity.service';
+import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 
 describe('AuthUserService unit test', () => {
   describe('On success', () => {

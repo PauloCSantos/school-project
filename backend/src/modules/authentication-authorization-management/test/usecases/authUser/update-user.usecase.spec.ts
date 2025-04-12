@@ -1,7 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import UpdateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/update-user.usecase';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import AuthUserService from '@/modules/authentication-authorization-management/domain/service/user-entity.service';
+import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 
 const MockRepository = () => {
   return {

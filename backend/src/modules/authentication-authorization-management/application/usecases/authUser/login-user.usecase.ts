@@ -1,6 +1,6 @@
-import AuthUserService from '@/modules/authentication-authorization-management/domain/service/user-entity.service';
+import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import TokenService from '@/modules/authentication-authorization-management/domain/service/token.service';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/service/token.service';
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
 import {
   LoginAuthUserInputDto,
