@@ -2,152 +2,141 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import LoginAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/login-user.usecase';
 import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import TokenService from '@/modules/authentication-authorization-management/infrastructure/service/token.service';
+import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
 
-// Mock do repositório
-const MockRepository = () => {
+// Crie o mock com tipagem explícita
+const MockRepository = (): jest.Mocked<AuthUserGateway> => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
-  };
+  } as jest.Mocked<AuthUserGateway>;
 };
 
-// Mock para o AuthUserService implementando a classe corretamente
-jest.mock(
-  '@/modules/authentication-authorization-management/application/service/user-entity.service'
-);
+class MockAuthUserService extends AuthUserService {
+  async comparePassword(): Promise<boolean> {
+    return true; // Valor padrão pode ser substituído nos testes usando jest.spyOn
+  }
 
-// Mock para o TokenService
-jest.mock(
-  '@/modules/authentication-authorization-management/infrastructure/service/token.service'
-);
+  async generateHash(password: string): Promise<string> {
+    return `hashed_${password}`;
+  }
+}
+
+class MockTokenService extends TokenService {
+  constructor() {
+    super('secret');
+  }
+
+  async generateToken(): Promise<string> {
+    return 'mocked_token';
+  }
+}
 
 describe('LoginAuthUser usecase unit test', () => {
-  // Dados de mock para o usuário
-  const mockUserData = {
-    email: 'teste@teste.com.br',
-    password: 'hashed_password',
-    masterId: new Id().value,
-    role: 'master' as RoleUsers,
-    isHashed: true,
+  let repository: jest.Mocked<AuthUserGateway>;
+  let authUserService: MockAuthUserService;
+  let tokenService: MockTokenService;
+  let usecase: LoginAuthUser;
+  let loginInput: {
+    email: string;
+    password: string;
+    role: RoleUsers;
   };
+  let userData: {
+    email: string;
+    password: string;
+    masterId: string;
+    role: RoleUsers;
+    isHashed: boolean;
+  };
+  let authUser: AuthUser;
+  let comparePasswordSpy: jest.SpyInstance;
+  let generateTokenSpy: jest.SpyInstance;
 
-  // Limpar todos os mocks antes de cada teste
-  beforeEach(() => {
+  beforeEach(async () => {
+    loginInput = {
+      email: 'teste@teste.com.br',
+      password: 'ioNO9V',
+      role: 'master' as RoleUsers,
+    };
+
+    userData = {
+      email: 'teste@teste.com.br',
+      password: 'hashed_password',
+      masterId: new Id().value,
+      role: 'master' as RoleUsers,
+      isHashed: true,
+    };
+
+    repository = MockRepository();
+    authUserService = new MockAuthUserService();
+    tokenService = new MockTokenService();
+
+    // Criar uma instância real de AuthUser
+    authUser = new AuthUser(userData, authUserService);
+
+    comparePasswordSpy = jest.spyOn(authUserService, 'comparePassword');
+    generateTokenSpy = jest.spyOn(tokenService, 'generateToken');
+
+    usecase = new LoginAuthUser(repository, authUserService, tokenService);
+  });
+
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('On success', () => {
-    it('Should login with correct credentials', async () => {
-      // Arrange
-      const authUserRepository = MockRepository();
+  it('should login successfully with correct credentials', async () => {
+    // Usar a instância de AuthUser em vez de um objeto simples
+    repository.find.mockResolvedValue(authUser);
+    comparePasswordSpy.mockResolvedValue(true);
+    generateTokenSpy.mockResolvedValue('mocked_token');
 
-      // Configurar o mock do serviço de usuário
-      const authUserService =
-        new AuthUserService() as jest.Mocked<AuthUserService>;
-      authUserService.comparePassword = jest.fn().mockResolvedValue(true);
+    const result = await usecase.execute(loginInput);
 
-      // Configurar o mock do serviço de token
-      const tokenService = new TokenService(
-        'secret'
-      ) as jest.Mocked<TokenService>;
-      tokenService.generateToken = jest.fn().mockResolvedValue('mocked_token');
-
-      // Configurando o mock do repositório para retornar os dados do usuário
-      authUserRepository.find.mockResolvedValue(mockUserData);
-
-      // Instanciando o caso de uso com as dependências mockadas
-      const usecase = new LoginAuthUser(
-        authUserRepository,
-        authUserService,
-        tokenService
-      );
-
-      // Act
-      const result = await usecase.execute({
-        email: 'teste@teste.com.br',
-        password: 'ioNO9V',
-        //role: 'master' as RoleUsers,
-        role: 'master',
-      });
-
-      // Assert
-      expect(authUserRepository.find).toHaveBeenCalledWith(
-        'teste@teste.com.br'
-      );
-      expect(authUserService.comparePassword).toHaveBeenCalled();
-      expect(tokenService.generateToken).toHaveBeenCalled();
-      expect(result).toEqual({ token: 'mocked_token' });
-    });
+    expect(repository.find).toHaveBeenCalledWith(loginInput.email);
+    expect(comparePasswordSpy).toHaveBeenCalled();
+    expect(generateTokenSpy).toHaveBeenCalled();
+    expect(result).toEqual({ token: 'mocked_token' });
   });
 
-  describe('On failure', () => {
-    it('Should throw error when user is not found', async () => {
-      // Arrange
-      const authUserRepository = MockRepository();
-      const authUserService =
-        new AuthUserService() as jest.Mocked<AuthUserService>;
-      const tokenService = new TokenService(
-        'secret'
-      ) as jest.Mocked<TokenService>;
+  it('should throw error when user is not found', async () => {
+    repository.find.mockResolvedValue(undefined);
 
-      // Configurando o mock do repositório para retornar null (usuário não encontrado)
-      authUserRepository.find.mockResolvedValue(null);
+    await expect(
+      usecase.execute({
+        email: 'nonexistent@teste.com.br',
+        password: 'any_password',
+        role: 'master' as RoleUsers,
+      })
+    ).rejects.toThrow(
+      'Invalid credentials. Please check your email and password and try again'
+    );
 
-      // Instanciando o caso de uso com as dependências mockadas
-      const usecase = new LoginAuthUser(
-        authUserRepository,
-        authUserService,
-        tokenService
-      );
+    expect(repository.find).toHaveBeenCalledWith('nonexistent@teste.com.br');
+    expect(comparePasswordSpy).not.toHaveBeenCalled();
+    expect(generateTokenSpy).not.toHaveBeenCalled();
+  });
 
-      // Act & Assert
-      await expect(
-        usecase.execute({
-          email: 'nonexistent@teste.com.br',
-          password: 'any_password',
-          role: 'master' as RoleUsers,
-        })
-      ).rejects.toThrow(
-        'Invalid credentials. Please check your email and password and try again'
-      );
-    });
+  it('should throw error when password is invalid', async () => {
+    repository.find.mockResolvedValue(authUser);
+    comparePasswordSpy.mockResolvedValue(false);
 
-    it('Should throw error when password is invalid', async () => {
-      // Arrange
-      const authUserRepository = MockRepository();
+    await expect(
+      usecase.execute({
+        email: 'teste@teste.com.br',
+        password: 'wrong_password',
+        role: 'master' as RoleUsers,
+      })
+    ).rejects.toThrow(
+      'Invalid credentials. Please check your email and password and try again'
+    );
 
-      // Configurar o mock do serviço de usuário para rejeitar a senha
-      const authUserService =
-        new AuthUserService() as jest.Mocked<AuthUserService>;
-      authUserService.comparePassword = jest.fn().mockResolvedValue(false);
-
-      const tokenService = new TokenService(
-        'secret'
-      ) as jest.Mocked<TokenService>;
-
-      // Configurando o mock do repositório para retornar os dados do usuário
-      authUserRepository.find.mockResolvedValue(mockUserData);
-
-      // Instanciando o caso de uso com as dependências mockadas
-      const usecase = new LoginAuthUser(
-        authUserRepository,
-        authUserService,
-        tokenService
-      );
-
-      // Act & Assert
-      await expect(
-        usecase.execute({
-          email: 'teste@teste.com.br',
-          password: 'wrong_password',
-          role: 'master' as RoleUsers,
-        })
-      ).rejects.toThrow(
-        'Invalid credentials. Please check your email and password and try again'
-      );
-    });
+    expect(repository.find).toHaveBeenCalledWith(loginInput.email);
+    expect(comparePasswordSpy).toHaveBeenCalled();
+    expect(generateTokenSpy).not.toHaveBeenCalled();
   });
 });

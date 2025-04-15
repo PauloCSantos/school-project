@@ -37,14 +37,15 @@ describe('MemoryAuthUserRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should received an undefined', async () => {
+    it('should return undefined if user not found', async () => {
       const authUserEmail = 'teste5@teste.com.br';
       const authUserFound = await repository.find(authUserEmail);
 
       expect(authUserFound).toBeUndefined();
     });
-    it('should throw an error when the email is wrong', async () => {
-      const authUser = new AuthUser(
+
+    it('should throw an error when trying to update a non-existent user', async () => {
+      const newUser = new AuthUser(
         {
           email: 'teste7@teste.com.br',
           password: '12345678',
@@ -54,10 +55,11 @@ describe('MemoryAuthUserRepository unit test', () => {
       );
 
       await expect(
-        repository.update(authUser, 'notfound@teste.com')
+        repository.update(newUser, 'notfound@teste.com')
       ).rejects.toThrow('AuthUser not found');
     });
-    it('should generate an error when trying to remove the authUser with the wrong email', async () => {
+
+    it('should throw an error when trying to delete a non-existent user', async () => {
       await expect(repository.delete('notfound@teste.com')).rejects.toThrow(
         'AuthUser not found'
       );
@@ -65,7 +67,7 @@ describe('MemoryAuthUserRepository unit test', () => {
   });
 
   describe('On success', () => {
-    it('should find a authUser', async () => {
+    it('should find an existing authUser by email', async () => {
       const authUserEmail = authUser1.email;
       const authUserFound = await repository.find(authUserEmail);
 
@@ -74,25 +76,41 @@ describe('MemoryAuthUserRepository unit test', () => {
       expect(authUserFound!.masterId).toBe(authUser1.masterId);
       expect(authUserFound!.role).toBe(authUser1.role);
     });
-    it('should create a new authUser and return its id', async () => {
+
+    it('should create a new authUser and return its info', async () => {
       const result = await repository.create(authUser3);
 
       expect(result.email).toBe(authUser3.email);
       expect(result.masterId).toBe(authUser3.masterId);
     });
-    it('should update a authUser and return its new informations', async () => {
-      const updateAuthUser: AuthUser = authUser2;
-      updateAuthUser.role = 'teacher';
-      const result = await repository.update(
-        updateAuthUser,
-        'teste2@teste.com.br'
+
+    it('should update an existing authUser and persist changes', async () => {
+      await authUser2.hashPassword();
+      const updatedAuthUser = new AuthUser(
+        {
+          email: authUser2.email,
+          password: authUser2.password,
+          role: 'teacher',
+          masterId: authUser2.masterId,
+          isHashed: authUser2.isHashed,
+        },
+        authUserService
       );
+
+      const result = await repository.update(updatedAuthUser, authUser2.email);
       expect(result).toBeDefined();
+      expect(result.role).toBe('teacher');
+
+      const persisted = await repository.find(authUser2.email);
+      expect(persisted?.role).toBe('teacher');
     });
-    it('should remove the authUser', async () => {
+
+    it('should delete an existing authUser', async () => {
       const response = await repository.delete(authUser1.email);
 
       expect(response).toBe('Operação concluída com sucesso');
+      const deletedUser = await repository.find(authUser1.email);
+      expect(deletedUser).toBeUndefined();
     });
   });
 });

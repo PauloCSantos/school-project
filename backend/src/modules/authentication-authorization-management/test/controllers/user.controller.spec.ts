@@ -1,114 +1,155 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import {
+  CreateAuthUserInputDto,
+  CreateAuthUserOutputDto,
+  DeleteAuthUserInputDto,
+  DeleteAuthUserOutputDto,
+  FindAuthUserInputDto,
+  FindAuthUserOutputDto,
+  LoginAuthUserInputDto,
+  LoginAuthUserOutputDto,
+  UpdateAuthUserInputDto,
+  UpdateAuthUserOutputDto,
+} from '../../application/dto/user-usecase.dto';
 import CreateAuthUser from '../../application/usecases/authUser/create-user.usecase';
-import FindAuthUser from '../../application/usecases/authUser/find-user.usecase';
-import UpdateAuthUser from '../../application/usecases/authUser/update-user.usecase';
 import DeleteAuthUser from '../../application/usecases/authUser/delete-user.usecase';
+import FindAuthUser from '../../application/usecases/authUser/find-user.usecase';
 import LoginAuthUser from '../../application/usecases/authUser/login-user.usecase';
+import UpdateAuthUser from '../../application/usecases/authUser/update-user.usecase';
 import AuthUserController from '../../interface/controller/user.controller';
 
+const mockCreateAuthUser: jest.Mocked<CreateAuthUser> = {
+  execute: jest.fn(),
+} as unknown as jest.Mocked<CreateAuthUser>;
+
+const mockFindAuthUser: jest.Mocked<FindAuthUser> = {
+  execute: jest.fn(),
+} as unknown as jest.Mocked<FindAuthUser>;
+
+const mockUpdateAuthUser: jest.Mocked<UpdateAuthUser> = {
+  execute: jest.fn(),
+} as unknown as jest.Mocked<UpdateAuthUser>;
+
+const mockDeleteAuthUser: jest.Mocked<DeleteAuthUser> = {
+  execute: jest.fn(),
+} as unknown as jest.Mocked<DeleteAuthUser>;
+
+const mockLoginAuthUser: jest.Mocked<LoginAuthUser> = {
+  execute: jest.fn(),
+} as unknown as jest.Mocked<LoginAuthUser>;
+
 describe('AuthUserController unit test', () => {
-  const mockCreateAuthUser = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        email: 'teste1@teste.com',
-        masterId: new Id().value,
-      }),
-    } as unknown as CreateAuthUser;
-  });
-  const mockFindAuthUser = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        email: 'teste1@teste.com',
-        masterId: new Id().value,
-        role: 'master',
-        isHashed: true,
-      }),
-    } as unknown as FindAuthUser;
-  });
-  const mockUpdateAuthUser = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        email: 'teste1@teste.com',
-        role: 'master',
-      }),
-    } as unknown as UpdateAuthUser;
-  });
-  const mockDeleteAuthUser = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
-      }),
-    } as unknown as DeleteAuthUser;
-  });
-  const mockLoginAuthUser = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        token:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6Ijk1MzIwYWU4LWNjMDItNDEwMy1iZjZkLThlYjEwYjc3NWJhMSIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcwOTkyNDIyNiwiZXhwIjoxNzA5OTI2MDI2fQ.QCuJ6riJEe6m-7r-qkeZKI9JxvyVQJfNASHuc1GrVgg',
-      }),
-    } as unknown as LoginAuthUser;
+  let controller: AuthUserController;
+
+  const masterId = new Id().value;
+  const email = 'test@example.com';
+  const password = 'password123';
+
+  const createInput: CreateAuthUserInputDto = {
+    email,
+    password,
+    masterId,
+    role: 'master',
+    isHashed: false,
+  };
+  const createOutput: CreateAuthUserOutputDto = { email, masterId };
+
+  const findInput: FindAuthUserInputDto = { email };
+  const findOutput: FindAuthUserOutputDto = {
+    email,
+    masterId,
+    role: 'master',
+    isHashed: true,
+  };
+
+  const updateInput: UpdateAuthUserInputDto = {
+    email,
+    authUserDataToUpdate: { password: 'newPassword' },
+  };
+  const updateOutput: UpdateAuthUserOutputDto = {
+    email,
+    role: 'master',
+  };
+
+  const deleteInput: DeleteAuthUserInputDto = { email };
+  const deleteOutput: DeleteAuthUserOutputDto = {
+    message: 'Operação concluída com sucesso',
+  };
+
+  const loginInput: LoginAuthUserInputDto = {
+    email,
+    password,
+    role: 'master',
+  };
+  const loginOutput: LoginAuthUserOutputDto = {
+    token: 'mock_jwt_token_string',
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    mockCreateAuthUser.execute.mockResolvedValue(createOutput);
+    mockFindAuthUser.execute.mockResolvedValue(findOutput);
+    mockUpdateAuthUser.execute.mockResolvedValue(updateOutput);
+    mockDeleteAuthUser.execute.mockResolvedValue(deleteOutput);
+    mockLoginAuthUser.execute.mockResolvedValue(loginOutput);
+
+    controller = new AuthUserController(
+      mockCreateAuthUser,
+      mockFindAuthUser,
+      mockUpdateAuthUser,
+      mockDeleteAuthUser,
+      mockLoginAuthUser
+    );
   });
 
-  const createAuthUser = mockCreateAuthUser();
-  const deleteAuthUser = mockDeleteAuthUser();
-  const findAuthUser = mockFindAuthUser();
-  const updateAuthUser = mockUpdateAuthUser();
-  const loginAuthUser = mockLoginAuthUser();
+  it('should call create use case with correct input and return its output', async () => {
+    const result = await controller.create(createInput);
 
-  const controller = new AuthUserController(
-    createAuthUser,
-    findAuthUser,
-    updateAuthUser,
-    deleteAuthUser,
-    loginAuthUser
-  );
-
-  it('should return an email and masterId for the new authUser created', async () => {
-    const result = await controller.create({
-      email: 'teste@teste.com.br',
-      password: 'XpA2Jjd4',
-      masterId: new Id().value,
-      role: 'master' as RoleUsers,
-      isHashed: false,
-    });
-
-    expect(result.email).toBeDefined();
-    expect(result.masterId).toBeDefined();
-    expect(createAuthUser.execute).toHaveBeenCalled();
+    expect(mockCreateAuthUser.execute).toHaveBeenCalledTimes(1);
+    expect(mockCreateAuthUser.execute).toHaveBeenCalledWith(createInput);
+    expect(result).toEqual(createOutput);
   });
-  it('should find an authUser', async () => {
-    const result = await controller.find({ email: 'teste@teste.com.br' });
 
-    expect(result).toBeDefined();
-    expect(findAuthUser.execute).toHaveBeenCalled();
+  it('should call find use case with correct input and return its output', async () => {
+    const result = await controller.find(findInput);
+
+    expect(mockFindAuthUser.execute).toHaveBeenCalledTimes(1);
+    expect(mockFindAuthUser.execute).toHaveBeenCalledWith(findInput);
+    expect(result).toEqual(findOutput);
   });
-  it('should update an authUser', async () => {
-    const result = await controller.update({
-      email: 'teste@teste.com.br',
-      authUserDataToUpdate: {
-        password: 'as5d4v',
-      },
-    });
 
-    expect(result).toBeDefined();
-    expect(updateAuthUser.execute).toHaveBeenCalled();
+  it('should handle case where find use case returns undefined', async () => {
+    mockFindAuthUser.execute.mockResolvedValue(undefined);
+
+    const result = await controller.find(findInput);
+
+    expect(mockFindAuthUser.execute).toHaveBeenCalledTimes(1);
+    expect(mockFindAuthUser.execute).toHaveBeenCalledWith(findInput);
+    expect(result).toBeUndefined();
   });
-  it('should delete an authUser', async () => {
-    const result = await controller.delete({
-      email: 'teste@teste.com.br',
-    });
 
-    expect(result).toBeDefined();
-    expect(deleteAuthUser.execute).toHaveBeenCalled();
+  it('should call update use case with correct input and return its output', async () => {
+    const result = await controller.update(updateInput);
+
+    expect(mockUpdateAuthUser.execute).toHaveBeenCalledTimes(1);
+    expect(mockUpdateAuthUser.execute).toHaveBeenCalledWith(updateInput);
+    expect(result).toEqual(updateOutput);
   });
-  it('should login and receive a token', async () => {
-    const result = await controller.login({
-      email: 'teste@teste.com.br',
-      password: 'as5d4a5d4',
-      role: 'master',
-    });
 
-    expect(result).toBeDefined();
-    expect(loginAuthUser.execute).toHaveBeenCalled();
+  it('should call delete use case with correct input and return its output', async () => {
+    const result = await controller.delete(deleteInput);
+
+    expect(mockDeleteAuthUser.execute).toHaveBeenCalledTimes(1);
+    expect(mockDeleteAuthUser.execute).toHaveBeenCalledWith(deleteInput);
+    expect(result).toEqual(deleteOutput);
+  });
+
+  it('should call login use case with correct input and return its output', async () => {
+    const result = await controller.login(loginInput);
+
+    expect(mockLoginAuthUser.execute).toHaveBeenCalledTimes(1);
+    expect(mockLoginAuthUser.execute).toHaveBeenCalledWith(loginInput);
+    expect(result).toEqual(loginOutput);
   });
 });
