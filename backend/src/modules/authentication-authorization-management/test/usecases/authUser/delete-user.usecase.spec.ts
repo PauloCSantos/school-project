@@ -1,55 +1,78 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import DeleteAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/delete-user.usecase';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import AuthUserService from '@/modules/authentication-authorization-management/domain/service/user-entity.service';
+import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
 
-const MockRepository = () => {
+// const MockRepository = (): jest.Mocked<AuthUserGateway> => {
+//   return {
+//     find: jest.fn(),
+//     create: jest.fn(),
+//     update: jest.fn(),
+//     delete: jest.fn(() => Promise.resolve('Operação concluída com sucesso')),
+//   } as jest.Mocked<AuthUserGateway>;
+// };
+
+const MockRepository = (): jest.Mocked<AuthUserGateway> => {
   return {
     find: jest.fn(),
-    findAll: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
-    delete: jest.fn(() => Promise.resolve('Operação concluída com sucesso')),
-  };
+    delete: jest.fn(email => Promise.resolve('Operação concluída com sucesso')),
+  } as jest.Mocked<AuthUserGateway>;
 };
 
-describe('deleteAuthUser usecase unit test', () => {
-  const input = {
-    email: 'teste@teste.com.br',
-    password: 'XpA2Jjd4',
-    masterId: new Id().value,
-    role: 'master' as RoleUsers,
-    isHashed: false,
+describe('DeleteAuthUser usecase unit test', () => {
+  let repository: jest.Mocked<AuthUserGateway>;
+  let usecase: DeleteAuthUser;
+  let authUserService: AuthUserService;
+  let input: {
+    email: string;
+    password: string;
+    masterId: string;
+    role: RoleUsers;
+    isHashed: boolean;
   };
+  let authUser: AuthUser;
 
-  const authUserService = new AuthUserService();
+  beforeEach(() => {
+    input = {
+      email: 'teste@teste.com.br',
+      password: 'XpA2Jjd4',
+      masterId: new Id().value,
+      role: 'master' as RoleUsers,
+      isHashed: false,
+    };
 
-  const authUser = new AuthUser(input, authUserService);
-
-  describe('On fail', () => {
-    it('should return an error if the authUser does not exist', async () => {
-      const authUserRepository = MockRepository();
-      authUserRepository.find.mockResolvedValue(undefined);
-
-      const usecase = new DeleteAuthUser(authUserRepository);
-
-      await expect(
-        usecase.execute({ email: 'notfound@email.com' })
-      ).rejects.toThrow('AuthUser not found');
-    });
+    authUserService = new AuthUserService();
+    authUser = new AuthUser(input, authUserService);
+    repository = MockRepository();
+    usecase = new DeleteAuthUser(repository);
   });
-  describe('On success', () => {
-    it('should delete a authUser', async () => {
-      const authUserRepository = MockRepository();
-      authUserRepository.find.mockResolvedValue(authUser);
-      const usecase = new DeleteAuthUser(authUserRepository);
-      const result = await usecase.execute({
-        email: input.email,
-      });
 
-      expect(authUserRepository.delete).toHaveBeenCalled();
-      expect(result).toBeDefined();
-      expect(result.message).toBe('Operação concluída com sucesso');
-    });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should throw an error if the authUser does not exist', async () => {
+    repository.find.mockResolvedValue(undefined);
+
+    await expect(
+      usecase.execute({ email: 'notfound@email.com' })
+    ).rejects.toThrow('AuthUser not found');
+
+    expect(repository.find).toHaveBeenCalledWith('notfound@email.com');
+    expect(repository.delete).not.toHaveBeenCalled();
+  });
+
+  it('should delete an authUser successfully', async () => {
+    repository.find.mockResolvedValue(authUser);
+
+    const result = await usecase.execute({ email: input.email });
+
+    expect(repository.find).toHaveBeenCalledWith(input.email);
+    expect(repository.delete).toHaveBeenCalledWith(input.email);
+    expect(result).toBeDefined();
+    expect(result.message).toBe('Operação concluída com sucesso');
   });
 });

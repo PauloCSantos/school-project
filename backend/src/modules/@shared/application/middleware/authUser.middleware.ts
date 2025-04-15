@@ -1,4 +1,4 @@
-import TokenService from '@/modules/authentication-authorization-management/domain/service/token.service';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/service/token.service';
 import { isNotEmpty } from '../../utils/validations';
 import {
   HttpRequest,
