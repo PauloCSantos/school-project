@@ -1,14 +1,17 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import DeleteNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/delete.usecase';
 import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
+import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
 
-const MockRepository = () => {
+const MockRepository = (): jest.Mocked<NoteGateway> => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
-    delete: jest.fn(() => Promise.resolve('Operação concluída com sucesso')),
+    delete: jest.fn((id: string) =>
+      Promise.resolve('Operação concluída com sucesso')
+    ),
   };
 };
 

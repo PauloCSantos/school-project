@@ -1,3 +1,4 @@
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import AddStudents from '../../application/usecases/attendance/add-students.usecase';
 import CreateAttendance from '../../application/usecases/attendance/create.usecase';
 import DeleteAttendance from '../../application/usecases/attendance/delete.usecase';
@@ -5,169 +6,177 @@ import FindAllAttendance from '../../application/usecases/attendance/find-all.us
 import FindAttendance from '../../application/usecases/attendance/find.usecase';
 import RemoveStudents from '../../application/usecases/attendance/remove-students.usecase';
 import UpdateAttendance from '../../application/usecases/attendance/update.usecase';
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import { AttendanceController } from '../../interface/controller/attendance.controller';
+import AttendanceController from '../../interface/controller/attendance.controller';
 
 describe('AttendanceController unit test', () => {
-  const mockCreateAttendance = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue(new Id().value),
-    } as unknown as CreateAttendance;
-  });
-  const mockFindAttendance = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        lesson: '96c6335d-0c22-401e-8ccd-682130b70e1a',
-        date: '2024-02-09T11:51:05.079Z',
-        hour: '06:50',
-        day: 'fri',
-        studentsPresent: [
-          '615e11af-01bf-48a7-8ae4-efcc8c160b45',
-          '73a07eaf-36e5-4f4b-9a40-64c65fa0e6b6',
-          'c5567af5-ad54-4d5d-81a4-51ffa1611d99',
-        ],
-      }),
-    } as unknown as FindAttendance;
-  });
-  const mockFindAllAttendance = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue([
-        {
-          lesson: '96c6335d-0c22-401e-8ccd-682130b70e1a',
-          date: '2024-02-09T11:51:05.079Z',
-          hour: '06:50',
-          day: 'fri',
-          studentsPresent: [
-            '615e11af-01bf-48a7-8ae4-efcc8c160b45',
-            '73a07eaf-36e5-4f4b-9a40-64c65fa0e6b6',
-            'c5567af5-ad54-4d5d-81a4-51ffa1611d99',
-          ],
-        },
-        {
-          lesson: '84c6335d-0c22-401e-8ccd-682130b70e1a',
-          date: '2024-03-09T11:51:05.079Z',
-          hour: '20:00',
-          day: 'mon',
-          studentsPresent: [
-            '615e11af-01bf-48a7-8ae4-efcc8c160b45',
-            '73a07eaf-36e5-4f4b-9a40-64c65fa0e6b6',
-            'c5567af5-ad54-4d5d-81a4-51ffa1611d99',
-          ],
-        },
-      ]),
-    } as unknown as FindAllAttendance;
-  });
-  const mockUpdateAttendance = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        lesson: '96c6335d-0c22-401e-8ccd-682130b70e1a',
-        date: '2024-02-09T11:51:05.079Z',
-        hour: '06:50',
-        day: 'fri',
-        studentsPresent: [
-          '615e11af-01bf-48a7-8ae4-efcc8c160b45',
-          '73a07eaf-36e5-4f4b-9a40-64c65fa0e6b6',
-          'c5567af5-ad54-4d5d-81a4-51ffa1611d99',
-        ],
-      }),
-    } as unknown as UpdateAttendance;
-  });
-  const mockDeleteAttendance = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
-      }),
-    } as unknown as DeleteAttendance;
-  });
-  const mockAddStudents = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({ message: '1 value was entered' }),
-    } as unknown as AddStudents;
-  });
-  const mockRemoveStudents = jest.fn(() => {
-    return {
-      execute: jest
-        .fn()
-        .mockResolvedValue({ message: '2 values were removed' }),
-    } as unknown as RemoveStudents;
-  });
+  // Mock the usecases directly
+  const mockCreateAttendance: jest.Mocked<CreateAttendance> = {
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<CreateAttendance>;
 
-  const createAttendance = mockCreateAttendance();
-  const deleteAttendance = mockDeleteAttendance();
-  const findAllAttendance = mockFindAllAttendance();
-  const findAttendance = mockFindAttendance();
-  const updateAttendance = mockUpdateAttendance();
-  const addStudents = mockAddStudents();
-  const removeStudents = mockRemoveStudents();
+  const mockFindAttendance: jest.Mocked<FindAttendance> = {
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<FindAttendance>;
 
-  const controller = new AttendanceController(
-    createAttendance,
-    findAttendance,
-    findAllAttendance,
-    updateAttendance,
-    deleteAttendance,
-    addStudents,
-    removeStudents
-  );
+  const mockFindAllAttendance: jest.Mocked<FindAllAttendance> = {
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<FindAllAttendance>;
+
+  const mockUpdateAttendance: jest.Mocked<UpdateAttendance> = {
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<UpdateAttendance>;
+
+  const mockDeleteAttendance: jest.Mocked<DeleteAttendance> = {
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<DeleteAttendance>;
+
+  const mockAddStudents: jest.Mocked<AddStudents> = {
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<AddStudents>;
+
+  const mockRemoveStudents: jest.Mocked<RemoveStudents> = {
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<RemoveStudents>;
+
+  let controller: AttendanceController;
+  const id = new Id().value;
+
+  // Define example input/output data with the required 'id' property
+  const attendanceData = {
+    id: id,
+    lesson: '96c6335d-0c22-401e-8ccd-682130b70e1a',
+    date: new Date('2024-02-09T11:51:05.079Z'),
+    hour: '06:50',
+    day: 'fri',
+    studentsPresent: [
+      '615e11af-01bf-48a7-8ae4-efcc8c160b45',
+      '73a07eaf-36e5-4f4b-9a40-64c65fa0e6b6',
+      'c5567af5-ad54-4d5d-81a4-51ffa1611d99',
+    ],
+  };
+
+  // For create, the output should match the expected interface
+  const createOutput = { id: id };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Set up mock implementations with the correct output formats
+    mockCreateAttendance.execute.mockResolvedValue(createOutput);
+    mockFindAttendance.execute.mockResolvedValue(attendanceData);
+    mockFindAllAttendance.execute.mockResolvedValue([
+      attendanceData,
+      {
+        ...attendanceData,
+        id: new Id().value,
+        lesson: '84c6335d-0c22-401e-8ccd-682130b70e1a',
+        date: new Date('2024-02-09T11:51:05.079Z'),
+        hour: '20:00',
+        day: 'mon',
+      },
+    ]);
+    mockUpdateAttendance.execute.mockResolvedValue(attendanceData);
+    mockDeleteAttendance.execute.mockResolvedValue({
+      message: 'Operação concluída com sucesso',
+    });
+    mockAddStudents.execute.mockResolvedValue({
+      message: '1 value was entered',
+    });
+    mockRemoveStudents.execute.mockResolvedValue({
+      message: '2 values were removed',
+    });
+
+    controller = new AttendanceController(
+      mockCreateAttendance,
+      mockFindAttendance,
+      mockFindAllAttendance,
+      mockUpdateAttendance,
+      mockDeleteAttendance,
+      mockAddStudents,
+      mockRemoveStudents
+    );
+  });
 
   it('should return a id for the new attendance created', async () => {
-    const result = await controller.create({
+    const createInput = {
       date: new Date(),
       day: 'fri' as DayOfWeek,
       hour: '06:50' as Hour,
       lesson: new Id().value,
       studentsPresent: [new Id().value, new Id().value, new Id().value],
-    });
+    };
 
+    const result = await controller.create(createInput);
+
+    expect(mockCreateAttendance.execute).toHaveBeenCalledTimes(1);
+    expect(mockCreateAttendance.execute).toHaveBeenCalledWith(createInput);
     expect(result).toBeDefined();
-    expect(createAttendance.execute).toHaveBeenCalled();
+    expect(result).toEqual(createOutput);
   });
+
   it('should return a attendance', async () => {
-    const result = await controller.find({ id: new Id().value });
+    const findInput = { id };
+    const result = await controller.find(findInput);
 
-    expect(result).toBeDefined();
-    expect(findAttendance.execute).toHaveBeenCalled();
+    expect(mockFindAttendance.execute).toHaveBeenCalledTimes(1);
+    expect(mockFindAttendance.execute).toHaveBeenCalledWith(findInput);
+    expect(result).toEqual(attendanceData);
   });
-  it('should return all attendances', async () => {
-    const result = await controller.findAll({});
 
+  it('should return all attendances', async () => {
+    const findAllInput = {};
+    const result = await controller.findAll(findAllInput);
+
+    expect(mockFindAllAttendance.execute).toHaveBeenCalledTimes(1);
+    expect(mockFindAllAttendance.execute).toHaveBeenCalledWith(findAllInput);
     expect(result).toBeDefined();
     expect(result.length).toBe(2);
-    expect(findAllAttendance.execute).toHaveBeenCalled();
   });
+
   it('should update a attendance', async () => {
-    const result = await controller.update({
-      id: new Id().value,
+    const updateInput = {
+      id,
       hour: '14:00',
-    });
+    };
+    const result = await controller.update(updateInput);
 
-    expect(result).toBeDefined();
-    expect(updateAttendance.execute).toHaveBeenCalled();
+    expect(mockUpdateAttendance.execute).toHaveBeenCalledTimes(1);
+    expect(mockUpdateAttendance.execute).toHaveBeenCalledWith(updateInput);
+    expect(result).toEqual(attendanceData);
   });
+
   it('should delete a attendance', async () => {
-    const result = await controller.delete({
-      id: new Id().value,
-    });
+    const deleteInput = { id };
+    const result = await controller.delete(deleteInput);
 
-    expect(result).toBeDefined();
-    expect(deleteAttendance.execute).toHaveBeenCalled();
+    expect(mockDeleteAttendance.execute).toHaveBeenCalledTimes(1);
+    expect(mockDeleteAttendance.execute).toHaveBeenCalledWith(deleteInput);
+    expect(result).toEqual({ message: 'Operação concluída com sucesso' });
   });
+
   it('should add students to the attendance', async () => {
-    const result = await controller.addStudents({
-      id: new Id().value,
+    const addStudentsInput = {
+      id,
       newStudentsList: [new Id().value],
-    });
+    };
+    const result = await controller.addStudents(addStudentsInput);
 
-    expect(result).toBeDefined();
-    expect(addStudents.execute).toHaveBeenCalled();
+    expect(mockAddStudents.execute).toHaveBeenCalledTimes(1);
+    expect(mockAddStudents.execute).toHaveBeenCalledWith(addStudentsInput);
+    expect(result).toEqual({ message: '1 value was entered' });
   });
-  it('should remove students from the attendance', async () => {
-    const result = await controller.removeStudents({
-      id: new Id().value,
-      studentsListToRemove: [new Id().value, new Id().value],
-    });
 
-    expect(result).toBeDefined();
-    expect(removeStudents.execute).toHaveBeenCalled();
+  it('should remove students from the attendance', async () => {
+    const removeStudentsInput = {
+      id,
+      studentsListToRemove: [new Id().value, new Id().value],
+    };
+    const result = await controller.removeStudents(removeStudentsInput);
+
+    expect(mockRemoveStudents.execute).toHaveBeenCalledTimes(1);
+    expect(mockRemoveStudents.execute).toHaveBeenCalledWith(
+      removeStudentsInput
+    );
+    expect(result).toEqual({ message: '2 values were removed' });
   });
 });

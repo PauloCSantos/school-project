@@ -9,7 +9,7 @@ import UpdateAttendance from '@/modules/evaluation-note-attendance-management/ap
 import DeleteAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/delete.usecase';
 import AddStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/add-students.usecase';
 import RemoveStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/remove-students.usecase';
-import { AttendanceController } from '@/modules/evaluation-note-attendance-management/interface/controller/attendance.controller';
+import AttendanceController from '@/modules/evaluation-note-attendance-management/interface/controller/attendance.controller';
 import { AttendanceRoute } from '@/modules/evaluation-note-attendance-management/interface/route/attendance.route';
 
 export default function initializeAttendance(express: ExpressHttp): void {

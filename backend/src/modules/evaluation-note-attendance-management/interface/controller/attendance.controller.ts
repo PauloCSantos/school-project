@@ -22,55 +22,110 @@ import FindAttendance from '../../application/usecases/attendance/find.usecase';
 import RemoveStudents from '../../application/usecases/attendance/remove-students.usecase';
 import UpdateAttendance from '../../application/usecases/attendance/update.usecase';
 
-export class AttendanceController {
+/**
+ * Controller for attendance management operations.
+ * Handles HTTP requests by delegating to appropriate use cases.
+ */
+export default class AttendanceController {
+  /**
+   * Creates a new AttendanceController instance.
+   * @param createAttendance - Use case for creating a new attendance record
+   * @param findAttendance - Use case for finding an attendance record
+   * @param findAllAttendance - Use case for finding all attendance records
+   * @param updateAttendance - Use case for updating an attendance record
+   * @param deleteAttendance - Use case for deleting an attendance record
+   * @param addStudentsToAttendance - Use case for adding students to an attendance record
+   * @param removeStudentsFromAttendance - Use case for removing students from an attendance record
+   */
   constructor(
     private readonly createAttendance: CreateAttendance,
     private readonly findAttendance: FindAttendance,
     private readonly findAllAttendance: FindAllAttendance,
     private readonly updateAttendance: UpdateAttendance,
     private readonly deleteAttendance: DeleteAttendance,
-    private readonly addStudentstoAttendance: AddStudents,
-    private readonly removeStudentstoAttendance: RemoveStudents
+    private readonly addStudentsToAttendance: AddStudents,
+    private readonly removeStudentsFromAttendance: RemoveStudents
   ) {}
 
+  /**
+   * Creates a new attendance record.
+   * @param input - The data for creating a new attendance record
+   * @returns Promise resolving to the created attendance data
+   */
   async create(
     input: CreateAttendanceInputDto
   ): Promise<CreateAttendanceOutputDto> {
     const response = await this.createAttendance.execute(input);
     return response;
   }
+
+  /**
+   * Finds an attendance record by id.
+   * @param input - The input containing the id to search for
+   * @returns Promise resolving to the found attendance data or undefined
+   */
   async find(
     input: FindAttendanceInputDto
   ): Promise<FindAttendanceOutputDto | undefined> {
     const response = await this.findAttendance.execute(input);
     return response;
   }
+
+  /**
+   * Finds all attendance records based on provided criteria.
+   * @param input - The criteria for finding attendance records
+   * @returns Promise resolving to the found attendance records
+   */
   async findAll(
     input: FindAllAttendanceInputDto
   ): Promise<FindAllAttendanceOutputDto> {
     const response = await this.findAllAttendance.execute(input);
     return response;
   }
-  async delete(
-    input: DeleteAttendanceInputDto
-  ): Promise<DeleteAttendanceOutputDto> {
-    const response = await this.deleteAttendance.execute(input);
-    return response;
-  }
+
+  /**
+   * Updates an attendance record.
+   * @param input - The input containing the attendance data to update
+   * @returns Promise resolving to the updated attendance data
+   */
   async update(
     input: UpdateAttendanceInputDto
   ): Promise<UpdateAttendanceOutputDto> {
     const response = await this.updateAttendance.execute(input);
     return response;
   }
-  async addStudents(input: AddStudentsInputDto): Promise<AddStudentsOutputDto> {
-    const response = await this.addStudentstoAttendance.execute(input);
+
+  /**
+   * Deletes an attendance record.
+   * @param input - The input containing the id of the attendance record to delete
+   * @returns Promise resolving to the deletion confirmation
+   */
+  async delete(
+    input: DeleteAttendanceInputDto
+  ): Promise<DeleteAttendanceOutputDto> {
+    const response = await this.deleteAttendance.execute(input);
     return response;
   }
+
+  /**
+   * Adds students to an attendance record.
+   * @param input - The input containing the attendance record id and student ids to add
+   * @returns Promise resolving to the updated attendance with added students
+   */
+  async addStudents(input: AddStudentsInputDto): Promise<AddStudentsOutputDto> {
+    const response = await this.addStudentsToAttendance.execute(input);
+    return response;
+  }
+
+  /**
+   * Removes students from an attendance record.
+   * @param input - The input containing the attendance record id and student ids to remove
+   * @returns Promise resolving to the updated attendance with removed students
+   */
   async removeStudents(
     input: RemoveStudentsInputDto
   ): Promise<RemoveStudentsOutputDto> {
-    const response = await this.removeStudentstoAttendance.execute(input);
+    const response = await this.removeStudentsFromAttendance.execute(input);
     return response;
   }
 }

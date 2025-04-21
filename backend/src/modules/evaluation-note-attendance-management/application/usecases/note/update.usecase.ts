@@ -5,14 +5,33 @@ import {
 } from '../../dto/note-usecase.dto';
 import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
 
+/**
+ * Use case responsible for updating a note.
+ *
+ * Verifies note existence, applies updates, and persists changes.
+ */
 export default class UpdateNote
   implements UseCaseInterface<UpdateNoteInputDto, UpdateNoteOutputDto>
 {
-  private _noteRepository: NoteGateway;
+  /** Repository for persisting and retrieving notes */
+  private readonly _noteRepository: NoteGateway;
 
+  /**
+   * Constructs a new instance of the UpdateNote use case.
+   *
+   * @param noteRepository - Gateway implementation for data persistence
+   */
   constructor(noteRepository: NoteGateway) {
     this._noteRepository = noteRepository;
   }
+
+  /**
+   * Executes the update of a note.
+   *
+   * @param input - Input data containing the note id and fields to update
+   * @returns Output data of the updated note
+   * @throws Error if the note with the specified id does not exist
+   */
   async execute({
     id,
     evaluation,
@@ -21,6 +40,7 @@ export default class UpdateNote
   }: UpdateNoteInputDto): Promise<UpdateNoteOutputDto> {
     const noteInstance = await this._noteRepository.find(id);
     if (!noteInstance) throw new Error('Note not found');
+
     try {
       evaluation !== undefined && (noteInstance.evaluation = evaluation);
       note !== undefined && (noteInstance.note = note);

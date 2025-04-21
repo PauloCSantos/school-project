@@ -6,14 +6,33 @@ import {
 } from '../../dto/note-usecase.dto';
 import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
 
+/**
+ * Use case responsible for creating a new note.
+ *
+ * Checks for id uniqueness and persists the note in the repository.
+ */
 export default class CreateNote
   implements UseCaseInterface<CreateNoteInputDto, CreateNoteOutputDto>
 {
-  private _noteRepository: NoteGateway;
+  /** Repository for persisting and retrieving notes */
+  private readonly _noteRepository: NoteGateway;
 
+  /**
+   * Constructs a new instance of the CreateNote use case.
+   *
+   * @param noteRepository - Gateway implementation for data persistence
+   */
   constructor(noteRepository: NoteGateway) {
     this._noteRepository = noteRepository;
   }
+
+  /**
+   * Executes the creation of a new note.
+   *
+   * @param input - Input data including evaluation, note, and student
+   * @returns Output data of the created note
+   * @throws Error if a note with the same id already exists
+   */
   async execute({
     evaluation,
     note,

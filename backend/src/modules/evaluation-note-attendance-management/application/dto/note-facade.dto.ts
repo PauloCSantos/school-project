@@ -1,50 +1,27 @@
-export interface FindNoteInputDto {
-  id: string;
-}
-export interface FindNoteOutputDto {
-  id: string;
-  evaluation: string;
-  student: string;
-  note: number;
-}
+import {
+  IFindNoteInput,
+  IFindNoteOutput,
+  IFindAllNoteInput,
+  IFindAllNoteItemOutput,
+  ICreateNoteInput,
+  ICreateNoteOutput,
+  IUpdateNoteInput,
+  IUpdateNoteOutput,
+  IDeleteNoteInput,
+  IDeleteNoteOutput,
+} from './base-note.dto';
 
-export interface FindAllNoteInputDto {
-  quantity?: number;
-  offset?: number;
-}
-export interface FindAllNoteOutputDto
-  extends Array<{
-    id: string;
-    evaluation: string;
-    student: string;
-    note: number;
-  }> {}
+export type FindNoteInputDto = IFindNoteInput;
+export type FindNoteOutputDto = IFindNoteOutput;
 
-export interface CreateNoteInputDto {
-  evaluation: string;
-  student: string;
-  note: number;
-}
-export interface CreateNoteOutputDto {
-  id: string;
-}
+export type FindAllNoteInputDto = IFindAllNoteInput;
+export type FindAllNoteOutputDto = Array<IFindAllNoteItemOutput>;
 
-export interface UpdateNoteInputDto {
-  id: string;
-  evaluation?: string;
-  student?: string;
-  note?: number;
-}
-export interface UpdateNoteOutputDto {
-  id: string;
-  evaluation: string;
-  student: string;
-  note: number;
-}
+export type CreateNoteInputDto = ICreateNoteInput;
+export type CreateNoteOutputDto = ICreateNoteOutput;
 
-export interface DeleteNoteInputDto {
-  id: string;
-}
-export interface DeleteNoteOutputDto {
-  message: string;
-}
+export type UpdateNoteInputDto = IUpdateNoteInput;
+export type UpdateNoteOutputDto = IUpdateNoteOutput;
+
+export type DeleteNoteInputDto = IDeleteNoteInput;
+export type DeleteNoteOutputDto = IDeleteNoteOutput;

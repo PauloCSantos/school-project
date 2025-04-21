@@ -1,8 +1,9 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import CreateEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/create.usecase';
 import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
+import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
 
-const MockRepository = () => {
+const MockRepository = (): jest.Mocked<EvaluationGateway> => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
@@ -40,7 +41,7 @@ describe('createEvaluation usecase unit test', () => {
   });
 
   describe('On success', () => {
-    it('should create a evaluation', async () => {
+    it('should create an evaluation', async () => {
       const evaluationRepository = MockRepository();
       evaluationRepository.find.mockResolvedValue(undefined);
 
@@ -50,7 +51,9 @@ describe('createEvaluation usecase unit test', () => {
       expect(evaluationRepository.find).toHaveBeenCalledWith(
         expect.any(String)
       );
-      expect(evaluationRepository.create).toHaveBeenCalled();
+      expect(evaluationRepository.create).toHaveBeenCalledWith(
+        expect.any(Evaluation)
+      );
       expect(result).toBeDefined();
     });
   });

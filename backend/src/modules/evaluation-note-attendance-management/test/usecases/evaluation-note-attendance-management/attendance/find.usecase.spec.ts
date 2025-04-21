@@ -1,8 +1,9 @@
 import FindAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/find.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
+import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
 
-const MockRepository = () => {
+const MockRepository = (): jest.Mocked<AttendanceGateway> => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
@@ -14,36 +15,54 @@ const MockRepository = () => {
   };
 };
 
-describe('findAttendance usecase unit test', () => {
-  const attendance1 = new Attendance({
-    date: new Date(),
-    day: 'fri',
-    hour: '06:50',
-    lesson: new Id().value,
-    studentsPresent: [new Id().value, new Id().value, new Id().value],
+describe('FindAttendance usecase unit test', () => {
+  let attendance: Attendance;
+  let attendanceRepository: jest.Mocked<AttendanceGateway>;
+  let usecase: FindAttendance;
+
+  beforeEach(() => {
+    attendance = new Attendance({
+      date: new Date(),
+      day: 'fri',
+      hour: '06:50',
+      lesson: new Id().value,
+      studentsPresent: [new Id().value, new Id().value, new Id().value],
+    });
+    attendanceRepository = MockRepository();
+    usecase = new FindAttendance(attendanceRepository);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('On success', () => {
-    it('should find a attendance', async () => {
-      const attendanceRepository = MockRepository();
-      attendanceRepository.find.mockResolvedValue(attendance1);
-      const usecase = new FindAttendance(attendanceRepository);
+    it('should find an attendance', async () => {
+      attendanceRepository.find.mockResolvedValue(attendance);
 
-      const result = await usecase.execute({ id: attendance1.id.value });
+      const result = await usecase.execute({ id: attendance.id.value });
 
-      expect(attendanceRepository.find).toHaveBeenCalled();
+      expect(attendanceRepository.find).toHaveBeenCalledWith(
+        attendance.id.value
+      );
       expect(result).toBeDefined();
+      expect(result).toMatchObject({
+        id: attendance.id.value,
+        date: attendance.date,
+        day: attendance.day,
+        hour: attendance.hour,
+        lesson: attendance.lesson,
+        studentsPresent: attendance.studentsPresent,
+      });
     });
+
     it('should return undefined when id is not found', async () => {
-      const attendanceRepository = MockRepository();
       attendanceRepository.find.mockResolvedValue(undefined);
 
-      const usecase = new FindAttendance(attendanceRepository);
-      const result = await usecase.execute({
-        id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
-      });
+      const result = await usecase.execute({ id: 'non-existent-id' });
 
-      expect(result).toBe(undefined);
+      expect(attendanceRepository.find).toHaveBeenCalledWith('non-existent-id');
+      expect(result).toBeUndefined();
     });
   });
 });

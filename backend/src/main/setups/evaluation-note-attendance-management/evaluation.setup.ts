@@ -7,7 +7,7 @@ import FindEvaluation from '@/modules/evaluation-note-attendance-management/appl
 import FindAllEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/find-all.usecase';
 import UpdateEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/update.usecase';
 import DeleteEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/delete.usecase';
-import { EvaluationController } from '@/modules/evaluation-note-attendance-management/interface/controller/evaluation.controller';
+import EvaluationController from '@/modules/evaluation-note-attendance-management/interface/controller/evaluation.controller';
 import { EvaluationRoute } from '@/modules/evaluation-note-attendance-management/interface/route/evaluation.route';
 
 export default function initializeEvaluation(express: ExpressHttp): void {

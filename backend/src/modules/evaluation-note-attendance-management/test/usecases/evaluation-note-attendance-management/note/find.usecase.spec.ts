@@ -1,8 +1,9 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import FindNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/find.usecase';
 import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
+import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
 
-const MockRepository = () => {
+const MockRepository = (): jest.Mocked<NoteGateway> => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),

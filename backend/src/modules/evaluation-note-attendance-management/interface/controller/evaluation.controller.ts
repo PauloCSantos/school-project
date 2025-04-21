@@ -16,43 +16,84 @@ import FindAllEvaluation from '../../application/usecases/evaluation/find-all.us
 import FindEvaluation from '../../application/usecases/evaluation/find.usecase';
 import UpdateEvaluation from '../../application/usecases/evaluation/update.usecase';
 
-export class EvaluationController {
+/**
+ * Controller for evaluation management operations.
+ * Handles HTTP requests by delegating to appropriate use cases.
+ */
+export default class EvaluationController {
+  /**
+   * Creates a new EvaluationController instance.
+   * @param createEvaluation - Use case for creating a new evaluation
+   * @param findEvaluation - Use case for finding an evaluation
+   * @param findAllEvaluation - Use case for finding all evaluations
+   * @param updateEvaluation - Use case for updating an evaluation
+   * @param deleteEvaluation - Use case for deleting an evaluation
+   */
   constructor(
     private readonly createEvaluation: CreateEvaluation,
-    private readonly findEvauation: FindEvaluation,
-    private readonly findAllEvauation: FindAllEvaluation,
-    private readonly updateEvauation: UpdateEvaluation,
-    private readonly deleteEvauation: DeleteEvaluation
+    private readonly findEvaluation: FindEvaluation,
+    private readonly findAllEvaluation: FindAllEvaluation,
+    private readonly updateEvaluation: UpdateEvaluation,
+    private readonly deleteEvaluation: DeleteEvaluation
   ) {}
 
+  /**
+   * Creates a new evaluation.
+   * @param input - The data for creating a new evaluation
+   * @returns Promise resolving to the created evaluation data
+   */
   async create(
     input: CreateEvaluationInputDto
   ): Promise<CreateEvaluationOutputDto> {
     const response = await this.createEvaluation.execute(input);
     return response;
   }
+
+  /**
+   * Finds an evaluation by id.
+   * @param input - The input containing the id to search for
+   * @returns Promise resolving to the found evaluation data or undefined
+   */
   async find(
     input: FindEvaluationInputDto
   ): Promise<FindEvaluationOutputDto | undefined> {
-    const response = await this.findEvauation.execute(input);
+    const response = await this.findEvaluation.execute(input);
     return response;
   }
+
+  /**
+   * Finds all evaluations based on provided criteria.
+   * @param input - The criteria for finding evaluations
+   * @returns Promise resolving to the found evaluation records
+   */
   async findAll(
     input: FindAllEvaluationInputDto
   ): Promise<FindAllEvaluationOutputDto> {
-    const response = await this.findAllEvauation.execute(input);
+    const response = await this.findAllEvaluation.execute(input);
     return response;
   }
-  async delete(
-    input: DeleteEvaluationInputDto
-  ): Promise<DeleteEvaluationOutputDto> {
-    const response = await this.deleteEvauation.execute(input);
-    return response;
-  }
+
+  /**
+   * Updates an evaluation.
+   * @param input - The input containing the evaluation data to update
+   * @returns Promise resolving to the updated evaluation data
+   */
   async update(
     input: UpdateEvaluationInputDto
   ): Promise<UpdateEvaluationOutputDto> {
-    const response = await this.updateEvauation.execute(input);
+    const response = await this.updateEvaluation.execute(input);
+    return response;
+  }
+
+  /**
+   * Deletes an evaluation.
+   * @param input - The input containing the id of the evaluation to delete
+   * @returns Promise resolving to the deletion confirmation
+   */
+  async delete(
+    input: DeleteEvaluationInputDto
+  ): Promise<DeleteEvaluationOutputDto> {
+    const response = await this.deleteEvaluation.execute(input);
     return response;
   }
 }

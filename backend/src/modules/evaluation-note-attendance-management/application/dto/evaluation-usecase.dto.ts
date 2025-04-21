@@ -1,55 +1,27 @@
-export interface FindEvaluationInputDto {
-  id: string;
-}
-export interface FindEvaluationOutputDto {
-  id: string;
-  teacher: string;
-  lesson: string;
-  type: string;
-  value: number;
-}
+import {
+  IFindEvaluationInput,
+  IFindEvaluationOutput,
+  IFindAllEvaluationInput,
+  IFindAllEvaluationItemOutput,
+  ICreateEvaluationInput,
+  ICreateEvaluationOutput,
+  IUpdateEvaluationInput,
+  IUpdateEvaluationOutput,
+  IDeleteEvaluationInput,
+  IDeleteEvaluationOutput,
+} from './base-evaluation.dto';
 
-export interface FindAllEvaluationInputDto {
-  quantity?: number;
-  offset?: number;
-}
-export interface FindAllEvaluationOutputDto
-  extends Array<{
-    id: string;
-    teacher: string;
-    lesson: string;
-    type: string;
-    value: number;
-  }> {}
+export type FindEvaluationInputDto = IFindEvaluationInput;
+export type FindEvaluationOutputDto = IFindEvaluationOutput;
 
-export interface CreateEvaluationInputDto {
-  teacher: string;
-  lesson: string;
-  type: string;
-  value: number;
-}
-export interface CreateEvaluationOutputDto {
-  id: string;
-}
+export type FindAllEvaluationInputDto = IFindAllEvaluationInput;
+export type FindAllEvaluationOutputDto = Array<IFindAllEvaluationItemOutput>;
 
-export interface UpdateEvaluationInputDto {
-  id: string;
-  teacher?: string;
-  lesson?: string;
-  type?: string;
-  value?: number;
-}
-export interface UpdateEvaluationOutputDto {
-  id: string;
-  teacher: string;
-  lesson: string;
-  type: string;
-  value: number;
-}
+export type CreateEvaluationInputDto = ICreateEvaluationInput;
+export type CreateEvaluationOutputDto = ICreateEvaluationOutput;
 
-export interface DeleteEvaluationInputDto {
-  id: string;
-}
-export interface DeleteEvaluationOutputDto {
-  message: string;
-}
+export type UpdateEvaluationInputDto = IUpdateEvaluationInput;
+export type UpdateEvaluationOutputDto = IUpdateEvaluationOutput;
+
+export type DeleteEvaluationInputDto = IDeleteEvaluationInput;
+export type DeleteEvaluationOutputDto = IDeleteEvaluationOutput;

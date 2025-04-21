@@ -36,15 +36,17 @@ describe('MemoryNoteRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should received an undefined', async () => {
+    it('should return undefined if note not found', async () => {
       const noteId = new Id().value;
       const noteFound = await repository.find(noteId);
 
       expect(noteFound).toBeUndefined();
     });
-    it('should throw an error when the Id is wrong', async () => {
+
+    it('should throw an error when trying to update a non-existent note', async () => {
+      const nonExistentId = new Id().value;
       const note = new Note({
-        id: new Id(),
+        id: new Id(nonExistentId),
         evaluation: evaluation3,
         student: student3,
         note: noteValue3,
@@ -52,37 +54,66 @@ describe('MemoryNoteRepository unit test', () => {
 
       await expect(repository.update(note)).rejects.toThrow('Note not found');
     });
-    it('should generate an error when trying to remove the note with the wrong ID', async () => {
-      await expect(repository.delete(new Id().value)).rejects.toThrow(
+
+    it('should throw an error when trying to delete a non-existent note', async () => {
+      const nonExistentId = new Id().value;
+
+      await expect(repository.delete(nonExistentId)).rejects.toThrow(
         'Note not found'
       );
     });
   });
 
   describe('On success', () => {
-    it('should find a note', async () => {
+    it('should find an existing note by id', async () => {
       const noteId = note1.id.value;
       const noteFound = await repository.find(noteId);
 
       expect(noteFound).toBeDefined();
-      expect(noteFound!.id).toBeDefined();
+      expect(noteFound!.id.value).toBe(note1.id.value);
       expect(noteFound!.evaluation).toBe(note1.evaluation);
       expect(noteFound!.student).toBe(note1.student);
       expect(noteFound!.note).toBe(note1.note);
     });
+
     it('should create a new note and return its id', async () => {
       const result = await repository.create(note3);
 
       expect(result).toBe(note3.id.value);
+
+      // Verify note was added to repository
+      const noteFound = await repository.find(note3.id.value);
+      expect(noteFound).toBeDefined();
+      expect(noteFound!.evaluation).toBe(note3.evaluation);
+      expect(noteFound!.student).toBe(note3.student);
+      expect(noteFound!.note).toBe(note3.note);
+
+      // Verify repository state
+      const allNotes = await repository.findAll();
+      expect(allNotes.length).toBe(3);
     });
-    it('should update a note and return its new informations', async () => {
-      const updatedNote: Note = note2;
-      updatedNote.evaluation = new Id().value;
+
+    it('should update an existing note and persist changes', async () => {
+      const newEvaluation = new Id().value;
+      const updatedNote = new Note({
+        id: note2.id,
+        evaluation: newEvaluation,
+        student: student2,
+        note: 8, // Changed from 5
+      });
 
       const result = await repository.update(updatedNote);
 
       expect(result).toEqual(updatedNote);
+
+      // Verify changes were persisted
+      const persisted = await repository.find(note2.id.value);
+      expect(persisted).toBeDefined();
+      expect(persisted!.evaluation).toBe(newEvaluation);
+      expect(persisted!.note).toBe(8);
+      expect(persisted!.student).toBe(student2);
     });
+
     it('should find all the notes', async () => {
       const allNotes = await repository.findAll();
 
@@ -94,10 +125,20 @@ describe('MemoryNoteRepository unit test', () => {
       expect(allNotes[0].note).toBe(note1.note);
       expect(allNotes[1].note).toBe(note2.note);
     });
-    it('should remove the note', async () => {
+
+    it('should delete an existing note and update repository state', async () => {
       const response = await repository.delete(note1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
+
+      // Verify note was removed from repository
+      const deletedNote = await repository.find(note1.id.value);
+      expect(deletedNote).toBeUndefined();
+
+      // Verify repository state
+      const allNotes = await repository.findAll();
+      expect(allNotes.length).toBe(1);
+      expect(allNotes[0].id.value).toBe(note2.id.value);
     });
   });
 });
