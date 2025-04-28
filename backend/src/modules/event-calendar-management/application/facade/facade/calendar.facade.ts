@@ -17,20 +17,34 @@ import FindEvent from '../../usecases/event/find.usecase';
 import UpdateEvent from '../../usecases/event/update.usecase';
 import EventFacadeInterface from '../interface/calendar-facade.interface';
 
+/**
+ * Properties required to initialize the EventFacade
+ */
 type EventFacadeProps = {
-  createEvent: CreateEvent;
-  deleteEvent: DeleteEvent;
-  findAllEvent: FindAllEvent;
-  findEvent: FindEvent;
-  updateEvent: UpdateEvent;
+  readonly createEvent: CreateEvent;
+  readonly deleteEvent: DeleteEvent;
+  readonly findAllEvent: FindAllEvent;
+  readonly findEvent: FindEvent;
+  readonly updateEvent: UpdateEvent;
 };
-export default class EventFacade implements EventFacadeInterface {
-  private _createEvent: CreateEvent;
-  private _deleteEvent: DeleteEvent;
-  private _findAllEvent: FindAllEvent;
-  private _findEvent: FindEvent;
-  private _updateEvent: UpdateEvent;
 
+/**
+ * Facade implementation for calendar event operations
+ *
+ * This class provides a unified interface to the underlying event
+ * use cases, simplifying client interaction with the calendar subsystem.
+ */
+export default class EventFacade implements EventFacadeInterface {
+  private readonly _createEvent: CreateEvent;
+  private readonly _deleteEvent: DeleteEvent;
+  private readonly _findAllEvent: FindAllEvent;
+  private readonly _findEvent: FindEvent;
+  private readonly _updateEvent: UpdateEvent;
+
+  /**
+   * Creates a new instance of EventFacade
+   * @param input Dependencies required by the facade
+   */
   constructor(input: EventFacadeProps) {
     this._createEvent = input.createEvent;
     this._deleteEvent = input.deleteEvent;
@@ -39,21 +53,59 @@ export default class EventFacade implements EventFacadeInterface {
     this._updateEvent = input.updateEvent;
   }
 
-  async create(input: CreateEventInputDto): Promise<CreateEventOutputDto> {
+  /**
+   * Creates a new calendar event
+   * @param input Event creation parameters
+   * @returns Information about the created event
+   */
+  public async create(
+    input: CreateEventInputDto
+  ): Promise<CreateEventOutputDto> {
     return await this._createEvent.execute(input);
   }
-  async find(
+
+  /**
+   * Finds a calendar event by id
+   * @param input Search parameters
+   * @returns Event information if found, null otherwise
+   */
+  public async find(
     input: FindEventInputDto
-  ): Promise<FindEventOutputDto | undefined> {
-    return await this._findEvent.execute(input);
+  ): Promise<FindEventOutputDto | null> {
+    const result = await this._findEvent.execute(input);
+    return result || null;
   }
-  async findAll(input: FindAllEventInputDto): Promise<FindAllEventOutputDto> {
+
+  /**
+   * Retrieves all calendar events based on search criteria
+   * @param input Search parameters
+   * @returns List of events matching the criteria
+   */
+  public async findAll(
+    input: FindAllEventInputDto
+  ): Promise<FindAllEventOutputDto> {
     return await this._findAllEvent.execute(input);
   }
-  async delete(input: DeleteEventInputDto): Promise<DeleteEventOutputDto> {
+
+  /**
+   * Deletes a calendar event
+   * @param input Event identification
+   * @returns Confirmation message
+   */
+  public async delete(
+    input: DeleteEventInputDto
+  ): Promise<DeleteEventOutputDto> {
     return await this._deleteEvent.execute(input);
   }
-  async update(input: UpdateEventInputDto): Promise<UpdateEventOutputDto> {
+
+  /**
+   * Updates a calendar event's information
+   * @param input Event identification and data to update
+   * @returns Updated event information
+   */
+  public async update(
+    input: UpdateEventInputDto
+  ): Promise<UpdateEventOutputDto> {
     return await this._updateEvent.execute(input);
   }
 }

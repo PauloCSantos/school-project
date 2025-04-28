@@ -1,9 +1,9 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
-import { EventController } from '../../interface/controller/calendar.controller';
+import EventController from '../../interface/controller/calendar.controller';
 import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
-import { EventRoute } from '../../interface/route/calendar.route';
+import EventRoute from '../../interface/route/calendar.route';
 
 const mockAuthUserMiddleware = jest.fn(
   () =>

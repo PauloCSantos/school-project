@@ -5,19 +5,35 @@ import {
 } from '../../dto/calendar-usecase.dto';
 import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/calendar.gateway';
 
+/**
+ * Use case responsible for finding an event by ID.
+ *
+ * Retrieves event information from the repository and maps it to the appropriate output format.
+ */
 export default class FindEvent
-  implements
-    UseCaseInterface<FindEventInputDto, FindEventOutputDto | undefined>
+  implements UseCaseInterface<FindEventInputDto, FindEventOutputDto | null>
 {
-  private _eventRepository: EventGateway;
+  /** Repository for persisting and retrieving events */
+  private readonly _eventRepository: EventGateway;
 
+  /**
+   * Constructs a new instance of the FindEvent use case.
+   *
+   * @param eventRepository - Gateway implementation for data persistence
+   */
   constructor(eventRepository: EventGateway) {
     this._eventRepository = eventRepository;
   }
-  async execute({
-    id,
-  }: FindEventInputDto): Promise<FindEventOutputDto | undefined> {
+
+  /**
+   * Executes the search for an event by ID.
+   *
+   * @param input - Input data containing the ID to search for
+   * @returns Event data if found, undefined otherwise
+   */
+  async execute({ id }: FindEventInputDto): Promise<FindEventOutputDto | null> {
     const response = await this._eventRepository.find(id);
+
     if (response) {
       return {
         id: response.id.value,
@@ -29,8 +45,8 @@ export default class FindEvent
         type: response.type,
         place: response.place,
       };
-    } else {
-      return response;
     }
+
+    return null;
   }
 }

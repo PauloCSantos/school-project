@@ -1,70 +1,27 @@
-export interface FindEventInputDto {
-  id: string;
-}
-export interface FindEventOutputDto {
-  id: string;
-  creator: string;
-  name: string;
-  date: Date;
-  hour: string;
-  day: string;
-  type: string;
-  place: string;
-}
+import {
+  IFindEventInput,
+  IFindEventOutput,
+  IFindAllEventInput,
+  IFindAllEventOutput,
+  ICreateEventInput,
+  ICreateEventOutput,
+  IUpdateEventInput,
+  IUpdateEventOutput,
+  IDeleteEventInput,
+  IDeleteEventOutput,
+} from './base-calendar.dto';
 
-export interface FindAllEventInputDto {
-  quantity?: number;
-  offset?: number;
-}
-export interface FindAllEventOutputDto
-  extends Array<{
-    id: string;
-    creator: string;
-    name: string;
-    date: Date;
-    hour: string;
-    day: string;
-    type: string;
-    place: string;
-  }> {}
+export type FindEventInputDto = IFindEventInput;
+export type FindEventOutputDto = IFindEventOutput;
 
-export interface CreateEventInputDto {
-  creator: string;
-  name: string;
-  date: Date;
-  hour: Hour;
-  day: DayOfWeek;
-  type: string;
-  place: string;
-}
-export interface CreateEventOutputDto {
-  id: string;
-}
+export type FindAllEventInputDto = IFindAllEventInput;
+export type FindAllEventOutputDto = IFindAllEventOutput;
 
-export interface UpdateEventInputDto {
-  id: string;
-  creator?: string;
-  name?: string;
-  date?: Date;
-  hour?: Hour;
-  day?: DayOfWeek;
-  type?: string;
-  place?: string;
-}
-export interface UpdateEventOutputDto {
-  id: string;
-  creator: string;
-  name: string;
-  date: Date;
-  hour: string;
-  day: string;
-  type: string;
-  place: string;
-}
+export type CreateEventInputDto = ICreateEventInput;
+export type CreateEventOutputDto = ICreateEventOutput;
 
-export interface DeleteEventInputDto {
-  id: string;
-}
-export interface DeleteEventOutputDto {
-  message: string;
-}
+export type UpdateEventInputDto = IUpdateEventInput;
+export type UpdateEventOutputDto = IUpdateEventOutput;
+
+export type DeleteEventInputDto = IDeleteEventInput;
+export type DeleteEventOutputDto = IDeleteEventOutput;
