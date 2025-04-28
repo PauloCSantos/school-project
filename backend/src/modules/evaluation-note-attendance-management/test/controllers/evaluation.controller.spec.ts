@@ -1,116 +1,135 @@
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import CreateEvaluation from '../../application/usecases/evaluation/create.usecase';
 import DeleteEvaluation from '../../application/usecases/evaluation/delete.usecase';
 import FindAllEvaluation from '../../application/usecases/evaluation/find-all.usecase';
 import FindEvaluation from '../../application/usecases/evaluation/find.usecase';
 import UpdateEvaluation from '../../application/usecases/evaluation/update.usecase';
-import { EvaluationController } from '../../interface/controller/evaluation.controller';
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import EvaluationController from '../../interface/controller/evaluation.controller';
 
 describe('EvaluationController unit test', () => {
-  const mockCreateEvaluation = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue(new Id().value),
-    } as unknown as CreateEvaluation;
-  });
-  const mockFindEvaluation = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        teacher: 'a2da4256-027b-4f92-989c-cda5bcbab9c5',
-        lesson: 'ea3779d3-9cfb-46ad-a890-45be08ee271c',
-        type: 'evaluation',
-        value: 10,
-      }),
-    } as unknown as FindEvaluation;
-  });
-  const mockFindAllEvaluation = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue([
-        {
-          teacher: 'a2da4256-027b-4f92-989c-cda5bcbab9c5',
-          lesson: 'ea3779d3-9cfb-46ad-a890-45be08ee271c',
-          type: 'evaluation',
-          value: 10,
-        },
-        {
-          teacher: 'a2daa756-027b-4f92-989c-cda5bcbab9c5',
-          lesson: 'ea4479d3-9cfb-46ad-a890-45be08ee271c',
-          type: 'homework',
-          value: 5,
-        },
-      ]),
-    } as unknown as FindAllEvaluation;
-  });
-  const mockUpdateEvaluation = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
+  // Mock the usecases directly
+  const mockCreateEvaluation: jest.Mocked<CreateEvaluation> = {
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<CreateEvaluation>;
+
+  const mockFindEvaluation: jest.Mocked<FindEvaluation> = {
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<FindEvaluation>;
+
+  const mockFindAllEvaluation: jest.Mocked<FindAllEvaluation> = {
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<FindAllEvaluation>;
+
+  const mockUpdateEvaluation: jest.Mocked<UpdateEvaluation> = {
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<UpdateEvaluation>;
+
+  const mockDeleteEvaluation: jest.Mocked<DeleteEvaluation> = {
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<DeleteEvaluation>;
+
+  let controller: EvaluationController;
+  const id = new Id().value;
+
+  // Define example input/output data with the required 'id' property
+  const evaluationData = {
+    id: id,
+    teacher: 'a2da4256-027b-4f92-989c-cda5bcbab9c5',
+    lesson: 'ea3779d3-9cfb-46ad-a890-45be08ee271c',
+    type: 'evaluation',
+    value: 10,
+  };
+
+  // For create, the output should match the expected interface
+  const createOutput = { id: id };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Set up mock implementations with the correct output formats
+    mockCreateEvaluation.execute.mockResolvedValue(createOutput);
+    mockFindEvaluation.execute.mockResolvedValue(evaluationData);
+    mockFindAllEvaluation.execute.mockResolvedValue([
+      evaluationData,
+      {
+        ...evaluationData,
+        id: new Id().value,
         teacher: 'a2daa756-027b-4f92-989c-cda5bcbab9c5',
         lesson: 'ea4479d3-9cfb-46ad-a890-45be08ee271c',
         type: 'homework',
         value: 5,
-      }),
-    } as unknown as UpdateEvaluation;
-  });
-  const mockDeleteEvaluation = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
-      }),
-    } as unknown as DeleteEvaluation;
-  });
+      },
+    ]);
+    mockUpdateEvaluation.execute.mockResolvedValue({
+      ...evaluationData,
+      type: 'homework',
+      value: 5,
+    });
+    mockDeleteEvaluation.execute.mockResolvedValue({
+      message: 'Operação concluída com sucesso',
+    });
 
-  const createEvaluation = mockCreateEvaluation();
-  const deleteEvaluation = mockDeleteEvaluation();
-  const findAllEvaluation = mockFindAllEvaluation();
-  const findEvaluation = mockFindEvaluation();
-  const updateEvaluation = mockUpdateEvaluation();
-
-  const controller = new EvaluationController(
-    createEvaluation,
-    findEvaluation,
-    findAllEvaluation,
-    updateEvaluation,
-    deleteEvaluation
-  );
+    controller = new EvaluationController(
+      mockCreateEvaluation,
+      mockFindEvaluation,
+      mockFindAllEvaluation,
+      mockUpdateEvaluation,
+      mockDeleteEvaluation
+    );
+  });
 
   it('should return a id for the new evaluation created', async () => {
-    const result = await controller.create({
+    const createInput = {
       lesson: new Id().value,
       teacher: new Id().value,
       type: 'evaluation',
       value: 10,
-    });
+    };
 
-    expect(result).toBeDefined();
-    expect(createEvaluation.execute).toHaveBeenCalled();
+    const result = await controller.create(createInput);
+
+    expect(mockCreateEvaluation.execute).toHaveBeenCalledTimes(1);
+    expect(mockCreateEvaluation.execute).toHaveBeenCalledWith(createInput);
+    expect(result).toEqual(createOutput);
   });
+
   it('should return a evaluation', async () => {
-    const result = await controller.find({ id: new Id().value });
+    const findInput = { id };
+    const result = await controller.find(findInput);
 
-    expect(result).toBeDefined();
-    expect(findEvaluation.execute).toHaveBeenCalled();
+    expect(mockFindEvaluation.execute).toHaveBeenCalledTimes(1);
+    expect(mockFindEvaluation.execute).toHaveBeenCalledWith(findInput);
+    expect(result).toEqual(evaluationData);
   });
-  it('should return all evaluations', async () => {
-    const result = await controller.findAll({});
 
+  it('should return all evaluations', async () => {
+    const findAllInput = {};
+    const result = await controller.findAll(findAllInput);
+
+    expect(mockFindAllEvaluation.execute).toHaveBeenCalledTimes(1);
+    expect(mockFindAllEvaluation.execute).toHaveBeenCalledWith(findAllInput);
     expect(result).toBeDefined();
     expect(result.length).toBe(2);
-    expect(findAllEvaluation.execute).toHaveBeenCalled();
   });
+
   it('should update an evaluation', async () => {
-    const result = await controller.update({
-      id: new Id().value,
+    const updateInput = {
+      id,
       value: 7,
-    });
+    };
+    const result = await controller.update(updateInput);
 
+    expect(mockUpdateEvaluation.execute).toHaveBeenCalledTimes(1);
+    expect(mockUpdateEvaluation.execute).toHaveBeenCalledWith(updateInput);
     expect(result).toBeDefined();
-    expect(updateEvaluation.execute).toHaveBeenCalled();
   });
-  it('should delete an evaluation', async () => {
-    const result = await controller.delete({
-      id: new Id().value,
-    });
 
-    expect(result).toBeDefined();
-    expect(deleteEvaluation.execute).toHaveBeenCalled();
+  it('should delete an evaluation', async () => {
+    const deleteInput = { id };
+    const result = await controller.delete(deleteInput);
+
+    expect(mockDeleteEvaluation.execute).toHaveBeenCalledTimes(1);
+    expect(mockDeleteEvaluation.execute).toHaveBeenCalledWith(deleteInput);
+    expect(result).toEqual({ message: 'Operação concluída com sucesso' });
   });
 });

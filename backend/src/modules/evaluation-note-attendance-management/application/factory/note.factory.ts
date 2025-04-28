@@ -6,14 +6,28 @@ import FindAllNote from '../usecases/note/find-all.usecase';
 import FindNote from '../usecases/note/find.usecase';
 import UpdateNote from '../usecases/note/update.usecase';
 
+/**
+ * Factory responsible for creating NoteFacade instances
+ * Currently uses memory repository, but prepared for future extension
+ */
 export default class NoteFacadeFactory {
+  /**
+   * Creates an instance of NoteFacade with all dependencies properly configured
+   * @returns Fully configured NoteFacade instance
+   */
   static create(): NoteFacade {
+    // Currently using memory repository only
+    // Future implementation will use environment variables to determine repository type
     const repository = new MemoryNoteRepository();
+
+    // Create all required use cases
     const createNote = new CreateNote(repository);
     const deleteNote = new DeleteNote(repository);
     const findAllNote = new FindAllNote(repository);
     const findNote = new FindNote(repository);
     const updateNote = new UpdateNote(repository);
+
+    // Instantiate and return the facade with all required use cases
     const facade = new NoteFacade({
       createNote,
       deleteNote,

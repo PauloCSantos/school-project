@@ -1,8 +1,9 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import FindAllEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/find-all.usecase';
 import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
+import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
 
-const MockRepository = () => {
+const MockRepository = (): jest.Mocked<EvaluationGateway> => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
@@ -40,6 +41,7 @@ describe('findAllEvaluation usecase unit test', () => {
       expect(evaluationRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(2);
     });
+
     it('should return an empty array when the repository is empty', async () => {
       const evaluationRepository = MockRepository();
       evaluationRepository.findAll.mockResolvedValue([]);
@@ -49,6 +51,7 @@ describe('findAllEvaluation usecase unit test', () => {
 
       expect(evaluationRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(0);
+      expect(result).toEqual([]);
     });
   });
 });

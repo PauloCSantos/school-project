@@ -17,20 +17,34 @@ import FindNote from '../../usecases/note/find.usecase';
 import UpdateNote from '../../usecases/note/update.usecase';
 import NoteFacadeInterface from '../interface/note.interface';
 
+/**
+ * Properties required to initialize the NoteFacade
+ */
 type NoteFacadeProps = {
-  createNote: CreateNote;
-  deleteNote: DeleteNote;
-  findAllNote: FindAllNote;
-  findNote: FindNote;
-  updateNote: UpdateNote;
+  readonly createNote: CreateNote;
+  readonly deleteNote: DeleteNote;
+  readonly findAllNote: FindAllNote;
+  readonly findNote: FindNote;
+  readonly updateNote: UpdateNote;
 };
-export default class NoteFacade implements NoteFacadeInterface {
-  private _createNote: CreateNote;
-  private _deleteNote: DeleteNote;
-  private _findAllNote: FindAllNote;
-  private _findNote: FindNote;
-  private _updateNote: UpdateNote;
 
+/**
+ * Facade implementation for note operations
+ *
+ * This class provides a unified interface to the underlying note
+ * use cases, simplifying client interaction with the note subsystem.
+ */
+export default class NoteFacade implements NoteFacadeInterface {
+  private readonly _createNote: CreateNote;
+  private readonly _deleteNote: DeleteNote;
+  private readonly _findAllNote: FindAllNote;
+  private readonly _findNote: FindNote;
+  private readonly _updateNote: UpdateNote;
+
+  /**
+   * Creates a new instance of NoteFacade
+   * @param input Dependencies required by the facade
+   */
   constructor(input: NoteFacadeProps) {
     this._createNote = input.createNote;
     this._deleteNote = input.deleteNote;
@@ -39,18 +53,49 @@ export default class NoteFacade implements NoteFacadeInterface {
     this._updateNote = input.updateNote;
   }
 
+  /**
+   * Creates a new note
+   * @param input Note creation parameters
+   * @returns Information about the created note
+   */
   async create(input: CreateNoteInputDto): Promise<CreateNoteOutputDto> {
     return await this._createNote.execute(input);
   }
-  async find(input: FindNoteInputDto): Promise<FindNoteOutputDto | undefined> {
-    return await this._findNote.execute(input);
+
+  /**
+   * Finds a note by ID
+   * @param input Search parameters
+   * @returns Note information if found, null otherwise
+   */
+  async find(input: FindNoteInputDto): Promise<FindNoteOutputDto | null> {
+    // Changed from undefined to null for better semantic meaning
+    const result = await this._findNote.execute(input);
+    return result || null;
   }
+
+  /**
+   * Retrieves all notes based on search criteria
+   * @param input Search parameters
+   * @returns Collection of note information
+   */
   async findAll(input: FindAllNoteInputDto): Promise<FindAllNoteOutputDto> {
     return await this._findAllNote.execute(input);
   }
+
+  /**
+   * Deletes a note
+   * @param input Note identification
+   * @returns Confirmation message
+   */
   async delete(input: DeleteNoteInputDto): Promise<DeleteNoteOutputDto> {
     return await this._deleteNote.execute(input);
   }
+
+  /**
+   * Updates a note's information
+   * @param input Note identification and data to update
+   * @returns Updated note information
+   */
   async update(input: UpdateNoteInputDto): Promise<UpdateNoteOutputDto> {
     return await this._updateNote.execute(input);
   }

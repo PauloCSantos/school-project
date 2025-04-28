@@ -1,8 +1,9 @@
 import UpdateAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/update.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
+import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
 
-const MockRepository = () => {
+const MockRepository = (): jest.Mocked<AttendanceGateway> => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
@@ -14,51 +15,54 @@ const MockRepository = () => {
   };
 };
 
-describe('updateAttendance usecase unit test', () => {
-  const attendance = new Attendance({
-    date: new Date(),
-    day: 'fri',
-    hour: '06:50',
-    lesson: new Id().value,
-    studentsPresent: [new Id().value, new Id().value, new Id().value],
+describe('UpdateAttendance usecase unit test', () => {
+  let attendance: Attendance;
+  let attendanceRepository: jest.Mocked<AttendanceGateway>;
+  let usecase: UpdateAttendance;
+  let input: { id: string; day: DayOfWeek; hour: Hour };
+
+  beforeEach(() => {
+    attendance = new Attendance({
+      date: new Date(),
+      day: 'fri',
+      hour: '06:50',
+      lesson: new Id().value,
+      studentsPresent: [new Id().value, new Id().value, new Id().value],
+    });
+    input = {
+      id: attendance.id.value,
+      day: 'thu' as DayOfWeek,
+      hour: '13:40' as Hour,
+    };
+    attendanceRepository = MockRepository();
+    usecase = new UpdateAttendance(attendanceRepository);
   });
-  const input = {
-    id: attendance.id.value,
-    day: 'thu' as DayOfWeek,
-    hour: '13:40' as Hour,
-  };
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   describe('On fail', () => {
     it('should throw an error if the attendance does not exist', async () => {
-      const attendanceRepository = MockRepository();
       attendanceRepository.find.mockResolvedValue(undefined);
-      const usecase = new UpdateAttendance(attendanceRepository);
 
-      await expect(
-        usecase.execute({
-          ...input,
-          id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
-        })
-      ).rejects.toThrow('Attendance not found');
+      await expect(usecase.execute(input)).rejects.toThrow(
+        'Attendance not found'
+      );
+      expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
     });
   });
+
   describe('On success', () => {
-    it('should update a attendance', async () => {
-      const attendanceRepository = MockRepository();
+    it('should update an attendance', async () => {
       attendanceRepository.find.mockResolvedValue(attendance);
-      const usecase = new UpdateAttendance(attendanceRepository);
 
       const result = await usecase.execute(input);
 
-      expect(attendanceRepository.update).toHaveBeenCalled();
-      expect(attendanceRepository.find).toHaveBeenCalled();
-      expect(result).toStrictEqual({
-        id: attendance.id.value,
-        date: result.date,
-        day: result.day,
-        hour: result.hour,
-        lesson: result.lesson,
-      });
+      expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
+      expect(attendanceRepository.update).toHaveBeenCalledTimes(1);
+
+      expect(result).toEqual(expect.objectContaining(input));
     });
   });
 });

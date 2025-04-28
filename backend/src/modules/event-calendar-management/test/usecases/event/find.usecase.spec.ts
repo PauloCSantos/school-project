@@ -36,16 +36,16 @@ describe('findEvent usecase unit test', () => {
       expect(eventRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
-    it('should return undefined when id is not found', async () => {
+    it('should return null when id is not found', async () => {
       const eventRepository = MockRepository();
-      eventRepository.find.mockResolvedValue(undefined);
+      eventRepository.find.mockResolvedValue(null);
 
       const usecase = new FindEvent(eventRepository);
       const result = await usecase.execute({
         id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
       });
 
-      expect(result).toBe(undefined);
+      expect(result).toBe(null);
     });
   });
 });

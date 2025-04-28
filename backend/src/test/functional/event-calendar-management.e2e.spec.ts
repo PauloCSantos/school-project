@@ -11,8 +11,8 @@ import FindEvent from '@/modules/event-calendar-management/application/usecases/
 import FindAllEvent from '@/modules/event-calendar-management/application/usecases/event/find-all.usecase';
 import UpdateEvent from '@/modules/event-calendar-management/application/usecases/event/update.usecase';
 import DeleteEvent from '@/modules/event-calendar-management/application/usecases/event/delete.usecase';
-import { EventController } from '@/modules/event-calendar-management/interface/controller/calendar.controller';
-import { EventRoute } from '@/modules/event-calendar-management/interface/route/calendar.route';
+import EventController from '@/modules/event-calendar-management/interface/controller/calendar.controller';
+import EventRoute from '@/modules/event-calendar-management/interface/route/calendar.route';
 
 describe('Event calendar management module end to end test', () => {
   let eventRepository = new MemoryEventRepository();

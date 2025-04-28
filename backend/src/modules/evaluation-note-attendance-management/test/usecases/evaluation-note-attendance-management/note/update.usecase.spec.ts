@@ -1,8 +1,9 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import UpdateNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/update.usecase';
 import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
+import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
 
-const MockRepository = () => {
+const MockRepository = (): jest.Mocked<NoteGateway> => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
@@ -38,7 +39,7 @@ describe('updateNote usecase unit test', () => {
     });
   });
   describe('On success', () => {
-    it('should update an note', async () => {
+    it('should update a note', async () => {
       const noteRepository = MockRepository();
       noteRepository.find.mockResolvedValue(note1);
       const usecase = new UpdateNote(noteRepository);

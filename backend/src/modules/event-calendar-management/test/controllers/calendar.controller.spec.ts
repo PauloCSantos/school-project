@@ -4,7 +4,7 @@ import FindEvent from '../../application/usecases/event/find.usecase';
 import FindAllEvent from '../../application/usecases/event/find-all.usecase';
 import UpdateEvent from '../../application/usecases/event/update.usecase';
 import DeleteEvent from '../../application/usecases/event/delete.usecase';
-import { EventController } from '../../interface/controller/calendar.controller';
+import EventController from '../../interface/controller/calendar.controller';
 
 describe('EventController unit test', () => {
   const mockCreateEvent = jest.fn(() => {

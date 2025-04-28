@@ -9,6 +9,9 @@ import {
   validId,
 } from '@/modules/@shared/utils/validations';
 
+/**
+ * Properties required to create an event
+ */
 type EventProps = {
   id?: Id;
   creator: string;
@@ -20,45 +23,32 @@ type EventProps = {
   place: string;
 };
 
+/**
+ * Entity representing an event in the calendar system
+ *
+ * Responsible for validating and managing event details
+ */
 export default class Event {
-  private _id;
-  private _creator;
-  private _name;
-  private _date;
-  private _hour;
-  private _day;
-  private _type;
-  private _place;
+  private _id: Id;
+  private _creator: string;
+  private _name: string;
+  private _date: Date;
+  private _hour: Hour;
+  private _day: DayOfWeek;
+  private _type: string;
+  private _place: string;
 
+  /**
+   * Creates a new calendar event
+   *
+   * @param input - Event properties including creator, name, date, etc.
+   * @throws Error if any required field is missing or invalid
+   */
   constructor(input: EventProps) {
-    if (
-      input.creator === undefined ||
-      input.name === undefined ||
-      input.date === undefined ||
-      input.hour === undefined ||
-      input.day === undefined ||
-      input.type === undefined ||
-      input.place === undefined
-    )
-      throw new Error('All event fields are mandatory');
-    if (!validId(input.creator)) throw new Error('Creator id is not valid');
-    if (!validHour24h(input.hour)) throw new Error('Field hour is not valid');
-    if (!validDay(input.day)) throw new Error('Field day is not valid');
-    if (!this.validateName(input.name))
-      throw new Error('Field name is not valid');
-    if (!this.validateDate(input.date))
-      throw new Error('Field date is not valid');
-    if (!this.validateType(input.type))
-      throw new Error('Field type is not valid');
-    if (!this.validatePlace(input.place))
-      throw new Error('Field place is not valid');
-    if (input.id) {
-      if (!(input.id instanceof Id)) throw new Error('Invalid id');
-      this._id = input.id;
-    } else {
-      this._id = new Id();
-    }
+    this.validateConstructorParams(input);
 
+    // Initialize with validated properties
+    this._id = input.id || new Id();
     this._creator = input.creator;
     this._name = input.name;
     this._date = input.date;
@@ -68,60 +58,187 @@ export default class Event {
     this._place = input.place;
   }
 
+  /**
+   * Validates all parameters provided to the constructor
+   */
+  private validateConstructorParams(input: EventProps): void {
+    // Check if required fields are present
+    if (
+      input.creator === undefined ||
+      input.name === undefined ||
+      input.date === undefined ||
+      input.hour === undefined ||
+      input.day === undefined ||
+      input.type === undefined ||
+      input.place === undefined
+    ) {
+      throw new Error('All event fields are mandatory');
+    }
+
+    // Validate id if provided
+    if (input.id && !(input.id instanceof Id)) {
+      throw new Error('Invalid id');
+    }
+
+    // Validate field values
+    if (!validId(input.creator)) {
+      throw new Error('Creator id is not valid');
+    }
+
+    if (!this.validateName(input.name)) {
+      throw new Error('Field name is not valid');
+    }
+
+    if (!this.validateDate(input.date)) {
+      throw new Error('Field date is not valid');
+    }
+
+    if (!validHour24h(input.hour)) {
+      throw new Error('Field hour is not valid');
+    }
+
+    if (!validDay(input.day)) {
+      throw new Error('Field day is not valid');
+    }
+
+    if (!this.validateType(input.type)) {
+      throw new Error('Field type is not valid');
+    }
+
+    if (!this.validatePlace(input.place)) {
+      throw new Error('Field place is not valid');
+    }
+  }
+
+  /**
+   * Event's unique identifier
+   */
   get id(): Id {
     return this._id;
   }
+
+  /**
+   * ID of the user who created this event
+   */
   get creator(): string {
     return this._creator;
   }
+
+  /**
+   * Sets a new creator ID after validation
+   */
+  set creator(value: string) {
+    if (!validId(value)) {
+      throw new Error('Creator id is not valid');
+    }
+    this._creator = value;
+  }
+
+  /**
+   * Event name
+   */
   get name(): string {
     return this._name;
   }
+
+  /**
+   * Sets a new event name after validation
+   */
+  set name(value: string) {
+    if (!this.validateName(value)) {
+      throw new Error('Field name is not valid');
+    }
+    this._name = value;
+  }
+
+  /**
+   * Event date
+   */
   get date(): Date {
     return this._date;
   }
+
+  /**
+   * Sets a new event date after validation
+   */
+  set date(value: Date) {
+    if (!this.validateDate(value)) {
+      throw new Error('Field date is not valid');
+    }
+    this._date = value;
+  }
+
+  /**
+   * Event hour
+   */
   get hour(): Hour {
     return this._hour;
   }
+
+  /**
+   * Sets a new event hour after validation
+   */
+  set hour(value: string) {
+    if (!validHour24h(value)) {
+      throw new Error('Field hour is not valid');
+    }
+    this._hour = value as Hour;
+  }
+
+  /**
+   * Event day of week
+   */
   get day(): DayOfWeek {
     return this._day;
   }
+
+  /**
+   * Sets a new event day after validation
+   */
+  set day(value: string) {
+    if (!validDay(value)) {
+      throw new Error('Field day is not valid');
+    }
+    this._day = value as DayOfWeek;
+  }
+
+  /**
+   * Event type
+   */
   get type(): string {
     return this._type;
   }
+
+  /**
+   * Sets a new event type after validation
+   */
+  set type(value: string) {
+    if (!this.validateType(value)) {
+      throw new Error('Field type is not valid');
+    }
+    this._type = value;
+  }
+
+  /**
+   * Event location
+   */
   get place(): string {
     return this._place;
   }
 
-  set creator(value: string) {
-    if (!validId(value)) throw new Error('Creator id is not valid');
-    this._creator = value;
-  }
-  set name(value: string) {
-    if (!this.validateName(value)) throw new Error('Field name is not valid');
-    this._name = value;
-  }
-  set date(value: Date) {
-    if (!this.validateDate(value)) throw new Error('Field date is not valid');
-    this._date = value;
-  }
-  set hour(value: string) {
-    if (!validHour24h(value)) throw new Error('Field hour is not valid');
-    this._hour = value as Hour;
-  }
-  set day(value: string) {
-    if (!validDay(value)) throw new Error('Field day is not valid');
-    this._day = value as DayOfWeek;
-  }
-  set type(value: string) {
-    if (!this.validateType(value)) throw new Error('Field type is not valid');
-    this._type = value;
-  }
+  /**
+   * Sets a new event location after validation
+   */
   set place(value: string) {
-    if (!this.validatePlace(value)) throw new Error('Field place is not valid');
+    if (!this.validatePlace(value)) {
+      throw new Error('Field place is not valid');
+    }
     this._place = value;
   }
 
+  /**
+   * Validates an event name string
+   */
   private validateName(input: string): boolean {
     return (
       isString(input) &&
@@ -130,6 +247,10 @@ export default class Event {
       minLength(input, 3)
     );
   }
+
+  /**
+   * Validates an event type string
+   */
   private validateType(input: string): boolean {
     return (
       isString(input) &&
@@ -138,6 +259,10 @@ export default class Event {
       minLength(input, 3)
     );
   }
+
+  /**
+   * Validates an event place string
+   */
   private validatePlace(input: string): boolean {
     return (
       isString(input) &&
@@ -146,10 +271,11 @@ export default class Event {
       minLength(input, 3)
     );
   }
+
+  /**
+   * Validates a date object
+   */
   private validateDate(input: Date): boolean {
-    if (!(input instanceof Date)) {
-      return false;
-    }
-    return true;
+    return input instanceof Date;
   }
 }

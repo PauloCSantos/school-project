@@ -1,8 +1,9 @@
 import RemoveStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/remove-students.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
+import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
 
-const MockRepository = () => {
+const MockRepository = (): jest.Mocked<AttendanceGateway> => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
@@ -20,28 +21,38 @@ const MockRepository = () => {
   };
 };
 
-describe('RemoveStudent use case unit test', () => {
-  const attendance = new Attendance({
-    date: new Date(),
-    day: 'fri',
-    hour: '06:50',
-    lesson: new Id().value,
-    studentsPresent: [new Id().value, new Id().value, new Id().value],
+describe('RemoveStudents usecase unit test', () => {
+  let attendance: Attendance;
+  let attendanceRepository: jest.Mocked<AttendanceGateway>;
+  let usecase: RemoveStudents;
+  let input: { id: string; studentsListToRemove: string[] };
+
+  beforeEach(() => {
+    attendance = new Attendance({
+      date: new Date(),
+      day: 'fri',
+      hour: '06:50',
+      lesson: new Id().value,
+      studentsPresent: [new Id().value, new Id().value, new Id().value],
+    });
+    input = {
+      id: attendance.id.value,
+      studentsListToRemove: [
+        attendance.studentsPresent[0],
+        attendance.studentsPresent[1],
+      ],
+    };
+    attendanceRepository = MockRepository();
+    usecase = new RemoveStudents(attendanceRepository);
   });
-  const input = {
-    id: attendance.id.value,
-    studentsListToRemove: [
-      attendance.studentsPresent[0],
-      attendance.studentsPresent[1],
-    ],
-  };
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   describe('On fail', () => {
     it('should throw an error if the attendance does not exist', async () => {
-      const attendanceRepository = MockRepository();
       attendanceRepository.find.mockResolvedValue(undefined);
-
-      const usecase = new RemoveStudents(attendanceRepository);
 
       await expect(usecase.execute(input)).rejects.toThrow(
         'Attendance not found'
@@ -49,29 +60,25 @@ describe('RemoveStudent use case unit test', () => {
       expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
       expect(attendanceRepository.removeStudent).not.toHaveBeenCalled();
     });
-    it('should throw an error if the student does not exists in the attendance', async () => {
-      const attendanceRepository = MockRepository();
-      attendanceRepository.find.mockResolvedValue(attendance);
 
-      const usecase = new RemoveStudents(attendanceRepository);
+    it('should throw an error if the student does not exist in the attendance', async () => {
+      attendanceRepository.find.mockResolvedValue(attendance);
 
       await expect(
         usecase.execute({
           ...input,
           studentsListToRemove: [new Id().value],
         })
-      ).rejects.toThrow(`This student is not included in the attendance`);
+      ).rejects.toThrow('This student is not included in the attendance');
       expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
       expect(attendanceRepository.removeStudent).not.toHaveBeenCalled();
     });
   });
 
   describe('On success', () => {
-    it('should remove students to the attendance', async () => {
-      const attendanceRepository = MockRepository();
+    it('should remove students from the attendance', async () => {
       attendanceRepository.find.mockResolvedValue(attendance);
 
-      const usecase = new RemoveStudents(attendanceRepository);
       const result = await usecase.execute(input);
 
       expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
@@ -79,7 +86,7 @@ describe('RemoveStudent use case unit test', () => {
         input.id,
         input.studentsListToRemove
       );
-      expect(result.message).toBe(`2 values were removed`);
+      expect(result.message).toBe('2 values were removed');
     });
   });
 });

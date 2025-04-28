@@ -1,8 +1,9 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import UpdateEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/update.usecase';
 import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
+import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
 
-const MockRepository = () => {
+const MockRepository = (): jest.Mocked<EvaluationGateway> => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
@@ -39,8 +40,14 @@ describe('updateEvaluation usecase unit test', () => {
           id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
         })
       ).rejects.toThrow('Evaluation not found');
+
+      expect(evaluationRepository.find).toHaveBeenCalledWith(
+        '75c791ca-7a40-4217-8b99-2cf22c01d543'
+      );
+      expect(evaluationRepository.update).not.toHaveBeenCalled();
     });
   });
+
   describe('On success', () => {
     it('should update an evaluation', async () => {
       const evaluationRepository = MockRepository();
@@ -52,8 +59,18 @@ describe('updateEvaluation usecase unit test', () => {
         ...input,
       });
 
-      expect(evaluationRepository.update).toHaveBeenCalled();
-      expect(evaluationRepository.find).toHaveBeenCalled();
+      expect(evaluationRepository.find).toHaveBeenCalledWith(
+        evaluation1.id.value
+      );
+      expect(evaluationRepository.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: evaluation1.id,
+          lesson: input.lesson,
+          teacher: input.teacher,
+          type: input.type,
+          value: input.value,
+        })
+      );
       expect(result).toStrictEqual({
         id: evaluation1.id.value,
         lesson: input.lesson,

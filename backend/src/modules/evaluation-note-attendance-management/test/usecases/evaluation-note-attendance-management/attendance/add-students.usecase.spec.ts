@@ -1,8 +1,9 @@
 import AddStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/add-students.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
+import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
 
-const MockRepository = () => {
+const MockRepository = (): jest.Mocked<AttendanceGateway> => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
@@ -21,17 +22,26 @@ const MockRepository = () => {
 };
 
 describe('AddStudents use case unit test', () => {
-  const attendance = new Attendance({
-    date: new Date(),
-    day: 'fri',
-    hour: '06:50',
-    lesson: new Id().value,
-    studentsPresent: [new Id().value, new Id().value, new Id().value],
+  let attendance: Attendance;
+  let input: { id: string; newStudentsList: string[] };
+
+  beforeEach(() => {
+    attendance = new Attendance({
+      date: new Date(),
+      day: 'fri',
+      hour: '06:50',
+      lesson: new Id().value,
+      studentsPresent: [new Id().value, new Id().value, new Id().value],
+    });
+    input = {
+      id: attendance.id.value,
+      newStudentsList: [new Id().value, new Id().value],
+    };
   });
-  const input = {
-    id: attendance.id.value,
-    newStudentsList: [new Id().value, new Id().value],
-  };
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   describe('On fail', () => {
     it('should throw an error if the attendance does not exist', async () => {
@@ -46,6 +56,7 @@ describe('AddStudents use case unit test', () => {
       expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
       expect(attendanceRepository.addStudent).not.toHaveBeenCalled();
     });
+
     it('should throw an error if the student already exists in the attendance', async () => {
       const attendanceRepository = MockRepository();
       attendanceRepository.find.mockResolvedValue(attendance);
@@ -77,6 +88,27 @@ describe('AddStudents use case unit test', () => {
         input.newStudentsList
       );
       expect(result.message).toBe(`2 values were entered`);
+    });
+
+    it('should handle adding a single student correctly', async () => {
+      const attendanceRepository = MockRepository();
+      attendanceRepository.find.mockResolvedValue(attendance);
+
+      const usecase = new AddStudents(attendanceRepository);
+      const singleStudentInput = {
+        id: input.id,
+        newStudentsList: [new Id().value],
+      };
+      const result = await usecase.execute(singleStudentInput);
+
+      expect(attendanceRepository.find).toHaveBeenCalledWith(
+        singleStudentInput.id
+      );
+      expect(attendanceRepository.addStudent).toHaveBeenCalledWith(
+        singleStudentInput.id,
+        singleStudentInput.newStudentsList
+      );
+      expect(result.message).toBe(`1 value was entered`);
     });
   });
 });

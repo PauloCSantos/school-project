@@ -5,6 +5,11 @@ import {
 } from '../../dto/attendance-usecase.dto';
 import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
 
+/**
+ * Use case responsible for finding an attendance record by id.
+ *
+ * Retrieves attendance information from the repository and maps it to the appropriate output format.
+ */
 export default class FindAttendance
   implements
     UseCaseInterface<
@@ -12,15 +17,29 @@ export default class FindAttendance
       FindAttendanceOutputDto | undefined
     >
 {
-  private _attendanceRepository: AttendanceGateway;
+  /** Repository for persisting and retrieving attendance records */
+  private readonly _attendanceRepository: AttendanceGateway;
 
+  /**
+   * Constructs a new instance of the FindAttendance use case.
+   *
+   * @param attendanceRepository - Gateway implementation for data persistence
+   */
   constructor(attendanceRepository: AttendanceGateway) {
     this._attendanceRepository = attendanceRepository;
   }
+
+  /**
+   * Executes the search for an attendance record by id.
+   *
+   * @param input - Input data containing the id to search for
+   * @returns Attendance data if found, undefined otherwise
+   */
   async execute({
     id,
   }: FindAttendanceInputDto): Promise<FindAttendanceOutputDto | undefined> {
     const response = await this._attendanceRepository.find(id);
+
     if (response) {
       return {
         id: response.id.value,
@@ -30,8 +49,8 @@ export default class FindAttendance
         day: response.day,
         studentsPresent: response.studentsPresent,
       };
-    } else {
-      return response;
     }
+
+    return undefined;
   }
 }

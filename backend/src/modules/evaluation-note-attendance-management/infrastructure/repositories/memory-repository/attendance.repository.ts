@@ -1,13 +1,27 @@
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
 import AttendanceGateway from '../../gateway/attendance.gateway';
 
+/**
+ * In-memory implementation of AttendanceGateway.
+ * Stores and manipulates attendance records in memory.
+ * Useful for testing and development purposes.
+ */
 export default class MemoryAttendanceRepository implements AttendanceGateway {
   private _attendance: Attendance[];
 
+  /**
+   * Creates a new in-memory repository.
+   * @param attendances - Optional initial array of attendance records
+   */
   constructor(attendances?: Attendance[]) {
     attendances ? (this._attendance = attendances) : (this._attendance = []);
   }
 
+  /**
+   * Finds an attendance record by its unique identifier.
+   * @param id - The unique identifier to search for
+   * @returns Promise resolving to the found Attendance or undefined if not found
+   */
   async find(id: string): Promise<Attendance | undefined> {
     const attendance = this._attendance.find(
       attendance => attendance.id.value === id
@@ -18,6 +32,13 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
       return undefined;
     }
   }
+
+  /**
+   * Retrieves a collection of attendance records with pagination support.
+   * @param quantity - Optional limit on the number of records to return (defaults to 10)
+   * @param offSet - Optional number of records to skip for pagination (defaults to 0)
+   * @returns Promise resolving to an array of Attendance entities
+   */
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined
@@ -28,10 +49,23 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
 
     return attendances;
   }
+
+  /**
+   * Creates a new attendance record in memory.
+   * @param attendance - The attendance entity to be created
+   * @returns Promise resolving to the unique identifier of the created attendance record
+   */
   async create(attendance: Attendance): Promise<string> {
     this._attendance.push(attendance);
     return attendance.id.value;
   }
+
+  /**
+   * Updates an existing attendance record identified by its ID.
+   * @param attendance - The attendance entity with updated information
+   * @returns Promise resolving to the updated Attendance entity
+   * @throws Error if the attendance record is not found
+   */
   async update(attendance: Attendance): Promise<Attendance> {
     const attendanceIndex = this._attendance.findIndex(
       dbAttendance => dbAttendance.id.value === attendance.id.value
@@ -42,6 +76,13 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
       throw new Error('Attendance not found');
     }
   }
+
+  /**
+   * Deletes an attendance record by its unique identifier.
+   * @param id - The unique identifier of the attendance record to delete
+   * @returns Promise resolving to a success message
+   * @throws Error if the attendance record is not found
+   */
   async delete(id: string): Promise<string> {
     const attendanceIndex = this._attendance.findIndex(
       dbAttendance => dbAttendance.id.value === id
@@ -53,6 +94,14 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
       throw new Error('Attendance not found');
     }
   }
+
+  /**
+   * Adds multiple students to an existing attendance record.
+   * @param id - The unique identifier of the attendance record
+   * @param newAttendancesList - Array of student IDs to be added to the attendance
+   * @returns Promise resolving to a success message indicating number of students added
+   * @throws Error if the attendance record is not found or student addition fails
+   */
   async addStudent(id: string, newAttendancesList: string[]): Promise<string> {
     const attendanceIndex = this._attendance.findIndex(
       dbAttendance => dbAttendance.id.value === id
@@ -74,6 +123,14 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
       throw new Error('Attendance not found');
     }
   }
+
+  /**
+   * Removes multiple students from an existing attendance record.
+   * @param id - The unique identifier of the attendance record
+   * @param attendancesListToRemove - Array of student IDs to be removed from the attendance
+   * @returns Promise resolving to a success message indicating number of students removed
+   * @throws Error if the attendance record is not found or student removal fails
+   */
   async removeStudent(
     id: string,
     attendancesListToRemove: string[]

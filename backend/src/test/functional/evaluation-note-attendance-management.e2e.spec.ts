@@ -25,9 +25,9 @@ import UpdateAttendance from '@/modules/evaluation-note-attendance-management/ap
 import DeleteAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/delete.usecase';
 import AddStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/add-students.usecase';
 import RemoveStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/remove-students.usecase';
-import { EvaluationController } from '@/modules/evaluation-note-attendance-management/interface/controller/evaluation.controller';
-import { NoteController } from '@/modules/evaluation-note-attendance-management/interface/controller/note.controller';
-import { AttendanceController } from '@/modules/evaluation-note-attendance-management/interface/controller/attendance.controller';
+import EvaluationController from '@/modules/evaluation-note-attendance-management/interface/controller/evaluation.controller';
+import NoteController from '@/modules/evaluation-note-attendance-management/interface/controller/note.controller';
+import AttendanceController from '@/modules/evaluation-note-attendance-management/interface/controller/attendance.controller';
 import { EvaluationRoute } from '@/modules/evaluation-note-attendance-management/interface/route/evaluation.route';
 import { NoteRoute } from '@/modules/evaluation-note-attendance-management/interface/route/note.route';
 import { AttendanceRoute } from '@/modules/evaluation-note-attendance-management/interface/route/attendance.route';
