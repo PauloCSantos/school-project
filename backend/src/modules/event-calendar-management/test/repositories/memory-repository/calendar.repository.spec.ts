@@ -5,54 +5,34 @@ import MemoryEventRepository from '@/modules/event-calendar-management/infrastru
 describe('MemoryEventRepository unit test', () => {
   let repository: MemoryEventRepository;
 
-  const creator1 = new Id().value;
-  const creator2 = new Id().value;
-  const creator3 = new Id().value;
-  const name1 = 'Event';
-  const name2 = 'Party';
-  const name3 = 'Graduation';
-  const date1 = new Date('05/22/24');
-  const date2 = new Date('08/11/24');
-  const date3 = new Date('12/04/24');
-  const hour1: Hour = '07:00';
-  const hour2: Hour = '21:00';
-  const hour3: Hour = '14:00';
-  const day1: DayOfWeek = 'mon';
-  const day2: DayOfWeek = 'sun';
-  const day3: DayOfWeek = 'wed';
-  const type1 = 'mandatory';
-  const type2 = 'not obligatory';
-  const type3 = 'mandatory';
-  const place1 = 'school';
-  const place2 = 'address x';
-  const place3 = 'address y';
-
   const event1 = new Event({
-    creator: creator1,
-    name: name1,
-    date: date1,
-    hour: hour1,
-    day: day1,
-    type: type1,
-    place: place1,
+    creator: new Id().value,
+    name: 'Event',
+    date: new Date('05/22/24'),
+    hour: '07:00' as Hour,
+    day: 'mon' as DayOfWeek,
+    type: 'mandatory',
+    place: 'school',
   });
+
   const event2 = new Event({
-    creator: creator2,
-    name: name2,
-    date: date2,
-    hour: hour2,
-    day: day2,
-    type: type2,
-    place: place2,
+    creator: new Id().value,
+    name: 'Party',
+    date: new Date('08/11/24'),
+    hour: '21:00' as Hour,
+    day: 'sun' as DayOfWeek,
+    type: 'not obligatory',
+    place: 'address x',
   });
+
   const event3 = new Event({
-    creator: creator3,
-    name: name3,
-    date: date3,
-    hour: hour3,
-    day: day3,
-    type: type3,
-    place: place3,
+    creator: new Id().value,
+    name: 'Graduation',
+    date: new Date('12/04/24'),
+    hour: '14:00' as Hour,
+    day: 'wed' as DayOfWeek,
+    type: 'mandatory',
+    place: 'address y',
   });
 
   beforeEach(() => {
@@ -60,34 +40,39 @@ describe('MemoryEventRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should received an null', async () => {
+    it('should return null if event not found', async () => {
       const eventId = new Id().value;
       const eventFound = await repository.find(eventId);
 
       expect(eventFound).toBeNull();
     });
-    it('should throw an error when the Id is wrong', async () => {
-      const event = new Event({
+
+    it('should throw an error when trying to update a non-existent event', async () => {
+      const newEvent = new Event({
         id: new Id(),
-        creator: creator3,
-        name: name3,
-        date: date3,
-        hour: hour3,
-        day: day3,
-        type: type3,
-        place: place3,
+        creator: event3.creator,
+        name: event3.name,
+        date: event3.date,
+        hour: event3.hour,
+        day: event3.day,
+        type: event3.type,
+        place: event3.place,
       });
 
-      await expect(repository.update(event)).rejects.toThrow('Event not found');
+      await expect(repository.update(newEvent)).rejects.toThrow(
+        'Event not found'
+      );
     });
-    it('should generate an error when trying to remove the event with the wrong ID', async () => {
+
+    it('should throw an error when trying to delete a non-existent event', async () => {
       await expect(repository.delete(new Id().value)).rejects.toThrow(
         'Event not found'
       );
     });
   });
+
   describe('On success', () => {
-    it('should find a event', async () => {
+    it('should find an existing event by id', async () => {
       const eventId = event1.id.value;
       const eventFound = await repository.find(eventId);
 
@@ -100,21 +85,23 @@ describe('MemoryEventRepository unit test', () => {
       expect(eventFound!.hour).toBe(event1.hour);
       expect(eventFound!.place).toBe(event1.place);
     });
+
     it('should create a new event and return its id', async () => {
       const result = await repository.create(event3);
 
       expect(result).toBe(event3.id.value);
     });
-    it('should update a event and return its new informations', async () => {
-      const updatedevent: Event = event2;
-      updatedevent.name = 'Happy hour';
-      updatedevent.day = 'mon';
 
-      const result = await repository.update(updatedevent);
+    it('should update an existing event and return its updated information', async () => {
+      const updatedEvent = event2;
+      updatedEvent.name = 'Happy hour';
+      updatedEvent.day = 'mon';
 
-      expect(result).toEqual(updatedevent);
+      const result = await repository.update(updatedEvent);
+      expect(result).toEqual(updatedEvent);
     });
-    it('should find all the event', async () => {
+
+    it('should find all events', async () => {
       const allEvents = await repository.findAll();
 
       expect(allEvents.length).toBe(2);
@@ -125,7 +112,8 @@ describe('MemoryEventRepository unit test', () => {
       expect(allEvents[0].creator).toBe(event1.creator);
       expect(allEvents[1].creator).toBe(event2.creator);
     });
-    it('should remove the user', async () => {
+
+    it('should delete an existing event', async () => {
       const response = await repository.delete(event1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');

@@ -2,7 +2,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Event from '@/modules/event-calendar-management/domain/entity/calendar.entity';
 
 describe('Event unit test', () => {
-  const eventData = {
+  const baseEventData = {
     id: new Id(),
     creator: new Id().value,
     name: 'Formatura',
@@ -13,82 +13,64 @@ describe('Event unit test', () => {
     place: 'School',
   };
 
-  describe('On fail', () => {
-    it('should throw error when the input has missing values', () => {
-      const event = {
-        ...eventData,
-        creator: undefined,
-        name: undefined,
-        date: undefined,
-        hour: undefined,
-        day: undefined,
-        type: undefined,
-        place: undefined,
-      };
+  let event: Event;
 
+  beforeEach(() => {
+    event = new Event({ ...baseEventData });
+  });
+
+  describe('Failure cases', () => {
+    it('should throw error when the input has missing values', () => {
       expect(() => {
         //@ts-expect-error
-        new Event(event);
+        new Event({});
       }).toThrow('All event fields are mandatory');
     });
+
     it('should throw error when setting an invalid name', () => {
-      const event = new Event(eventData);
       expect(() => {
         event.name = '';
       }).toThrow('Field name is not valid');
     });
 
     it('should throw error when setting an invalid type', () => {
-      const event = new Event(eventData);
       expect(() => {
         event.type = '';
       }).toThrow('Field type is not valid');
     });
 
     it('should throw error when setting an invalid place', () => {
-      const event = new Event(eventData);
       expect(() => {
         event.place = '';
       }).toThrow('Field place is not valid');
     });
   });
 
-  describe('On success', () => {
-    it('should create an event with valid input', () => {
-      const event = new Event(eventData);
-
-      expect(event).toBeDefined();
-      expect(event.id).toBe(eventData.id);
-      expect(event.creator).toBe(eventData.creator);
-      expect(event.name).toBe(eventData.name);
-      expect(event.date).toBe(eventData.date);
-      expect(event.hour).toBe(eventData.hour);
-      expect(event.day).toBe(eventData.day);
-      expect(event.type).toBe(eventData.type);
-      expect(event.place).toBe(eventData.place);
+  describe('Success cases', () => {
+    it('should create a valid Event instance', () => {
+      expect(event).toBeInstanceOf(Event);
+      expect(event.id).toBe(baseEventData.id);
+      expect(event.creator).toBe(baseEventData.creator);
+      expect(event.name).toBe(baseEventData.name);
+      expect(event.date).toBe(baseEventData.date);
+      expect(event.hour).toBe(baseEventData.hour);
+      expect(event.day).toBe(baseEventData.day);
+      expect(event.type).toBe(baseEventData.type);
+      expect(event.place).toBe(baseEventData.place);
     });
 
-    it('should set a new name', () => {
-      const event = new Event(eventData);
-
+    it('should allow updating event name with a valid value', () => {
       event.name = 'New Event Name';
-
       expect(event.name).toBe('New Event Name');
     });
 
-    it('should set a new type', () => {
-      const event = new Event(eventData);
-
+    it('should allow updating event type with a valid value', () => {
       event.type = 'New Event Type';
-
       expect(event.type).toBe('New Event Type');
     });
 
-    it('should set a new place', () => {
-      const event = new Event(eventData);
-
+    it('should allow updating event place with a valid value', () => {
       event.place = 'New Event Place';
-
       expect(event.place).toBe('New Event Place');
     });
   });

@@ -1,4 +1,16 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import {
+  CreateEventInputDto,
+  CreateEventOutputDto,
+  DeleteEventInputDto,
+  DeleteEventOutputDto,
+  FindEventInputDto,
+  FindEventOutputDto,
+  FindAllEventInputDto,
+  FindAllEventOutputDto,
+  UpdateEventInputDto,
+  UpdateEventOutputDto,
+} from '../../application/dto/calendar-usecase.dto';
 import CreateEvent from '../../application/usecases/event/create.usecase';
 import FindEvent from '../../application/usecases/event/find.usecase';
 import FindAllEvent from '../../application/usecases/event/find-all.usecase';
@@ -6,126 +18,155 @@ import UpdateEvent from '../../application/usecases/event/update.usecase';
 import DeleteEvent from '../../application/usecases/event/delete.usecase';
 import EventController from '../../interface/controller/calendar.controller';
 
+const mockCreateEvent: jest.Mocked<CreateEvent> = {
+  execute: jest.fn(),
+} as unknown as jest.Mocked<CreateEvent>;
+
+const mockFindEvent: jest.Mocked<FindEvent> = {
+  execute: jest.fn(),
+} as unknown as jest.Mocked<FindEvent>;
+
+const mockFindAllEvent: jest.Mocked<FindAllEvent> = {
+  execute: jest.fn(),
+} as unknown as jest.Mocked<FindAllEvent>;
+
+const mockUpdateEvent: jest.Mocked<UpdateEvent> = {
+  execute: jest.fn(),
+} as unknown as jest.Mocked<UpdateEvent>;
+
+const mockDeleteEvent: jest.Mocked<DeleteEvent> = {
+  execute: jest.fn(),
+} as unknown as jest.Mocked<DeleteEvent>;
+
 describe('EventController unit test', () => {
-  const mockCreateEvent = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue(new Id().value),
-    } as unknown as CreateEvent;
-  });
-  const mockFindEvent = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        creator: 'dfcd1710-de67-45f4-9ba1-6a07cc66609f',
-        name: 'Christmas',
-        date: '2024-02-09T11:40:50.095Z',
-        hour: '08:00',
-        day: 'mon',
-        type: 'event',
-        place: 'school',
-      }),
-    } as unknown as FindEvent;
-  });
-  const mockFindAllEvent = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue([
-        {
-          creator: 'dfcd1710-de67-45f4-9ba1-6a07cc66609f',
-          name: 'Christmas',
-          date: '2024-02-09T11:40:50.095Z',
-          hour: '08:00',
-          day: 'mon',
-          type: 'event',
-          place: 'school',
-        },
-        {
-          creator: 'dfcd1710-de67-45f4-9ba1-6a07cc66609f',
-          name: 'Holiday',
-          date: '2024-02-09T11:40:50.095Z',
-          hour: '17:00',
-          day: 'fri',
-          type: 'event',
-          place: 'school',
-        },
-      ]),
-    } as unknown as FindAllEvent;
-  });
-  const mockUpdateEvent = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        creator: 'dfcd1710-de67-45f4-9ba1-6a07cc66609f',
-        name: 'Christmas',
-        date: '2024-02-09T11:40:50.095Z',
-        hour: '08:00',
-        day: 'mon',
-        type: 'event',
-        place: 'school',
-      }),
-    } as unknown as UpdateEvent;
-  });
-  const mockDeleteEvent = jest.fn(() => {
-    return {
-      execute: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
-      }),
-    } as unknown as DeleteEvent;
-  });
+  let controller: EventController;
 
-  const createEvent = mockCreateEvent();
-  const deleteEvent = mockDeleteEvent();
-  const findAllEvent = mockFindAllEvent();
-  const findEvent = mockFindEvent();
-  const updateEvent = mockUpdateEvent();
+  const id = new Id().value;
+  const creator = 'dfcd1710-de67-45f4-9ba1-6a07cc66609f';
 
-  const controller = new EventController(
-    createEvent,
-    findEvent,
-    findAllEvent,
-    updateEvent,
-    deleteEvent
-  );
+  const createInput: CreateEventInputDto = {
+    creator,
+    name: 'Christmas',
+    date: new Date('2024-02-09T11:40:50.095Z'),
+    hour: '08:00',
+    day: 'mon',
+    type: 'event',
+    place: 'school',
+  };
+  const createOutput: CreateEventOutputDto = { id };
 
-  it('should return a id for the new event created', async () => {
-    const result = await controller.create({
-      creator: new Id().value,
+  const findInput: FindEventInputDto = { id };
+  const findOutput: FindEventOutputDto = {
+    id,
+    creator,
+    name: 'Christmas',
+    date: new Date('2024-02-09T11:40:50.095Z'),
+    hour: '08:00',
+    day: 'mon',
+    type: 'event',
+    place: 'school',
+  };
+
+  const findAllInput: FindAllEventInputDto = {};
+  const findAllOutput: FindAllEventOutputDto = [
+    {
+      id,
+      creator,
       name: 'Christmas',
-      date: new Date(),
-      hour: '08:00' as Hour,
-      day: 'mon' as DayOfWeek,
+      date: new Date('2024-02-09T11:40:50.095Z'),
+      hour: '08:00',
+      day: 'mon',
       type: 'event',
       place: 'school',
-    });
-
-    expect(result).toBeDefined();
-    expect(createEvent.execute).toHaveBeenCalled();
-  });
-  it('should return a event', async () => {
-    const result = await controller.find({ id: new Id().value });
-
-    expect(result).toBeDefined();
-    expect(findEvent.execute).toHaveBeenCalled();
-  });
-  it('should return all events', async () => {
-    const result = await controller.findAll({});
-
-    expect(result).toBeDefined();
-    expect(result.length).toBe(2);
-    expect(findAllEvent.execute).toHaveBeenCalled();
-  });
-  it('should update an event', async () => {
-    const result = await controller.update({
-      id: new Id().value,
+    },
+    {
+      id,
+      creator,
       name: 'Holiday',
-    });
+      date: new Date('2024-02-09T11:40:50.095Z'),
+      hour: '17:00',
+      day: 'fri',
+      type: 'event',
+      place: 'school',
+    },
+  ];
 
-    expect(result).toBeDefined();
-    expect(updateEvent.execute).toHaveBeenCalled();
+  const updateInput: UpdateEventInputDto = {
+    id,
+    name: 'Holiday',
+  };
+  const updateOutput: UpdateEventOutputDto = {
+    id,
+    creator,
+    name: 'Christmas',
+    date: new Date('2024-02-09T11:40:50.095Z'),
+    hour: '08:00',
+    day: 'mon',
+    type: 'event',
+    place: 'school',
+  };
+
+  const deleteInput: DeleteEventInputDto = { id };
+  const deleteOutput: DeleteEventOutputDto = {
+    message: 'Operação concluída com sucesso',
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    mockCreateEvent.execute.mockResolvedValue(createOutput);
+    mockFindEvent.execute.mockResolvedValue(findOutput);
+    mockFindAllEvent.execute.mockResolvedValue(findAllOutput);
+    mockUpdateEvent.execute.mockResolvedValue(updateOutput);
+    mockDeleteEvent.execute.mockResolvedValue(deleteOutput);
+
+    controller = new EventController(
+      mockCreateEvent,
+      mockFindEvent,
+      mockFindAllEvent,
+      mockUpdateEvent,
+      mockDeleteEvent
+    );
   });
-  it('should delete an event', async () => {
-    const result = await controller.delete({
-      id: new Id().value,
-    });
 
-    expect(result).toBeDefined();
-    expect(deleteEvent.execute).toHaveBeenCalled();
+  it('should call create use case with correct input and return its output', async () => {
+    const result = await controller.create(createInput);
+
+    expect(mockCreateEvent.execute).toHaveBeenCalledTimes(1);
+    expect(mockCreateEvent.execute).toHaveBeenCalledWith(createInput);
+    expect(result).toEqual(createOutput);
+  });
+
+  it('should call find use case with correct input and return its output', async () => {
+    const result = await controller.find(findInput);
+
+    expect(mockFindEvent.execute).toHaveBeenCalledTimes(1);
+    expect(mockFindEvent.execute).toHaveBeenCalledWith(findInput);
+    expect(result).toEqual(findOutput);
+  });
+
+  it('should call findAll use case with correct input and return its output', async () => {
+    const result = await controller.findAll(findAllInput);
+
+    expect(mockFindAllEvent.execute).toHaveBeenCalledTimes(1);
+    expect(mockFindAllEvent.execute).toHaveBeenCalledWith(findAllInput);
+    expect(result).toEqual(findAllOutput);
+    expect(result.length).toBe(2);
+  });
+
+  it('should call update use case with correct input and return its output', async () => {
+    const result = await controller.update(updateInput);
+
+    expect(mockUpdateEvent.execute).toHaveBeenCalledTimes(1);
+    expect(mockUpdateEvent.execute).toHaveBeenCalledWith(updateInput);
+    expect(result).toEqual(updateOutput);
+  });
+
+  it('should call delete use case with correct input and return its output', async () => {
+    const result = await controller.delete(deleteInput);
+
+    expect(mockDeleteEvent.execute).toHaveBeenCalledTimes(1);
+    expect(mockDeleteEvent.execute).toHaveBeenCalledWith(deleteInput);
+    expect(result).toEqual(deleteOutput);
   });
 });

@@ -1,8 +1,9 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import FindAllEvent from '@/modules/event-calendar-management/application/usecases/event/find-all.usecase';
 import Event from '@/modules/event-calendar-management/domain/entity/calendar.entity';
+import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/calendar.gateway';
 
-const MockRepository = () => {
+const MockRepository = (): jest.Mocked<EventGateway> => {
   return {
     find: jest.fn(),
     findAll: jest.fn(),
@@ -13,7 +14,7 @@ const MockRepository = () => {
 };
 
 describe('findAllEvent usecase unit test', () => {
-  const input1 = {
+  const event1 = new Event({
     creator: new Id().value,
     name: 'Christmas',
     date: new Date(),
@@ -21,8 +22,8 @@ describe('findAllEvent usecase unit test', () => {
     day: 'mon' as DayOfWeek,
     type: 'event',
     place: 'school',
-  };
-  const input2 = {
+  });
+  const event2 = new Event({
     creator: new Id().value,
     name: 'Summer',
     date: new Date(),
@@ -30,10 +31,7 @@ describe('findAllEvent usecase unit test', () => {
     day: 'fri' as DayOfWeek,
     type: 'event',
     place: 'school',
-  };
-
-  const event1 = new Event(input1);
-  const event2 = new Event(input2);
+  });
 
   describe('On success', () => {
     it('should find all events', async () => {
