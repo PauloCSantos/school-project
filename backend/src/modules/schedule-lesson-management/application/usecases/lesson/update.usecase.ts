@@ -5,6 +5,9 @@ import {
 } from '../../dto/lesson-usecase.dto';
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
 
+/**
+ * Use case responsible for updating an existing lesson.
+ */
 export default class UpdateLesson
   implements UseCaseInterface<UpdateLessonInputDto, UpdateLessonOutputDto>
 {
@@ -13,6 +16,10 @@ export default class UpdateLesson
   constructor(lessonRepository: LessonGateway) {
     this._lessonRepository = lessonRepository;
   }
+
+  /**
+   * Updates lesson fields and persists changes.
+   */
   async execute({
     id,
     duration,

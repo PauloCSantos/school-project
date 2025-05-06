@@ -20,14 +20,14 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
   /**
    * Finds a user by their email address.
    * @param email - The email address to search for
-   * @returns Promise resolving to the found AuthUser or undefined if not found
+   * @returns Promise resolving to the found AuthUser or null if not found
    */
-  async find(email: string): Promise<AuthUser | undefined> {
+  async find(email: string): Promise<AuthUser | null> {
     const authUser = this._authUser.find(authUser => authUser.email === email);
     if (authUser) {
       return authUser;
     } else {
-      return undefined;
+      return null;
     }
   }
 

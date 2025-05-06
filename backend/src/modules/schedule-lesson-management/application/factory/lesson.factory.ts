@@ -12,9 +12,20 @@ import RemoveStudents from '../usecases/lesson/remove-students.usecase';
 import RemoveTime from '../usecases/lesson/remove-time.usecase';
 import UpdateLesson from '../usecases/lesson/update.usecase';
 
+/**
+ * Factory responsible for creating LessonFacade instances
+ * Currently uses memory repository, but prepared for future extension
+ */
 export default class LessonFacadeFactory {
+  /**
+   * Creates an instance of LessonFacade with all dependencies properly configured
+   * @returns Fully configured LessonFacade instance
+   */
   static create(): LessonFacade {
+    // Currently using memory repository
     const repository = new MemoryLessonRepository();
+
+    // Create all required use cases
     const createLesson = new CreateLesson(repository);
     const deleteLesson = new DeleteLesson(repository);
     const findAllLesson = new FindAllLesson(repository);
@@ -26,6 +37,8 @@ export default class LessonFacadeFactory {
     const removeDay = new RemoveDay(repository);
     const addTime = new AddTime(repository);
     const removeTime = new RemoveTime(repository);
+
+    // Instantiate and return the facade with all required use cases
     const facade = new LessonFacade({
       createLesson,
       deleteLesson,

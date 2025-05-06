@@ -5,6 +5,9 @@ import {
 } from '../../dto/schedule-usecase.dto';
 import ScheduleGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/schedule.gateway';
 
+/**
+ * Use case responsible for retrieving a schedule by ID.
+ */
 export default class FindAllSchedule
   implements
     UseCaseInterface<FindAllScheduleInputDto, FindAllScheduleOutputDto>
@@ -14,6 +17,9 @@ export default class FindAllSchedule
   constructor(scheduleRepository: ScheduleGateway) {
     this._scheduleRepository = scheduleRepository;
   }
+  /**
+   * Fetches a schedule by its unique identifier.
+   */
   async execute({
     offset,
     quantity,

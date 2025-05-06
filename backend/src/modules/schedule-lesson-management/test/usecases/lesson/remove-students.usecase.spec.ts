@@ -37,7 +37,7 @@ describe('RemoveStudent use case unit test', () => {
   });
   const input = {
     id: lesson.id.value,
-    studentsListToRemove: [lesson.studentList[0]],
+    studentsListToRemove: [lesson.studentsList[0]],
   };
 
   describe('On fail', () => {

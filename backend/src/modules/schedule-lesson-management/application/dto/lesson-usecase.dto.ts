@@ -1,117 +1,59 @@
-export interface FindLessonInputDto {
-  id: string;
-}
-export interface FindLessonOutputDto {
-  id: string;
-  name: string;
-  duration: number;
-  teacher: string;
-  studentsList: string[];
-  subject: string;
-  days: string[];
-  times: string[];
-  semester: number;
-}
+import {
+  IFindLessonInput,
+  IFindLessonOutput,
+  IFindAllLessonInput,
+  IFindAllLessonOutput,
+  ICreateLessonInput,
+  ICreateLessonOutput,
+  IUpdateLessonInput,
+  IUpdateLessonOutput,
+  IDeleteLessonInput,
+  IDeleteLessonOutput,
+  IAddStudentsInput,
+  IAddStudentsOutput,
+  IRemoveStudentsInput,
+  IRemoveStudentsOutput,
+  IAddDayInput,
+  IAddDayOutput,
+  IRemoveDayInput,
+  IRemoveDayOutput,
+  IAddTimeInput,
+  IAddTimeOutput,
+  IRemoveTimeInput,
+  IRemoveTimeOutput,
+} from './base-lesson.dto';
 
-export interface FindAllLessonInputDto {
-  quantity?: number;
-  offset?: number;
-}
-export interface FindAllLessonOutputDto
-  extends Array<{
-    id: string;
-    name: string;
-    duration: number;
-    teacher: string;
-    studentsList: string[];
-    subject: string;
-    days: string[];
-    times: string[];
-    semester: number;
-  }> {}
+// UseCase DTOs - utilizando as interfaces base
 
-export interface CreateLessonInputDto {
-  name: string;
-  duration: number;
-  teacher: string;
-  studentsList: string[];
-  subject: string;
-  days: DayOfWeek[];
-  times: Hour[];
-  semester: 1 | 2;
-}
-export interface CreateLessonOutputDto {
-  id: string;
-}
+export type FindLessonInputDto = IFindLessonInput;
+export type FindLessonOutputDto = IFindLessonOutput;
 
-export interface UpdateLessonInputDto {
-  id: string;
-  name?: string;
-  duration?: number;
-  teacher?: string;
-  subject?: string;
-  semester?: 1 | 2;
-}
-export interface UpdateLessonOutputDto {
-  id: string;
-  name: string;
-  duration: number;
-  teacher: string;
-  subject: string;
-  semester: number;
-}
+export type FindAllLessonInputDto = IFindAllLessonInput;
+export type FindAllLessonOutputDto = IFindAllLessonOutput;
 
-export interface DeleteLessonInputDto {
-  id: string;
-}
-export interface DeleteLessonOutputDto {
-  message: string;
-}
+export type CreateLessonInputDto = ICreateLessonInput;
+export type CreateLessonOutputDto = ICreateLessonOutput;
 
-export interface AddStudentsInputDto {
-  id: string;
-  newStudentsList: string[];
-}
-export interface AddStudentsOutputDto {
-  message: string;
-}
+export type UpdateLessonInputDto = IUpdateLessonInput;
+export type UpdateLessonOutputDto = IUpdateLessonOutput;
 
-export interface RemoveStudentsInputDto {
-  id: string;
-  studentsListToRemove: string[];
-}
-export interface RemoveStudentsOutputDto {
-  message: string;
-}
+export type DeleteLessonInputDto = IDeleteLessonInput;
+export type DeleteLessonOutputDto = IDeleteLessonOutput;
 
-export interface AddDayInputDto {
-  id: string;
-  newDaysList: string[];
-}
-export interface AddDayOutputDto {
-  message: string;
-}
+export type AddStudentsInputDto = IAddStudentsInput;
+export type AddStudentsOutputDto = IAddStudentsOutput;
 
-export interface RemoveDayInputDto {
-  id: string;
-  daysListToRemove: string[];
-}
-export interface RemoveDayOutputDto {
-  message: string;
-}
+export type RemoveStudentsInputDto = IRemoveStudentsInput;
+export type RemoveStudentsOutputDto = IRemoveStudentsOutput;
 
-export interface AddTimeInputDto {
-  id: string;
-  newTimesList: string[];
-}
-export interface AddTimeOutputDto {
-  message: string;
-}
+export type AddDayInputDto = IAddDayInput;
+export type AddDayOutputDto = IAddDayOutput;
 
-export interface RemoveTimeInputDto {
-  id: string;
-  timesListToRemove: string[];
-}
-export interface RemoveTimeOutputDto {
-  message: string;
-}
+export type RemoveDayInputDto = IRemoveDayInput;
+export type RemoveDayOutputDto = IRemoveDayOutput;
+
+export type AddTimeInputDto = IAddTimeInput;
+export type AddTimeOutputDto = IAddTimeOutput;
+
+export type RemoveTimeInputDto = IRemoveTimeInput;
+export type RemoveTimeOutputDto = IRemoveTimeOutput;

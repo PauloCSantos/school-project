@@ -8,6 +8,9 @@ import {
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
 import LessonMapper from '../../mapper/lesson-usecase.mapper';
 
+/**
+ * Use case responsible for adding students to a lesson.
+ */
 export default class AddStudents
   implements UseCaseInterface<AddStudentsInputDto, AddStudentsOutputDto>
 {
@@ -16,6 +19,10 @@ export default class AddStudents
   constructor(lessonRepository: LessonGateway) {
     this._lessonRepository = lessonRepository;
   }
+
+  /**
+   * Adds a list of students to the specified lesson.
+   */
   async execute({
     id,
     newStudentsList,

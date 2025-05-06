@@ -8,6 +8,9 @@ import {
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
 import LessonMapper from '../../mapper/lesson-usecase.mapper';
 
+/**
+ * Use case responsible for removing days from a lesson.
+ */
 export default class RemoveDay
   implements UseCaseInterface<RemoveDayInputDto, RemoveDayOutputDto>
 {
@@ -16,6 +19,10 @@ export default class RemoveDay
   constructor(lessonRepository: LessonGateway) {
     this._lessonRepository = lessonRepository;
   }
+
+  /**
+   * Removes specified days from the given lesson.
+   */
   async execute({
     id,
     daysListToRemove,

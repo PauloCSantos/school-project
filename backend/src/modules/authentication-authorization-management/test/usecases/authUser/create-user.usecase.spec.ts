@@ -53,7 +53,7 @@ describe('CreateAuthUser usecase unit test', () => {
   });
 
   it('should create a user and return the creation result', async () => {
-    repository.find.mockResolvedValueOnce(undefined);
+    repository.find.mockResolvedValueOnce(null);
 
     const output = await usecase.execute(input);
 
@@ -63,7 +63,7 @@ describe('CreateAuthUser usecase unit test', () => {
   });
 
   it('should check if user exists before creating', async () => {
-    repository.find.mockResolvedValueOnce(undefined);
+    repository.find.mockResolvedValueOnce(null);
 
     await usecase.execute(input);
 
@@ -81,7 +81,7 @@ describe('CreateAuthUser usecase unit test', () => {
   });
 
   it('should ensure password is hashed before creating user', async () => {
-    repository.find.mockResolvedValueOnce(undefined);
+    repository.find.mockResolvedValueOnce(null);
 
     await usecase.execute(input);
 
@@ -98,7 +98,7 @@ describe('CreateAuthUser usecase unit test', () => {
       ...input,
       isHashed: true,
     };
-    repository.find.mockResolvedValueOnce(undefined);
+    repository.find.mockResolvedValueOnce(null);
 
     await usecase.execute(hashedInput);
 
@@ -106,7 +106,7 @@ describe('CreateAuthUser usecase unit test', () => {
   });
 
   it('should throw an error if hashing fails', async () => {
-    repository.find.mockResolvedValueOnce(undefined);
+    repository.find.mockResolvedValueOnce(null);
     generateHashSpy.mockRejectedValueOnce(new Error('Hash error'));
 
     await expect(usecase.execute(input)).rejects.toThrow('Hash error');
@@ -114,7 +114,7 @@ describe('CreateAuthUser usecase unit test', () => {
   });
 
   it('should pass the correct entity to repository.create', async () => {
-    repository.find.mockResolvedValueOnce(undefined);
+    repository.find.mockResolvedValueOnce(null);
 
     await usecase.execute(input);
 
@@ -132,7 +132,7 @@ describe('CreateAuthUser usecase unit test', () => {
       email: input.email,
       masterId: input.masterId!,
     };
-    repository.find.mockResolvedValueOnce(undefined);
+    repository.find.mockResolvedValueOnce(null);
     repository.create.mockResolvedValueOnce(expectedResult);
 
     const result = await usecase.execute(input);

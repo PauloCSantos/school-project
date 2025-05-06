@@ -8,9 +8,20 @@ import FindSchedule from '../usecases/schedule/find.usecase';
 import RemoveLessons from '../usecases/schedule/remove-lessons.usecase';
 import UpdateSchedule from '../usecases/schedule/update.usecase';
 
+/**
+ * Factory responsible for creating ScheduleFacade instances
+ * Currently uses memory repository, but prepared for future extension
+ */
 export default class ScheduleFacadeFactory {
+  /**
+   * Creates an instance of ScheduleFacade with all dependencies properly configured
+   * @returns Fully configured ScheduleFacade instance
+   */
   static create(): ScheduleFacade {
+    // Currently using memory repository
     const repository = new MemoryScheduleRepository();
+
+    // Create all required use cases
     const createSchedule = new CreateSchedule(repository);
     const deleteSchedule = new DeleteSchedule(repository);
     const findAllSchedule = new FindAllSchedule(repository);
@@ -18,6 +29,8 @@ export default class ScheduleFacadeFactory {
     const updateSchedule = new UpdateSchedule(repository);
     const addLessons = new AddLessons(repository);
     const removeLessons = new RemoveLessons(repository);
+
+    // Instantiate and return the facade with all required use cases
     const facade = new ScheduleFacade({
       createSchedule,
       deleteSchedule,

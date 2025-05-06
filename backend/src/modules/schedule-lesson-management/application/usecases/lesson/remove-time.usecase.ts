@@ -8,6 +8,9 @@ import {
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
 import LessonMapper from '../../mapper/lesson-usecase.mapper';
 
+/**
+ * Use case responsible for removing time slots from a lesson.
+ */
 export default class RemoveTime
   implements UseCaseInterface<RemoveTimeInputDto, RemoveTimeOutputDto>
 {
@@ -16,6 +19,10 @@ export default class RemoveTime
   constructor(lessonRepository: LessonGateway) {
     this._lessonRepository = lessonRepository;
   }
+
+  /**
+   * Removes specified time entries from the given lesson.
+   */
   async execute({
     id,
     timesListToRemove,

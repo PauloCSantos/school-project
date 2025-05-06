@@ -8,6 +8,9 @@ import {
 import ScheduleGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/schedule.gateway';
 import ScheduleMapper from '../../mapper/schedule.mapper';
 
+/**
+ * Use case responsible for removing lessons from a schedule.
+ */
 export default class RemoveLessons
   implements UseCaseInterface<RemoveLessonsInputDto, RemoveLessonsOutputDto>
 {
@@ -16,6 +19,9 @@ export default class RemoveLessons
   constructor(scheduleRepository: ScheduleGateway) {
     this._scheduleRepository = scheduleRepository;
   }
+  /**
+   * Removes lessons from the specified schedule.
+   */
   async execute({
     id,
     lessonsListToRemove,

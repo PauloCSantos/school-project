@@ -8,6 +8,9 @@ import {
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
 import LessonMapper from '../../mapper/lesson-usecase.mapper';
 
+/**
+ * Use case responsible for removing students from a lesson.
+ */
 export default class RemoveStudents
   implements UseCaseInterface<RemoveStudentsInputDto, RemoveStudentsOutputDto>
 {
@@ -16,6 +19,10 @@ export default class RemoveStudents
   constructor(lessonRepository: LessonGateway) {
     this._lessonRepository = lessonRepository;
   }
+
+  /**
+   * Removes specified students from the given lesson.
+   */
   async execute({
     id,
     studentsListToRemove,

@@ -66,11 +66,11 @@ describe('MemoryLessonRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should received an undefined', async () => {
+    it('should received an null', async () => {
       const lessonId = new Id().value;
       const lessonFound = await repository.find(lessonId);
 
-      expect(lessonFound).toBeUndefined();
+      expect(lessonFound).toBeNull();
     });
     it('should throw an error when the Id is wrong', async () => {
       const lesson = new Lesson({
@@ -123,7 +123,7 @@ describe('MemoryLessonRepository unit test', () => {
       expect(lessonFound!.duration).toBe(lesson1.duration);
       expect(lessonFound!.teacher).toBe(lesson1.teacher);
       expect(lessonFound!.days).toBe(lesson1.days);
-      expect(lessonFound!.studentList).toBe(lesson1.studentList);
+      expect(lessonFound!.studentsList).toBe(lesson1.studentsList);
     });
     it('should create a new lesson and return its id', async () => {
       const result = await repository.create(lesson3);
@@ -144,8 +144,8 @@ describe('MemoryLessonRepository unit test', () => {
       expect(allLessons.length).toBe(2);
       expect(allLessons[0].name).toBe(lesson1.name);
       expect(allLessons[1].name).toBe(lesson2.name);
-      expect(allLessons[0].studentList).toBe(lesson1.studentList);
-      expect(allLessons[1].studentList).toBe(lesson2.studentList);
+      expect(allLessons[0].studentsList).toBe(lesson1.studentsList);
+      expect(allLessons[1].studentsList).toBe(lesson2.studentsList);
     });
     it('should remove the lesson', async () => {
       const response = await repository.delete(lesson1.id.value);
@@ -162,7 +162,7 @@ describe('MemoryLessonRepository unit test', () => {
     });
     it('should remove a student from the lesson', async () => {
       const response = await repository.removeStudents(lesson1.id.value, [
-        lesson1.studentList[0],
+        lesson1.studentsList[0],
       ]);
 
       expect(response).toBe('1 value was removed');

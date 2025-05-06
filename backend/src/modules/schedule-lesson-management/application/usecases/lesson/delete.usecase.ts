@@ -5,6 +5,9 @@ import {
 } from '../../dto/lesson-usecase.dto';
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
 
+/**
+ * Use case responsible for deleting a lesson.
+ */
 export default class DeleteLesson
   implements UseCaseInterface<DeleteLessonInputDto, DeleteLessonOutputDto>
 {
@@ -13,6 +16,10 @@ export default class DeleteLesson
   constructor(lessonRepository: LessonGateway) {
     this._lessonRepository = lessonRepository;
   }
+
+  /**
+   * Deletes a lesson after verifying its existence.
+   */
   async execute({ id }: DeleteLessonInputDto): Promise<DeleteLessonOutputDto> {
     const lessonVerification = await this._lessonRepository.find(id);
     if (!lessonVerification) throw new Error('Lesson not found');
