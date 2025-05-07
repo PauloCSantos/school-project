@@ -6,7 +6,6 @@ import { CreateAuthUserInputDto } from '@/modules/authentication-authorization-m
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
 import { ICreateAuthUserOutput } from '@/modules/authentication-authorization-management/application/dto/base-user.dto';
 
-// Crie o mock com tipagem explícita
 const MockRepository = (): jest.Mocked<AuthUserGateway> => {
   return {
     find: jest.fn(),

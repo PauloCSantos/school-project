@@ -4,7 +4,6 @@ import AuthUser from '@/modules/authentication-authorization-management/domain/e
 import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
 
-// Crie o mock com tipagem explícita
 const MockRepository = (): jest.Mocked<AuthUserGateway> => {
   return {
     find: jest.fn(),
@@ -48,7 +47,6 @@ describe('FindAuthUser usecase unit test', () => {
   });
 
   it('should find an authUser when it exists', async () => {
-    // Criar o objeto que será retornado pelo mock
     const mockReturnedUser = {
       email: input.email,
       masterId: input.masterId,
@@ -63,18 +61,17 @@ describe('FindAuthUser usecase unit test', () => {
     expect(repository.find).toHaveBeenCalledWith(input.email);
     expect(repository.find).toHaveBeenCalledTimes(1);
     expect(result).toBeDefined();
-    // Use toEqual em vez de toBe para comparar conteúdo
     expect(result).toEqual(mockReturnedUser);
   });
 
-  it('should return undefined when email is not found', async () => {
-    repository.find.mockResolvedValue(undefined);
+  it('should return null when email is not found', async () => {
+    repository.find.mockResolvedValue(null);
     const notFoundEmail = 'notfound@teste.com.br';
 
     const result = await usecase.execute({ email: notFoundEmail });
 
     expect(repository.find).toHaveBeenCalledWith(notFoundEmail);
     expect(repository.find).toHaveBeenCalledTimes(1);
-    expect(result).toBeUndefined();
+    expect(result).toBeNull();
   });
 });

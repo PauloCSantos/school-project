@@ -5,7 +5,6 @@ import TokenService from '@/modules/authentication-authorization-management/infr
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
 
-// Crie o mock com tipagem explícita
 const MockRepository = (): jest.Mocked<AuthUserGateway> => {
   return {
     find: jest.fn(),
@@ -18,7 +17,7 @@ const MockRepository = (): jest.Mocked<AuthUserGateway> => {
 
 class MockAuthUserService extends AuthUserService {
   async comparePassword(): Promise<boolean> {
-    return true; // Valor padrão pode ser substituído nos testes usando jest.spyOn
+    return true;
   }
 
   async generateHash(password: string): Promise<string> {
@@ -75,8 +74,6 @@ describe('LoginAuthUser usecase unit test', () => {
     repository = MockRepository();
     authUserService = new MockAuthUserService();
     tokenService = new MockTokenService();
-
-    // Criar uma instância real de AuthUser
     authUser = new AuthUser(userData, authUserService);
 
     comparePasswordSpy = jest.spyOn(authUserService, 'comparePassword');
@@ -90,7 +87,6 @@ describe('LoginAuthUser usecase unit test', () => {
   });
 
   it('should login successfully with correct credentials', async () => {
-    // Usar a instância de AuthUser em vez de um objeto simples
     repository.find.mockResolvedValue(authUser);
     comparePasswordSpy.mockResolvedValue(true);
     generateTokenSpy.mockResolvedValue('mocked_token');
@@ -104,7 +100,7 @@ describe('LoginAuthUser usecase unit test', () => {
   });
 
   it('should throw error when user is not found', async () => {
-    repository.find.mockResolvedValue(undefined);
+    repository.find.mockResolvedValue(null);
 
     await expect(
       usecase.execute({
