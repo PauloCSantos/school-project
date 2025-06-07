@@ -1,224 +1,258 @@
-import { HttpInterface } from '@/modules/@shared/infraestructure/http/http.interface';
+import {
+  HttpServer,
+  HttpResponseData,
+} from '@/modules/@shared/infraestructure/http/http.interface';
 import { CurriculumController } from '../controller/curriculum.controller';
-import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware, {
+  AuthHttpRequest,
+  AuthErrorHandlerMiddleware,
+} from '@/modules/@shared/application/middleware/authUser.middleware';
 import { validId } from '@/modules/@shared/utils/validations';
+import {
+  CreateCurriculumInputDto,
+  FindAllCurriculumInputDto,
+  FindCurriculumInputDto,
+  UpdateCurriculumInputDto,
+  DeleteCurriculumInputDto,
+  AddSubjectsInputDto,
+  RemoveSubjectsInputDto,
+} from '../../application/dto/curriculum-usecase.dto';
 
+/**
+ * Route handler for curriculum management endpoints.
+ * Maps HTTP requests to controller methods and handles request validation.
+ */
 export class CurriculumRoute {
   constructor(
     private readonly curriculumController: CurriculumController,
-    private readonly httpGateway: HttpInterface,
+    private readonly httpGateway: HttpServer,
     private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/curriculums', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () =>
-        this.findAllCurriculums(req, res)
-      );
-    });
-    this.httpGateway.post('/curriculum', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () =>
-        this.createCurriculum(req, res)
-      );
-    });
-    this.httpGateway.get('/curriculum/:id', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () => this.findCurriculum(req, res));
-    });
-    this.httpGateway.patch('/curriculum/:id', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () =>
-        this.updateCurriculum(req, res)
-      );
-    });
-    this.httpGateway.delete('/curriculum/:id', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () =>
-        this.deleteCurriculum(req, res)
-      );
-    });
-    this.httpGateway.post('/curriculum/add', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () => this.addSubjects(req, res));
-    });
-    this.httpGateway.post('/curriculum/remove', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () => this.removeSubjects(req, res));
-    });
+    const errorHandler = new AuthErrorHandlerMiddleware();
+
+    this.httpGateway.get(
+      '/curriculums',
+      this.findAllCurriculums.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+    this.httpGateway.get(
+      '/curriculum/:id',
+      this.findCurriculum.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+    this.httpGateway.post(
+      '/curriculum',
+      this.createCurriculum.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+    this.httpGateway.patch(
+      '/curriculum/:id',
+      this.updateCurriculum.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+    this.httpGateway.delete(
+      '/curriculum/:id',
+      this.deleteCurriculum.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+    this.httpGateway.post(
+      '/curriculum/subject/add',
+      this.addSubjects.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+    this.httpGateway.post(
+      '/curriculum/subject/remove',
+      this.removeSubjects.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
   }
 
-  private async findAllCurriculums(req: any, res: any): Promise<void> {
+  private async findAllCurriculums(
+    req: AuthHttpRequest<{}, {}, FindAllCurriculumInputDto, {}>
+  ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
       if (!this.validateFindAll(quantity, offset)) {
-        res
-          .status(400)
-          .json({ error: 'Quantity e/ou offset estão incorretos' });
-      } else {
-        const response = await this.curriculumController.findAll({
-          quantity,
-          offset,
-        });
-        res.status(200).json(response);
+        return {
+          statusCode: 400,
+          body: { error: 'Quantity e/ou offset incorretos' },
+        };
       }
+      const curriculums = await this.curriculumController.findAll({
+        quantity,
+        offset,
+      });
+      return { statusCode: 200, body: curriculums };
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      return this.handleError(error);
     }
   }
-  private async createCurriculum(req: any, res: any): Promise<void> {
+
+  private async findCurriculum(
+    req: AuthHttpRequest<FindCurriculumInputDto, {}, {}, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const { id } = req.params;
+      if (!validId(id)) {
+        return { statusCode: 400, body: { error: 'Id inválido' } };
+      }
+      const curriculum = await this.curriculumController.find({ id });
+      return { statusCode: 200, body: curriculum };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async createCurriculum(
+    req: AuthHttpRequest<{}, {}, CreateCurriculumInputDto, {}>
+  ): Promise<HttpResponseData> {
     try {
       const input = req.body;
       if (!this.validateCreate(input)) {
-        res.status(400).json({ error: 'Todos os campos sao obrigatorios' });
-      } else {
-        const response = await this.curriculumController.create(input);
-        res.status(201).json(response);
+        return {
+          statusCode: 400,
+          body: { error: 'Dados inválidos para criação de currículo' },
+        };
       }
+      const curriculum = await this.curriculumController.create(input);
+      return { statusCode: 201, body: curriculum };
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      return this.handleError(error);
     }
   }
-  private async findCurriculum(req: any, res: any): Promise<void> {
-    try {
-      const { id } = req.params;
-      if (!this.validFind(id)) {
-        res.status(400).json({ error: 'Id invalido' });
-      } else {
-        const response = await this.curriculumController.find({ id });
-        res.status(200).json(response);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(404).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
-    }
-  }
-  private async updateCurriculum(req: any, res: any): Promise<void> {
-    try {
-      const { id } = req.params;
-      const input = req.body;
-      if (!this.validUpdate(id, input)) {
-        res.status(400).json({ error: 'Id e/ou input incorretos' });
-      } else {
-        input.id = id;
-        const response = await this.curriculumController.update(input);
-        res.status(200).json(response);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
-    }
-  }
-  private async deleteCurriculum(req: any, res: any): Promise<void> {
-    try {
-      const { id } = req.params;
-      if (!this.validDelete(id)) {
-        res.status(400).json({ error: 'Id invalido' });
-      } else {
-        const response = await this.curriculumController.delete({ id });
-        res.status(200).json(response);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
-    }
-  }
-  private async addSubjects(req: any, res: any): Promise<void> {
-    try {
-      const input = req.body;
-      if (!this.validAdd(input)) {
-        res.status(400).json({ error: 'Dados invalidos' });
-      } else {
-        const response = await this.curriculumController.addSubjects(input);
-        res.status(201).json(response);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
-    }
-  }
-  private async removeSubjects(req: any, res: any): Promise<void> {
-    try {
-      const input = req.body;
-      if (!this.validRemove(input)) {
-        res.status(400).json({ error: 'Dados invalidos' });
-      } else {
-        const response = await this.curriculumController.removeSubjects(input);
-        res.status(201).json(response);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
-    }
-  }
-  private validateFindAll(
-    quantity: number | undefined,
-    offset: number | undefined
-  ): boolean {
-    if (
-      quantity === undefined ||
-      (typeof quantity === 'number' &&
-        isNaN(quantity) &&
-        offset === undefined) ||
-      (typeof offset === 'number' && isNaN(offset))
-    ) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-  private validateCreate(input: any): boolean {
-    const { name, subjectsList, yearsToComplete } = input;
 
-    if (
-      name === undefined ||
-      subjectsList === undefined ||
-      yearsToComplete === undefined
-    ) {
-      return false;
-    } else {
+  private async updateCurriculum(
+    req: AuthHttpRequest<
+      FindCurriculumInputDto,
+      {},
+      UpdateCurriculumInputDto,
+      {}
+    >
+  ): Promise<HttpResponseData> {
+    try {
+      const { id } = req.params;
+      const input = req.body;
+      if (!validId(id)) {
+        return {
+          statusCode: 400,
+          body: { error: 'Id e/ou dados para atualização inválidos' },
+        };
+      }
+      const response = await this.curriculumController.update({ ...input, id });
+      return { statusCode: 200, body: response };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async deleteCurriculum(
+    req: AuthHttpRequest<DeleteCurriculumInputDto, {}, {}, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const { id } = req.params;
+      if (!validId(id)) {
+        return { statusCode: 400, body: { error: 'Id inválido' } };
+      }
+      const response = await this.curriculumController.delete({ id });
+      return { statusCode: 200, body: response };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async addSubjects(
+    req: AuthHttpRequest<{}, {}, AddSubjectsInputDto, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const input = req.body;
+      if (!this.validateSubjects(input)) {
+        return {
+          statusCode: 400,
+          body: { error: 'Id e/ou dados para adicionar matérias inválidos' },
+        };
+      }
+      const response = await this.curriculumController.addSubjects(input);
+      return { statusCode: 200, body: response };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async removeSubjects(
+    req: AuthHttpRequest<{}, {}, RemoveSubjectsInputDto, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const input = req.body;
+      if (!this.validateSubjects(input)) {
+        return {
+          statusCode: 400,
+          body: { error: 'Id e/ou dados para remover matérias inválidos' },
+        };
+      }
+      const response = await this.curriculumController.removeSubjects(input);
+      return { statusCode: 200, body: response };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private handleError(error: unknown, statusCode = 400): HttpResponseData {
+    if (error instanceof Error) {
+      return { statusCode, body: { error: error.message } };
+    }
+    return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
+  }
+
+  private validateFindAll(quantity?: number, offset?: number): boolean {
+    if (quantity === undefined || offset === undefined) {
       return true;
     }
+    return Number.isInteger(quantity) && Number.isInteger(offset);
   }
-  private validFind(id: any): boolean {
-    return validId(id);
-  }
-  private validUpdate(id: any, input: any): boolean {
-    if (!validId(id)) return false;
-    for (const value of Object.values(input)) {
-      if (value !== undefined) {
-        return true;
-      }
-    }
-    return false;
-  }
-  private validDelete(id: any): boolean {
-    return validId(id);
-  }
-  private validAdd(input: any): boolean {
-    if (!validId(input.id) || input.newSubjectsList === undefined) return false;
-    return true;
-  }
-  private validRemove(input: any): boolean {
-    if (!validId(input.id) || input.subjectsListToRemove === undefined)
+
+  private validateCreate(input: CreateCurriculumInputDto): boolean {
+    if (
+      !input.name ||
+      typeof input.name !== 'string' ||
+      !Array.isArray(input.subjectsList) ||
+      !input.yearsToComplete ||
+      typeof input.yearsToComplete !== 'number' ||
+      input.yearsToComplete <= 0
+    ) {
       return false;
+    }
     return true;
+  }
+
+  private validateSubjects(
+    input: AddSubjectsInputDto | RemoveSubjectsInputDto
+  ): boolean {
+    if (!input.id || !validId(input.id)) {
+      return false;
+    }
+
+    if ('newSubjectsList' in input) {
+      return (
+        Array.isArray(input.newSubjectsList) && input.newSubjectsList.length > 0
+      );
+    }
+
+    if ('subjectsListToRemove' in input) {
+      return (
+        Array.isArray(input.subjectsListToRemove) &&
+        input.subjectsListToRemove.length > 0
+      );
+    }
+
+    return false;
   }
 }

@@ -1,122 +1,140 @@
 import { validId } from '@/modules/@shared/utils/validations';
-import { HttpInterface } from '@/modules/@shared/infraestructure/http/http.interface';
-import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import {
+  HttpServer,
+  HttpResponseData,
+} from '@/modules/@shared/infraestructure/http/http.interface';
+import AuthUserMiddleware, {
+  AuthHttpRequest,
+  AuthErrorHandlerMiddleware,
+} from '@/modules/@shared/application/middleware/authUser.middleware';
 import { UserMasterController } from '../controller/master.controller';
+import {
+  CreateUserMasterInputDto,
+  FindUserMasterInputDto,
+  UpdateUserMasterInputDto,
+} from '../../application/dto/master-usecase.dto';
 
 export class UserMasterRoute {
   constructor(
     private readonly userMasterController: UserMasterController,
-    private readonly httpGateway: HttpInterface,
+    private readonly httpGateway: HttpServer,
     private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.post('/user-master', (req: any, res: any) =>
-      this.createUserMaster(req, res)
+    const errorHandler = new AuthErrorHandlerMiddleware();
+
+    this.httpGateway.post(
+      '/user-master',
+      this.createUserMaster.bind(this),
+      errorHandler,
+      this.authMiddleware
     );
-    this.httpGateway.get('/user-master/:id', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () => this.findUserMaster(req, res));
-    });
-    this.httpGateway.patch('/user-master/:id', (req: any, res: any) =>
-      this.authMiddleware.handle(req, res, () =>
-        this.updateUserMaster(req, res)
-      )
+
+    this.httpGateway.get(
+      '/user-master/:id',
+      this.findUserMaster.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+
+    this.httpGateway.patch(
+      '/user-master/:id',
+      this.updateUserMaster.bind(this),
+      errorHandler,
+      this.authMiddleware
     );
   }
 
-  private async createUserMaster(req: any, res: any): Promise<void> {
+  private async createUserMaster(
+    req: AuthHttpRequest<{}, {}, CreateUserMasterInputDto, {}>
+  ): Promise<HttpResponseData> {
     try {
       const input = req.body;
       if (!this.validateCreate(input)) {
-        res.status(400).json({ error: 'Todos os campos sao obrigatorios' });
-      } else {
-        const response = await this.userMasterController.create({
-          ...input,
-          birthday: new Date(input.birthday),
-        });
-        res.status(201).json(response);
+        return {
+          statusCode: 400,
+          body: { error: 'Dados inválidos para criação do master' },
+        };
       }
+      const newMaster = await this.userMasterController.create(input);
+      return { statusCode: 201, body: newMaster };
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      return this.handleError(error);
     }
   }
-  private async findUserMaster(req: any, res: any): Promise<void> {
+
+  private async findUserMaster(
+    req: AuthHttpRequest<FindUserMasterInputDto, {}, {}, {}>
+  ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
       if (!this.validFind(id)) {
-        res.status(400).json({ error: 'Id invalido' });
-      } else {
-        const response = await this.userMasterController.find({ id });
-        res.status(200).json(response);
+        return { statusCode: 400, body: { error: 'Id inválido' } };
       }
+      const master = await this.userMasterController.find({ id });
+      return { statusCode: 200, body: master };
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(404).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      return this.handleError(error);
     }
   }
-  private async updateUserMaster(req: any, res: any): Promise<void> {
+
+  private async updateUserMaster(
+    req: AuthHttpRequest<
+      FindUserMasterInputDto,
+      {},
+      UpdateUserMasterInputDto,
+      {}
+    >
+  ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
       const input = req.body;
       if (!this.validUpdate(id, input)) {
-        res.status(400).json({ error: 'Id e/ou input incorretos' });
-      } else {
-        input.id = id;
-        const response = await this.userMasterController.update(input);
-        res.status(200).json(response);
+        return {
+          statusCode: 400,
+          body: { error: 'Id e/ou dados para atualização inválidos' },
+        };
       }
+      const updatedMaster = await this.userMasterController.update({
+        ...input,
+        id,
+      });
+      return { statusCode: 200, body: updatedMaster };
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      return this.handleError(error);
     }
   }
-  private validateCreate(input: any): boolean {
-    const {
-      name: { firstName, lastName },
-      address: { street, city, zip, number, avenue, state },
-      email,
-      birthday,
-      cnpj,
-    } = input;
 
-    if (
-      firstName === undefined ||
-      lastName === undefined ||
-      street === undefined ||
-      city === undefined ||
-      zip === undefined ||
-      number === undefined ||
-      avenue === undefined ||
-      state === undefined ||
-      email === undefined ||
-      birthday === undefined ||
-      cnpj === undefined
-    ) {
-      return false;
-    } else {
-      return true;
-    }
+  private validateCreate(input: CreateUserMasterInputDto): boolean {
+    return (
+      input.name.firstName !== undefined &&
+      input.name.lastName !== undefined &&
+      input.address.street !== undefined &&
+      input.address.city !== undefined &&
+      input.address.zip !== undefined &&
+      input.address.number !== undefined &&
+      input.address.avenue !== undefined &&
+      input.address.state !== undefined &&
+      input.email !== undefined &&
+      input.birthday !== undefined &&
+      input.cnpj !== undefined
+    );
   }
-  private validFind(id: any): boolean {
+
+  private validFind(id: string): boolean {
     return validId(id);
   }
-  private validUpdate(id: any, input: any): boolean {
+
+  private validUpdate(id: string, input: UpdateUserMasterInputDto): boolean {
     if (!validId(id)) return false;
-    for (const value of Object.values(input)) {
-      if (value !== undefined) {
-        return true;
-      }
+    return Object.values(input).some(value => value !== undefined);
+  }
+
+  private handleError(error: unknown, statusCode = 400): HttpResponseData {
+    if (error instanceof Error) {
+      return { statusCode, body: { error: error.message } };
     }
-    return false;
+    return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
   }
 }

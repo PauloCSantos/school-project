@@ -5,7 +5,7 @@ import FindAuthUser from '@/modules/authentication-authorization-management/appl
 import LoginAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/login-user.usecase';
 import UpdateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/update-user.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/user.repository';
 import AuthUserController from '@/modules/authentication-authorization-management/interface/controller/user.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
@@ -47,7 +47,7 @@ describe('Authentication authorization management module end to end test', () =>
       loginAuthUserUsecase
     );
 
-    const expressHttp = new ExpressHttp();
+    const expressHttp = new ExpressAdapter();
     const tokerService = tokenInstance();
     const authUserMiddlewareAuthUser = new AuthUserMiddleware(tokerService, [
       'master',
@@ -61,7 +61,7 @@ describe('Authentication authorization management module end to end test', () =>
       authUserMiddlewareAuthUser
     );
     authUserRoute.routes();
-    app = expressHttp.getExpressInstance();
+    app = expressHttp.getNativeServer();
   });
 
   describe('AuthUser', () => {

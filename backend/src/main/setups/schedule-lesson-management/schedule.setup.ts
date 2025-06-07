@@ -1,6 +1,6 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryScheduleRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/schedule.repository';
 import CreateSchedule from '@/modules/schedule-lesson-management/application/usecases/schedule/create.usecase';
 import FindSchedule from '@/modules/schedule-lesson-management/application/usecases/schedule/find.usecase';

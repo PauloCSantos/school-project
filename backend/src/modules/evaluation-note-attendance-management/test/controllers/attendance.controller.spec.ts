@@ -7,6 +7,7 @@ import FindAttendance from '../../application/usecases/attendance/find.usecase';
 import RemoveStudents from '../../application/usecases/attendance/remove-students.usecase';
 import UpdateAttendance from '../../application/usecases/attendance/update.usecase';
 import AttendanceController from '../../interface/controller/attendance.controller';
+import { UpdateAttendanceInputDto } from '../../application/dto/attendance-usecase.dto';
 
 describe('AttendanceController unit test', () => {
   // Mock the usecases directly
@@ -134,7 +135,7 @@ describe('AttendanceController unit test', () => {
   });
 
   it('should update a attendance', async () => {
-    const updateInput = {
+    const updateInput: UpdateAttendanceInputDto = {
       id,
       hour: '14:00',
     };

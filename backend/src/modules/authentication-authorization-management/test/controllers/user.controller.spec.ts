@@ -119,14 +119,14 @@ describe('AuthUserController unit test', () => {
     expect(result).toEqual(findOutput);
   });
 
-  it('should handle case where find use case returns undefined', async () => {
-    mockFindAuthUser.execute.mockResolvedValue(undefined);
+  it('should handle case where find use case returns null', async () => {
+    mockFindAuthUser.execute.mockResolvedValue(null);
 
     const result = await controller.find(findInput);
 
     expect(mockFindAuthUser.execute).toHaveBeenCalledTimes(1);
     expect(mockFindAuthUser.execute).toHaveBeenCalledWith(findInput);
-    expect(result).toBeUndefined();
+    expect(result).toBeNull();
   });
 
   it('should call update use case with correct input and return its output', async () => {

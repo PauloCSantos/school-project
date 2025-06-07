@@ -23,7 +23,7 @@ import FindAllUserWorker from '@/modules/user-management/application/usecases/wo
 import FindUserWorker from '@/modules/user-management/application/usecases/worker/findUserWorker.usecase';
 import UpdateUserWorker from '@/modules/user-management/application/usecases/worker/updateUserWorker.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import MemoryUserAdministratorRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/administrator.repository';
@@ -143,7 +143,7 @@ describe('User management module end to end test', () => {
       updateUserWorkerUsecase,
       deleteUserWorkerUsecase
     );
-    const expressHttp = new ExpressHttp();
+    const expressHttp = new ExpressAdapter();
     const tokerService = tokenInstance();
 
     const authUserMiddlewareMaster = new AuthUserMiddleware(tokerService, [
@@ -202,7 +202,7 @@ describe('User management module end to end test', () => {
     userStudentRoute.routes();
     userTeacherRoute.routes();
     userWorkerRoute.routes();
-    app = expressHttp.getExpressInstance();
+    app = expressHttp.getNativeServer();
   });
 
   describe('User administrator', () => {

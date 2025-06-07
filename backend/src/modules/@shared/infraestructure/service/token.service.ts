@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import AuthUser from '../../domain/entity/user.entity';
+import AuthUser from '../../../authentication-authorization-management/domain/entity/user.entity';
 
 type TokenDecodedProps = {
   email: string;

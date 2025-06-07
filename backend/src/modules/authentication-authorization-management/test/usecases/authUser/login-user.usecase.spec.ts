@@ -1,9 +1,10 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import LoginAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/login-user.usecase';
 import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
-import TokenService from '@/modules/authentication-authorization-management/infrastructure/service/token.service';
+import TokenService from '@/modules/@shared/infraestructure/service/token.service';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
+import { RoleUsers } from '@/modules/@shared/type/enum';
 
 const MockRepository = (): jest.Mocked<AuthUserGateway> => {
   return {

@@ -2,138 +2,239 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { ScheduleController } from '../../interface/controller/schedule.controller';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
-import { ScheduleRoute } from '../../interface/route/schedule.route';
+import ScheduleRoute from '../../interface/route/schedule.route';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 
-const mockAuthUserMiddleware = jest.fn(
-  () =>
-    ({
-      //@ts-expect-error
-      handle: jest.fn((req: any, res: any, next: any) => next()),
-    }) as unknown as AuthUserMiddleware
-);
+describe('ScheduleRoute with ExpressAdapter', () => {
+  let http: ExpressAdapter;
+  let app: any;
+  let scheduleController: ScheduleController;
+  let middleware: AuthUserMiddleware;
 
-const mockScheduleController = jest.fn(() => {
-  return {
-    create: jest.fn().mockResolvedValue({ id: new Id().value }),
-    find: jest.fn().mockResolvedValue({
-      student: new Id().value,
-      curriculum: new Id().value,
-      lessonsList: [new Id().value, new Id().value, new Id().value],
-    }),
-    findAll: jest.fn().mockResolvedValue([
-      {
-        student: new Id().value,
-        curriculum: new Id().value,
-        lessonsList: [new Id().value, new Id().value, new Id().value],
-      },
-      {
-        student: new Id().value,
-        curriculum: new Id().value,
-        lessonsList: [new Id().value, new Id().value, new Id().value],
-      },
-    ]),
-    update: jest.fn().mockResolvedValue({
-      student: new Id().value,
-      curriculum: new Id().value,
-    }),
-    delete: jest.fn().mockResolvedValue({
-      message: 'Operação concluída com sucesso',
-    }),
-    addLessons: jest.fn().mockResolvedValue('1 value was entered'),
-    removeLessons: jest.fn().mockResolvedValue('2 values were removed'),
-  } as unknown as ScheduleController;
-});
+  beforeEach(() => {
+    http = new ExpressAdapter();
+    app = http.getNativeServer();
 
-describe('scheduleRoute unit test', () => {
-  const scheduleController = mockScheduleController();
-  const authUserMiddleware = mockAuthUserMiddleware();
-  const expressHttp = new ExpressHttp();
-  const scheduleRoute = new ScheduleRoute(
-    scheduleController,
-    expressHttp,
-    authUserMiddleware
-  );
-  scheduleRoute.routes();
-  const app = expressHttp.getExpressInstance();
-
-  describe('POST /schedule', () => {
-    it('should create a Schedule', async () => {
-      const response = await supertest(app)
-        .post('/schedule')
-        .send({
+    scheduleController = {
+      create: jest.fn().mockResolvedValue({ id: new Id().value }),
+      find: jest.fn().mockImplementation(({ id }) =>
+        Promise.resolve({
+          id,
           student: new Id().value,
           curriculum: new Id().value,
           lessonsList: [new Id().value, new Id().value, new Id().value],
-        });
-      expect(response.status).toBe(201);
-      expect(scheduleController.create).toHaveBeenCalled();
-      expect(response.body.id).toBeDefined();
-    });
+        })
+      ),
+      findAll: jest.fn().mockResolvedValue([
+        {
+          id: new Id().value,
+          student: new Id().value,
+          curriculum: new Id().value,
+          lessonsList: [new Id().value, new Id().value, new Id().value],
+        },
+        {
+          id: new Id().value,
+          student: new Id().value,
+          curriculum: new Id().value,
+          lessonsList: [new Id().value, new Id().value, new Id().value],
+        },
+      ]),
+      update: jest.fn().mockImplementation(({ id }) =>
+        Promise.resolve({
+          id,
+          student: new Id().value,
+          curriculum: new Id().value,
+          lessonsList: [new Id().value, new Id().value],
+        })
+      ),
+      delete: jest.fn().mockResolvedValue({
+        message: 'Operação concluída com sucesso',
+      }),
+      addLessons: jest.fn().mockResolvedValue('1 value was entered'),
+      removeLessons: jest.fn().mockResolvedValue('2 values were removed'),
+    } as unknown as ScheduleController;
+
+    middleware = {
+      handle: jest.fn((_req, next) => next()),
+    } as unknown as AuthUserMiddleware;
+
+    new ScheduleRoute(scheduleController, http, middleware).routes();
   });
-  describe('GET /schedule/:id', () => {
-    it('should find a schedule by ID', async () => {
-      const response = await supertest(app).get(`/schedule/${new Id().value}`);
-      expect(response.status).toBe(200);
-      expect(scheduleController.find).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
-    });
-  });
-  describe('GET /schedules/', () => {
+
+  describe('success', () => {
     it('should find all schedules', async () => {
       const response = await supertest(app).get('/schedules');
-      expect(response.status).toBe(200);
+
+      expect(response.statusCode).toBe(200);
       expect(scheduleController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
+      expect(response.body).toEqual(expect.any(Array));
       expect(response.body.length).toBe(2);
     });
-  });
-  describe('PATCH /schedule/:id', () => {
+
+    it('should create a schedule', async () => {
+      const payload = {
+        student: new Id().value,
+        curriculum: new Id().value,
+        lessonsList: [new Id().value, new Id().value, new Id().value],
+      };
+      const response = await supertest(app).post('/schedule').send(payload);
+
+      expect(response.statusCode).toBe(201);
+      expect(scheduleController.create).toHaveBeenCalledWith(payload);
+      expect(response.body).toEqual({ id: expect.any(String) });
+    });
+
+    it('should find a schedule by ID', async () => {
+      const id = new Id().value;
+      const response = await supertest(app).get(`/schedule/${id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(scheduleController.find).toHaveBeenCalledWith({ id });
+      expect(response.body).toEqual(expect.objectContaining({ id }));
+    });
+
     it('should update a schedule by ID', async () => {
+      const id = new Id().value;
+      const payload = { curriculum: new Id().value };
       const response = await supertest(app)
-        .patch(`/schedule/${new Id().value}`)
-        .send({
-          curriculum: new Id().value,
-        });
-      expect(response.status).toBe(200);
-      expect(scheduleController.update).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
+        .patch(`/schedule/${id}`)
+        .send(payload);
+
+      expect(response.statusCode).toBe(200);
+      expect(scheduleController.update).toHaveBeenCalledWith({
+        id,
+        ...payload,
+      });
+      expect(response.body).toEqual(expect.objectContaining({ id }));
     });
-  });
-  describe('DELETE /schedule/:id', () => {
+
     it('should delete a schedule by ID', async () => {
-      const response = await supertest(app).delete(
-        `/schedule/${new Id().value}`
-      );
-      expect(response.status).toBe(200);
-      expect(scheduleController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined();
+      const id = new Id().value;
+      const response = await supertest(app).delete(`/schedule/${id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(scheduleController.delete).toHaveBeenCalledWith({ id });
+      expect(response.body).toEqual({
+        message: 'Operação concluída com sucesso',
+      });
     });
-  });
-  describe('POST /schedule/add', () => {
+
     it('should add lessons to the schedule', async () => {
+      const id = new Id().value;
+      const payload = {
+        newLessonsList: [new Id().value],
+      };
       const response = await supertest(app)
-        .post('/schedule/add')
-        .send({
-          id: new Id().value,
-          newLessonsList: [new Id().value],
-        });
-      expect(response.status).toBe(201);
-      expect(scheduleController.addLessons).toHaveBeenCalled();
+        .post(`/schedule/${id}/lesson/add`)
+        .send(payload);
+
+      expect(response.statusCode).toBe(200);
+      expect(scheduleController.addLessons).toHaveBeenCalledWith({
+        ...payload,
+        id,
+      });
+      expect(response.body).toBeDefined();
+    });
+
+    it('should remove lessons from the schedule', async () => {
+      const id = new Id().value;
+      const payload = {
+        lessonsListToRemove: [new Id().value, new Id().value],
+      };
+      const response = await supertest(app)
+        .post(`/schedule/${id}/lesson/remove`)
+        .send(payload);
+
+      expect(response.statusCode).toBe(200);
+      expect(scheduleController.removeLessons).toHaveBeenCalledWith({
+        ...payload,
+        id,
+      });
       expect(response.body).toBeDefined();
     });
   });
-  describe('POST /schedule/remove', () => {
-    it('should remove lessons from the schedule', async () => {
+
+  describe('failure', () => {
+    it('should return 400 for invalid id on find', async () => {
+      const response = await supertest(app).get('/schedule/invalid-id');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({ error: 'Id inválido' });
+    });
+
+    it('should return 400 for invalid id on update', async () => {
       const response = await supertest(app)
-        .post('/schedule/remove')
-        .send({
-          id: new Id().value,
-          lessonsListToRemove: [new Id().value, new Id().value],
-        });
-      expect(response.status).toBe(201);
-      expect(scheduleController.removeLessons).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
+        .patch('/schedule/invalid-id')
+        .send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Id e/ou dados para atualização inválidos',
+      });
+    });
+
+    it('should return 400 for invalid id on delete', async () => {
+      const response = await supertest(app).delete('/schedule/invalid-id');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({ error: 'Id inválido' });
+    });
+
+    it('should return 400 for invalid payload on create', async () => {
+      const response = await supertest(app).post('/schedule').send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: expect.any(String),
+      });
+    });
+
+    it('should return 400 for invalid id on add lessons', async () => {
+      const id = `invalid-id`;
+      const response = await supertest(app)
+        .post(`/schedule/${id}/lesson/add`)
+        .send({ newLessonsList: [] });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Dados inválidos',
+      });
+    });
+
+    it('should return 400 for invalid id on remove lessons', async () => {
+      const id = `invalid-id`;
+      const response = await supertest(app)
+        .post(`/schedule/${id}/lesson/remove`)
+        .send({ lessonsListToRemove: [] });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Dados inválidos',
+      });
+    });
+
+    it('should return 400 for missing payload on add lessons', async () => {
+      const id = new Id().value;
+      const response = await supertest(app)
+        .post(`/schedule/${id}/lesson/add`)
+        .send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Dados inválidos',
+      });
+    });
+
+    it('should return 400 for missing payload on remove lessons', async () => {
+      const id = new Id().value;
+      const response = await supertest(app)
+        .post(`/schedule/${id}/lesson/remove`)
+        .send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Dados inválidos',
+      });
     });
   });
 });

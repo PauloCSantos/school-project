@@ -9,7 +9,7 @@ const MockRepository = (): jest.Mocked<EvaluationGateway> => {
     findAll: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
-    delete: jest.fn((id: string) =>
+    delete: jest.fn((_id: string) =>
       Promise.resolve('Operação concluída com sucesso')
     ),
   };

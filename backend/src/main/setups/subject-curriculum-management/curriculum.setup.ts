@@ -1,6 +1,6 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryCurriculumRepository from '@/modules/subject-curriculum-management/infrastructure/repositories/memory-repository/curriculum.repository';
 import CreateCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/create.usecase';
 import FindCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/find.usecase';

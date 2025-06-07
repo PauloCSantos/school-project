@@ -1,7 +1,7 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
@@ -90,7 +90,7 @@ describe('Evaluation note attendance management module end to end test', () => {
       removeStudents
     );
 
-    const expressHttp = new ExpressHttp();
+    const expressHttp = new ExpressAdapter();
     const tokerService = tokenInstance();
 
     const authUserMiddlewareEvaluation = new AuthUserMiddleware(tokerService, [
@@ -133,7 +133,7 @@ describe('Evaluation note attendance management module end to end test', () => {
     evaluationRoute.routes();
     noteRoute.routes();
     attendanceRoute.routes();
-    app = expressHttp.getExpressInstance();
+    app = expressHttp.getNativeServer();
   });
 
   describe('Evaluation', () => {

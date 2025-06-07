@@ -1,6 +1,6 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import MemorySubjectRepository from '@/modules/subject-curriculum-management/infrastructure/repositories/memory-repository/subject.repository';
@@ -63,7 +63,7 @@ describe('Subject curriculum management module end to end test', () => {
       removeSubjects
     );
 
-    const expressHttp = new ExpressHttp();
+    const expressHttp = new ExpressAdapter();
     const tokerService = tokenInstance();
 
     const authUserMiddlewareSubject = new AuthUserMiddleware(tokerService, [
@@ -88,7 +88,7 @@ describe('Subject curriculum management module end to end test', () => {
 
     subjectRoute.routes();
     curriculumRoute.routes();
-    app = expressHttp.getExpressInstance();
+    app = expressHttp.getNativeServer();
   });
 
   describe('Subject', () => {

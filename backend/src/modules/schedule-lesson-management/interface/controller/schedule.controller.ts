@@ -62,11 +62,11 @@ export class ScheduleController {
   /**
    * Finds a schedule by its identifier.
    * @param input - The input containing the identifier to search for
-   * @returns Promise resolving to the found schedule data or undefined
+   * @returns Promise resolving to the found schedule data or null
    */
   async find(
     input: FindScheduleInputDto
-  ): Promise<FindScheduleOutputDto | undefined> {
+  ): Promise<FindScheduleOutputDto | null> {
     const response = await this.findSchedule.execute(input);
     return response;
   }

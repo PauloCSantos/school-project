@@ -80,11 +80,9 @@ export class LessonController {
   /**
    * Finds a lesson by its identifier.
    * @param input - The input containing the identifier to search for
-   * @returns Promise resolving to the found lesson data or undefined
+   * @returns Promise resolving to the found lesson data or null
    */
-  async find(
-    input: FindLessonInputDto
-  ): Promise<FindLessonOutputDto | undefined> {
+  async find(input: FindLessonInputDto): Promise<FindLessonOutputDto | null> {
     const response = await this.findLesson.execute(input);
     return response;
   }

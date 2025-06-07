@@ -1,298 +1,235 @@
-import { HttpInterface } from '@/modules/@shared/infraestructure/http/http.interface';
+import {
+  HttpServer,
+  HttpResponseData,
+} from '@/modules/@shared/infraestructure/http/http.interface';
 import { ScheduleController } from '../controller/schedule.controller';
-import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware, {
+  AuthHttpRequest,
+  AuthErrorHandlerMiddleware,
+} from '@/modules/@shared/application/middleware/authUser.middleware';
 import { validId } from '@/modules/@shared/utils/validations';
+import {
+  CreateScheduleInputDto,
+  FindAllScheduleInputDto,
+  UpdateScheduleInputDto,
+  AddLessonsInputDto,
+  RemoveLessonsInputDto,
+  FindScheduleInputDto,
+  DeleteScheduleInputDto,
+} from '../../application/dto/schedule-usecase.dto';
 
 /**
- * Route handler for schedule management endpoints.
- * Maps HTTP requests to controller methods and handles request validation.
+ * Route handler for schedule management endpoint.
  */
-export class ScheduleRoute {
-  /**
-   * Creates a new ScheduleRoute instance.
-   * @param scheduleController - Controller for handling schedule operations
-   * @param httpGateway - HTTP framework abstraction for route handling
-   * @param authMiddleware - Middleware for authentication and authorization
-   */
+export default class ScheduleRoute {
   constructor(
     private readonly scheduleController: ScheduleController,
-    private readonly httpGateway: HttpInterface,
+    private readonly httpGateway: HttpServer,
     private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
-  /**
-   * Registers all routes with the HTTP gateway.
-   */
   public routes(): void {
-    this.httpGateway.get('/schedules', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () =>
-        this.findAllSchedules(req, res)
-      );
-    });
-    this.httpGateway.post('/schedule', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () => this.createSchedule(req, res));
-    });
-    this.httpGateway.get('/schedule/:id', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () => this.findSchedule(req, res));
-    });
-    this.httpGateway.patch('/schedule/:id', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () => this.updateSchedule(req, res));
-    });
-    this.httpGateway.delete('/schedule/:id', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () => this.deleteSchedule(req, res));
-    });
-    this.httpGateway.post('/schedule/add', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () => this.addLessons(req, res));
-    });
-    this.httpGateway.post('/schedule/remove', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () => this.removeLessons(req, res));
-    });
-  }
+    const errorHandler = new AuthErrorHandlerMiddleware();
 
-  /**
-   * Handles requests to retrieve all schedules.
-   * @param req - HTTP request object
-   * @param res - HTTP response object
-   */
-  private async findAllSchedules(req: any, res: any): Promise<void> {
-    try {
-      const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return res
-          .status(400)
-          .json({ error: 'Quantity e/ou offset estão incorretos' });
-      }
-
-      const response = await this.scheduleController.findAll({
-        quantity,
-        offset,
-      });
-      res.status(200).json(response);
-    } catch (error) {
-      this.handleError(error, res);
-    }
-  }
-
-  /**
-   * Handles schedule creation requests.
-   * @param req - HTTP request object
-   * @param res - HTTP response object
-   */
-  private async createSchedule(req: any, res: any): Promise<void> {
-    try {
-      const input = req.body;
-      if (!this.validateCreate(input)) {
-        return res
-          .status(400)
-          .json({ error: 'Todos os campos sao obrigatorios' });
-      }
-
-      const response = await this.scheduleController.create(input);
-      res.status(201).json(response);
-    } catch (error) {
-      this.handleError(error, res);
-    }
-  }
-
-  /**
-   * Handles schedule lookup requests.
-   * @param req - HTTP request object
-   * @param res - HTTP response object
-   */
-  private async findSchedule(req: any, res: any): Promise<void> {
-    try {
-      const { id } = req.params;
-      if (!this.validFind(id)) {
-        return res.status(400).json({ error: 'Id invalido' });
-      }
-
-      const response = await this.scheduleController.find({ id });
-      if (!response) {
-        return res.status(404).json({ error: 'Cronograma não encontrado' });
-      }
-
-      res.status(200).json(response);
-    } catch (error) {
-      this.handleError(error, res, 404);
-    }
-  }
-
-  /**
-   * Handles schedule update requests.
-   * @param req - HTTP request object
-   * @param res - HTTP response object
-   */
-  private async updateSchedule(req: any, res: any): Promise<void> {
-    try {
-      const { id } = req.params;
-      const input = req.body;
-      if (!this.validUpdate(id, input)) {
-        return res.status(400).json({ error: 'Id e/ou input incorretos' });
-      }
-
-      input.id = id;
-      const response = await this.scheduleController.update(input);
-      res.status(200).json(response);
-    } catch (error) {
-      this.handleError(error, res);
-    }
-  }
-
-  /**
-   * Handles schedule deletion requests.
-   * @param req - HTTP request object
-   * @param res - HTTP response object
-   */
-  private async deleteSchedule(req: any, res: any): Promise<void> {
-    try {
-      const { id } = req.params;
-      if (!this.validDelete(id)) {
-        return res.status(400).json({ error: 'Id invalido' });
-      }
-
-      const response = await this.scheduleController.delete({ id });
-      res.status(200).json(response);
-    } catch (error) {
-      this.handleError(error, res);
-    }
-  }
-
-  /**
-   * Handles requests to add lessons to a schedule.
-   * @param req - HTTP request object
-   * @param res - HTTP response object
-   */
-  private async addLessons(req: any, res: any): Promise<void> {
-    try {
-      const input = req.body;
-      if (!this.validAdd(input)) {
-        return res.status(400).json({ error: 'Dados invalidos' });
-      }
-
-      const response = await this.scheduleController.addLessons(input);
-      res.status(201).json(response);
-    } catch (error) {
-      this.handleError(error, res);
-    }
-  }
-
-  /**
-   * Handles requests to remove lessons from a schedule.
-   * @param req - HTTP request object
-   * @param res - HTTP response object
-   */
-  private async removeLessons(req: any, res: any): Promise<void> {
-    try {
-      const input = req.body;
-      if (!this.validRemove(input)) {
-        return res.status(400).json({ error: 'Dados invalidos' });
-      }
-
-      const response = await this.scheduleController.removeLessons(input);
-      res.status(201).json(response);
-    } catch (error) {
-      this.handleError(error, res);
-    }
-  }
-
-  /**
-   * Standardized error handling for route methods.
-   * @param error - The error that occurred
-   * @param res - HTTP response object
-   * @param statusCode - Optional specific status code for errors
-   */
-  private handleError(error: unknown, res: any, statusCode = 400): void {
-    if (error instanceof Error) {
-      res.status(statusCode).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-  }
-
-  /**
-   * Validates input for finding all schedules.
-   * @param quantity - The quantity of schedules to retrieve
-   * @param offset - The offset for pagination
-   * @returns Boolean indicating if the input is valid
-   */
-  private validateFindAll(
-    quantity: number | undefined,
-    offset: number | undefined
-  ): boolean {
-    if (
-      quantity === undefined ||
-      (typeof quantity === 'number' &&
-        isNaN(quantity) &&
-        offset === undefined) ||
-      (typeof offset === 'number' && isNaN(offset))
-    ) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  /**
-   * Validates input for schedule creation.
-   * @param input - The input data to validate
-   * @returns Boolean indicating if the input is valid
-   */
-  private validateCreate(input: any): boolean {
-    const { student, curriculum, lessonsList } = input;
-
-    return (
-      student !== undefined &&
-      curriculum !== undefined &&
-      lessonsList !== undefined
+    this.httpGateway.get(
+      '/schedules',
+      this.findAllSchedules.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+    this.httpGateway.post(
+      '/schedule',
+      this.createSchedule.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+    this.httpGateway.get(
+      '/schedule/:id',
+      this.findSchedule.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+    this.httpGateway.patch(
+      '/schedule/:id',
+      this.updateSchedule.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+    this.httpGateway.delete(
+      '/schedule/:id',
+      this.deleteSchedule.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+    this.httpGateway.post(
+      '/schedule/:id/lesson/add',
+      this.addLessons.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+    this.httpGateway.post(
+      '/schedule/:id/lesson/remove',
+      this.removeLessons.bind(this),
+      errorHandler,
+      this.authMiddleware
     );
   }
 
-  /**
-   * Validates ID for schedule lookup.
-   * @param id - The ID to validate
-   * @returns Boolean indicating if the ID is valid
-   */
-  private validFind(id: any): boolean {
-    return validId(id);
+  private async findAllSchedules(
+    req: AuthHttpRequest<{}, {}, FindAllScheduleInputDto, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const { quantity, offset } = req.body;
+      if (!this.validateFindAll(quantity, offset)) {
+        return {
+          statusCode: 400,
+          body: { error: 'Quantity e/ou offset incorretos' },
+        };
+      }
+      const schedules = await this.scheduleController.findAll({
+        quantity,
+        offset,
+      });
+      return { statusCode: 200, body: schedules };
+    } catch (error) {
+      return this.handleError(error);
+    }
   }
 
-  /**
-   * Validates input for schedule update.
-   * @param id - The ID to validate
-   * @param input - The update data to validate
-   * @returns Boolean indicating if the input is valid
-   */
-  private validUpdate(id: any, input: any): boolean {
-    if (!validId(id)) return false;
-
-    // Verifica se pelo menos um campo foi fornecido para atualização
-    return Object.values(input).some(value => value !== undefined);
+  private async createSchedule(
+    req: AuthHttpRequest<{}, {}, CreateScheduleInputDto, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const input = req.body;
+      if (!this.validateCreate(input)) {
+        return {
+          statusCode: 400,
+          body: { error: 'Dados inválidos para criação de evento' },
+        };
+      }
+      const schedule = await this.scheduleController.create(input);
+      return { statusCode: 201, body: schedule };
+    } catch (error) {
+      return this.handleError(error);
+    }
   }
 
-  /**
-   * Validates ID for schedule deletion.
-   * @param id - The ID to validate
-   * @returns Boolean indicating if the ID is valid
-   */
-  private validDelete(id: any): boolean {
-    return validId(id);
+  private async findSchedule(
+    req: AuthHttpRequest<FindScheduleInputDto, {}, {}, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const { id } = req.params;
+      if (!validId(id)) {
+        return { statusCode: 400, body: { error: 'Id inválido' } };
+      }
+      const response = await this.scheduleController.find({ id });
+      return { statusCode: 200, body: response };
+    } catch (error) {
+      return this.handleError(error);
+    }
   }
 
-  /**
-   * Validates input for adding lessons to a schedule.
-   * @param input - The input data to validate
-   * @returns Boolean indicating if the input is valid
-   */
-  private validAdd(input: any): boolean {
-    return validId(input.id) && input.newLessonsList !== undefined;
+  private async updateSchedule(
+    req: AuthHttpRequest<FindScheduleInputDto, {}, UpdateScheduleInputDto, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const { id } = req.params;
+      const input = req.body;
+      if (!validId(id)) {
+        return {
+          statusCode: 400,
+          body: { error: 'Id e/ou dados para atualização inválidos' },
+        };
+      }
+      const response = await this.scheduleController.update({ ...input, id });
+      return { statusCode: 200, body: response };
+    } catch (error) {
+      return this.handleError(error);
+    }
   }
 
-  /**
-   * Validates input for removing lessons from a schedule.
-   * @param input - The input data to validate
-   * @returns Boolean indicating if the input is valid
-   */
-  private validRemove(input: any): boolean {
-    return validId(input.id) && input.lessonsListToRemove !== undefined;
+  private async deleteSchedule(
+    req: AuthHttpRequest<DeleteScheduleInputDto, {}, {}, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const { id } = req.params;
+      if (!validId(id)) {
+        return { statusCode: 400, body: { error: 'Id inválido' } };
+      }
+      const response = await this.scheduleController.delete({ id });
+      return { statusCode: 200, body: response };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async addLessons(
+    req: AuthHttpRequest<FindScheduleInputDto, {}, AddLessonsInputDto, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const { id } = req.params;
+      const input = req.body;
+      if (!validId(id) || !this.validateAdd(input)) {
+        return { statusCode: 400, body: { error: 'Dados inválidos' } };
+      }
+      const response = await this.scheduleController.addLessons({
+        ...input,
+        id,
+      });
+      return { statusCode: 200, body: response };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async removeLessons(
+    req: AuthHttpRequest<FindScheduleInputDto, {}, RemoveLessonsInputDto, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const { id } = req.params;
+      const input = req.body;
+      if (!validId(id) || !this.validateRemove(input)) {
+        return { statusCode: 400, body: { error: 'Dados inválidos' } };
+      }
+      const response = await this.scheduleController.removeLessons({
+        ...input,
+        id,
+      });
+      return { statusCode: 200, body: response };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private handleError(error: unknown, statusCode = 400): HttpResponseData {
+    if (error instanceof Error) {
+      return { statusCode, body: { error: error.message } };
+    }
+    return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
+  }
+
+  private validateFindAll(quantity?: number, offset?: number): boolean {
+    if (quantity === undefined || offset === undefined) {
+      return true;
+    }
+    return Number.isInteger(quantity) && Number.isInteger(offset);
+  }
+
+  private validateCreate(input: CreateScheduleInputDto): boolean {
+    const { student, curriculum, lessonsList } = input;
+    return Boolean(student && curriculum && lessonsList);
+  }
+
+  private validateAdd(input: AddLessonsInputDto): boolean {
+    return (
+      Array.isArray(input.newLessonsList) && input.newLessonsList.length > 0
+    );
+  }
+
+  private validateRemove(input: RemoveLessonsInputDto): boolean {
+    return (
+      Array.isArray(input.lessonsListToRemove) &&
+      input.lessonsListToRemove.length > 0
+    );
   }
 }

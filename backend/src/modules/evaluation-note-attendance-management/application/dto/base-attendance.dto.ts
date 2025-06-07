@@ -1,6 +1,3 @@
-export type Hour = string;
-export type DayOfWeek = string;
-
 export interface IFindAttendanceInput {
   id: string;
 }

@@ -6,7 +6,7 @@ import FindAuthUser from '../usecases/authUser/find-user.usecase';
 import UpdateAuthUser from '../usecases/authUser/update-user.usecase';
 import LoginAuthUser from '../usecases/authUser/login-user.usecase';
 import AuthUserService from '../service/user-entity.service';
-import TokenService from '../../infrastructure/service/token.service';
+import TokenService from '../../../@shared/infraestructure/service/token.service';
 
 /**
  * Factory responsible for creating AuthUserFacade instances

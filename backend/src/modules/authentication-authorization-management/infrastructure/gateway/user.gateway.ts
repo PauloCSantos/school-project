@@ -6,7 +6,7 @@ import AuthUser from '@/modules/authentication-authorization-management/domain/e
  */
 export default interface AuthUserGateway {
   /**
-   * Finds a user by their email address.
+   * Finds a user by their email address and role.
    * @param email - The email address to search for
    * @returns Promise resolving to the found AuthUser or null if not found
    */
