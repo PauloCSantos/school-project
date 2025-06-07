@@ -1,3 +1,5 @@
+import { RoleUsers } from '@/modules/@shared/type/enum';
+
 // Interfaces base para Find
 export interface IFindAuthUserInput {
   email: string;

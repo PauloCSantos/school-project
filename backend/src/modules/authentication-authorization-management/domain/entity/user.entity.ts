@@ -6,6 +6,7 @@ import {
   validId,
   validRole,
 } from '@/modules/@shared/utils/validations';
+import { RoleUsers } from '@/modules/@shared/type/enum';
 
 /**
  * Properties required to create an authenticated user

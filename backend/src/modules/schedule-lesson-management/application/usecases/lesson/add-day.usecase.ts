@@ -5,6 +5,9 @@ import { AddDayInputDto, AddDayOutputDto } from '../../dto/lesson-usecase.dto';
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
 import LessonMapper from '../../mapper/lesson-usecase.mapper';
 
+/**
+ * Use case responsible for adding days to a lesson.
+ */
 export default class AddDay
   implements UseCaseInterface<AddDayInputDto, AddDayOutputDto>
 {
@@ -13,6 +16,10 @@ export default class AddDay
   constructor(lessonRepository: LessonGateway) {
     this._lessonRepository = lessonRepository;
   }
+
+  /**
+   * Adds new days to the specified lesson.
+   */
   async execute({ id, newDaysList }: AddDayInputDto): Promise<AddDayOutputDto> {
     const lessonVerification = await this._lessonRepository.find(id);
     if (!lessonVerification) throw new Error('Lesson not found');

@@ -5,6 +5,9 @@ import {
 } from '../../dto/schedule-usecase.dto';
 import ScheduleGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/schedule.gateway';
 
+/**
+ * Use case responsible for schedule operation.
+ */
 export default class UpdateSchedule
   implements UseCaseInterface<UpdateScheduleInputDto, UpdateScheduleOutputDto>
 {
@@ -13,6 +16,9 @@ export default class UpdateSchedule
   constructor(scheduleRepository: ScheduleGateway) {
     this._scheduleRepository = scheduleRepository;
   }
+  /**
+   * Executes the schedule use case.
+   */
   async execute({
     id,
     curriculum,

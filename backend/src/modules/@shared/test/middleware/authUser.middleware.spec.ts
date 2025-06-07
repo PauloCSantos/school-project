@@ -1,16 +1,16 @@
-import TokenService from '@/modules/authentication-authorization-management/infrastructure/service/token.service';
+import TokenService from '../../infraestructure/service/token.service';
 import AuthUserMiddleware, {
   AuthHttpRequest,
-  HttpStatus,
-  NextFunction,
 } from '../../application/middleware/authUser.middleware';
-import { HttpResponse } from '../../infraestructure/http/http.interface';
+import { RoleUsers, RoleUsersEnum } from '../../type/enum';
 
 describe('AuthUserMiddleware unit test', () => {
   let middleware: AuthUserMiddleware;
   let mockReq: AuthHttpRequest;
-  let mockRes: HttpResponse;
-  let mockNext: NextFunction;
+  let mockNext: jest.Mock;
+  let tokenService: TokenService;
+
+  const allowedRoles: RoleUsers[] = [RoleUsersEnum.ADMINISTRATOR];
 
   beforeEach(() => {
     mockReq = {
@@ -20,40 +20,35 @@ describe('AuthUserMiddleware unit test', () => {
       body: {},
       params: {},
       query: {},
-    };
-
-    mockRes = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
+      tokenData: undefined,
     };
 
     mockNext = jest.fn();
-
-    const tokenService = new TokenService('PxHf3H7');
+    tokenService = new TokenService('PxHf3H7');
 
     jest
       .spyOn(tokenService, 'validateToken')
-      .mockImplementation(async (token: string) => {
-        if (token === 'validTokenWithPermission') {
+      .mockImplementation(async (token: string): Promise<any | null> => {
+        if (token === 'validTokenWithAdminRole') {
           return {
-            masterId: 'some-id',
-            email: 'test@test.com',
-            role: 'master',
+            masterId: 'admin-id',
+            email: 'admin@test.com',
+            role: RoleUsersEnum.ADMINISTRATOR,
           };
         }
-
-        if (token === 'validTokenWithoutPermission') {
+        if (token === 'validTokenWithUserRole') {
           return {
-            masterId: 'some-id',
-            email: 'test@test.com',
-            role: 'teacher',
+            masterId: 'user-id',
+            email: 'user@test.com',
+            role: RoleUsersEnum.WORKER,
           };
         }
-
-        return null;
+        if (token === 'tokenThatReturnsNull') {
+          return null;
+        }
+        throw new Error('Simulated Invalid Token Error');
       });
 
-    const allowedRoles: RoleUsers[] = ['master'];
     middleware = new AuthUserMiddleware(tokenService, allowedRoles);
   });
 
@@ -61,47 +56,85 @@ describe('AuthUserMiddleware unit test', () => {
     jest.clearAllMocks();
   });
 
-  describe('when token is missing', () => {
-    test('should return 401 and not call next', async () => {
-      mockReq.headers.authorization = '';
-      await middleware.handle(mockReq, mockRes, mockNext);
+  test('should set tokenData to undefined and not call next if token is missing', async () => {
+    mockReq.headers.authorization = '';
+    await middleware.handle(mockReq, mockNext);
 
-      expect(mockRes.status).toHaveBeenCalledWith(HttpStatus.UNAUTHORIZED);
-      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Missing Token' });
-      expect(mockNext).not.toHaveBeenCalled();
+    expect(mockReq.tokenData).toBeUndefined();
+    expect(mockNext).not.toHaveBeenCalled();
+  });
+
+  test('should set tokenData to undefined and not call next if authorization header is missing', async () => {
+    mockReq.headers = {};
+    await middleware.handle(mockReq, mockNext);
+
+    expect(mockReq.tokenData).toBeUndefined();
+    expect(mockNext).not.toHaveBeenCalled();
+  });
+
+  test('should set tokenData to undefined and not call next if token is invalid (validateToken returns null)', async () => {
+    mockReq.headers.authorization = 'Bearer tokenThatReturnsNull';
+    await middleware.handle(mockReq, mockNext);
+
+    expect(mockReq.tokenData).toBeUndefined();
+    expect(mockNext).not.toHaveBeenCalled();
+  });
+
+  test('should set tokenData to undefined and not call next if token is invalid (validateToken throws error)', async () => {
+    mockReq.headers.authorization = 'Bearer invalidTokenByThrowing';
+    await middleware.handle(mockReq, mockNext);
+
+    expect(mockReq.tokenData).toBeUndefined();
+    expect(mockNext).not.toHaveBeenCalled();
+  });
+
+  test('should set tokenData to undefined and not call next if role is not allowed', async () => {
+    mockReq.headers.authorization = 'Bearer validTokenWithUserRole';
+    await middleware.handle(mockReq, mockNext);
+
+    expect(mockReq.tokenData).toBeUndefined();
+    expect(mockNext).not.toHaveBeenCalled();
+  });
+
+  test('should call next and attach tokenData to request if token is valid and role is allowed', async () => {
+    mockReq.headers.authorization = 'Bearer validTokenWithAdminRole';
+    await middleware.handle(mockReq, mockNext);
+
+    expect(mockNext).toHaveBeenCalledTimes(1);
+    expect(mockReq.tokenData).toEqual({
+      masterId: 'admin-id',
+      email: 'admin@test.com',
+      role: RoleUsersEnum.ADMINISTRATOR,
     });
   });
 
-  describe('when token is invalid', () => {
-    test('should return 401 and not call next', async () => {
-      mockReq.headers.authorization = 'Bearer invalidToken';
-      await middleware.handle(mockReq, mockRes, mockNext);
-
-      expect(mockRes.status).toHaveBeenCalledWith(HttpStatus.UNAUTHORIZED);
-      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Invalid token' });
-      expect(mockNext).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('when token is valid but user lacks permission', () => {
-    test('should return 403 and not call next', async () => {
-      mockReq.headers.authorization = 'Bearer validTokenWithoutPermission';
-      await middleware.handle(mockReq, mockRes, mockNext);
-
-      expect(mockRes.status).toHaveBeenCalledWith(HttpStatus.FORBIDDEN);
-      expect(mockRes.json).toHaveBeenCalledWith({
-        error: 'User does not have access permission',
+  test('should set tokenData to undefined and not call next if an unexpected error occurs (e.g., in hasPermission or extractToken, though less likely with current structure)', async () => {
+    jest
+      .spyOn(tokenService, 'validateToken')
+      .mockImplementationOnce(async () => {
+        throw new Error('Another Unexpected Error');
       });
-      expect(mockNext).not.toHaveBeenCalled();
-    });
+
+    mockReq.headers.authorization = 'Bearer someTokenCausingUnexpectedError';
+    await middleware.handle(mockReq, mockNext);
+
+    expect(mockReq.tokenData).toBeUndefined();
+    expect(mockNext).not.toHaveBeenCalled();
   });
 
-  describe('when token is valid and user has permission', () => {
-    test('should call next and attach user to request', async () => {
-      mockReq.headers.authorization = 'Bearer validTokenWithPermission';
-      await middleware.handle(mockReq, mockRes, mockNext);
+  test('should correctly extract token if "Bearer " prefix is missing (though not standard)', async () => {
+    mockReq.headers.authorization = 'validTokenWithAdminRole';
 
-      expect(mockNext).toHaveBeenCalled();
+    await middleware.handle(mockReq, mockNext);
+
+    expect(tokenService.validateToken).toHaveBeenCalledWith(
+      'validTokenWithAdminRole'
+    );
+    expect(mockNext).toHaveBeenCalledTimes(1);
+    expect(mockReq.tokenData).toEqual({
+      masterId: 'admin-id',
+      email: 'admin@test.com',
+      role: RoleUsersEnum.ADMINISTRATOR,
     });
   });
 });

@@ -8,6 +8,9 @@ import ScheduleGateway from '@/modules/schedule-lesson-management/infrastructure
 import ScheduleMapper from '../../mapper/schedule.mapper';
 import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
 
+/**
+ * Use case responsible for adding lessons to a schedule.
+ */
 export default class AddLessons
   implements UseCaseInterface<AddLessonsInputDto, AddLessonsOutputDto>
 {
@@ -16,6 +19,9 @@ export default class AddLessons
   constructor(scheduleRepository: ScheduleGateway) {
     this._scheduleRepository = scheduleRepository;
   }
+  /**
+   * Adds lessons to the specified schedule.
+   */
   async execute({
     id,
     newLessonsList,

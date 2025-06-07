@@ -3,7 +3,7 @@ import CreateUserMaster from '@/modules/user-management/application/usecases/mas
 import FindUserMaster from '@/modules/user-management/application/usecases/master/findUserMaster.usecase';
 import UpdateUserMaster from '@/modules/user-management/application/usecases/master/updateUserMaster.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryUserMasterRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/master.repository';
 import { UserMasterController } from '@/modules/user-management/interface/controller/master.controller';
 import { UserMasterRoute } from '@/modules/user-management/interface/route/master.route';

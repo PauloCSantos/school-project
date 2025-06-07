@@ -1,42 +1,106 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import { UserWorkerController } from '../../interface/controller/worker.controller';
 import { UserWorkerRoute } from '../../interface/route/worker.route';
 
-const mockAuthUserMiddleware = jest.fn(
-  () =>
-    ({
-      //@ts-expect-error
-      handle: jest.fn((req: any, res: any, next: any) => next()),
-    }) as unknown as AuthUserMiddleware
-);
+describe('UserWorkerRoute with ExpressAdapter', () => {
+  let http: ExpressAdapter;
+  let app: any;
+  let userWorkerController: UserWorkerController;
+  let middleware: AuthUserMiddleware;
 
-const mockUserWorkerController = jest.fn(() => {
-  return {
-    create: jest.fn().mockResolvedValue({ id: new Id().value }),
-    find: jest.fn().mockResolvedValue({
-      name: {
-        firstName: 'John',
-        lastName: 'Doe',
-      },
-      address: {
-        street: 'Street A',
-        city: 'City A',
-        zip: '111111-111',
-        number: 1,
-        avenue: 'Avenue A',
-        state: 'State A',
-      },
-      salary: {
-        salary: 5000,
-      },
-      birthday: new Date('11-12-1995'),
-      email: 'teste1@test.com',
-    }),
-    findAll: jest.fn().mockResolvedValue([
-      {
+  const mockWorkerData = {
+    id: new Id().value,
+    name: {
+      firstName: 'John',
+      lastName: 'Doe',
+    },
+    address: {
+      street: 'Street A',
+      city: 'City A',
+      zip: '111111-111',
+      number: 1,
+      avenue: 'Avenue A',
+      state: 'State A',
+    },
+    salary: {
+      salary: 5000,
+    },
+    birthday: new Date('11-12-1995'),
+    email: 'teste1@test.com',
+  };
+
+  const mockWorkerData2 = {
+    id: new Id().value,
+    name: {
+      firstName: 'Marie',
+      lastName: 'Doe',
+    },
+    address: {
+      street: 'Street B',
+      city: 'City B',
+      zip: '111111-111',
+      number: 2,
+      avenue: 'Avenue B',
+      state: 'State B',
+    },
+    salary: {
+      salary: 5000,
+    },
+    birthday: new Date('11-12-1995'),
+    email: 'teste2@test.com',
+  };
+
+  beforeEach(() => {
+    http = new ExpressAdapter();
+    app = http.getNativeServer();
+
+    userWorkerController = {
+      create: jest.fn().mockResolvedValue({ id: new Id().value }),
+      find: jest.fn().mockImplementation(({ id }) =>
+        Promise.resolve({
+          ...mockWorkerData,
+          id,
+        })
+      ),
+      findAll: jest.fn().mockResolvedValue([mockWorkerData, mockWorkerData2]),
+      update: jest.fn().mockImplementation(({ id }) =>
+        Promise.resolve({
+          ...mockWorkerData,
+          id,
+          address: {
+            ...mockWorkerData.address,
+            street: 'Updated Street',
+          },
+        })
+      ),
+      delete: jest.fn().mockResolvedValue({
+        message: 'Operação concluída com sucesso',
+      }),
+    } as unknown as UserWorkerController;
+
+    middleware = {
+      handle: jest.fn((_req, next) => next()),
+    } as unknown as AuthUserMiddleware;
+
+    new UserWorkerRoute(userWorkerController, http, middleware).routes();
+  });
+
+  describe('success', () => {
+    it('should find all workers', async () => {
+      const response = await supertest(app).get('/users-worker');
+
+      expect(response.statusCode).toBe(200);
+      expect(userWorkerController.findAll).toHaveBeenCalled();
+      expect(response.body).toEqual(expect.any(Array));
+      expect(response.body.length).toBe(2);
+    });
+
+    it('should create a worker', async () => {
+      const date = new Date().toISOString();
+      const payload = {
         name: {
           firstName: 'John',
           lastName: 'Doe',
@@ -52,140 +116,94 @@ const mockUserWorkerController = jest.fn(() => {
         salary: {
           salary: 5000,
         },
-        birthday: new Date('11-12-1995'),
+        birthday: date,
         email: 'teste1@test.com',
-      },
-      {
-        name: {
-          firstName: 'Marie',
-          lastName: 'Doe',
-        },
+      };
+      const response = await supertest(app).post('/user-worker').send(payload);
+
+      expect(response.statusCode).toBe(201);
+      expect(userWorkerController.create).toHaveBeenCalledWith(payload);
+      expect(response.body).toEqual({ id: expect.any(String) });
+    });
+
+    it('should find a worker by ID', async () => {
+      const id = new Id().value;
+      const response = await supertest(app).get(`/user-worker/${id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(userWorkerController.find).toHaveBeenCalledWith({ id });
+      expect(response.body).toEqual(expect.objectContaining({ id }));
+    });
+
+    it('should update a worker by ID', async () => {
+      const id = new Id().value;
+      const payload = {
         address: {
-          street: 'Street B',
-          city: 'City B',
+          street: 'Updated Street',
+          city: 'City A',
           zip: '111111-111',
-          number: 2,
-          avenue: 'Avenue B',
-          state: 'State B',
+          number: 1,
+          avenue: 'Avenue A',
+          state: 'State A',
         },
-        salary: {
-          salary: 5000,
-        },
-        birthday: new Date('11-12-1995'),
-        email: 'teste1@test.com',
-      },
-    ]),
-    update: jest.fn().mockResolvedValue({
-      name: {
-        firstName: 'John',
-        lastName: 'Doe',
-      },
-      address: {
-        street: 'Street A',
-        city: 'City A',
-        zip: '111111-111',
-        number: 1,
-        avenue: 'Avenue A',
-        state: 'State A',
-      },
-      salary: {
-        salary: 5000,
-      },
-      birthday: new Date('11-12-1995'),
-      email: 'teste1@test.com',
-    }),
-    delete: jest.fn().mockResolvedValue({
-      message: 'Operação concluída com sucesso',
-    }),
-  } as unknown as UserWorkerController;
-});
-
-describe('UserWorkerRoute unit test', () => {
-  const userWorkerController = mockUserWorkerController();
-  const expressHttp = new ExpressHttp();
-  const authUserMiddleware = mockAuthUserMiddleware();
-  const userWorkerRoute = new UserWorkerRoute(
-    userWorkerController,
-    expressHttp,
-    authUserMiddleware
-  );
-  userWorkerRoute.routes();
-  const app = expressHttp.getExpressInstance();
-
-  describe('POST /user-worker', () => {
-    it('should create a user', async () => {
+      };
       const response = await supertest(app)
-        .post('/user-worker')
-        .send({
-          name: {
-            firstName: 'John',
-            lastName: 'Doe',
-          },
-          address: {
-            street: 'Street A',
-            city: 'City A',
-            zip: '111111-111',
-            number: 1,
-            avenue: 'Avenue A',
-            state: 'State A',
-          },
-          salary: {
-            salary: 5000,
-          },
-          birthday: new Date('11-12-1995'),
-          email: 'teste1@test.com',
-        });
-      expect(response.status).toBe(201);
-      expect(userWorkerController.create).toHaveBeenCalled();
-      expect(response.body.id).toBeDefined();
+        .patch(`/user-worker/${id}`)
+        .send(payload);
+
+      expect(response.statusCode).toBe(200);
+      expect(userWorkerController.update).toHaveBeenCalledWith({
+        id,
+        ...payload,
+      });
+      expect(response.body).toEqual(expect.objectContaining({ id }));
+    });
+
+    it('should delete a worker by ID', async () => {
+      const id = new Id().value;
+      const response = await supertest(app).delete(`/user-worker/${id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(userWorkerController.delete).toHaveBeenCalledWith({ id });
+      expect(response.body).toEqual({
+        message: 'Operação concluída com sucesso',
+      });
     });
   });
-  describe('GET /user-worker/:id', () => {
-    it('should find a user by ID', async () => {
-      const response = await supertest(app).get(
-        `/user-worker/${new Id().value}`
-      );
-      expect(response.status).toBe(200);
-      expect(userWorkerController.find).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
+
+  describe('failure', () => {
+    it('should return 400 for invalid id on find', async () => {
+      const response = await supertest(app).get('/user-worker/invalid-id');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({ error: 'Id inválido' });
     });
-  });
-  describe('GET /user-workers/', () => {
-    it('should find all users', async () => {
-      const response = await supertest(app).get('/user-workers');
-      expect(response.status).toBe(200);
-      expect(userWorkerController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
-      expect(response.body.length).toBe(2);
-    });
-  });
-  describe('PATCH /user-worker/:id', () => {
-    it('should update a user by ID', async () => {
+
+    it('should return 400 for invalid id on update', async () => {
       const response = await supertest(app)
-        .patch(`/user-worker/${new Id().value}`)
-        .send({
-          address: {
-            street: 'Street B',
-            city: 'City B',
-            zip: '111111-111',
-            number: 1,
-            avenue: 'Avenue B',
-            state: 'State B',
-          },
-        });
-      expect(response.status).toBe(200);
-      expect(userWorkerController.update).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
+        .patch('/user-worker/invalid-id')
+        .send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Id e/ou dados para atualização inválidos',
+      });
     });
-  });
-  describe('DELETE /user-worker/:id', () => {
-    it('should delete a user by ID', async () => {
-      const response = await supertest(app).delete(
-        `/user-worker/${new Id().value}`
-      );
-      expect(response.status).toBe(200);
-      expect(userWorkerController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined();
+
+    it('should return 400 for invalid id on delete', async () => {
+      const response = await supertest(app).delete('/user-worker/invalid-id');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({ error: 'Id inválido' });
+    });
+
+    it('should return 400 for invalid payload on create', async () => {
+      const response = await supertest(app).post('/user-worker').send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: expect.any(String),
+      });
     });
   });
 });

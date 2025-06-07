@@ -2,105 +2,147 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { SubjectController } from '../../interface/controller/subject.controller';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import { SubjectRoute } from '../../interface/route/subject.route';
 
-const mockAuthUserMiddleware = jest.fn(
-  () =>
-    ({
-      //@ts-expect-error
-      handle: jest.fn((req: any, res: any, next: any) => next()),
-    }) as unknown as AuthUserMiddleware
-);
+describe('SubjectRoute with ExpressAdapter', () => {
+  let http: ExpressAdapter;
+  let app: any;
+  let subjectController: SubjectController;
+  let middleware: AuthUserMiddleware;
 
-const mockSubjectController = jest.fn(() => {
-  return {
-    create: jest.fn().mockResolvedValue({ id: new Id().value }),
-    find: jest.fn().mockResolvedValue({
-      name: 'Math',
-      description: 'Described a subject',
-    }),
-    findAll: jest.fn().mockResolvedValue([
-      {
-        name: 'Math',
-        description: 'Described a subject',
-      },
-      {
-        name: 'Spanish',
-        description: 'Described a subject',
-      },
-    ]),
-    update: jest.fn().mockResolvedValue({
-      name: 'Math',
-      subjectsList: [new Id().value, new Id().value, new Id().value],
-      yearsToComplete: 5,
-    }),
-    delete: jest.fn().mockResolvedValue({
-      message: 'Operação concluída com sucesso',
-    }),
-  } as unknown as SubjectController;
-});
+  beforeEach(() => {
+    http = new ExpressAdapter();
+    app = http.getNativeServer();
 
-describe('SubjectRoute unit test', () => {
-  const subjectController = mockSubjectController();
-  const authUserMiddleware = mockAuthUserMiddleware();
-  const expressHttp = new ExpressHttp();
-  const subjectRoute = new SubjectRoute(
-    subjectController,
-    expressHttp,
-    authUserMiddleware
-  );
-  subjectRoute.routes();
-  const app = expressHttp.getExpressInstance();
+    subjectController = {
+      create: jest.fn().mockResolvedValue({ id: new Id().value }),
+      find: jest.fn().mockImplementation(({ id }) =>
+        Promise.resolve({
+          id,
+          name: 'Math',
+          description: 'Described a subject',
+        })
+      ),
+      findAll: jest.fn().mockResolvedValue([
+        {
+          id: new Id().value,
+          name: 'Math',
+          description: 'Described a subject',
+        },
+        {
+          id: new Id().value,
+          name: 'Spanish',
+          description: 'Described a subject',
+        },
+      ]),
+      update: jest.fn().mockImplementation(({ id }) =>
+        Promise.resolve({
+          id,
+          name: 'Math',
+          description: 'Updated description',
+        })
+      ),
+      delete: jest.fn().mockResolvedValue({
+        message: 'Operação concluída com sucesso',
+      }),
+    } as unknown as SubjectController;
 
-  describe('POST /subject', () => {
-    it('should create a subject', async () => {
-      const response = await supertest(app).post('/subject').send({
-        name: 'Math',
-        description: 'Described a subject',
-      });
-      expect(response.status).toBe(201);
-      expect(subjectController.create).toHaveBeenCalled();
-      expect(response.body.id).toBeDefined();
-    });
+    middleware = {
+      handle: jest.fn((_req, next) => next()),
+    } as unknown as AuthUserMiddleware;
+
+    new SubjectRoute(subjectController, http, middleware).routes();
   });
-  describe('GET /subject/:id', () => {
-    it('should find a subject by ID', async () => {
-      const response = await supertest(app).get(`/subject/${new Id().value}`);
-      expect(response.status).toBe(200);
-      expect(subjectController.find).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
-    });
-  });
-  describe('GET /subject/', () => {
+
+  describe('success', () => {
     it('should find all subjects', async () => {
       const response = await supertest(app).get('/subjects');
-      expect(response.status).toBe(200);
+
+      expect(response.statusCode).toBe(200);
       expect(subjectController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
+      expect(response.body).toEqual(expect.any(Array));
       expect(response.body.length).toBe(2);
     });
-  });
-  describe('PATCH /subject/:id', () => {
+
+    it('should create a subject', async () => {
+      const payload = {
+        name: 'Math',
+        description: 'Described a subject',
+      };
+      const response = await supertest(app).post('/subject').send(payload);
+
+      expect(response.statusCode).toBe(201);
+      expect(subjectController.create).toHaveBeenCalledWith(payload);
+      expect(response.body).toEqual({ id: expect.any(String) });
+    });
+
+    it('should find a subject by ID', async () => {
+      const id = new Id().value;
+      const response = await supertest(app).get(`/subject/${id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(subjectController.find).toHaveBeenCalledWith({ id });
+      expect(response.body).toEqual(expect.objectContaining({ id }));
+    });
+
     it('should update a subject by ID', async () => {
+      const id = new Id().value;
+      const payload = { description: 'New description' };
       const response = await supertest(app)
-        .patch(`/subject/${new Id().value}`)
-        .send({
-          description: 'New description',
-        });
-      expect(response.status).toBe(200);
-      expect(subjectController.update).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
+        .patch(`/subject/${id}`)
+        .send(payload);
+
+      expect(response.statusCode).toBe(200);
+      expect(subjectController.update).toHaveBeenCalledWith({ id, ...payload });
+      expect(response.body).toEqual(expect.objectContaining({ id }));
+    });
+
+    it('should delete a subject by ID', async () => {
+      const id = new Id().value;
+      const response = await supertest(app).delete(`/subject/${id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(subjectController.delete).toHaveBeenCalledWith({ id });
+      expect(response.body).toEqual({
+        message: 'Operação concluída com sucesso',
+      });
     });
   });
-  describe('DELETE /subject/:id', () => {
-    it('should delete a subject by ID', async () => {
-      const response = await supertest(app).delete(
-        `/subject/${new Id().value}`
-      );
-      expect(response.status).toBe(200);
-      expect(subjectController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined();
+
+  describe('failure', () => {
+    it('should return 400 for invalid id on find', async () => {
+      const response = await supertest(app).get('/subject/invalid-id');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({ error: 'Id inválido' });
+    });
+
+    it('should return 400 for invalid id on update', async () => {
+      const response = await supertest(app)
+        .patch('/subject/invalid-id')
+        .send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Id e/ou dados para atualização inválidos',
+      });
+    });
+
+    it('should return 400 for invalid id on delete', async () => {
+      const response = await supertest(app).delete('/subject/invalid-id');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({ error: 'Id inválido' });
+    });
+
+    it('should return 400 for invalid payload on create', async () => {
+      const response = await supertest(app).post('/subject').send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: expect.any(String),
+      });
     });
   });
 });

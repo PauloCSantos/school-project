@@ -60,7 +60,7 @@ describe('AddStudents use case unit test', () => {
       await expect(
         usecase.execute({
           ...input,
-          newStudentsList: [lesson.studentList[0]],
+          newStudentsList: [lesson.studentsList[0]],
         })
       ).rejects.toThrow(`This student is already on the lesson`);
       expect(lessonRepository.find).toHaveBeenCalledWith(input.id);

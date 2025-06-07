@@ -1,130 +1,133 @@
-import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import EventController from '../../interface/controller/calendar.controller';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
 import EventRoute from '../../interface/route/calendar.route';
 
-const mockAuthUserMiddleware = jest.fn(
-  () =>
-    ({
-      //@ts-expect-error
-      handle: jest.fn((req: any, res: any, next: any) => next()),
-    }) as unknown as AuthUserMiddleware
-);
+describe('EventRoute with ExpressAdapter', () => {
+  let http: ExpressAdapter;
+  let app: any;
+  let eventController: EventController;
+  let middleware: AuthUserMiddleware;
 
-const mockEventController = jest.fn(() => {
-  return {
-    create: jest.fn().mockResolvedValue({ id: new Id().value }),
-    find: jest.fn().mockResolvedValue({
-      creator: new Id().value,
-      name: 'Christmas',
-      date: new Date(),
-      hour: '08:00' as Hour,
-      day: 'mon' as DayOfWeek,
-      type: 'event',
-      place: 'school',
-    }),
-    findAll: jest.fn().mockResolvedValue([
-      {
-        creator: new Id().value,
-        name: 'Christmas',
-        date: new Date(),
-        hour: '08:00' as Hour,
-        day: 'mon' as DayOfWeek,
-        type: 'event',
-        place: 'school',
-      },
-      {
-        creator: new Id().value,
-        name: 'Holiday',
-        date: new Date(),
-        hour: '08:00' as Hour,
-        day: 'mon' as DayOfWeek,
-        type: 'event',
-        place: 'school',
-      },
-    ]),
-    update: jest.fn().mockResolvedValue({
-      creator: new Id().value,
-      name: 'Christmas',
-      date: new Date(),
-      hour: '08:00' as Hour,
-      day: 'mon' as DayOfWeek,
-      type: 'event',
-      place: 'school',
-    }),
-    delete: jest.fn().mockResolvedValue({
-      message: 'Operação concluída com sucesso',
-    }),
-  } as unknown as EventController;
-});
+  beforeEach(() => {
+    http = new ExpressAdapter();
+    app = http.getNativeServer();
 
-describe('EventRoute unit test', () => {
-  const eventController = mockEventController();
-  const authUserMiddleware = mockAuthUserMiddleware();
-  const expressHttp = new ExpressHttp();
-  const eventRoute = new EventRoute(
-    eventController,
-    expressHttp,
-    authUserMiddleware
-  );
-  eventRoute.routes();
-  const app = expressHttp.getExpressInstance();
+    eventController = {
+      findAll: jest
+        .fn()
+        .mockResolvedValue([{ id: new Id().value }, { id: new Id().value }]),
+      create: jest.fn().mockResolvedValue({ id: new Id().value }),
+      find: jest.fn().mockImplementation(({ id }) => Promise.resolve({ id })),
+      update: jest.fn().mockImplementation(({ id }) => Promise.resolve({ id })),
+      delete: jest
+        .fn()
+        .mockResolvedValue({ message: 'Operação concluída com sucesso' }),
+    } as unknown as EventController;
 
-  describe('POST /event', () => {
-    it('should create a event', async () => {
-      const response = await supertest(app)
-        .post('/event')
-        .send({
-          creator: new Id().value,
-          name: 'Christmas',
-          date: new Date(),
-          hour: '08:00' as Hour,
-          day: 'mon' as DayOfWeek,
-          type: 'event',
-          place: 'school',
-        });
-      expect(response.status).toBe(201);
-      expect(eventController.create).toHaveBeenCalled();
-      expect(response.body.id).toBeDefined();
-    });
+    middleware = {
+      handle: jest.fn((_req, next) => next()),
+    } as unknown as AuthUserMiddleware;
+
+    new EventRoute(eventController, http, middleware).routes();
   });
-  describe('GET /event/:id', () => {
-    it('should find a event by ID', async () => {
-      const response = await supertest(app).get(`/event/${new Id().value}`);
-      expect(response.status).toBe(200);
-      expect(eventController.find).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
-    });
-  });
-  describe('GET /events/', () => {
+
+  describe('success', () => {
     it('should find all events', async () => {
-      const response = await supertest(app).get('/events');
-      expect(response.status).toBe(200);
-      expect(eventController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
+      const response = await supertest(app)
+        .get('/events')
+        .send({ quantity: 2, offset: 0 });
+      expect(response.statusCode).toBe(200);
+      expect(eventController.findAll).toHaveBeenCalledWith({
+        quantity: 2,
+        offset: 0,
+      });
+      expect(response.body).toEqual(expect.any(Array));
       expect(response.body.length).toBe(2);
     });
-  });
-  describe('PATCH /event/:id', () => {
-    it('should update a event by ID', async () => {
-      const response = await supertest(app)
-        .patch(`/event/${new Id().value}`)
-        .send({
-          description: 'New description',
-        });
-      expect(response.status).toBe(200);
-      expect(eventController.update).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
+
+    it('should create an event', async () => {
+      const date = new Date().toISOString();
+      const payload = {
+        creator: new Id().value,
+        name: 'Christmas',
+        date,
+        hour: '08:00',
+        day: 'mon',
+        type: 'event',
+        place: 'school',
+      };
+      const response = await supertest(app).post('/event').send(payload);
+
+      expect(response.statusCode).toBe(201);
+      expect(eventController.create).toHaveBeenCalledWith(payload);
+      expect(response.body).toEqual({ id: expect.any(String) });
+    });
+
+    it('should find an event by ID', async () => {
+      const id = new Id().value;
+      const response = await supertest(app).get(`/event/${id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(eventController.find).toHaveBeenCalledWith({ id });
+      expect(response.body).toEqual({ id });
+    });
+
+    it('should update an event by ID', async () => {
+      const id = new Id().value;
+      const payload = { description: 'New description' };
+      const response = await supertest(app).patch(`/event/${id}`).send(payload);
+
+      expect(response.statusCode).toBe(200);
+      expect(eventController.update).toHaveBeenCalledWith({ id, ...payload });
+      expect(response.body).toEqual({ id });
+    });
+
+    it('should delete an event by ID', async () => {
+      const id = new Id().value;
+      const response = await supertest(app).delete(`/event/${id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(eventController.delete).toHaveBeenCalledWith({ id });
+      expect(response.body).toEqual({
+        message: 'Operação concluída com sucesso',
+      });
     });
   });
-  describe('DELETE /event/:id', () => {
-    it('should delete a event by ID', async () => {
-      const response = await supertest(app).delete(`/event/${new Id().value}`);
-      expect(response.status).toBe(200);
-      expect(eventController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBeDefined();
+
+  describe('failure', () => {
+    it('should return 400 for invalid quantity or offset', async () => {
+      const response = await supertest(app).get('/events').send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Quantity e/ou offset estão incorretos',
+      });
+    });
+
+    it('should return 400 for invalid id on find', async () => {
+      const response = await supertest(app).get('/event/invalid-id');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({ error: 'Id inválido' });
+    });
+
+    it('should return 400 for invalid id on update', async () => {
+      const response = await supertest(app).patch('/event/invalid-id').send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Id e/ou dados para atualização inválidos',
+      });
+    });
+
+    it('should return 400 for invalid id on delete', async () => {
+      const response = await supertest(app).delete('/event/invalid-id');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({ error: 'Id inválido' });
     });
   });
 });

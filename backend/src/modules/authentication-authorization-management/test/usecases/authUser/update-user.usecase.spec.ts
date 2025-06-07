@@ -4,12 +4,11 @@ import AuthUser from '@/modules/authentication-authorization-management/domain/e
 import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
 
-// Crie o mock com tipagem explícita
 const MockRepository = (): jest.Mocked<AuthUserGateway> => {
   return {
     find: jest.fn(),
     create: jest.fn(),
-    update: jest.fn((authUser, email) => Promise.resolve(authUser)),
+    update: jest.fn((authUser, _) => Promise.resolve(authUser)),
     delete: jest.fn(),
   } as jest.Mocked<AuthUserGateway>;
 };
@@ -58,7 +57,7 @@ describe('UpdateAuthUser usecase unit test', () => {
 
     authUserService = new MockAuthUserService();
     authUser = new AuthUser(input, authUserService);
-    await authUser.hashPassword(); // Garantir que a senha está hasheada
+    await authUser.hashPassword();
 
     repository = MockRepository();
     generateHashSpy = jest.spyOn(authUserService, 'generateHash');
@@ -71,7 +70,7 @@ describe('UpdateAuthUser usecase unit test', () => {
   });
 
   it('should throw an error if the authUser does not exist', async () => {
-    repository.find.mockResolvedValue(undefined);
+    repository.find.mockResolvedValue(null);
 
     await expect(
       usecase.execute({
@@ -94,7 +93,7 @@ describe('UpdateAuthUser usecase unit test', () => {
 
     expect(repository.find).toHaveBeenCalledWith(input.email);
     expect(repository.update).toHaveBeenCalled();
-    expect(generateHashSpy).toHaveBeenCalled(); // Verifica se o método de hash foi chamado
+    expect(generateHashSpy).toHaveBeenCalled();
     expect(result).toStrictEqual({
       email: dataToUpdate.email,
       role: input.role,
@@ -110,14 +109,13 @@ describe('UpdateAuthUser usecase unit test', () => {
       email: input.email,
     });
 
-    // Corrigido: verifique a chamada com dois argumentos, o AuthUser e o email
     expect(repository.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        _email: partialUpdate.email, // Note o uso de _email, pois parece ser a propriedade interna
+        _email: partialUpdate.email,
         _masterId: input.masterId,
         _role: input.role,
       }),
-      input.email // O segundo argumento é o email original
+      input.email
     );
   });
 });

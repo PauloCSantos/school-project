@@ -12,7 +12,7 @@ import AuthUserGateway from '@/modules/authentication-authorization-management/i
  */
 export default class FindAuthUser
   implements
-    UseCaseInterface<FindAuthUserInputDto, FindAuthUserOutputDto | undefined>
+    UseCaseInterface<FindAuthUserInputDto, FindAuthUserOutputDto | null>
 {
   /** Repository for persisting and retrieving authenticated users */
   private readonly _authUserRepository: AuthUserGateway;
@@ -34,7 +34,7 @@ export default class FindAuthUser
    */
   async execute({
     email,
-  }: FindAuthUserInputDto): Promise<FindAuthUserOutputDto | undefined> {
+  }: FindAuthUserInputDto): Promise<FindAuthUserOutputDto | null> {
     const response = await this._authUserRepository.find(email);
 
     if (response) {
@@ -46,6 +46,6 @@ export default class FindAuthUser
       };
     }
 
-    return undefined;
+    return null;
   }
 }

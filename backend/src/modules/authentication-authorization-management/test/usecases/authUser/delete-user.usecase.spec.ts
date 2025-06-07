@@ -4,21 +4,12 @@ import AuthUser from '@/modules/authentication-authorization-management/domain/e
 import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
 
-// const MockRepository = (): jest.Mocked<AuthUserGateway> => {
-//   return {
-//     find: jest.fn(),
-//     create: jest.fn(),
-//     update: jest.fn(),
-//     delete: jest.fn(() => Promise.resolve('Operação concluída com sucesso')),
-//   } as jest.Mocked<AuthUserGateway>;
-// };
-
 const MockRepository = (): jest.Mocked<AuthUserGateway> => {
   return {
     find: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
-    delete: jest.fn(email => Promise.resolve('Operação concluída com sucesso')),
+    delete: jest.fn(_ => Promise.resolve('Operação concluída com sucesso')),
   } as jest.Mocked<AuthUserGateway>;
 };
 
@@ -55,7 +46,7 @@ describe('DeleteAuthUser usecase unit test', () => {
   });
 
   it('should throw an error if the authUser does not exist', async () => {
-    repository.find.mockResolvedValue(undefined);
+    repository.find.mockResolvedValue(null);
 
     await expect(
       usecase.execute({ email: 'notfound@email.com' })

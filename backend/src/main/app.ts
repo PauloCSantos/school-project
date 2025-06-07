@@ -1,4 +1,4 @@
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import initializeUserMaster from './setups/user-management/user-master.setup';
 import initializeUserAdministrator from './setups/user-management/user-administrator.setup';
 import initializeUserStudent from './setups/user-management/user-student.setup';
@@ -15,7 +15,7 @@ import initializeAttendance from './setups/evaluation-note-attendance-management
 import initializeAuthUser from './setups/authentication-authorization-management/auth-user.setup';
 
 async function startServer() {
-  const expressHttp = new ExpressHttp();
+  const expressHttp = new ExpressAdapter();
   initializeUserMaster(expressHttp);
   initializeUserAdministrator(expressHttp);
   initializeUserStudent(expressHttp);

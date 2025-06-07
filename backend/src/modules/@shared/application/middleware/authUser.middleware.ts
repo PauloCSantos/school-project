@@ -1,10 +1,12 @@
-import TokenService from '@/modules/authentication-authorization-management/infrastructure/service/token.service';
+import TokenService from '../../infraestructure/service/token.service';
 import { isNotEmpty } from '../../utils/validations';
 import {
   HttpRequest,
-  HttpResponse,
+  HttpResponseData,
+  HttpMiddleware,
 } from '../../infraestructure/http/http.interface';
-import { HttpMiddleware } from '../../infraestructure/http/express.adapter';
+import { IncomingHttpHeaders } from 'http';
+import { RoleUsers } from '../../type/enum';
 
 export enum HttpStatus {
   OK = 200,
@@ -26,118 +28,96 @@ export interface TokenData {
   masterId: string;
 }
 
-export interface AuthHttpRequest extends HttpRequest {
+export interface AuthHttpRequest<
+  P = any,
+  Q = any,
+  B = any,
+  H = IncomingHttpHeaders,
+> extends HttpRequest<P, Q, B, H> {
   tokenData?: TokenData;
 }
 
-export type NextFunction = () => void;
-
-export default class AuthUserMiddleware implements HttpMiddleware {
-  private readonly logger: Console;
-
+export default class AuthUserMiddleware
+  implements HttpMiddleware<any, any, any, any>
+{
   constructor(
     private readonly tokenService: TokenService,
-    private readonly allowedRoles: RoleUsers[],
-    logger: Console = console
-  ) {
-    this.logger = logger;
-  }
+    private readonly allowedRoles: RoleUsers[] = []
+  ) {}
 
   public async handle(
-    req: AuthHttpRequest,
-    res: HttpResponse,
-    next: NextFunction
-  ): Promise<void> {
+    request: HttpRequest<any, any, any, any>,
+    next: () => Promise<HttpResponseData>
+  ): Promise<HttpResponseData> {
+    const req = request as AuthHttpRequest;
+    const authHeader = req.headers?.authorization;
+
+    if (!authHeader || !isNotEmpty(authHeader)) {
+      return {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        body: { message: ErrorMessage.MISSING_TOKEN },
+      };
+    }
+
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : authHeader;
+
+    let decoded;
     try {
-      const tokenData = await this.extractAndValidateToken(req);
-      if (!this.hasPermission(tokenData.role)) {
-        return this.sendErrorResponse(
-          res,
-          HttpStatus.FORBIDDEN,
-          ErrorMessage.ACCESS_DENIED
-        );
-      }
-
-      req.tokenData = tokenData;
-      next();
-    } catch (error) {
-      this.handleError(error, res);
-    }
-  }
-
-  private async extractAndValidateToken(
-    req: AuthHttpRequest
-  ): Promise<TokenData> {
-    const authorizationHeader = req.headers?.authorization;
-
-    if (!authorizationHeader || !isNotEmpty(authorizationHeader)) {
-      throw new Error(ErrorMessage.MISSING_TOKEN);
+      decoded = await this.tokenService.validateToken(token);
+    } catch {
+      return {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        body: { message: ErrorMessage.INVALID_TOKEN },
+      };
     }
 
-    const token = this.extractToken(authorizationHeader);
-    const decodedToken = await this.tokenService.validateToken(token);
-
-    if (!decodedToken) {
-      throw new Error(ErrorMessage.INVALID_TOKEN);
+    if (!decoded) {
+      return {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        body: { message: ErrorMessage.INVALID_TOKEN },
+      };
     }
 
-    return {
-      email: decodedToken.email,
-      role: decodedToken.role as RoleUsers,
-      masterId: decodedToken.masterId,
+    if (
+      this.allowedRoles.length > 0 &&
+      !this.allowedRoles.includes(decoded.role as RoleUsers)
+    ) {
+      return {
+        statusCode: HttpStatus.FORBIDDEN,
+        body: { message: ErrorMessage.ACCESS_DENIED },
+      };
+    }
+
+    req.tokenData = {
+      email: decoded.email,
+      role: decoded.role as RoleUsers,
+      masterId: decoded.masterId,
     };
+    return next();
   }
+}
 
-  private extractToken(authHeader: string): string {
-    if (authHeader.startsWith('Bearer ')) {
-      return authHeader.split(' ')[1];
+export class AuthErrorHandlerMiddleware
+  implements HttpMiddleware<any, any, any, any>
+{
+  public async handle(
+    _request: HttpRequest<any, any, any, any>,
+    next: () => Promise<HttpResponseData>
+  ): Promise<HttpResponseData> {
+    try {
+      return await next();
+    } catch (err: any) {
+      const status =
+        typeof err.statusCode === 'number'
+          ? err.statusCode
+          : HttpStatus.INTERNAL_SERVER_ERROR;
+      const body =
+        err.body && typeof err.body === 'object'
+          ? err.body
+          : { message: ErrorMessage.INTERNAL_ERROR };
+      return { statusCode: status, body };
     }
-    return authHeader;
-  }
-
-  private hasPermission(role: RoleUsers): boolean {
-    return this.allowedRoles.includes(role);
-  }
-
-  private handleError(error: unknown, res: HttpResponse): void {
-    if (error instanceof Error) {
-      switch (error.message) {
-        case ErrorMessage.MISSING_TOKEN:
-        case ErrorMessage.INVALID_TOKEN:
-          return this.sendErrorResponse(
-            res,
-            HttpStatus.UNAUTHORIZED,
-            error.message
-          );
-        case ErrorMessage.ACCESS_DENIED:
-          return this.sendErrorResponse(
-            res,
-            HttpStatus.FORBIDDEN,
-            error.message
-          );
-        default:
-          this.logger.error('Authentication error:', error);
-          return this.sendErrorResponse(
-            res,
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            ErrorMessage.INTERNAL_ERROR
-          );
-      }
-    }
-
-    this.logger.error('Unknown authentication error:', error);
-    this.sendErrorResponse(
-      res,
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      ErrorMessage.INTERNAL_ERROR
-    );
-  }
-
-  private sendErrorResponse(
-    res: HttpResponse,
-    statusCode: HttpStatus,
-    message: string
-  ): void {
-    res.status(statusCode).json({ error: message });
   }
 }

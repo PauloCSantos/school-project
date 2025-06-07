@@ -37,11 +37,11 @@ describe('MemoryAuthUserRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should return undefined if user not found', async () => {
+    it('should return null if user not found', async () => {
       const authUserEmail = 'teste5@teste.com.br';
       const authUserFound = await repository.find(authUserEmail);
 
-      expect(authUserFound).toBeUndefined();
+      expect(authUserFound).toBeNull();
     });
 
     it('should throw an error when trying to update a non-existent user', async () => {
@@ -110,7 +110,7 @@ describe('MemoryAuthUserRepository unit test', () => {
 
       expect(response).toBe('Operação concluída com sucesso');
       const deletedUser = await repository.find(authUser1.email);
-      expect(deletedUser).toBeUndefined();
+      expect(deletedUser).toBeNull();
     });
   });
 });

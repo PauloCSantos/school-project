@@ -1,195 +1,211 @@
 import { validId } from '@/modules/@shared/utils/validations';
-import { HttpInterface } from '@/modules/@shared/infraestructure/http/http.interface';
-import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import {
+  HttpServer,
+  HttpResponseData,
+} from '@/modules/@shared/infraestructure/http/http.interface';
+import AuthUserMiddleware, {
+  AuthHttpRequest,
+  AuthErrorHandlerMiddleware,
+} from '@/modules/@shared/application/middleware/authUser.middleware';
 import { UserWorkerController } from '../controller/worker.controller';
+import {
+  CreateUserWorkerInputDto,
+  FindAllUserWorkerInputDto,
+  FindUserWorkerInputDto,
+  UpdateUserWorkerInputDto,
+  DeleteUserWorkerInputDto,
+} from '../../application/dto/worker-usecase.dto';
 
 export class UserWorkerRoute {
   constructor(
     private readonly userWorkerController: UserWorkerController,
-    private readonly httpGateway: HttpInterface,
+    private readonly httpGateway: HttpServer,
     private readonly authMiddleware: AuthUserMiddleware
   ) {}
 
   public routes(): void {
-    this.httpGateway.get('/user-workers', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () =>
-        this.findAllUserWorkers(req, res)
-      );
-    });
-    this.httpGateway.post('/user-worker', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () =>
-        this.createUserWorker(req, res)
-      );
-    });
-    this.httpGateway.get('/user-worker/:id', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () => this.findUserWorker(req, res));
-    });
-    this.httpGateway.patch('/user-worker/:id', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () =>
-        this.updateUserWorker(req, res)
-      );
-    });
-    this.httpGateway.delete('/user-worker/:id', (req: any, res: any) => {
-      this.authMiddleware.handle(req, res, () =>
-        this.deleteUserWorker(req, res)
-      );
-    });
+    const errorHandler = new AuthErrorHandlerMiddleware();
+
+    this.httpGateway.get(
+      '/users-worker',
+      this.findAllUserWorkers.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+
+    this.httpGateway.post(
+      '/user-worker',
+      this.createUserWorker.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+
+    this.httpGateway.get(
+      '/user-worker/:id',
+      this.findUserWorker.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+
+    this.httpGateway.patch(
+      '/user-worker/:id',
+      this.updateUserWorker.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
+
+    this.httpGateway.delete(
+      '/user-worker/:id',
+      this.deleteUserWorker.bind(this),
+      errorHandler,
+      this.authMiddleware
+    );
   }
 
-  private async findAllUserWorkers(req: any, res: any): Promise<void> {
+  private async findAllUserWorkers(
+    req: AuthHttpRequest<{}, {}, FindAllUserWorkerInputDto, {}>
+  ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
       if (!this.validateFindAll(quantity, offset)) {
-        res
-          .status(400)
-          .json({ error: 'Quantity e/ou offset estão incorretos' });
-      } else {
-        const response = await this.userWorkerController.findAll({
-          quantity,
-          offset,
-        });
-        res.status(200).json(response);
+        return {
+          statusCode: 400,
+          body: { error: 'Quantity e/ou offset incorretos' },
+        };
       }
+      const workers = await this.userWorkerController.findAll({
+        quantity,
+        offset,
+      });
+      return { statusCode: 200, body: workers };
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      return this.handleError(error);
     }
   }
-  private async createUserWorker(req: any, res: any): Promise<void> {
-    try {
-      const input = req.body;
-      if (!this.validateCreate(input)) {
-        res.status(400).json({ error: 'Todos os campos sao obrigatorios' });
-      } else {
-        const response = await this.userWorkerController.create({
-          ...input,
-          birthday: new Date(input.birthday),
-        });
-        res.status(201).json(response);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
-    }
-  }
-  private async findUserWorker(req: any, res: any): Promise<void> {
+
+  private async findUserWorker(
+    req: AuthHttpRequest<FindUserWorkerInputDto, {}, {}, {}>
+  ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
       if (!this.validFind(id)) {
-        res.status(400).json({ error: 'Id invalido' });
-      } else {
-        const any = await this.userWorkerController.find({ id });
-        res.status(200).json(any);
+        return { statusCode: 400, body: { error: 'Id inválido' } };
       }
+      const worker = await this.userWorkerController.find({ id });
+      return { statusCode: 200, body: worker };
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(404).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      return this.handleError(error);
     }
   }
-  private async updateUserWorker(req: any, res: any): Promise<void> {
+
+  private async createUserWorker(
+    req: AuthHttpRequest<{}, {}, CreateUserWorkerInputDto, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const input = req.body;
+      if (!this.validateCreate(input)) {
+        return {
+          statusCode: 400,
+          body: { error: 'Dados inválidos para criação do worker' },
+        };
+      }
+      const newWorker = await this.userWorkerController.create(input);
+      return { statusCode: 201, body: newWorker };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async updateUserWorker(
+    req: AuthHttpRequest<
+      FindUserWorkerInputDto,
+      {},
+      UpdateUserWorkerInputDto,
+      {}
+    >
+  ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
       const input = req.body;
       if (!this.validUpdate(id, input)) {
-        res.status(400).json({ error: 'Id e/ou input incorretos' });
-      } else {
-        input.id = id;
-        input.birthday
-          ? (input.birthday = new Date(input.birthday))
-          : undefined;
-        const response = await this.userWorkerController.update(input);
-        res.status(200).json(response);
+        return {
+          statusCode: 400,
+          body: { error: 'Id e/ou dados para atualização inválidos' },
+        };
       }
+      const updatedWorker = await this.userWorkerController.update({
+        ...input,
+        id,
+      });
+      return { statusCode: 200, body: updatedWorker };
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      return this.handleError(error);
     }
   }
-  private async deleteUserWorker(req: any, res: any): Promise<void> {
+
+  private async deleteUserWorker(
+    req: AuthHttpRequest<DeleteUserWorkerInputDto, {}, {}, {}>
+  ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
       if (!this.validDelete(id)) {
-        res.status(400).json({ error: 'Id invalido' });
-      } else {
-        const response = await this.userWorkerController.delete({ id });
-        res.status(200).json(response);
+        return { statusCode: 400, body: { error: 'Id inválido' } };
       }
+      const deleted = await this.userWorkerController.delete({ id });
+      return { statusCode: 200, body: deleted };
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(404).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      return this.handleError(error);
     }
   }
-  private validateFindAll(
-    quantity: number | undefined,
-    offset: number | undefined
-  ): boolean {
-    if (
-      quantity === undefined ||
-      (typeof quantity === 'number' &&
-        isNaN(quantity) &&
-        offset === undefined) ||
-      (typeof offset === 'number' && isNaN(offset))
-    ) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-  private validateCreate(input: any): boolean {
-    const {
-      name: { firstName, lastName },
-      address: { street, city, zip, number, avenue, state },
-      email,
-      birthday,
-      salary: { salary },
-    } = input;
 
-    if (
-      firstName === undefined ||
-      lastName === undefined ||
-      street === undefined ||
-      city === undefined ||
-      zip === undefined ||
-      number === undefined ||
-      avenue === undefined ||
-      state === undefined ||
-      email === undefined ||
-      birthday === undefined ||
-      salary === undefined
-    ) {
-      return false;
-    } else {
+  private validateFindAll(quantity?: number, offset?: number): boolean {
+    if (quantity === undefined || offset === undefined) {
       return true;
     }
+    return Number.isInteger(quantity) && Number.isInteger(offset);
   }
-  private validFind(id: any): boolean {
-    return validId(id);
-  }
-  private validUpdate(id: any, input: any): boolean {
-    if (!validId(id)) return false;
-    for (const value of Object.values(input)) {
-      if (value !== undefined) {
-        return true;
-      }
+
+  private validateCreate(input: CreateUserWorkerInputDto): boolean {
+    if (
+      !input.name ||
+      typeof input.name.firstName !== 'string' ||
+      typeof input.name.lastName !== 'string' ||
+      !input.address ||
+      typeof input.address.street !== 'string' ||
+      typeof input.address.city !== 'string' ||
+      typeof input.address.zip !== 'string' ||
+      typeof input.address.number !== 'number' ||
+      typeof input.address.avenue !== 'string' ||
+      typeof input.address.state !== 'string' ||
+      !input.email ||
+      typeof input.email !== 'string' ||
+      !input.birthday ||
+      typeof input.birthday !== 'string' ||
+      !input.salary ||
+      typeof input.salary.salary !== 'number'
+    ) {
+      return false;
     }
-    return false;
+    return true;
   }
-  private validDelete(id: any): boolean {
+
+  private validFind(id: string): boolean {
     return validId(id);
+  }
+
+  private validUpdate(id: string, input: UpdateUserWorkerInputDto): boolean {
+    if (!validId(id)) return false;
+    return Object.values(input).some(value => value !== undefined);
+  }
+
+  private validDelete(id: string): boolean {
+    return validId(id);
+  }
+
+  private handleError(error: unknown, statusCode = 400): HttpResponseData {
+    if (error instanceof Error) {
+      return { statusCode, body: { error: error.message } };
+    }
+    return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
   }
 }

@@ -6,14 +6,33 @@ import {
 } from '../../dto/lesson-usecase.dto';
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
 
+/**
+ * Use case responsible for creating a new lesson.
+ *
+ * Validates duplication and persists the lesson entity.
+ */
 export default class CreateLesson
   implements UseCaseInterface<CreateLessonInputDto, CreateLessonOutputDto>
 {
-  private _lessonRepository: LessonGateway;
+  /** Repository for lesson persistence and retrieval */
+  private readonly _lessonRepository: LessonGateway;
 
+  /**
+   * Constructs a new instance of the CreateLesson use case.
+   *
+   * @param lessonRepository - Gateway used for lesson operations
+   */
   constructor(lessonRepository: LessonGateway) {
     this._lessonRepository = lessonRepository;
   }
+
+  /**
+   * Executes the creation of a lesson.
+   *
+   * @param input - Lesson data to be created
+   * @returns Output DTO containing the lesson ID
+   * @throws Error if a lesson with the same ID already exists
+   */
   async execute({
     days,
     duration,
@@ -38,7 +57,10 @@ export default class CreateLesson
     const lessonVerification = await this._lessonRepository.find(
       lesson.id.value
     );
-    if (lessonVerification) throw new Error('Lesson already exists');
+
+    if (lessonVerification) {
+      throw new Error('Lesson already exists');
+    }
 
     const result = await this._lessonRepository.create(lesson);
 

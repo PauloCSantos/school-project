@@ -50,11 +50,9 @@ export default class EventController {
   /**
    * Finds an event by ID.
    * @param input - The input containing the ID to search for
-   * @returns Promise resolving to the found event data or undefined
+   * @returns Promise resolving to the found event data or null
    */
-  async find(
-    input: FindEventInputDto
-  ): Promise<FindEventOutputDto | undefined> {
+  async find(input: FindEventInputDto): Promise<FindEventOutputDto | null> {
     const response = await this.findEvent.execute(input);
     return response;
   }

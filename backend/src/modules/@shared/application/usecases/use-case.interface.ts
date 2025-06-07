@@ -71,7 +71,6 @@ export abstract class BaseUseCase<InputT, ResultT>
     try {
       return await this.performExecute(input);
     } catch (error) {
-      // Log error details here if needed
       throw error;
     }
   }

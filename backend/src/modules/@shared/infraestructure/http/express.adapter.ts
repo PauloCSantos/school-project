@@ -1,109 +1,107 @@
-import express, { NextFunction, Request, Response } from 'express';
-import { HttpInterface, HttpRequest, HttpResponse } from './http.interface';
+// express.adapter.ts
+import express, { Application, Request, Response } from 'express';
+import {
+  HttpServer,
+  HttpRequest,
+  HttpResponseData,
+  HttpMiddleware,
+} from './http.interface';
 
-export interface HttpMiddleware {
-  handle(req: HttpRequest, res: HttpResponse, next: () => void): Promise<void>;
-}
-
-export default class ExpressHttp implements HttpInterface {
-  private app = express();
+/**
+ * Adaptador que encapsula o Express e implementa HttpServer.
+ */
+export class ExpressAdapter implements HttpServer {
+  private readonly app: Application;
 
   constructor() {
+    this.app = express();
     this.app.use(express.json());
   }
 
-  /**
-   * Adapta um middleware de domínio para o formato do Express
-   */
-  adaptMiddleware(middleware: HttpMiddleware) {
-    return async (req: Request, res: Response, next: NextFunction) => {
-      const httpRequest: HttpRequest = {
-        headers: req.headers,
-        body: req.body,
-        params: req.params,
-        query: req.query,
-      };
-
-      try {
-        await middleware.handle(httpRequest, res, () => next());
-      } catch (error) {
-        next(error);
-      }
-    };
-  }
-
-  /**
-   * Método para registrar um middleware global
-   */
-  use(middleware: HttpMiddleware): void {
-    this.app.use(this.adaptMiddleware(middleware));
-  }
-
-  /**
-   * Método para registrar um middleware em um caminho específico
-   */
-  useOn(path: string, middleware: HttpMiddleware): void {
-    this.app.use(path, this.adaptMiddleware(middleware));
-  }
-
-  /**
-   * Métodos HTTP com suporte a middlewares
-   */
   get(
     path: string,
-    handler: (req: HttpRequest, res: HttpResponse) => void,
-    ...middlewares: HttpMiddleware[]
+    handler: (
+      req: HttpRequest<any, any, any, any>
+    ) => Promise<HttpResponseData>,
+    ...middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
-    const adaptedMiddlewares = middlewares.map(m => this.adaptMiddleware(m));
-
-    this.app.get(path, ...adaptedMiddlewares, (req: Request, res: Response) =>
-      handler(req, res)
-    );
+    this.app.get(path, this.handleRequest(handler, middlewares));
   }
 
   post(
     path: string,
-    handler: (req: HttpRequest, res: HttpResponse) => void,
-    ...middlewares: HttpMiddleware[]
+    handler: (
+      req: HttpRequest<any, any, any, any>
+    ) => Promise<HttpResponseData>,
+    ...middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
-    const adaptedMiddlewares = middlewares.map(m => this.adaptMiddleware(m));
-
-    this.app.post(path, ...adaptedMiddlewares, (req: Request, res: Response) =>
-      handler(req, res)
-    );
+    this.app.post(path, this.handleRequest(handler, middlewares));
   }
 
   patch(
     path: string,
-    handler: (req: HttpRequest, res: HttpResponse) => void,
-    ...middlewares: HttpMiddleware[]
+    handler: (
+      req: HttpRequest<any, any, any, any>
+    ) => Promise<HttpResponseData>,
+    ...middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
-    const adaptedMiddlewares = middlewares.map(m => this.adaptMiddleware(m));
-
-    this.app.patch(path, ...adaptedMiddlewares, (req: Request, res: Response) =>
-      handler(req, res)
-    );
+    this.app.patch(path, this.handleRequest(handler, middlewares));
   }
 
   delete(
     path: string,
-    handler: (req: HttpRequest, res: HttpResponse) => void,
-    ...middlewares: HttpMiddleware[]
+    handler: (
+      req: HttpRequest<any, any, any, any>
+    ) => Promise<HttpResponseData>,
+    ...middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
-    const adaptedMiddlewares = middlewares.map(m => this.adaptMiddleware(m));
-
-    this.app.delete(
-      path,
-      ...adaptedMiddlewares,
-      (req: Request, res: Response) => handler(req, res)
-    );
+    this.app.delete(path, this.handleRequest(handler, middlewares));
   }
 
-  getExpressInstance() {
+  private handleRequest(
+    handler: (
+      req: HttpRequest<any, any, any, any>
+    ) => Promise<HttpResponseData>,
+    middlewares: HttpMiddleware<any, any, any, any>[]
+  ) {
+    return (req: Request, res: Response): void => {
+      const httpReq: HttpRequest = {
+        params: req.params,
+        query: req.query,
+        body: req.body,
+        headers: req.headers,
+      };
+      let idx = -1;
+
+      const runner = async (): Promise<HttpResponseData> => {
+        idx++;
+        if (idx < middlewares.length) {
+          return middlewares[idx].handle(httpReq, runner);
+        }
+        return handler(httpReq);
+      };
+
+      runner()
+        .then(response => {
+          res.status(response.statusCode).json(response.body);
+        })
+        .catch(() => {
+          res.status(500).json({ message: 'Internal server error' });
+        });
+    };
+  }
+
+  /**
+   * Disponível para uso em testes com Supertest.
+   */
+  public getNativeServer(): Application {
     return this.app;
   }
 
-  listen(port: number, callback?: () => void): void {
-    this.app.listen(port, callback);
+  /**
+   * Inicia o servidor na porta informada.
+   */
+  public listen(port: number, cb?: () => void): void {
+    this.app.listen(port, cb);
   }
 }

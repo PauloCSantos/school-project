@@ -1,123 +1,153 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import { UserMasterController } from '../../interface/controller/master.controller';
 import { UserMasterRoute } from '../../interface/route/master.route';
 
-const mockAuthUserMiddleware = jest.fn(
-  () =>
-    ({
-      //@ts-expect-error
-      handle: jest.fn((req: any, res: any, next: any) => next()),
-    }) as unknown as AuthUserMiddleware
-);
+describe('UserMasterRoute with ExpressAdapter', () => {
+  let http: ExpressAdapter;
+  let app: any;
+  let userMasterController: UserMasterController;
+  let middleware: AuthUserMiddleware;
 
-const mockUserMasterController = jest.fn(() => {
-  return {
-    create: jest.fn().mockResolvedValue({ id: new Id().value }),
-    find: jest.fn().mockResolvedValue({
-      name: {
-        firstName: 'John',
-        lastName: 'Doe',
-      },
-      address: {
-        street: 'Street A',
-        city: 'City A',
-        zip: '111111-111',
-        number: 1,
-        avenue: 'Avenue A',
-        state: 'State A',
-      },
-      birthday: new Date('11-12-1995'),
-      email: 'teste1@test.com',
-      cnpj: '35.741.901/0001-58',
-    }),
-    update: jest.fn().mockResolvedValue({
-      name: {
-        firstName: 'John',
-        lastName: 'Doe',
-      },
-      address: {
-        street: 'Street A',
-        city: 'City A',
-        zip: '111111-111',
-        number: 1,
-        avenue: 'Avenue A',
-        state: 'State A',
-      },
-      birthday: new Date('11-12-1995'),
-      email: 'teste1@test.com',
-      cnpj: '35.741.901/0001-58',
-    }),
-  } as unknown as UserMasterController;
-});
+  const mockMasterData = {
+    id: new Id().value,
+    name: {
+      firstName: 'John',
+      lastName: 'Doe',
+    },
+    address: {
+      street: 'Street A',
+      city: 'City A',
+      zip: '111111-111',
+      number: 1,
+      avenue: 'Avenue A',
+      state: 'State A',
+    },
+    birthday: new Date('11-12-1995'),
+    email: 'teste1@test.com',
+    cnpj: '35.741.901/0001-58',
+  };
 
-describe('UserMasterRoute unit test', () => {
-  const userMasterController = mockUserMasterController();
-  const authUserMiddleware = mockAuthUserMiddleware();
-  const expressHttp = new ExpressHttp();
-  const userMasterRoute = new UserMasterRoute(
-    userMasterController,
-    expressHttp,
-    authUserMiddleware
-  );
-  userMasterRoute.routes();
-  const app = expressHttp.getExpressInstance();
+  beforeEach(() => {
+    http = new ExpressAdapter();
+    app = http.getNativeServer();
 
-  describe('POST /user-master', () => {
-    it('should create a user', async () => {
-      const response = await supertest(app)
-        .post('/user-master')
-        .send({
-          name: {
-            firstName: 'John',
-            lastName: 'Doe',
-          },
+    userMasterController = {
+      create: jest.fn().mockResolvedValue({ id: new Id().value }),
+      find: jest.fn().mockImplementation(({ id }) =>
+        Promise.resolve({
+          ...mockMasterData,
+          id,
+        })
+      ),
+      update: jest.fn().mockImplementation(({ id }) =>
+        Promise.resolve({
+          ...mockMasterData,
+          id,
           address: {
-            street: 'Street A',
-            city: 'City A',
-            zip: '111111-111',
-            number: 1,
-            avenue: 'Avenue A',
-            state: 'State A',
+            ...mockMasterData.address,
+            street: 'Updated Street',
           },
-          birthday: new Date('11-12-1995'),
-          email: 'teste1@test.com',
-          cnpj: '35.741.901/0001-58',
-        });
-      expect(response.status).toBe(201);
-      expect(userMasterController.create).toHaveBeenCalled();
-      expect(response.body.id).toBeDefined();
+        })
+      ),
+    } as unknown as UserMasterController;
+
+    middleware = {
+      handle: jest.fn((_req, next) => next()),
+    } as unknown as AuthUserMiddleware;
+
+    new UserMasterRoute(userMasterController, http, middleware).routes();
+  });
+
+  describe('success', () => {
+    it('should create a master', async () => {
+      const date = new Date().toISOString();
+      const payload = {
+        name: {
+          firstName: 'John',
+          lastName: 'Doe',
+        },
+        address: {
+          street: 'Street A',
+          city: 'City A',
+          zip: '111111-111',
+          number: 1,
+          avenue: 'Avenue A',
+          state: 'State A',
+        },
+        birthday: date,
+        email: 'teste1@test.com',
+        cnpj: '35.741.901/0001-58',
+      };
+      const response = await supertest(app).post('/user-master').send(payload);
+
+      expect(response.statusCode).toBe(201);
+      expect(userMasterController.create).toHaveBeenCalledWith(payload);
+      expect(response.body).toEqual({ id: expect.any(String) });
+    });
+
+    it('should find a master by ID', async () => {
+      const id = new Id().value;
+      const response = await supertest(app).get(`/user-master/${id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(userMasterController.find).toHaveBeenCalledWith({ id });
+      expect(response.body).toEqual(expect.objectContaining({ id }));
+    });
+
+    it('should update a master by ID', async () => {
+      const id = new Id().value;
+      const payload = {
+        address: {
+          street: 'Updated Street',
+          city: 'City A',
+          zip: '111111-111',
+          number: 1,
+          avenue: 'Avenue A',
+          state: 'State A',
+        },
+      };
+      const response = await supertest(app)
+        .patch(`/user-master/${id}`)
+        .send(payload);
+
+      expect(response.statusCode).toBe(200);
+      expect(userMasterController.update).toHaveBeenCalledWith({
+        id,
+        ...payload,
+      });
+      expect(response.body).toEqual(expect.objectContaining({ id }));
     });
   });
-  describe('GET /user-master/:id', () => {
-    it('should find a user by ID', async () => {
-      const response = await supertest(app).get(
-        `/user-master/${new Id().value}`
-      );
-      expect(response.status).toBe(200);
-      expect(userMasterController.find).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
+
+  describe('failure', () => {
+    it('should return 400 for invalid id on find', async () => {
+      const response = await supertest(app).get('/user-master/invalid-id');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({ error: 'Id inválido' });
     });
-  });
-  describe('PATCH /user-master/:id', () => {
-    it('should update a user by ID', async () => {
+
+    it('should return 400 for invalid id on update', async () => {
       const response = await supertest(app)
-        .patch(`/user-master/${new Id().value}`)
-        .send({
-          address: {
-            street: 'Street B',
-            city: 'City B',
-            zip: '111111-111',
-            number: 1,
-            avenue: 'Avenue B',
-            state: 'State B',
-          },
-        });
-      expect(response.status).toBe(200);
-      expect(userMasterController.update).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
+        .patch('/user-master/invalid-id')
+        .send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Id e/ou dados para atualização inválidos',
+      });
+    });
+
+    it('should return 400 for invalid payload on create', async () => {
+      const response = await supertest(app).post('/user-master').send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: expect.any(String),
+      });
     });
   });
 });

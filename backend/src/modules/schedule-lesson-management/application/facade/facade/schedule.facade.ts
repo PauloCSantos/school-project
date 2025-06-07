@@ -23,24 +23,38 @@ import {
   UpdateScheduleOutputDto,
 } from '../../dto/schedule-facade.dto';
 
+/**
+ * Properties required to initialize the ScheduleFacade
+ */
 type ScheduleFacadeProps = {
-  createSchedule: CreateSchedule;
-  deleteSchedule: DeleteSchedule;
-  findAllSchedule: FindAllSchedule;
-  findSchedule: FindSchedule;
-  updateSchedule: UpdateSchedule;
-  addLessons: AddLessons;
-  removeLessons: RemoveLessons;
+  readonly createSchedule: CreateSchedule;
+  readonly deleteSchedule: DeleteSchedule;
+  readonly findAllSchedule: FindAllSchedule;
+  readonly findSchedule: FindSchedule;
+  readonly updateSchedule: UpdateSchedule;
+  readonly addLessons: AddLessons;
+  readonly removeLessons: RemoveLessons;
 };
-export default class ScheduleFacade implements ScheduleFacadeInterface {
-  private _createSchedule: CreateSchedule;
-  private _deleteSchedule: DeleteSchedule;
-  private _findAllSchedule: FindAllSchedule;
-  private _findSchedule: FindSchedule;
-  private _updateSchedule: UpdateSchedule;
-  private _addLessons: AddLessons;
-  private _removeLessons: RemoveLessons;
 
+/**
+ * Facade implementation for schedule operations
+ *
+ * This class provides a unified interface to the underlying schedule
+ * use cases, simplifying client interaction with the schedule subsystem.
+ */
+export default class ScheduleFacade implements ScheduleFacadeInterface {
+  private readonly _createSchedule: CreateSchedule;
+  private readonly _deleteSchedule: DeleteSchedule;
+  private readonly _findAllSchedule: FindAllSchedule;
+  private readonly _findSchedule: FindSchedule;
+  private readonly _updateSchedule: UpdateSchedule;
+  private readonly _addLessons: AddLessons;
+  private readonly _removeLessons: RemoveLessons;
+
+  /**
+   * Creates a new instance of ScheduleFacade
+   * @param input Dependencies required by the facade
+   */
   constructor(input: ScheduleFacadeProps) {
     this._createSchedule = input.createSchedule;
     this._deleteSchedule = input.deleteSchedule;
@@ -51,35 +65,79 @@ export default class ScheduleFacade implements ScheduleFacadeInterface {
     this._removeLessons = input.removeLessons;
   }
 
-  async create(
+  /**
+   * Creates a new schedule
+   * @param input Schedule creation parameters
+   * @returns Information about the created schedule
+   */
+  public async create(
     input: CreateScheduleInputDto
   ): Promise<CreateScheduleOutputDto> {
     return await this._createSchedule.execute(input);
   }
-  async find(
+
+  /**
+   * Finds a schedule by ID
+   * @param input Search parameters
+   * @returns Schedule information if found, null otherwise
+   */
+  public async find(
     input: FindScheduleInputDto
-  ): Promise<FindScheduleOutputDto | undefined> {
-    return await this._findSchedule.execute(input);
+  ): Promise<FindScheduleOutputDto | null> {
+    const result = await this._findSchedule.execute(input);
+    return result || null;
   }
-  async findAll(
+
+  /**
+   * Retrieves all schedules with optional filtering
+   * @param input Search parameters for filtering schedules
+   * @returns Collection of schedules matching criteria
+   */
+  public async findAll(
     input: FindAllScheduleInputDto
   ): Promise<FindAllScheduleOutputDto> {
     return await this._findAllSchedule.execute(input);
   }
-  async delete(
+
+  /**
+   * Deletes a schedule
+   * @param input Schedule identification
+   * @returns Confirmation message
+   */
+  public async delete(
     input: DeleteScheduleInputDto
   ): Promise<DeleteScheduleOutputDto> {
     return await this._deleteSchedule.execute(input);
   }
-  async update(
+
+  /**
+   * Updates a schedule's information
+   * @param input Schedule identification and data to update
+   * @returns Updated schedule information
+   */
+  public async update(
     input: UpdateScheduleInputDto
   ): Promise<UpdateScheduleOutputDto> {
     return await this._updateSchedule.execute(input);
   }
-  async addLessons(input: AddLessonsInputDto): Promise<AddLessonsOutputDto> {
+
+  /**
+   * Adds lessons to a schedule
+   * @param input Schedule ID and lesson IDs to add
+   * @returns Updated schedule information
+   */
+  public async addLessons(
+    input: AddLessonsInputDto
+  ): Promise<AddLessonsOutputDto> {
     return await this._addLessons.execute(input);
   }
-  async removeLessons(
+
+  /**
+   * Removes lessons from a schedule
+   * @param input Schedule ID and lesson IDs to remove
+   * @returns Updated schedule information
+   */
+  public async removeLessons(
     input: RemoveLessonsInputDto
   ): Promise<RemoveLessonsOutputDto> {
     return await this._removeLessons.execute(input);

@@ -8,6 +8,9 @@ import {
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
 import LessonMapper from '../../mapper/lesson-usecase.mapper';
 
+/**
+ * Use case responsible for adding time slots to a lesson.
+ */
 export default class AddTime
   implements UseCaseInterface<AddTimeInputDto, AddTimeOutputDto>
 {
@@ -16,6 +19,10 @@ export default class AddTime
   constructor(lessonRepository: LessonGateway) {
     this._lessonRepository = lessonRepository;
   }
+
+  /**
+   * Adds new time entries to the specified lesson.
+   */
   async execute({
     id,
     newTimesList,

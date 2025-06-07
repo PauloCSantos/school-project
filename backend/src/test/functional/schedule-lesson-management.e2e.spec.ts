@@ -1,6 +1,6 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import MemoryScheduleRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/schedule.repository';
@@ -79,7 +79,7 @@ describe('Schedule lesson management module end to end test', () => {
       removeTime
     );
 
-    const expressHttp = new ExpressHttp();
+    const expressHttp = new ExpressAdapter();
     const tokerService = tokenInstance();
 
     const authUserMiddlewareSchedule = new AuthUserMiddleware(tokerService, [
@@ -104,7 +104,7 @@ describe('Schedule lesson management module end to end test', () => {
 
     scheduleRoute.routes();
     lessonRoute.routes();
-    app = expressHttp.getExpressInstance();
+    app = expressHttp.getNativeServer();
   });
 
   describe('Schedule', () => {

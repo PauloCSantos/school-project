@@ -8,7 +8,7 @@ export class InvalidIdError extends Error {
   constructor(message: string = 'Invalid ID format') {
     super(message);
     this.name = 'InvalidIdError';
-    // Preserves stack trace in modern JS engines
+
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, InvalidIdError);
     }
@@ -52,7 +52,6 @@ export default class Id {
       this._value = randomUUID();
     }
 
-    // Ensure immutability
     Object.freeze(this);
   }
 
@@ -109,7 +108,6 @@ export default class Id {
 
   /**
    * Computes a hash code for this ID
-   * Simple implementation that can be improved if needed
    * @returns A numeric hash code
    */
   hashCode(): number {
@@ -117,7 +115,7 @@ export default class Id {
     for (let i = 0; i < this._value.length; i++) {
       const char = this._value.charCodeAt(i);
       hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32bit integer
+      hash = hash & hash;
     }
     return hash;
   }

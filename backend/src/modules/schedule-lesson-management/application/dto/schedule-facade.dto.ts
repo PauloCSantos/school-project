@@ -1,62 +1,39 @@
-export interface FindScheduleInputDto {
-  id: string;
-}
-export interface FindScheduleOutputDto {
-  id: string;
-  student: string;
-  curriculum: string;
-  lessonsList: string[];
-}
+import {
+  IFindScheduleInput,
+  IFindScheduleOutput,
+  IFindAllScheduleInput,
+  IFindAllScheduleOutput,
+  ICreateScheduleInput,
+  ICreateScheduleOutput,
+  IUpdateScheduleInput,
+  IUpdateScheduleOutput,
+  IDeleteScheduleInput,
+  IDeleteScheduleOutput,
+  IAddLessonsInput,
+  IAddLessonsOutput,
+  IRemoveLessonsInput,
+  IRemoveLessonsOutput,
+} from './base-schedule.dto';
 
-export interface FindAllScheduleInputDto {
-  quantity?: number;
-  offset?: number;
-}
-export interface FindAllScheduleOutputDto
-  extends Array<{
-    id: string;
-    student: string;
-    curriculum: string;
-    lessonsList: string[];
-  }> {}
+// Facade DTOs - utilizando as interfaces base
 
-export interface CreateScheduleInputDto {
-  student: string;
-  curriculum: string;
-  lessonsList: string[];
-}
-export interface CreateScheduleOutputDto {
-  id: string;
-}
+export type FindScheduleInputDto = IFindScheduleInput;
+export type FindScheduleOutputDto = IFindScheduleOutput;
 
-export interface UpdateScheduleInputDto {
-  id: string;
-  curriculum?: string;
-}
-export interface UpdateScheduleOutputDto {
-  id: string;
-  curriculum: string;
-}
+export type FindAllScheduleInputDto = IFindAllScheduleInput;
+export type FindAllScheduleOutputDto = IFindAllScheduleOutput;
 
-export interface DeleteScheduleInputDto {
-  id: string;
-}
-export interface DeleteScheduleOutputDto {
-  message: string;
-}
+export type CreateScheduleInputDto = ICreateScheduleInput;
+export type CreateScheduleOutputDto = ICreateScheduleOutput;
 
-export interface AddLessonsInputDto {
-  id: string;
-  newLessonsList: string[];
-}
-export interface AddLessonsOutputDto {
-  message: string;
-}
+export type UpdateScheduleInputDto = IUpdateScheduleInput;
+export type UpdateScheduleOutputDto = IUpdateScheduleOutput;
 
-export interface RemoveLessonsInputDto {
-  id: string;
-  lessonsListToRemove: string[];
-}
-export interface RemoveLessonsOutputDto {
-  message: string;
-}
+export type DeleteScheduleInputDto = IDeleteScheduleInput;
+export type DeleteScheduleOutputDto = IDeleteScheduleOutput;
+
+export type AddLessonsInputDto = IAddLessonsInput;
+export type AddLessonsOutputDto = IAddLessonsOutput;
+
+export type RemoveLessonsInputDto = IRemoveLessonsInput;
+export type RemoveLessonsOutputDto = IRemoveLessonsOutput;

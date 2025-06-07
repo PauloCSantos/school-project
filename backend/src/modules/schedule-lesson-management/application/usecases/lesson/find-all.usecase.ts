@@ -5,6 +5,9 @@ import {
 } from '../../dto/lesson-usecase.dto';
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
 
+/**
+ * Use case responsible for retrieving all lessons with pagination.
+ */
 export default class FindAllLesson
   implements UseCaseInterface<FindAllLessonInputDto, FindAllLessonOutputDto>
 {
@@ -13,6 +16,10 @@ export default class FindAllLesson
   constructor(lessonRepository: LessonGateway) {
     this._lessonRepository = lessonRepository;
   }
+
+  /**
+   * Fetches all lessons using offset and quantity.
+   */
   async execute({
     offset,
     quantity,
@@ -24,7 +31,7 @@ export default class FindAllLesson
       name: lesson.name,
       duration: lesson.duration,
       teacher: lesson.teacher,
-      studentsList: lesson.studentList,
+      studentsList: lesson.studentsList,
       subject: lesson.subject,
       days: lesson.days,
       times: lesson.times,

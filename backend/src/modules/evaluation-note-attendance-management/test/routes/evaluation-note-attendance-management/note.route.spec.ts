@@ -1,122 +1,128 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import NoteController from '@/modules/evaluation-note-attendance-management/interface/controller/note.controller';
-import { NoteRoute } from '@/modules/evaluation-note-attendance-management/interface/route/note.route';
+import NoteRoute from '@/modules/evaluation-note-attendance-management/interface/route/note.route';
 
-const mockAuthUserMiddleware = jest.fn(
-  () =>
-    ({
-      handle: jest.fn((_req, _res, next) => next()),
-    }) as unknown as AuthUserMiddleware
-);
+describe('NoteRoute with ExpressAdapter', () => {
+  let http: ExpressAdapter;
+  let app: any;
+  let noteController: NoteController;
+  let middleware: AuthUserMiddleware;
 
-const mockNoteController = jest.fn(
-  () =>
-    ({
-      create: jest.fn().mockResolvedValue({
-        id: new Id().value,
-      }),
-      find: jest.fn().mockResolvedValue({
-        evaluation: new Id().value,
-        student: new Id().value,
-        note: 10,
-      }),
-      findAll: jest.fn().mockResolvedValue([
-        {
-          evaluation: new Id().value,
-          student: new Id().value,
-          note: 10,
-        },
-        {
-          evaluation: new Id().value,
-          student: new Id().value,
-          note: 10,
-        },
-      ]),
-      update: jest.fn().mockResolvedValue({
-        evaluation: new Id().value,
-        student: new Id().value,
-        note: 10,
-      }),
-      delete: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
-      }),
-    }) as unknown as NoteController
-);
+  beforeEach(() => {
+    http = new ExpressAdapter();
+    app = http.getNativeServer();
 
-describe('NoteRoute integration tests', () => {
-  const noteController = mockNoteController();
-  const authUserMiddleware = mockAuthUserMiddleware();
-  const expressHttp = new ExpressHttp();
-  const noteRoute = new NoteRoute(
-    noteController,
-    expressHttp,
-    authUserMiddleware
-  );
-  noteRoute.routes();
-  const app = expressHttp.getExpressInstance();
+    noteController = {
+      findAll: jest.fn().mockResolvedValue([{ id: new Id().value }]),
+      create: jest.fn().mockResolvedValue({ id: new Id().value }),
+      find: jest.fn().mockImplementation(({ id }) => Promise.resolve({ id })),
+      update: jest.fn().mockImplementation(({ id }) => Promise.resolve({ id })),
+      delete: jest
+        .fn()
+        .mockResolvedValue({ message: 'Operação concluída com sucesso' }),
+    } as unknown as NoteController;
 
-  describe('POST /note', () => {
-    it('should create a new note', async () => {
-      const response = await supertest(app).post('/note').send({
-        evaluation: new Id().value,
-        student: new Id().value,
-        note: 10,
-      });
+    middleware = {
+      handle: jest.fn((_req, next) => next()),
+    } as unknown as AuthUserMiddleware;
 
-      expect(response.status).toBe(201);
-      expect(noteController.create).toHaveBeenCalled();
-      expect(response.body.id).toBeDefined();
-    });
+    new NoteRoute(noteController, http, middleware).routes();
   });
 
-  describe('GET /note/:id', () => {
-    it('should find a note by ID', async () => {
-      const response = await supertest(app).get(`/note/${new Id().value}`);
-
-      expect(response.status).toBe(200);
-      expect(noteController.find).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
-      expect(response.body.evaluation).toBeDefined();
-      expect(response.body.student).toBeDefined();
-    });
-  });
-
-  describe('GET /notes', () => {
+  describe('success', () => {
     it('should find all notes', async () => {
-      const response = await supertest(app).get('/notes');
-
-      expect(response.status).toBe(200);
-      expect(noteController.findAll).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
-      expect(response.body.length).toBe(2);
-    });
-  });
-
-  describe('PATCH /note/:id', () => {
-    it('should update a note by ID', async () => {
       const response = await supertest(app)
-        .patch(`/note/${new Id().value}`)
-        .send({
-          description: 'New description',
-        });
+        .get('/notes')
+        .send({ quantity: 2, offset: 0 });
 
-      expect(response.status).toBe(200);
-      expect(noteController.update).toHaveBeenCalled();
-      expect(response.body).toBeDefined();
-      expect(response.body.evaluation).toBeDefined();
+      expect(response.statusCode).toBe(200);
+      expect(noteController.findAll).toHaveBeenCalledWith({
+        quantity: 2,
+        offset: 0,
+      });
+      expect(response.body).toEqual([{ id: expect.any(String) }]);
+    });
+
+    it('should create a new note', async () => {
+      const payload = {
+        evaluation: new Id().value,
+        student: new Id().value,
+        note: 9.5,
+      };
+      const response = await supertest(app).post('/note').send(payload);
+
+      expect(response.statusCode).toBe(201);
+      expect(noteController.create).toHaveBeenCalledWith(payload);
+      expect(response.body).toEqual({ id: expect.any(String) });
+    });
+
+    it('should find note by id', async () => {
+      const id = new Id().value;
+      const response = await supertest(app).get(`/note/${id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(noteController.find).toHaveBeenCalledWith({ id });
+      expect(response.body).toEqual({ id });
+    });
+
+    it('should update a note', async () => {
+      const id = new Id().value;
+      const payload = {
+        /* campos para update */
+      };
+      const response = await supertest(app).patch(`/note/${id}`).send(payload);
+
+      expect(response.statusCode).toBe(200);
+      expect(noteController.update).toHaveBeenCalledWith({ id, ...payload });
+      expect(response.body).toEqual({ id });
+    });
+
+    it('should delete a note by ID', async () => {
+      const id = new Id().value;
+      const response = await supertest(app).delete(`/note/${id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(noteController.delete).toHaveBeenCalledWith({ id });
+      expect(response.body).toEqual({
+        message: 'Operação concluída com sucesso',
+      });
     });
   });
 
-  describe('DELETE /note/:id', () => {
-    it('should delete a note by ID', async () => {
-      const response = await supertest(app).delete(`/note/${new Id().value}`);
+  describe('failure', () => {
+    it('should return 400 for invalid quantity or offset', async () => {
+      const response = await supertest(app).get('/notes').send({});
 
-      expect(response.status).toBe(200);
-      expect(noteController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBe('Operação concluída com sucesso');
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Quantity e/ou offset estão incorretos',
+      });
+    });
+
+    it('should return 400 for invalid id on find', async () => {
+      const response = await supertest(app).get('/note/invalid-id');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({ error: 'Id inválido' });
+    });
+
+    it('should return 400 for invalid id on update', async () => {
+      const response = await supertest(app).patch('/note/invalid-id').send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Id e/ou dados para atualização inválidos',
+      });
+    });
+
+    it('should return 400 for invalid id on delete', async () => {
+      const response = await supertest(app).delete('/note/invalid-id');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({ error: 'Id inválido' });
     });
   });
 });

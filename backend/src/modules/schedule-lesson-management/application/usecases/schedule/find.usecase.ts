@@ -5,18 +5,24 @@ import {
 } from '../../dto/schedule-usecase.dto';
 import ScheduleGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/schedule.gateway';
 
+/**
+ * Use case responsible for schedule operation.
+ */
 export default class FindSchedule
   implements
-    UseCaseInterface<FindScheduleInputDto, FindScheduleOutputDto | undefined>
+    UseCaseInterface<FindScheduleInputDto, FindScheduleOutputDto | null>
 {
   private _scheduleRepository: ScheduleGateway;
 
   constructor(scheduleRepository: ScheduleGateway) {
     this._scheduleRepository = scheduleRepository;
   }
+  /**
+   * Executes the schedule use case.
+   */
   async execute({
     id,
-  }: FindScheduleInputDto): Promise<FindScheduleOutputDto | undefined> {
+  }: FindScheduleInputDto): Promise<FindScheduleOutputDto | null> {
     const response = await this._scheduleRepository.find(id);
     if (response) {
       return {

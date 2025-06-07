@@ -52,11 +52,11 @@ export default class AuthUserController {
   /**
    * Finds an authentication user by email.
    * @param input - The input containing the email to search for
-   * @returns Promise resolving to the found user data or undefined
+   * @returns Promise resolving to the found user data or null
    */
   async find(
     input: FindAuthUserInputDto
-  ): Promise<FindAuthUserOutputDto | undefined> {
+  ): Promise<FindAuthUserOutputDto | null> {
     const response = await this.findAuthUser.execute(input);
     return response;
   }

@@ -1,7 +1,7 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
@@ -35,7 +35,7 @@ describe('Event calendar management module end to end test', () => {
       deleteEventUsecase
     );
 
-    const expressHttp = new ExpressHttp();
+    const expressHttp = new ExpressAdapter();
     const tokerService = tokenInstance();
 
     const authUserMiddlewareEvent = new AuthUserMiddleware(tokerService, [
@@ -52,7 +52,7 @@ describe('Event calendar management module end to end test', () => {
       authUserMiddlewareEvent
     );
     eventRoute.routes();
-    app = expressHttp.getExpressInstance();
+    app = expressHttp.getNativeServer();
   });
 
   describe('Event', () => {

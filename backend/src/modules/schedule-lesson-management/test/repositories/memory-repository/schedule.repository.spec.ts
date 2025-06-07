@@ -36,11 +36,11 @@ describe('MemoryScheduleRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should received an undefined', async () => {
+    it('should received an null', async () => {
       const scheduleId = new Id().value;
       const scheduleFound = await repository.find(scheduleId);
 
-      expect(scheduleFound).toBeUndefined();
+      expect(scheduleFound).toBeNull();
     });
     it('should throw an error when the Id is wrong', async () => {
       const schedule = new Schedule({

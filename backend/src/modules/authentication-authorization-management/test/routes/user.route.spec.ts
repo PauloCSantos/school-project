@@ -1,118 +1,167 @@
 import supertest from 'supertest';
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import ExpressHttp from '@/modules/@shared/infraestructure/http/express.adapter';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import AuthUserRoute from '../../interface/route/user.route';
-import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import AuthUserController from '../../interface/controller/user.controller';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 
-const mockAuthUserMiddleware = jest.fn(
-  () =>
-    ({
-      handle: jest.fn((_req, _res, next) => next()),
-    }) as unknown as AuthUserMiddleware
-);
+describe('AuthUserRoute with ExpressAdapter', () => {
+  let http: ExpressAdapter;
+  let app: any;
+  let controller: AuthUserController;
+  let middleware: AuthUserMiddleware;
 
-const mockAuthUserController = jest.fn(
-  () =>
-    ({
+  beforeEach(() => {
+    http = new ExpressAdapter();
+    app = http.getNativeServer();
+
+    controller = {
       create: jest.fn().mockResolvedValue({
-        email: 'teste1@teste.com',
-        masterId: new Id().value,
-      }),
-      find: jest.fn().mockResolvedValue({
-        email: 'teste1@teste.com',
-        masterId: new Id().value,
-        role: 'master',
-        isHashed: true,
-      }),
-      update: jest.fn().mockResolvedValue({
-        email: 'teste1@teste.com',
-        role: 'master',
-      }),
-      delete: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        email: 'user@example.com',
+        masterId: 'abc123',
       }),
       login: jest.fn().mockResolvedValue({
-        token: 'fake-jwt-token',
+        token: 'valid-token-123',
       }),
-    }) as unknown as AuthUserController
-);
+      find: jest.fn().mockResolvedValue({
+        email: 'user@example.com',
+        role: 'administrator',
+      }),
+      update: jest.fn().mockResolvedValue({
+        email: 'user@example.com',
+        updatedFields: ['password'],
+      }),
+      delete: jest.fn().mockResolvedValue({
+        message: 'Usuário user@example.com deletado com sucesso',
+      }),
+    } as unknown as AuthUserController;
 
-describe('AuthUserRoute integration tests', () => {
-  const authUserController = mockAuthUserController();
-  const authUserMiddleware = mockAuthUserMiddleware();
-  const expressHttp = new ExpressHttp();
-  const authUserRoute = new AuthUserRoute(
-    authUserController,
-    expressHttp,
-    authUserMiddleware
-  );
-  authUserRoute.routes();
-  const app = expressHttp.getExpressInstance();
+    middleware = {
+      handle: jest.fn((_request, next) => {
+        return next();
+      }),
+    } as unknown as AuthUserMiddleware;
 
-  describe('POST /register', () => {
-    it('should create a new authUser', async () => {
+    new AuthUserRoute(controller, http, middleware).routes();
+  });
+
+  describe('success', () => {
+    it('should create a user', async () => {
       const response = await supertest(app).post('/register').send({
-        email: 'teste@teste.com.br',
-        password: 'XpA2Jjd4',
-        role: 'master',
+        email: 'user@example.com',
+        password: '123456',
+        role: 'administrator',
       });
 
-      expect(response.status).toBe(201);
-      expect(authUserController.create).toHaveBeenCalled();
-      expect(response.body.email).toBeDefined();
-      expect(response.body.masterId).toBeDefined();
+      expect(response.statusCode).toBe(201);
+      expect(response.body).toEqual({
+        email: 'user@example.com',
+        masterId: 'abc123',
+      });
     });
-  });
 
-  describe('GET /authUser/:email', () => {
-    it('should find a user by email', async () => {
-      const response = await supertest(app).get('/authUser/teste@teste.com.br');
+    it('should login successfully', async () => {
+      const response = await supertest(app).post('/login').send({
+        email: 'user@example.com',
+        password: '123456',
+        role: 'administrator',
+      });
 
-      expect(response.status).toBe(200);
-      expect(authUserController.find).toHaveBeenCalled();
-      expect(response.body.email).toBe('teste1@teste.com');
-      expect(response.body.role).toBe('master');
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual({
+        token: 'valid-token-123',
+      });
     });
-  });
 
-  describe('PATCH /authUser/:email', () => {
-    it('should update user by email', async () => {
+    it('should find user', async () => {
       const response = await supertest(app)
-        .patch('/authUser/teste@teste.com.br')
+        .get('/authUser/user@example.com')
+        .set('Authorization', 'Bearer teste-token');
+      expect(response.statusCode).toBe(200);
+      expect(controller.find).toHaveBeenCalledWith({
+        email: 'user@example.com',
+      });
+      expect(response.body).toEqual({
+        email: 'user@example.com',
+        role: 'administrator',
+      });
+    });
+
+    it('should update user', async () => {
+      const response = await supertest(app)
+        .patch('/authUser/user@example.com')
         .send({
-          password: 'novaSenhaSegura123',
+          password: 'newpass',
         });
 
-      expect(response.status).toBe(200);
-      expect(authUserController.update).toHaveBeenCalled();
-      expect(response.body.role).toBe('master');
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual({
+        email: 'user@example.com',
+        updatedFields: ['password'],
+      });
     });
-  });
 
-  describe('DELETE /authUser/:email', () => {
-    it('should delete user by email', async () => {
+    it('should delete user', async () => {
       const response = await supertest(app).delete(
-        '/authUser/teste@teste.com.br'
+        '/authUser/user@example.com'
       );
 
-      expect(response.status).toBe(200);
-      expect(authUserController.delete).toHaveBeenCalled();
-      expect(response.body.message).toBe('Operação concluída com sucesso');
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual({
+        message: 'Usuário user@example.com deletado com sucesso',
+      });
     });
   });
 
-  describe('POST /login', () => {
-    it('should authenticate and return token', async () => {
-      const response = await supertest(app).post('/login').send({
-        email: 'teste@teste.com.br',
-        password: 'senha123',
-        role: 'master',
+  describe('failure', () => {
+    it('should return 400 for missing fields on register', async () => {
+      const response = await supertest(app).post('/register').send({
+        email: 'user@example.com',
       });
 
-      expect(response.status).toBe(200);
-      expect(authUserController.login).toHaveBeenCalled();
-      expect(response.body.token).toBeDefined();
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Todos os campos são obrigatórios',
+      });
+    });
+
+    it('should return 400 for invalid login', async () => {
+      const response = await supertest(app).post('/login').send({
+        email: 'invalid-email',
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Credenciais inválidas',
+      });
+    });
+
+    it('should return 400 for invalid email on find', async () => {
+      const response = await supertest(app).get('/authUser/invalid-email');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Email inválido',
+      });
+    });
+
+    it('should return 400 for invalid update input', async () => {
+      const response = await supertest(app)
+        .patch('/authUser/invalid-email')
+        .send({});
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Email e/ou dados de atualização inválidos',
+      });
+    });
+
+    it('should return 400 for invalid email on delete', async () => {
+      const response = await supertest(app).delete('/authUser/invalid-email');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toEqual({
+        error: 'Email inválido',
+      });
     });
   });
 });
