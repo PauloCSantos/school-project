@@ -1,13 +1,12 @@
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
+  HttpMiddleware,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import NoteController from '../controller/note.controller';
 import { validId } from '@/modules/@shared/utils/validations';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
-import { AuthErrorHandlerMiddleware } from '@/modules/@shared/application/middleware/authUser.middleware';
+
 import {
   CreateNoteInputDto,
   UpdateNoteInputDto,
@@ -19,50 +18,43 @@ export default class NoteRoute {
   constructor(
     private readonly noteController: NoteController,
     private readonly httpGateway: HttpServer,
-    private readonly authMiddleware: AuthUserMiddleware
+    private readonly authMiddleware: HttpMiddleware
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
-
     this.httpGateway.get(
       '/notes',
       this.findAllNotes.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.post(
       '/note',
       this.createNote.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.get(
       '/note/:id',
       this.findNote.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.patch(
       '/note/:id',
       this.updateNote.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.delete(
       '/note/:id',
       this.deleteNote.bind(this),
-      errorHandler,
       this.authMiddleware
     );
   }
 
   private async findAllNotes(
-    req: AuthHttpRequest<{}, {}, FindAllNoteInputDto, {}>
+    req: HttpRequest<{}, {}, FindAllNoteInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
@@ -80,7 +72,7 @@ export default class NoteRoute {
   }
 
   private async createNote(
-    req: AuthHttpRequest<{}, {}, CreateNoteInputDto, {}>
+    req: HttpRequest<{}, {}, CreateNoteInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -98,7 +90,7 @@ export default class NoteRoute {
   }
 
   private async findNote(
-    req: AuthHttpRequest<FindNoteInputDto, {}, {}, {}>
+    req: HttpRequest<FindNoteInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -113,7 +105,7 @@ export default class NoteRoute {
   }
 
   private async updateNote(
-    req: AuthHttpRequest<FindNoteInputDto, {}, UpdateNoteInputDto, {}>
+    req: HttpRequest<FindNoteInputDto, {}, UpdateNoteInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -132,7 +124,7 @@ export default class NoteRoute {
   }
 
   private async deleteNote(
-    req: AuthHttpRequest<FindNoteInputDto, {}, {}, {}>
+    req: HttpRequest<FindNoteInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;

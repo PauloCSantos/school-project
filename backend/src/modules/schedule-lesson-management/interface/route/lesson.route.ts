@@ -1,12 +1,10 @@
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import { LessonController } from '../controller/lesson.controller';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { validId } from '@/modules/@shared/utils/validations';
 import {
   CreateLessonInputDto,
@@ -34,78 +32,65 @@ export default class LessonRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
-
     this.httpGateway.get(
       '/lessons',
       this.findAllLessons.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.get(
       '/lesson/:id',
       this.findLesson.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/lesson',
       this.createLesson.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.patch(
       '/lesson/:id',
       this.updateLesson.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.delete(
       '/lesson/:id',
       this.deleteLesson.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/lesson/:id/student/add',
       this.addStudents.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/lesson/:id/student/remove',
       this.removeStudents.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/lesson/:id/day/add',
       this.addDay.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/lesson/:id/day/remove',
       this.removeDay.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/lesson/:id/time/add',
       this.addTime.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/lesson/:id/time/remove',
       this.removeTime.bind(this),
-      errorHandler,
       this.authMiddleware
     );
   }
 
   private async findAllLessons(
-    req: AuthHttpRequest<{}, {}, FindAllLessonInputDto, {}>
+    req: HttpRequest<{}, {}, FindAllLessonInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
@@ -123,7 +108,7 @@ export default class LessonRoute {
   }
 
   private async findLesson(
-    req: AuthHttpRequest<FindLessonInputDto, {}, {}, {}>
+    req: HttpRequest<FindLessonInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -138,7 +123,7 @@ export default class LessonRoute {
   }
 
   private async createLesson(
-    req: AuthHttpRequest<{}, {}, CreateLessonInputDto, {}>
+    req: HttpRequest<{}, {}, CreateLessonInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -156,7 +141,7 @@ export default class LessonRoute {
   }
 
   private async updateLesson(
-    req: AuthHttpRequest<FindLessonInputDto, {}, UpdateLessonInputDto, {}>
+    req: HttpRequest<FindLessonInputDto, {}, UpdateLessonInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -175,7 +160,7 @@ export default class LessonRoute {
   }
 
   private async deleteLesson(
-    req: AuthHttpRequest<DeleteLessonInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteLessonInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -190,7 +175,7 @@ export default class LessonRoute {
   }
 
   private async addStudents(
-    req: AuthHttpRequest<FindLessonInputDto, {}, AddStudentsInputDto, {}>
+    req: HttpRequest<FindLessonInputDto, {}, AddStudentsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -212,7 +197,7 @@ export default class LessonRoute {
   }
 
   private async removeStudents(
-    req: AuthHttpRequest<FindLessonInputDto, {}, RemoveStudentsInputDto, {}>
+    req: HttpRequest<FindLessonInputDto, {}, RemoveStudentsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -234,7 +219,7 @@ export default class LessonRoute {
   }
 
   private async addDay(
-    req: AuthHttpRequest<FindLessonInputDto, {}, AddDayInputDto, {}>
+    req: HttpRequest<FindLessonInputDto, {}, AddDayInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -253,7 +238,7 @@ export default class LessonRoute {
   }
 
   private async removeDay(
-    req: AuthHttpRequest<FindLessonInputDto, {}, RemoveDayInputDto, {}>
+    req: HttpRequest<FindLessonInputDto, {}, RemoveDayInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -272,7 +257,7 @@ export default class LessonRoute {
   }
 
   private async addTime(
-    req: AuthHttpRequest<FindLessonInputDto, {}, AddTimeInputDto, {}>
+    req: HttpRequest<FindLessonInputDto, {}, AddTimeInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -291,7 +276,7 @@ export default class LessonRoute {
   }
 
   private async removeTime(
-    req: AuthHttpRequest<FindLessonInputDto, {}, RemoveTimeInputDto, {}>
+    req: HttpRequest<FindLessonInputDto, {}, RemoveTimeInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;

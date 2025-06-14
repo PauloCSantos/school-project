@@ -1,12 +1,10 @@
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import { CurriculumController } from '../controller/curriculum.controller';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { validId } from '@/modules/@shared/utils/validations';
 import {
   CreateCurriculumInputDto,
@@ -30,54 +28,45 @@ export class CurriculumRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
-
     this.httpGateway.get(
       '/curriculums',
       this.findAllCurriculums.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.get(
       '/curriculum/:id',
       this.findCurriculum.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/curriculum',
       this.createCurriculum.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.patch(
       '/curriculum/:id',
       this.updateCurriculum.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.delete(
       '/curriculum/:id',
       this.deleteCurriculum.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/curriculum/subject/add',
       this.addSubjects.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/curriculum/subject/remove',
       this.removeSubjects.bind(this),
-      errorHandler,
       this.authMiddleware
     );
   }
 
   private async findAllCurriculums(
-    req: AuthHttpRequest<{}, {}, FindAllCurriculumInputDto, {}>
+    req: HttpRequest<{}, {}, FindAllCurriculumInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
@@ -98,7 +87,7 @@ export class CurriculumRoute {
   }
 
   private async findCurriculum(
-    req: AuthHttpRequest<FindCurriculumInputDto, {}, {}, {}>
+    req: HttpRequest<FindCurriculumInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -113,7 +102,7 @@ export class CurriculumRoute {
   }
 
   private async createCurriculum(
-    req: AuthHttpRequest<{}, {}, CreateCurriculumInputDto, {}>
+    req: HttpRequest<{}, {}, CreateCurriculumInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -131,12 +120,7 @@ export class CurriculumRoute {
   }
 
   private async updateCurriculum(
-    req: AuthHttpRequest<
-      FindCurriculumInputDto,
-      {},
-      UpdateCurriculumInputDto,
-      {}
-    >
+    req: HttpRequest<FindCurriculumInputDto, {}, UpdateCurriculumInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -155,7 +139,7 @@ export class CurriculumRoute {
   }
 
   private async deleteCurriculum(
-    req: AuthHttpRequest<DeleteCurriculumInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteCurriculumInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -170,7 +154,7 @@ export class CurriculumRoute {
   }
 
   private async addSubjects(
-    req: AuthHttpRequest<{}, {}, AddSubjectsInputDto, {}>
+    req: HttpRequest<{}, {}, AddSubjectsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -188,7 +172,7 @@ export class CurriculumRoute {
   }
 
   private async removeSubjects(
-    req: AuthHttpRequest<{}, {}, RemoveSubjectsInputDto, {}>
+    req: HttpRequest<{}, {}, RemoveSubjectsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;

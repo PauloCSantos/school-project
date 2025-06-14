@@ -22,7 +22,7 @@ export interface HttpController<P = any, Q = any, B = any, H = any> {
 }
 
 /**
- * Abstração de servidor HTTP para registrar rotas e middlewares.
+ * HTTP server abstraction for registering routes and middlewares.
  */
 export interface HttpServer {
   get(

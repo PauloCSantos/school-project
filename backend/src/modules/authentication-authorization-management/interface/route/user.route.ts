@@ -1,7 +1,7 @@
 import {
   HttpServer,
-  HttpRequest,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import AuthUserController from '../controller/user.controller';
 
@@ -10,10 +10,6 @@ import {
   validEmail,
   validRole,
 } from '@/modules/@shared/utils/validations';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
-import { AuthErrorHandlerMiddleware } from '@/modules/@shared/application/middleware/authUser.middleware';
 
 import {
   CreateAuthUserInputDto,
@@ -21,6 +17,7 @@ import {
   LoginAuthUserInputDto,
   UpdateAuthUserInputDto,
 } from '../../application/dto/user-usecase.dto';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 
 export default class AuthUserRoute {
   constructor(
@@ -31,25 +28,21 @@ export default class AuthUserRoute {
 
   public routes(): void {
     // instanciamos um único handler de erro para usar em todas as rotas protegidas
-    const errorHandler = new AuthErrorHandlerMiddleware();
 
     // Rotas protegidas: primeiro o errorHandler, depois o authMiddleware
     this.httpGateway.get(
       '/authUser/:email',
       this.findAuthUser.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.patch(
       '/authUser/:email',
       this.updateAuthUser.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.delete(
       '/authUser/:email',
       this.deleteAuthUser.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
@@ -81,7 +74,7 @@ export default class AuthUserRoute {
   }
 
   private async findAuthUser(
-    req: AuthHttpRequest<FindAuthUserInputDto, {}, {}, {}>
+    req: HttpRequest<FindAuthUserInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { email } = req.params;
@@ -110,7 +103,7 @@ export default class AuthUserRoute {
   }
 
   private async updateAuthUser(
-    req: AuthHttpRequest<FindAuthUserInputDto, {}, UpdateAuthUserInputDto, {}>
+    req: HttpRequest<FindAuthUserInputDto, {}, UpdateAuthUserInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { email } = req.params;
@@ -140,7 +133,7 @@ export default class AuthUserRoute {
   }
 
   private async deleteAuthUser(
-    req: AuthHttpRequest<FindAuthUserInputDto, {}, {}, {}>
+    req: HttpRequest<FindAuthUserInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { email } = req.params;

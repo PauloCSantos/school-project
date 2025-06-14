@@ -8,21 +8,21 @@ import {
 import { IncomingHttpHeaders } from 'http';
 import { RoleUsers } from '../../type/enum';
 
-export enum HttpStatus {
+enum HttpStatus {
   OK = 200,
   UNAUTHORIZED = 401,
   FORBIDDEN = 403,
   INTERNAL_SERVER_ERROR = 500,
 }
 
-export enum ErrorMessage {
+enum ErrorMessage {
   MISSING_TOKEN = 'Missing Token',
   INVALID_TOKEN = 'Invalid token',
   ACCESS_DENIED = 'User does not have access permission',
   INTERNAL_ERROR = 'Internal server error',
 }
 
-export interface TokenData {
+interface TokenData {
   email: string;
   role: RoleUsers;
   masterId: string;
@@ -96,28 +96,5 @@ export default class AuthUserMiddleware
       masterId: decoded.masterId,
     };
     return next();
-  }
-}
-
-export class AuthErrorHandlerMiddleware
-  implements HttpMiddleware<any, any, any, any>
-{
-  public async handle(
-    _request: HttpRequest<any, any, any, any>,
-    next: () => Promise<HttpResponseData>
-  ): Promise<HttpResponseData> {
-    try {
-      return await next();
-    } catch (err: any) {
-      const status =
-        typeof err.statusCode === 'number'
-          ? err.statusCode
-          : HttpStatus.INTERNAL_SERVER_ERROR;
-      const body =
-        err.body && typeof err.body === 'object'
-          ? err.body
-          : { message: ErrorMessage.INTERNAL_ERROR };
-      return { statusCode: status, body };
-    }
   }
 }

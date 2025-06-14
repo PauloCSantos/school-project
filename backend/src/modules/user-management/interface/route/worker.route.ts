@@ -2,11 +2,9 @@ import { validId } from '@/modules/@shared/utils/validations';
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { UserWorkerController } from '../controller/worker.controller';
 import {
   CreateUserWorkerInputDto,
@@ -24,46 +22,39 @@ export class UserWorkerRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
-
     this.httpGateway.get(
       '/users-worker',
       this.findAllUserWorkers.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.post(
       '/user-worker',
       this.createUserWorker.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.get(
       '/user-worker/:id',
       this.findUserWorker.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.patch(
       '/user-worker/:id',
       this.updateUserWorker.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.delete(
       '/user-worker/:id',
       this.deleteUserWorker.bind(this),
-      errorHandler,
       this.authMiddleware
     );
   }
 
   private async findAllUserWorkers(
-    req: AuthHttpRequest<{}, {}, FindAllUserWorkerInputDto, {}>
+    req: HttpRequest<{}, {}, FindAllUserWorkerInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
@@ -84,7 +75,7 @@ export class UserWorkerRoute {
   }
 
   private async findUserWorker(
-    req: AuthHttpRequest<FindUserWorkerInputDto, {}, {}, {}>
+    req: HttpRequest<FindUserWorkerInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -99,7 +90,7 @@ export class UserWorkerRoute {
   }
 
   private async createUserWorker(
-    req: AuthHttpRequest<{}, {}, CreateUserWorkerInputDto, {}>
+    req: HttpRequest<{}, {}, CreateUserWorkerInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -117,12 +108,7 @@ export class UserWorkerRoute {
   }
 
   private async updateUserWorker(
-    req: AuthHttpRequest<
-      FindUserWorkerInputDto,
-      {},
-      UpdateUserWorkerInputDto,
-      {}
-    >
+    req: HttpRequest<FindUserWorkerInputDto, {}, UpdateUserWorkerInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -144,7 +130,7 @@ export class UserWorkerRoute {
   }
 
   private async deleteUserWorker(
-    req: AuthHttpRequest<DeleteUserWorkerInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteUserWorkerInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;

@@ -91,70 +91,11 @@ export default class Id {
   }
 
   /**
-   * Returns a string representation of this ID
-   * @returns The ID value as a string
-   */
-  toString(): string {
-    return this._value;
-  }
-
-  /**
-   * Converts this ID to a primitive value for JSON serialization
-   * @returns The ID value as a string
-   */
-  toJSON(): string {
-    return this._value;
-  }
-
-  /**
-   * Computes a hash code for this ID
-   * @returns A numeric hash code
-   */
-  hashCode(): number {
-    let hash = 0;
-    for (let i = 0; i < this._value.length; i++) {
-      const char = this._value.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
-    }
-    return hash;
-  }
-
-  /**
-   * Checks if this ID is the nil/empty UUID
-   * @returns true if this ID is the nil UUID (all zeros)
-   */
-  isNil(): boolean {
-    return this._value === '00000000-0000-0000-0000-000000000000';
-  }
-
-  /**
    * Creates a new ID instance
    * @returns A new ID with a randomly generated UUID
    */
   static create(): Id {
     return new Id();
-  }
-
-  /**
-   * Creates the nil/empty UUID
-   * @returns An ID with the nil UUID value
-   */
-  static createNil(): Id {
-    return new Id('00000000-0000-0000-0000-000000000000');
-  }
-
-  /**
-   * Attempts to create an ID from a string value
-   * @param id - The string to convert to an ID
-   * @returns An ID instance if conversion was successful, null otherwise
-   */
-  static fromString(id: string): Id | null {
-    try {
-      return new Id(id);
-    } catch (error) {
-      return null;
-    }
   }
 
   /**

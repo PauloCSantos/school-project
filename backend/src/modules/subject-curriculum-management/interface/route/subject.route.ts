@@ -1,12 +1,10 @@
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import { SubjectController } from '../controller/subject.controller';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { validId } from '@/modules/@shared/utils/validations';
 import {
   CreateSubjectInputDto,
@@ -28,42 +26,35 @@ export class SubjectRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
-
     this.httpGateway.get(
       '/subjects',
       this.findAllSubjects.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.get(
       '/subject/:id',
       this.findSubject.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/subject',
       this.createSubject.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.patch(
       '/subject/:id',
       this.updateSubject.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.delete(
       '/subject/:id',
       this.deleteSubject.bind(this),
-      errorHandler,
       this.authMiddleware
     );
   }
 
   private async findAllSubjects(
-    req: AuthHttpRequest<{}, {}, FindAllSubjectInputDto, {}>
+    req: HttpRequest<{}, {}, FindAllSubjectInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
@@ -84,7 +75,7 @@ export class SubjectRoute {
   }
 
   private async findSubject(
-    req: AuthHttpRequest<FindSubjectInputDto, {}, {}, {}>
+    req: HttpRequest<FindSubjectInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -99,7 +90,7 @@ export class SubjectRoute {
   }
 
   private async createSubject(
-    req: AuthHttpRequest<{}, {}, CreateSubjectInputDto, {}>
+    req: HttpRequest<{}, {}, CreateSubjectInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -117,7 +108,7 @@ export class SubjectRoute {
   }
 
   private async updateSubject(
-    req: AuthHttpRequest<FindSubjectInputDto, {}, UpdateSubjectInputDto, {}>
+    req: HttpRequest<FindSubjectInputDto, {}, UpdateSubjectInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -136,7 +127,7 @@ export class SubjectRoute {
   }
 
   private async deleteSubject(
-    req: AuthHttpRequest<DeleteSubjectInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteSubjectInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;

@@ -1,19 +1,18 @@
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import EventController from '../controller/calendar.controller';
 import { validId } from '@/modules/@shared/utils/validations';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
-import { AuthErrorHandlerMiddleware } from '@/modules/@shared/application/middleware/authUser.middleware';
+
 import {
   CreateEventInputDto,
   UpdateEventInputDto,
   FindEventInputDto,
   FindAllEventInputDto,
 } from '../../application/dto/calendar-usecase.dto';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 
 export default class EventRoute {
   constructor(
@@ -23,46 +22,39 @@ export default class EventRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
-
     this.httpGateway.get(
       '/events',
       this.findAllEvents.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.post(
       '/event',
       this.createEvent.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.get(
       '/event/:id',
       this.findEvent.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.patch(
       '/event/:id',
       this.updateEvent.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.delete(
       '/event/:id',
       this.deleteEvent.bind(this),
-      errorHandler,
       this.authMiddleware
     );
   }
 
   private async findAllEvents(
-    req: AuthHttpRequest<{}, {}, FindAllEventInputDto, {}>
+    req: HttpRequest<{}, {}, FindAllEventInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
@@ -80,7 +72,7 @@ export default class EventRoute {
   }
 
   private async createEvent(
-    req: AuthHttpRequest<{}, {}, CreateEventInputDto, {}>
+    req: HttpRequest<{}, {}, CreateEventInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -98,7 +90,7 @@ export default class EventRoute {
   }
 
   private async findEvent(
-    req: AuthHttpRequest<FindEventInputDto, {}, {}, {}>
+    req: HttpRequest<FindEventInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -113,7 +105,7 @@ export default class EventRoute {
   }
 
   private async updateEvent(
-    req: AuthHttpRequest<FindEventInputDto, {}, UpdateEventInputDto, {}>
+    req: HttpRequest<FindEventInputDto, {}, UpdateEventInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -132,7 +124,7 @@ export default class EventRoute {
   }
 
   private async deleteEvent(
-    req: AuthHttpRequest<FindEventInputDto, {}, {}, {}>
+    req: HttpRequest<FindEventInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;

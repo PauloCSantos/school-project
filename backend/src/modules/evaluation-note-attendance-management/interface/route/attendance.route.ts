@@ -1,13 +1,11 @@
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import AttendanceController from '../controller/attendance.controller';
 import { validId } from '@/modules/@shared/utils/validations';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
-import { AuthErrorHandlerMiddleware } from '@/modules/@shared/application/middleware/authUser.middleware';
+
 import {
   CreateAttendanceInputDto,
   UpdateAttendanceInputDto,
@@ -15,6 +13,7 @@ import {
   AddStudentsInputDto,
   RemoveStudentsInputDto,
 } from '../../application/dto/attendance-usecase.dto';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 
 export default class AttendanceRoute {
   constructor(
@@ -24,60 +23,51 @@ export default class AttendanceRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
-
     this.httpGateway.get(
       '/attendances',
       this.findAllAttendances.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.post(
       '/attendance',
       this.createAttendance.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.get(
       '/attendance/:id',
       this.findAttendance.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.patch(
       '/attendance/:id',
       this.updateAttendance.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.delete(
       '/attendance/:id',
       this.deleteAttendance.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.post(
       '/attendance/add/students',
       this.addStudents.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.post(
       '/attendance/remove/students',
       this.removeStudents.bind(this),
-      errorHandler,
       this.authMiddleware
     );
   }
 
   private async findAllAttendances(
-    req: AuthHttpRequest<{}, {}, { quantity?: number; offset?: number }, {}>
+    req: HttpRequest<{}, {}, { quantity?: number; offset?: number }, {}>
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
@@ -98,7 +88,7 @@ export default class AttendanceRoute {
   }
 
   private async createAttendance(
-    req: AuthHttpRequest<{}, {}, CreateAttendanceInputDto, {}>
+    req: HttpRequest<{}, {}, CreateAttendanceInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -116,7 +106,7 @@ export default class AttendanceRoute {
   }
 
   private async findAttendance(
-    req: AuthHttpRequest<FindAttendanceInputDto, {}, {}, {}>
+    req: HttpRequest<FindAttendanceInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -131,12 +121,7 @@ export default class AttendanceRoute {
   }
 
   private async updateAttendance(
-    req: AuthHttpRequest<
-      FindAttendanceInputDto,
-      {},
-      UpdateAttendanceInputDto,
-      {}
-    >
+    req: HttpRequest<FindAttendanceInputDto, {}, UpdateAttendanceInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -155,7 +140,7 @@ export default class AttendanceRoute {
   }
 
   private async deleteAttendance(
-    req: AuthHttpRequest<FindAttendanceInputDto, {}, {}, {}>
+    req: HttpRequest<FindAttendanceInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -170,7 +155,7 @@ export default class AttendanceRoute {
   }
 
   private async addStudents(
-    req: AuthHttpRequest<{}, {}, AddStudentsInputDto, {}>
+    req: HttpRequest<{}, {}, AddStudentsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -188,7 +173,7 @@ export default class AttendanceRoute {
   }
 
   private async removeStudents(
-    req: AuthHttpRequest<{}, {}, RemoveStudentsInputDto, {}>
+    req: HttpRequest<{}, {}, RemoveStudentsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;

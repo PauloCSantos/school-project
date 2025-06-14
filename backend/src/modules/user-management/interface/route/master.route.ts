@@ -2,11 +2,9 @@ import { validId } from '@/modules/@shared/utils/validations';
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { UserMasterController } from '../controller/master.controller';
 import {
   CreateUserMasterInputDto,
@@ -22,32 +20,27 @@ export class UserMasterRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
-
     this.httpGateway.post(
       '/user-master',
       this.createUserMaster.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.get(
       '/user-master/:id',
       this.findUserMaster.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.patch(
       '/user-master/:id',
       this.updateUserMaster.bind(this),
-      errorHandler,
       this.authMiddleware
     );
   }
 
   private async createUserMaster(
-    req: AuthHttpRequest<{}, {}, CreateUserMasterInputDto, {}>
+    req: HttpRequest<{}, {}, CreateUserMasterInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -65,7 +58,7 @@ export class UserMasterRoute {
   }
 
   private async findUserMaster(
-    req: AuthHttpRequest<FindUserMasterInputDto, {}, {}, {}>
+    req: HttpRequest<FindUserMasterInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -80,12 +73,7 @@ export class UserMasterRoute {
   }
 
   private async updateUserMaster(
-    req: AuthHttpRequest<
-      FindUserMasterInputDto,
-      {},
-      UpdateUserMasterInputDto,
-      {}
-    >
+    req: HttpRequest<FindUserMasterInputDto, {}, UpdateUserMasterInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;

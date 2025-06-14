@@ -64,7 +64,6 @@ export default class TokenService {
         masterId: decoded.masterId,
       };
     } catch (error) {
-      // Token is invalid or expired
       return null;
     }
   }

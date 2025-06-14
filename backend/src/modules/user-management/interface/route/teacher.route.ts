@@ -2,11 +2,9 @@ import { validId } from '@/modules/@shared/utils/validations';
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { UserTeacherController } from '../controller/teacher.controller';
 import {
   CreateUserTeacherInputDto,
@@ -24,46 +22,39 @@ export class UserTeacherRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
-
     this.httpGateway.get(
       '/users-teacher',
       this.findAllUserTeachers.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.post(
       '/user-teacher',
       this.createUserTeacher.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.get(
       '/user-teacher/:id',
       this.findUserTeacher.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.patch(
       '/user-teacher/:id',
       this.updateUserTeacher.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.delete(
       '/user-teacher/:id',
       this.deleteUserTeacher.bind(this),
-      errorHandler,
       this.authMiddleware
     );
   }
 
   private async findAllUserTeachers(
-    req: AuthHttpRequest<{}, {}, FindAllUserTeacherInputDto, {}>
+    req: HttpRequest<{}, {}, FindAllUserTeacherInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
@@ -91,7 +82,7 @@ export class UserTeacherRoute {
   }
 
   private async createUserTeacher(
-    req: AuthHttpRequest<{}, {}, CreateUserTeacherInputDto, {}>
+    req: HttpRequest<{}, {}, CreateUserTeacherInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -137,7 +128,7 @@ export class UserTeacherRoute {
   }
 
   private async findUserTeacher(
-    req: AuthHttpRequest<FindUserTeacherInputDto, {}, {}, {}>
+    req: HttpRequest<FindUserTeacherInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -152,12 +143,7 @@ export class UserTeacherRoute {
   }
 
   private async updateUserTeacher(
-    req: AuthHttpRequest<
-      FindUserTeacherInputDto,
-      {},
-      UpdateUserTeacherInputDto,
-      {}
-    >
+    req: HttpRequest<FindUserTeacherInputDto, {}, UpdateUserTeacherInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -179,7 +165,7 @@ export class UserTeacherRoute {
   }
 
   private async deleteUserTeacher(
-    req: AuthHttpRequest<DeleteUserTeacherInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteUserTeacherInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;

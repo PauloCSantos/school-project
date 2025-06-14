@@ -1,19 +1,18 @@
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import EvaluationController from '../controller/evaluation.controller';
 import { validId } from '@/modules/@shared/utils/validations';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
-import { AuthErrorHandlerMiddleware } from '@/modules/@shared/application/middleware/authUser.middleware';
+
 import {
   CreateEvaluationInputDto,
   UpdateEvaluationInputDto,
   FindAllEvaluationInputDto,
   FindEvaluationInputDto,
 } from '../../application/dto/evaluation-usecase.dto';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 
 export default class EvaluationRoute {
   constructor(
@@ -23,46 +22,39 @@ export default class EvaluationRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
-
     this.httpGateway.get(
       '/evaluations',
       this.findAllEvaluations.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.post(
       '/evaluation',
       this.createEvaluation.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.get(
       '/evaluation/:id',
       this.findEvaluation.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.patch(
       '/evaluation/:id',
       this.updateEvaluation.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.delete(
       '/evaluation/:id',
       this.deleteEvaluation.bind(this),
-      errorHandler,
       this.authMiddleware
     );
   }
 
   private async findAllEvaluations(
-    req: AuthHttpRequest<{}, {}, FindAllEvaluationInputDto, {}>
+    req: HttpRequest<{}, {}, FindAllEvaluationInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
@@ -83,7 +75,7 @@ export default class EvaluationRoute {
   }
 
   private async createEvaluation(
-    req: AuthHttpRequest<{}, {}, CreateEvaluationInputDto, {}>
+    req: HttpRequest<{}, {}, CreateEvaluationInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -101,7 +93,7 @@ export default class EvaluationRoute {
   }
 
   private async findEvaluation(
-    req: AuthHttpRequest<FindEvaluationInputDto, {}, {}, {}>
+    req: HttpRequest<FindEvaluationInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -116,12 +108,7 @@ export default class EvaluationRoute {
   }
 
   private async updateEvaluation(
-    req: AuthHttpRequest<
-      FindEvaluationInputDto,
-      {},
-      UpdateEvaluationInputDto,
-      {}
-    >
+    req: HttpRequest<FindEvaluationInputDto, {}, UpdateEvaluationInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -140,7 +127,7 @@ export default class EvaluationRoute {
   }
 
   private async deleteEvaluation(
-    req: AuthHttpRequest<FindEvaluationInputDto, {}, {}, {}>
+    req: HttpRequest<FindEvaluationInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;

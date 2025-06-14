@@ -1,12 +1,10 @@
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import { ScheduleController } from '../controller/schedule.controller';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { validId } from '@/modules/@shared/utils/validations';
 import {
   CreateScheduleInputDto,
@@ -29,54 +27,45 @@ export default class ScheduleRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
-
     this.httpGateway.get(
       '/schedules',
       this.findAllSchedules.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/schedule',
       this.createSchedule.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.get(
       '/schedule/:id',
       this.findSchedule.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.patch(
       '/schedule/:id',
       this.updateSchedule.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.delete(
       '/schedule/:id',
       this.deleteSchedule.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/schedule/:id/lesson/add',
       this.addLessons.bind(this),
-      errorHandler,
       this.authMiddleware
     );
     this.httpGateway.post(
       '/schedule/:id/lesson/remove',
       this.removeLessons.bind(this),
-      errorHandler,
       this.authMiddleware
     );
   }
 
   private async findAllSchedules(
-    req: AuthHttpRequest<{}, {}, FindAllScheduleInputDto, {}>
+    req: HttpRequest<{}, {}, FindAllScheduleInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
@@ -97,7 +86,7 @@ export default class ScheduleRoute {
   }
 
   private async createSchedule(
-    req: AuthHttpRequest<{}, {}, CreateScheduleInputDto, {}>
+    req: HttpRequest<{}, {}, CreateScheduleInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -115,7 +104,7 @@ export default class ScheduleRoute {
   }
 
   private async findSchedule(
-    req: AuthHttpRequest<FindScheduleInputDto, {}, {}, {}>
+    req: HttpRequest<FindScheduleInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -130,7 +119,7 @@ export default class ScheduleRoute {
   }
 
   private async updateSchedule(
-    req: AuthHttpRequest<FindScheduleInputDto, {}, UpdateScheduleInputDto, {}>
+    req: HttpRequest<FindScheduleInputDto, {}, UpdateScheduleInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -149,7 +138,7 @@ export default class ScheduleRoute {
   }
 
   private async deleteSchedule(
-    req: AuthHttpRequest<DeleteScheduleInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteScheduleInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -164,7 +153,7 @@ export default class ScheduleRoute {
   }
 
   private async addLessons(
-    req: AuthHttpRequest<FindScheduleInputDto, {}, AddLessonsInputDto, {}>
+    req: HttpRequest<FindScheduleInputDto, {}, AddLessonsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -183,7 +172,7 @@ export default class ScheduleRoute {
   }
 
   private async removeLessons(
-    req: AuthHttpRequest<FindScheduleInputDto, {}, RemoveLessonsInputDto, {}>
+    req: HttpRequest<FindScheduleInputDto, {}, RemoveLessonsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;

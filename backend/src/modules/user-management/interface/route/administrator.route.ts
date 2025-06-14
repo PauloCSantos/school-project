@@ -2,11 +2,9 @@ import { validId } from '@/modules/@shared/utils/validations';
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { UserAdministratorController } from '../controller/administrator.controller';
 import {
   CreateUserAdministratorInputDto,
@@ -24,46 +22,39 @@ export class UserAdministratorRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
-
     this.httpGateway.get(
       '/users-administrator',
       this.findAllUserAdministrators.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.post(
       '/user-administrator',
       this.createUserAdministrator.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.get(
       '/user-administrator/:id',
       this.findUserAdministrator.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.patch(
       '/user-administrator/:id',
       this.updateUserAdministrator.bind(this),
-      errorHandler,
       this.authMiddleware
     );
 
     this.httpGateway.delete(
       '/user-administrator/:id',
       this.deleteUserAdministrator.bind(this),
-      errorHandler,
       this.authMiddleware
     );
   }
 
   private async findAllUserAdministrators(
-    req: AuthHttpRequest<{}, {}, FindAllUserAdministratorInputDto, {}>
+    req: HttpRequest<{}, {}, FindAllUserAdministratorInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
@@ -84,7 +75,7 @@ export class UserAdministratorRoute {
   }
 
   private async findUserAdministrator(
-    req: AuthHttpRequest<FindUserAdministratorInputDto, {}, {}, {}>
+    req: HttpRequest<FindUserAdministratorInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
@@ -99,7 +90,7 @@ export class UserAdministratorRoute {
   }
 
   private async createUserAdministrator(
-    req: AuthHttpRequest<{}, {}, CreateUserAdministratorInputDto, {}>
+    req: HttpRequest<{}, {}, CreateUserAdministratorInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
@@ -118,7 +109,7 @@ export class UserAdministratorRoute {
   }
 
   private async updateUserAdministrator(
-    req: AuthHttpRequest<
+    req: HttpRequest<
       FindUserAdministratorInputDto,
       {},
       UpdateUserAdministratorInputDto,
@@ -143,7 +134,7 @@ export class UserAdministratorRoute {
   }
 
   private async deleteUserAdministrator(
-    req: AuthHttpRequest<
+    req: HttpRequest<
       FindUserAdministratorInputDto,
       {},
       DeleteUserAdministratorInputDto,
