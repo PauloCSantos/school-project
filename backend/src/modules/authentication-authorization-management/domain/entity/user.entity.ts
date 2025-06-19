@@ -58,7 +58,6 @@ export default class AuthUser {
     input: AuthUserProps,
     authService: AuthUserService
   ): void {
-    // Check if required fields are present
     if (
       input.email === undefined ||
       input.password === undefined ||
@@ -67,12 +66,10 @@ export default class AuthUser {
       throw new Error('All fields are mandatory');
     }
 
-    // Validate service type
     if (!(authService instanceof AuthUserService)) {
       throw new Error('authservice type is incorrect');
     }
 
-    // Validate field values
     if (!this.validateEmail(input.email)) {
       throw new Error('Field email is not valid');
     }
@@ -85,17 +82,14 @@ export default class AuthUser {
       throw new Error('Field role is not valid');
     }
 
-    // Validate masterId if provided
     if (input.masterId && !validId(input.masterId)) {
       throw new Error('Field masterId is not valid');
     }
 
-    // Check masterId requirement for non-master roles
     if (input.role !== 'master' && input.masterId === undefined) {
       throw new Error('The masterId field is mandatory for regular users');
     }
 
-    // Validate isHashed if provided
     if (input.isHashed !== undefined && typeof input.isHashed !== 'boolean') {
       throw new Error('The field isHashed must be a boolean');
     }

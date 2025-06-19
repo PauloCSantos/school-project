@@ -14,7 +14,6 @@ export default class FindAuthUser
   implements
     UseCaseInterface<FindAuthUserInputDto, FindAuthUserOutputDto | null>
 {
-  /** Repository for persisting and retrieving authenticated users */
   private readonly _authUserRepository: AuthUserGateway;
 
   /**

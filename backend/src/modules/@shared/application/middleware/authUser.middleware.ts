@@ -5,11 +5,9 @@ import {
   HttpResponseData,
   HttpMiddleware,
 } from '../../infraestructure/http/http.interface';
-import { IncomingHttpHeaders } from 'http';
 import { RoleUsers } from '../../type/enum';
 
 enum HttpStatus {
-  OK = 200,
   UNAUTHORIZED = 401,
   FORBIDDEN = 403,
   INTERNAL_SERVER_ERROR = 500,
@@ -20,21 +18,6 @@ enum ErrorMessage {
   INVALID_TOKEN = 'Invalid token',
   ACCESS_DENIED = 'User does not have access permission',
   INTERNAL_ERROR = 'Internal server error',
-}
-
-interface TokenData {
-  email: string;
-  role: RoleUsers;
-  masterId: string;
-}
-
-export interface AuthHttpRequest<
-  P = any,
-  Q = any,
-  B = any,
-  H = IncomingHttpHeaders,
-> extends HttpRequest<P, Q, B, H> {
-  tokenData?: TokenData;
 }
 
 export default class AuthUserMiddleware
@@ -49,7 +32,7 @@ export default class AuthUserMiddleware
     request: HttpRequest<any, any, any, any>,
     next: () => Promise<HttpResponseData>
   ): Promise<HttpResponseData> {
-    const req = request as AuthHttpRequest;
+    const req = request as HttpRequest;
     const authHeader = req.headers?.authorization;
 
     if (!authHeader || !isNotEmpty(authHeader)) {

@@ -11,8 +11,6 @@ import {
   ILoginAuthUserOutput,
 } from './base-user.dto';
 
-// Facade DTOs - utilizando as interfaces base
-
 export type FindAuthUserInputDto = IFindAuthUserInput;
 export type FindAuthUserOutputDto = IFindAuthUserOutput;
 

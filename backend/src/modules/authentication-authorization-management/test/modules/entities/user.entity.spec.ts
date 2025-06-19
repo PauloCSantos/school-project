@@ -1,6 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
 import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import { RoleUsers } from '@/modules/@shared/type/enum';
 
 describe('AuthUser unit test', () => {
   const authUserService = new AuthUserService();

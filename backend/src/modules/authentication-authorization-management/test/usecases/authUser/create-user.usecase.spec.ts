@@ -5,6 +5,7 @@ import AuthUserService from '@/modules/authentication-authorization-management/a
 import { CreateAuthUserInputDto } from '@/modules/authentication-authorization-management/application/dto/user-usecase.dto';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
 import { ICreateAuthUserOutput } from '@/modules/authentication-authorization-management/application/dto/base-user.dto';
+import { RoleUsers } from '@/modules/@shared/type/enum';
 
 const MockRepository = (): jest.Mocked<AuthUserGateway> => {
   return {

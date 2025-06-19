@@ -1,6 +1,5 @@
 import { RoleUsers } from '@/modules/@shared/type/enum';
 
-// Interfaces base para Find
 export interface IFindAuthUserInput {
   email: string;
 }
@@ -12,7 +11,6 @@ export interface IFindAuthUserOutput {
   isHashed: boolean;
 }
 
-// Interfaces base para Create
 export interface ICreateAuthUserInput {
   email: string;
   password: string;
@@ -26,7 +24,6 @@ export interface ICreateAuthUserOutput {
   masterId: string;
 }
 
-// Interfaces base para Update
 export interface IUpdateAuthUserInput {
   email: string;
   authUserDataToUpdate: {
@@ -41,7 +38,6 @@ export interface IUpdateAuthUserOutput {
   role: RoleUsers;
 }
 
-// Interfaces base para Delete
 export interface IDeleteAuthUserInput {
   email: string;
 }
@@ -50,7 +46,6 @@ export interface IDeleteAuthUserOutput {
   message: string;
 }
 
-// Interfaces base para Login
 export interface ILoginAuthUserInput {
   email: string;
   password: string;

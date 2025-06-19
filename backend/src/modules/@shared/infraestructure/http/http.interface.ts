@@ -1,13 +1,22 @@
+import { RoleUsers } from '../../type/enum';
+
 export interface HttpRequest<P = any, Q = any, B = any, H = any> {
   params: P;
   query: Q;
   body: B;
   headers: H;
+  tokenData?: TokenData;
 }
 
 export interface HttpResponseData {
   statusCode: number;
   body: any;
+}
+
+interface TokenData {
+  email: string;
+  role: RoleUsers;
+  masterId: string;
 }
 
 export interface HttpMiddleware<P = any, Q = any, B = any, H = any> {

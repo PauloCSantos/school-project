@@ -3,6 +3,7 @@ import UpdateAuthUser from '@/modules/authentication-authorization-management/ap
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
 import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import { RoleUsers } from '@/modules/@shared/type/enum';
 
 const MockRepository = (): jest.Mocked<AuthUserGateway> => {
   return {
@@ -46,7 +47,7 @@ describe('UpdateAuthUser usecase unit test', () => {
       email: 'teste@teste.com.br',
       password: 'XpA2Jjd4',
       masterId: new Id().value,
-      role: 'master' as RoleUsers,
+      role: 'master',
       isHashed: false,
     };
 

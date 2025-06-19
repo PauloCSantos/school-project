@@ -27,9 +27,6 @@ export default class AuthUserRoute {
   ) {}
 
   public routes(): void {
-    // instanciamos um único handler de erro para usar em todas as rotas protegidas
-
-    // Rotas protegidas: primeiro o errorHandler, depois o authMiddleware
     this.httpGateway.get(
       '/authUser/:email',
       this.findAuthUser.bind(this),
@@ -46,7 +43,6 @@ export default class AuthUserRoute {
       this.authMiddleware
     );
 
-    // Rotas públicas
     this.httpGateway.post('/register', this.createAuthUser.bind(this));
     this.httpGateway.post('/login', this.loginAuthUser.bind(this));
   }
@@ -117,9 +113,6 @@ export default class AuthUserRoute {
           body: { error: 'Email e/ou dados de atualização inválidos' },
         };
       }
-
-      // Exemplo de uso de req.tokenData:
-      // if (req.tokenData.masterId !== email) { ... }
 
       const updateData = { ...input, email };
       const response = await this.authUserController.update(updateData);
@@ -193,7 +186,6 @@ export default class AuthUserRoute {
     };
   }
 
-  // Métodos de validação simplificados inline...
   private validateCreate(input: CreateAuthUserInputDto): boolean {
     return (
       input.email !== undefined &&

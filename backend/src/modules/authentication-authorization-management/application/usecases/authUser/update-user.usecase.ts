@@ -15,10 +15,7 @@ import AuthUserService from '@/modules/authentication-authorization-management/a
 export default class UpdateAuthUser
   implements UseCaseInterface<UpdateAuthUserInputDto, UpdateAuthUserOutputDto>
 {
-  /** Repository for persisting and retrieving authenticated users */
   private readonly _authUserRepository: AuthUserGateway;
-
-  /** Domain service containing business rules for the user entity */
   private readonly _authUserService: AuthUserService;
 
   /**

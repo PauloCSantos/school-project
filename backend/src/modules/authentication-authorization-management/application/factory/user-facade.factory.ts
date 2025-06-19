@@ -1,4 +1,4 @@
-import MemoryAuthUserRepository from '../../infrastructure/repositories/user.repository';
+import MemoryAuthUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
 import AuthUserFacade from '../facade/facade/user.facade';
 import CreateAuthUser from '../usecases/authUser/create-user.usecase';
 import DeleteAuthUser from '../usecases/authUser/delete-user.usecase';
@@ -18,13 +18,10 @@ export default class AuthUserFacadeFactory {
    * @returns Fully configured AuthUserFacade instance
    */
   static create(): AuthUserFacade {
-    // Currently using memory repository only
-    // Future implementation will use environment variables to determine repository type
     const repository = new MemoryAuthUserRepository();
     const authUserService = new AuthUserService();
     const tokenService = new TokenService('PxHf3H7');
 
-    // Create all required use cases
     const createAuthUser = new CreateAuthUser(repository, authUserService);
     const deleteAuthUser = new DeleteAuthUser(repository);
     const findAuthUser = new FindAuthUser(repository);
@@ -35,7 +32,6 @@ export default class AuthUserFacadeFactory {
       tokenService
     );
 
-    // Instantiate and return the facade with all required use cases
     const facade = new AuthUserFacade({
       createAuthUser,
       deleteAuthUser,

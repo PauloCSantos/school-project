@@ -16,10 +16,7 @@ import AuthUser from '@/modules/authentication-authorization-management/domain/e
 export default class CreateAuthUser
   implements UseCaseInterface<CreateAuthUserInputDto, CreateAuthUserOutputDto>
 {
-  /** Repository for persisting and retrieving authenticated users */
   private readonly _authUserRepository: AuthUserGateway;
-
-  /** Domain service containing business rules for the user entity */
   private readonly _authUserService: AuthUserService;
 
   /**
