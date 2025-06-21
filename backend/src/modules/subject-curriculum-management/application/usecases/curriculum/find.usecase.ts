@@ -7,10 +7,7 @@ import CurriculumGateway from '@/modules/subject-curriculum-management/infrastru
 
 export default class FindCurriculum
   implements
-    UseCaseInterface<
-      FindCurriculumInputDto,
-      FindCurriculumOutputDto | undefined
-    >
+    UseCaseInterface<FindCurriculumInputDto, FindCurriculumOutputDto | null>
 {
   private _curriculumRepository: CurriculumGateway;
 
@@ -19,7 +16,7 @@ export default class FindCurriculum
   }
   async execute({
     id,
-  }: FindCurriculumInputDto): Promise<FindCurriculumOutputDto | undefined> {
+  }: FindCurriculumInputDto): Promise<FindCurriculumOutputDto | null> {
     const response = await this._curriculumRepository.find(id);
     if (response) {
       return {

@@ -5,7 +5,6 @@ import {
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import { LessonController } from '../controller/lesson.controller';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import { validId } from '@/modules/@shared/utils/validations';
 import {
   CreateLessonInputDto,
   FindAllLessonInputDto,
@@ -19,6 +18,11 @@ import {
   AddTimeInputDto,
   RemoveTimeInputDto,
 } from '../../application/dto/lesson-usecase.dto';
+import {
+  FunctionCalled,
+  createRequestMiddleware,
+} from '@/modules/@shared/application/middleware/request.middleware';
+import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
 
 /**
  * Route handler for lesson management endpoints.
@@ -32,61 +36,82 @@ export default class LessonRoute {
   ) {}
 
   public routes(): void {
-    this.httpGateway.get(
-      '/lessons',
-      this.findAllLessons.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.get(
-      '/lesson/:id',
-      this.findLesson.bind(this),
-      this.authMiddleware
-    );
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS = [
+      'name',
+      'duration',
+      'teacher',
+      'studentsList',
+      'subject',
+      'days',
+      'times',
+      'semester',
+    ];
+    const REQUIRED_FIELD = ['id'];
+    const REQUIRED_FIELDS_ADD_STUDENT = ['id', 'newStudentsList'];
+    const REQUIRED_FIELDS_REMOVE_STUDENT = ['id', 'studentsListToRemove'];
+    const REQUIRED_FIELDS_ADD_DAY = ['id', 'newDaysList'];
+    const REQUIRED_FIELDS_REMOVE_DAY = ['id', 'daysListToRemove'];
+    const REQUIRED_FIELDS_ADD_TIME = ['id', 'newTimesList'];
+    const REQUIRED_FIELDS_REMOVE_TIME = ['id', 'timesListToRemove'];
+
+    this.httpGateway.get('/lessons', this.findAllLessons.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+    ]);
+    this.httpGateway.get('/lesson/:id', this.findLesson.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+    ]);
+    this.httpGateway.post('/lesson', this.createLesson.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+    ]);
+    this.httpGateway.patch('/lesson', this.updateLesson.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELD),
+    ]);
+    this.httpGateway.delete('/lesson/:id', this.deleteLesson.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+    ]);
+    this.httpGateway.post('/lesson/student/add', this.addStudents.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.ADD, REQUIRED_FIELDS_ADD_STUDENT),
+    ]);
     this.httpGateway.post(
-      '/lesson',
-      this.createLesson.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.patch(
-      '/lesson/:id',
-      this.updateLesson.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.delete(
-      '/lesson/:id',
-      this.deleteLesson.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.post(
-      '/lesson/:id/student/add',
-      this.addStudents.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.post(
-      '/lesson/:id/student/remove',
+      '/lesson/student/remove',
       this.removeStudents.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(
+          FunctionCalled.REMOVE,
+          REQUIRED_FIELDS_REMOVE_STUDENT
+        ),
+      ]
     );
-    this.httpGateway.post(
-      '/lesson/:id/day/add',
-      this.addDay.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.post(
-      '/lesson/:id/day/remove',
-      this.removeDay.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.post(
-      '/lesson/:id/time/add',
-      this.addTime.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.post(
-      '/lesson/:id/time/remove',
-      this.removeTime.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.post('/lesson/day/add', this.addDay.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.ADD, REQUIRED_FIELDS_ADD_DAY),
+    ]);
+    this.httpGateway.post('/lesson/day/remove', this.removeDay.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(
+        FunctionCalled.REMOVE,
+        REQUIRED_FIELDS_REMOVE_DAY
+      ),
+    ]);
+    this.httpGateway.post('/lesson/time/add', this.addTime.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.ADD, REQUIRED_FIELDS_ADD_TIME),
+    ]);
+    this.httpGateway.post('/lesson/time/remove', this.removeTime.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(
+        FunctionCalled.REMOVE,
+        REQUIRED_FIELDS_REMOVE_TIME
+      ),
+    ]);
   }
 
   private async findAllLessons(
@@ -94,14 +119,8 @@ export default class LessonRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset incorretos' },
-        };
-      }
       const lessons = await this.lessonController.findAll({ quantity, offset });
-      return { statusCode: 200, body: lessons };
+      return { statusCode: StatusCodeEnum.OK, body: lessons };
     } catch (error) {
       return this.handleError(error);
     }
@@ -112,11 +131,14 @@ export default class LessonRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
       const lesson = await this.lessonController.find({ id });
-      return { statusCode: 200, body: lesson };
+      if (!lesson) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
+      }
+      return { statusCode: StatusCodeEnum.OK, body: lesson };
     } catch (error) {
       return this.handleError(error);
     }
@@ -127,33 +149,20 @@ export default class LessonRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação de aula' },
-        };
-      }
       const lesson = await this.lessonController.create(input);
-      return { statusCode: 201, body: lesson };
+      return { statusCode: StatusCodeEnum.CREATED, body: lesson };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateLesson(
-    req: HttpRequest<FindLessonInputDto, {}, UpdateLessonInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateLessonInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const response = await this.lessonController.update({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.lessonController.update(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -164,131 +173,80 @@ export default class LessonRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
       const response = await this.lessonController.delete({ id });
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async addStudents(
-    req: HttpRequest<FindLessonInputDto, {}, AddStudentsInputDto, {}>
+    req: HttpRequest<{}, {}, AddStudentsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id) || !this.validateStudents(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para adicionar alunos inválidos' },
-        };
-      }
-      const response = await this.lessonController.addStudents({
-        ...input,
-        id,
-      });
-      return { statusCode: 200, body: response };
+      const response = await this.lessonController.addStudents(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async removeStudents(
-    req: HttpRequest<FindLessonInputDto, {}, RemoveStudentsInputDto, {}>
+    req: HttpRequest<{}, {}, RemoveStudentsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id) || !this.validateStudents(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para remover alunos inválidos' },
-        };
-      }
-      const response = await this.lessonController.removeStudents({
-        ...input,
-        id,
-      });
-      return { statusCode: 200, body: response };
+      const response = await this.lessonController.removeStudents(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async addDay(
-    req: HttpRequest<FindLessonInputDto, {}, AddDayInputDto, {}>
+    req: HttpRequest<{}, {}, AddDayInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id) || !this.validateDay(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para adicionar dia inválidos' },
-        };
-      }
-      const response = await this.lessonController.addDay({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.lessonController.addDay(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async removeDay(
-    req: HttpRequest<FindLessonInputDto, {}, RemoveDayInputDto, {}>
+    req: HttpRequest<{}, {}, RemoveDayInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id) || !this.validateDay(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para remover dia inválidos' },
-        };
-      }
-      const response = await this.lessonController.removeDay({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.lessonController.removeDay(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async addTime(
-    req: HttpRequest<FindLessonInputDto, {}, AddTimeInputDto, {}>
+    req: HttpRequest<{}, {}, AddTimeInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id) || !this.validateTime(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para adicionar tempo inválidos' },
-        };
-      }
-      const response = await this.lessonController.addTime({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.lessonController.addTime(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async removeTime(
-    req: HttpRequest<FindLessonInputDto, {}, RemoveTimeInputDto, {}>
+    req: HttpRequest<{}, {}, RemoveTimeInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id) || !this.validateTime(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para remover tempo inválidos' },
-        };
-      }
-      const response = await this.lessonController.removeTime({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.lessonController.removeTime(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -299,93 +257,5 @@ export default class LessonRoute {
       return { statusCode, body: { error: error.message } };
     }
     return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    if (quantity === undefined || offset === undefined) {
-      return true;
-    }
-    return Number.isInteger(quantity) && Number.isInteger(offset);
-  }
-
-  private validateCreate(input: CreateLessonInputDto): boolean {
-    if (
-      !input.name ||
-      typeof input.name !== 'string' ||
-      !input.duration ||
-      typeof input.duration !== 'number' ||
-      !input.teacher ||
-      typeof input.teacher !== 'string' ||
-      !Array.isArray(input.studentsList) ||
-      !input.subject ||
-      typeof input.subject !== 'string' ||
-      !Array.isArray(input.days) ||
-      !Array.isArray(input.times) ||
-      (input.semester !== 1 && input.semester !== 2)
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  private validateStudents(
-    input: AddStudentsInputDto | RemoveStudentsInputDto
-  ): boolean {
-    if (!input.id) {
-      return false;
-    }
-
-    if ('newStudentsList' in input) {
-      return (
-        Array.isArray(input.newStudentsList) && input.newStudentsList.length > 0
-      );
-    }
-
-    if ('studentsListToRemove' in input) {
-      return (
-        Array.isArray(input.studentsListToRemove) &&
-        input.studentsListToRemove.length > 0
-      );
-    }
-
-    return false;
-  }
-
-  private validateDay(input: AddDayInputDto | RemoveDayInputDto): boolean {
-    if (!input.id) {
-      return false;
-    }
-
-    if ('newDaysList' in input) {
-      return Array.isArray(input.newDaysList) && input.newDaysList.length > 0;
-    }
-
-    if ('daysListToRemove' in input) {
-      return (
-        Array.isArray(input.daysListToRemove) &&
-        input.daysListToRemove.length > 0
-      );
-    }
-
-    return false;
-  }
-
-  private validateTime(input: AddTimeInputDto | RemoveTimeInputDto): boolean {
-    if (!input.id) {
-      return false;
-    }
-
-    if ('newTimesList' in input) {
-      return Array.isArray(input.newTimesList) && input.newTimesList.length > 0;
-    }
-
-    if ('timesListToRemove' in input) {
-      return (
-        Array.isArray(input.timesListToRemove) &&
-        input.timesListToRemove.length > 0
-      );
-    }
-
-    return false;
   }
 }

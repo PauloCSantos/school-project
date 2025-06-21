@@ -7,10 +7,7 @@ import UserStudentGateway from '@/modules/user-management/infrastructure/gateway
 
 export default class FindUserStudent
   implements
-    UseCaseInterface<
-      FindUserStudentInputDto,
-      FindUserStudentOutputDto | undefined
-    >
+    UseCaseInterface<FindUserStudentInputDto, FindUserStudentOutputDto | null>
 {
   private _userStudentRepository: UserStudentGateway;
 
@@ -19,7 +16,7 @@ export default class FindUserStudent
   }
   async execute({
     id,
-  }: FindUserStudentInputDto): Promise<FindUserStudentOutputDto | undefined> {
+  }: FindUserStudentInputDto): Promise<FindUserStudentOutputDto | null> {
     const response = await this._userStudentRepository.find(id);
     if (response) {
       return {

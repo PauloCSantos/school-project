@@ -7,10 +7,7 @@ import UserTeacherGateway from '@/modules/user-management/infrastructure/gateway
 
 export default class FindUserTeacher
   implements
-    UseCaseInterface<
-      FindUserTeacherInputDto,
-      FindUserTeacherOutputDto | undefined
-    >
+    UseCaseInterface<FindUserTeacherInputDto, FindUserTeacherOutputDto | null>
 {
   private _userTeacherRepository: UserTeacherGateway;
 
@@ -19,7 +16,7 @@ export default class FindUserTeacher
   }
   async execute({
     id,
-  }: FindUserTeacherInputDto): Promise<FindUserTeacherOutputDto | undefined> {
+  }: FindUserTeacherInputDto): Promise<FindUserTeacherOutputDto | null> {
     const response = await this._userTeacherRepository.find(id);
     if (response) {
       return {

@@ -33,7 +33,7 @@ export class UserTeacherController {
   }
   async find(
     input: FindUserTeacherInputDto
-  ): Promise<FindUserTeacherOutputDto | undefined> {
+  ): Promise<FindUserTeacherOutputDto | null> {
     const response = await this.findUserTeacher.execute(input);
     return response;
   }

@@ -5,7 +5,6 @@ import {
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import { CurriculumController } from '../controller/curriculum.controller';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import { validId } from '@/modules/@shared/utils/validations';
 import {
   CreateCurriculumInputDto,
   FindAllCurriculumInputDto,
@@ -15,6 +14,11 @@ import {
   AddSubjectsInputDto,
   RemoveSubjectsInputDto,
 } from '../../application/dto/curriculum-usecase.dto';
+import {
+  FunctionCalled,
+  createRequestMiddleware,
+} from '@/modules/@shared/application/middleware/request.middleware';
+import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
 
 /**
  * Route handler for curriculum management endpoints.
@@ -28,40 +32,51 @@ export class CurriculumRoute {
   ) {}
 
   public routes(): void {
-    this.httpGateway.get(
-      '/curriculums',
-      this.findAllCurriculums.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.get(
-      '/curriculum/:id',
-      this.findCurriculum.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.post(
-      '/curriculum',
-      this.createCurriculum.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.patch(
-      '/curriculum/:id',
-      this.updateCurriculum.bind(this),
-      this.authMiddleware
-    );
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS_ADD = ['id', 'newSubjectsList'];
+    const REQUIRED_FIELDS_REMOVE = ['id', 'subjectsListToRemove'];
+    const REQUIRED_FIELDS = ['name', 'subjectsList', 'yearsToComplete'];
+    const REQUIRED_FIELD = ['id'];
+
+    this.httpGateway.get('/curriculums', this.findAllCurriculums.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+    ]);
+    this.httpGateway.get('/curriculum/:id', this.findCurriculum.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+    ]);
+    this.httpGateway.post('/curriculum', this.createCurriculum.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+    ]);
+    this.httpGateway.patch('/curriculum', this.updateCurriculum.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELD),
+    ]);
     this.httpGateway.delete(
       '/curriculum/:id',
       this.deleteCurriculum.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+      ]
     );
     this.httpGateway.post(
       '/curriculum/subject/add',
       this.addSubjects.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalled.ADD, REQUIRED_FIELDS_ADD),
+      ]
     );
     this.httpGateway.post(
       '/curriculum/subject/remove',
       this.removeSubjects.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalled.REMOVE, REQUIRED_FIELDS_REMOVE),
+      ]
     );
   }
 
@@ -70,17 +85,11 @@ export class CurriculumRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset incorretos' },
-        };
-      }
-      const curriculums = await this.curriculumController.findAll({
+      const response = await this.curriculumController.findAll({
         quantity,
         offset,
       });
-      return { statusCode: 200, body: curriculums };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -91,11 +100,14 @@ export class CurriculumRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
+      const response = await this.curriculumController.find({ id });
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
       }
-      const curriculum = await this.curriculumController.find({ id });
-      return { statusCode: 200, body: curriculum };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -106,33 +118,20 @@ export class CurriculumRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação de currículo' },
-        };
-      }
-      const curriculum = await this.curriculumController.create(input);
-      return { statusCode: 201, body: curriculum };
+      const response = await this.curriculumController.create(input);
+      return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateCurriculum(
-    req: HttpRequest<FindCurriculumInputDto, {}, UpdateCurriculumInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateCurriculumInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const response = await this.curriculumController.update({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.curriculumController.update(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -143,11 +142,8 @@ export class CurriculumRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
       const response = await this.curriculumController.delete({ id });
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -158,14 +154,8 @@ export class CurriculumRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateSubjects(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para adicionar matérias inválidos' },
-        };
-      }
       const response = await this.curriculumController.addSubjects(input);
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -176,14 +166,8 @@ export class CurriculumRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateSubjects(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para remover matérias inválidos' },
-        };
-      }
       const response = await this.curriculumController.removeSubjects(input);
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -194,49 +178,5 @@ export class CurriculumRoute {
       return { statusCode, body: { error: error.message } };
     }
     return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    if (quantity === undefined || offset === undefined) {
-      return true;
-    }
-    return Number.isInteger(quantity) && Number.isInteger(offset);
-  }
-
-  private validateCreate(input: CreateCurriculumInputDto): boolean {
-    if (
-      !input.name ||
-      typeof input.name !== 'string' ||
-      !Array.isArray(input.subjectsList) ||
-      !input.yearsToComplete ||
-      typeof input.yearsToComplete !== 'number' ||
-      input.yearsToComplete <= 0
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  private validateSubjects(
-    input: AddSubjectsInputDto | RemoveSubjectsInputDto
-  ): boolean {
-    if (!input.id || !validId(input.id)) {
-      return false;
-    }
-
-    if ('newSubjectsList' in input) {
-      return (
-        Array.isArray(input.newSubjectsList) && input.newSubjectsList.length > 0
-      );
-    }
-
-    if ('subjectsListToRemove' in input) {
-      return (
-        Array.isArray(input.subjectsListToRemove) &&
-        input.subjectsListToRemove.length > 0
-      );
-    }
-
-    return false;
   }
 }

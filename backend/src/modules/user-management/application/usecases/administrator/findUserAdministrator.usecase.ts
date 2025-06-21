@@ -9,7 +9,7 @@ export default class FindUserAdministrator
   implements
     UseCaseInterface<
       FindUserAdministratorInputDto,
-      FindUserAdministratorOutputDto | undefined
+      FindUserAdministratorOutputDto | null
     >
 {
   private _userAdministratorRepository: UserAdministratorGateway;
@@ -19,9 +19,7 @@ export default class FindUserAdministrator
   }
   async execute({
     id,
-  }: FindUserAdministratorInputDto): Promise<
-    FindUserAdministratorOutputDto | undefined
-  > {
+  }: FindUserAdministratorInputDto): Promise<FindUserAdministratorOutputDto | null> {
     const response = await this._userAdministratorRepository.find(id);
     if (response) {
       return {

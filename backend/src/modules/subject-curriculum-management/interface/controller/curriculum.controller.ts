@@ -41,7 +41,7 @@ export class CurriculumController {
   }
   async find(
     input: FindCurriculumInputDto
-  ): Promise<FindCurriculumOutputDto | undefined> {
+  ): Promise<FindCurriculumOutputDto | null> {
     const response = await this.findCurriculum.execute(input);
     return response;
   }

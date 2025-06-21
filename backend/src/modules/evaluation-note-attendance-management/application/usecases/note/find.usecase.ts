@@ -11,7 +11,7 @@ import NoteGateway from '@/modules/evaluation-note-attendance-management/infrast
  * Retrieves note information from the repository and maps it to the appropriate output format.
  */
 export default class FindNote
-  implements UseCaseInterface<FindNoteInputDto, FindNoteOutputDto | undefined>
+  implements UseCaseInterface<FindNoteInputDto, FindNoteOutputDto | null>
 {
   /** Repository for persisting and retrieving notes */
   private readonly _noteRepository: NoteGateway;
@@ -29,11 +29,9 @@ export default class FindNote
    * Executes the search for a note by id.
    *
    * @param input - Input data containing the id to search for
-   * @returns Note data if found, undefined otherwise
+   * @returns Note data if found, null otherwise
    */
-  async execute({
-    id,
-  }: FindNoteInputDto): Promise<FindNoteOutputDto | undefined> {
+  async execute({ id }: FindNoteInputDto): Promise<FindNoteOutputDto | null> {
     const response = await this._noteRepository.find(id);
 
     if (response) {
@@ -45,6 +43,6 @@ export default class FindNote
       };
     }
 
-    return undefined;
+    return null;
   }
 }

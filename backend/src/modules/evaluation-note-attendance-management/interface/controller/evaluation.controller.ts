@@ -52,11 +52,11 @@ export default class EvaluationController {
   /**
    * Finds an evaluation by id.
    * @param input - The input containing the id to search for
-   * @returns Promise resolving to the found evaluation data or undefined
+   * @returns Promise resolving to the found evaluation data or null
    */
   async find(
     input: FindEvaluationInputDto
-  ): Promise<FindEvaluationOutputDto | undefined> {
+  ): Promise<FindEvaluationOutputDto | null> {
     const response = await this.findEvaluation.execute(input);
     return response;
   }

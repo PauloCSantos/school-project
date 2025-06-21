@@ -1,4 +1,3 @@
-import { validId } from '@/modules/@shared/utils/validations';
 import {
   HttpServer,
   HttpResponseData,
@@ -11,6 +10,11 @@ import {
   FindUserMasterInputDto,
   UpdateUserMasterInputDto,
 } from '../../application/dto/master-usecase.dto';
+import {
+  FunctionCalled,
+  createRequestMiddleware,
+} from '@/modules/@shared/application/middleware/request.middleware';
+import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
 
 export class UserMasterRoute {
   constructor(
@@ -20,23 +24,23 @@ export class UserMasterRoute {
   ) {}
 
   public routes(): void {
-    this.httpGateway.post(
-      '/user-master',
-      this.createUserMaster.bind(this),
-      this.authMiddleware
-    );
+    const REQUIRED_FIELDS = ['name', 'address', 'email', 'birthday', 'cnpj'];
+    const REQUIRED_FIELD = ['id'];
 
-    this.httpGateway.get(
-      '/user-master/:id',
-      this.findUserMaster.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.post('/user-master', this.createUserMaster.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+    ]);
 
-    this.httpGateway.patch(
-      '/user-master/:id',
-      this.updateUserMaster.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.get('/user-master/:id', this.findUserMaster.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+    ]);
+
+    this.httpGateway.patch('/user-master', this.updateUserMaster.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+    ]);
   }
 
   private async createUserMaster(
@@ -44,14 +48,8 @@ export class UserMasterRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação do master' },
-        };
-      }
-      const newMaster = await this.userMasterController.create(input);
-      return { statusCode: 201, body: newMaster };
+      const reponse = await this.userMasterController.create(input);
+      return { statusCode: StatusCodeEnum.CREATED, body: reponse };
     } catch (error) {
       return this.handleError(error);
     }
@@ -62,61 +60,29 @@ export class UserMasterRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!this.validFind(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
+      const response = await this.userMasterController.find({ id });
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
       }
-      const master = await this.userMasterController.find({ id });
-      return { statusCode: 200, body: master };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateUserMaster(
-    req: HttpRequest<FindUserMasterInputDto, {}, UpdateUserMasterInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateUserMasterInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!this.validUpdate(id, input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const updatedMaster = await this.userMasterController.update({
-        ...input,
-        id,
-      });
-      return { statusCode: 200, body: updatedMaster };
+      const response = await this.userMasterController.update(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validateCreate(input: CreateUserMasterInputDto): boolean {
-    return (
-      input.name.firstName !== undefined &&
-      input.name.lastName !== undefined &&
-      input.address.street !== undefined &&
-      input.address.city !== undefined &&
-      input.address.zip !== undefined &&
-      input.address.number !== undefined &&
-      input.address.avenue !== undefined &&
-      input.address.state !== undefined &&
-      input.email !== undefined &&
-      input.birthday !== undefined &&
-      input.cnpj !== undefined
-    );
-  }
-
-  private validFind(id: string): boolean {
-    return validId(id);
-  }
-
-  private validUpdate(id: string, input: UpdateUserMasterInputDto): boolean {
-    if (!validId(id)) return false;
-    return Object.values(input).some(value => value !== undefined);
   }
 
   private handleError(error: unknown, statusCode = 400): HttpResponseData {

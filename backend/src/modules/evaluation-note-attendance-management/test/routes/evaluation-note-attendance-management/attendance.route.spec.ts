@@ -78,16 +78,11 @@ describe('AttendanceRoute with ExpressAdapter', () => {
 
     it('should update an attendance', async () => {
       const id = new Id().value;
-      const payload = { lesson: 'Aula 2' };
-      const response = await supertest(app)
-        .patch(`/attendance/${id}`)
-        .send(payload);
+      const payload = { id: id, lesson: 'Aula 2' };
+      const response = await supertest(app).patch(`/attendance`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.update).toHaveBeenCalledWith({
-        id,
-        ...payload,
-      });
+      expect(attendanceController.update).toHaveBeenCalledWith(payload);
       expect(response.body).toEqual({ id });
     });
 
@@ -139,11 +134,13 @@ describe('AttendanceRoute with ExpressAdapter', () => {
 
   describe('failure', () => {
     it('should return 400 for invalid quantity or offset', async () => {
-      const response = await supertest(app).get('/attendances').send({});
+      const response = await supertest(app)
+        .get('/attendances')
+        .send({ offset: 'a' });
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Quantity e/ou offset estão incorretos',
+        error: 'Bad Request',
       });
     });
 
@@ -151,26 +148,23 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/attendance/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid data on create', async () => {
       const response = await supertest(app).post('/attendance').send({});
-
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Todos os campos são obrigatórios',
+        error: 'Bad Request',
       });
     });
 
     it('should return 400 for invalid id/data on update', async () => {
-      const response = await supertest(app)
-        .patch('/attendance/invalid-id')
-        .send({});
+      const response = await supertest(app).patch('/attendance').send({});
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -178,7 +172,7 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/attendance/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid add-students payload', async () => {
@@ -187,7 +181,7 @@ describe('AttendanceRoute with ExpressAdapter', () => {
         .send({});
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Dados inválidos' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid remove-students payload', async () => {
@@ -196,7 +190,7 @@ describe('AttendanceRoute with ExpressAdapter', () => {
         .send({});
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Dados inválidos' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
   });
 });

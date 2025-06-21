@@ -25,7 +25,7 @@ export class UserMasterController {
   }
   async find(
     input: FindUserMasterInputDto
-  ): Promise<FindUserMasterOutputDto | undefined> {
+  ): Promise<FindUserMasterOutputDto | null> {
     const response = await this.findUserMaster.execute(input);
     return response;
   }

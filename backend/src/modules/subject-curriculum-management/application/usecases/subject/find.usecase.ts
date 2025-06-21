@@ -6,8 +6,7 @@ import {
 import SubjectGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/subject.gateway';
 
 export default class FindSubject
-  implements
-    UseCaseInterface<FindSubjectInputDto, FindSubjectOutputDto | undefined>
+  implements UseCaseInterface<FindSubjectInputDto, FindSubjectOutputDto | null>
 {
   private _subjectRepository: SubjectGateway;
 
@@ -16,7 +15,7 @@ export default class FindSubject
   }
   async execute({
     id,
-  }: FindSubjectInputDto): Promise<FindSubjectOutputDto | undefined> {
+  }: FindSubjectInputDto): Promise<FindSubjectOutputDto | null> {
     const response = await this._subjectRepository.find(id);
     if (response) {
       return {

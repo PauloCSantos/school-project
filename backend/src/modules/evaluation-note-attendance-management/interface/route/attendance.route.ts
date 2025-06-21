@@ -4,16 +4,20 @@ import {
   HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import AttendanceController from '../controller/attendance.controller';
-import { validId } from '@/modules/@shared/utils/validations';
-
 import {
   CreateAttendanceInputDto,
   UpdateAttendanceInputDto,
   FindAttendanceInputDto,
   AddStudentsInputDto,
   RemoveStudentsInputDto,
+  DeleteAttendanceInputDto,
 } from '../../application/dto/attendance-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import {
+  FunctionCalled,
+  createRequestMiddleware,
+} from '@/modules/@shared/application/middleware/request.middleware';
+import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
 
 export default class AttendanceRoute {
   constructor(
@@ -23,46 +27,57 @@ export default class AttendanceRoute {
   ) {}
 
   public routes(): void {
-    this.httpGateway.get(
-      '/attendances',
-      this.findAllAttendances.bind(this),
-      this.authMiddleware
-    );
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS_ADD = ['id', 'newStudentsList'];
+    const REQUIRED_FIELDS_REMOVE = ['id', 'studentsListToRemove'];
+    const REQUIRED_FIELDS = ['date', 'lesson', 'studentsPresent'];
+    const REQUIRED_FIELD = ['id'];
 
-    this.httpGateway.post(
-      '/attendance',
-      this.createAttendance.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.get('/attendances', this.findAllAttendances.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+    ]);
 
-    this.httpGateway.get(
-      '/attendance/:id',
-      this.findAttendance.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.post('/attendance', this.createAttendance.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+    ]);
 
-    this.httpGateway.patch(
-      '/attendance/:id',
-      this.updateAttendance.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.get('/attendance/:id', this.findAttendance.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+    ]);
+
+    this.httpGateway.patch('/attendance', this.updateAttendance.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+    ]);
 
     this.httpGateway.delete(
       '/attendance/:id',
       this.deleteAttendance.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+      ]
     );
 
     this.httpGateway.post(
       '/attendance/add/students',
       this.addStudents.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalled.ADD, REQUIRED_FIELDS_ADD),
+      ]
     );
 
     this.httpGateway.post(
       '/attendance/remove/students',
       this.removeStudents.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalled.REMOVE, REQUIRED_FIELDS_REMOVE),
+      ]
     );
   }
 
@@ -71,17 +86,11 @@ export default class AttendanceRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset estão incorretos' },
-        };
-      }
       const response = await this.attendanceController.findAll({
         quantity,
         offset,
       });
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -92,14 +101,8 @@ export default class AttendanceRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Todos os campos são obrigatórios' },
-        };
-      }
       const response = await this.attendanceController.create(input);
-      return { statusCode: 201, body: response };
+      return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -110,45 +113,38 @@ export default class AttendanceRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
       const response = await this.attendanceController.find({ id });
-      return { statusCode: 200, body: response };
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
+      }
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error, 404);
     }
   }
 
   private async updateAttendance(
-    req: HttpRequest<FindAttendanceInputDto, {}, UpdateAttendanceInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateAttendanceInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const response = await this.attendanceController.update({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.attendanceController.update(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async deleteAttendance(
-    req: HttpRequest<FindAttendanceInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteAttendanceInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
-      const message = await this.attendanceController.delete({ id });
-      return { statusCode: 200, body: message };
+      const response = await this.attendanceController.delete({ id });
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -159,14 +155,8 @@ export default class AttendanceRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateStudents(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos' },
-        };
-      }
       const response = await this.attendanceController.addStudents(input);
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -177,52 +167,11 @@ export default class AttendanceRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateStudents(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos' },
-        };
-      }
       const response = await this.attendanceController.removeStudents(input);
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    return (
-      quantity !== undefined &&
-      offset !== undefined &&
-      !isNaN(quantity) &&
-      !isNaN(offset)
-    );
-  }
-
-  private validateCreate(input: CreateAttendanceInputDto): boolean {
-    return (
-      input.date !== undefined &&
-      input.lesson !== undefined &&
-      Array.isArray(input.studentsPresent)
-    );
-  }
-
-  private validateStudents(
-    input: AddStudentsInputDto | RemoveStudentsInputDto
-  ): boolean {
-    if (!input.id) {
-      return false;
-    }
-
-    if ('newStudentsList' in input) {
-      return Array.isArray(input.newStudentsList);
-    }
-
-    if ('studentsListToRemove' in input) {
-      return Array.isArray(input.studentsListToRemove);
-    }
-
-    return false;
   }
 
   private handleError(error: unknown, statusCode = 400): HttpResponseData {

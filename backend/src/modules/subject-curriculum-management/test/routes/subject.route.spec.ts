@@ -88,13 +88,11 @@ describe('SubjectRoute with ExpressAdapter', () => {
 
     it('should update a subject by ID', async () => {
       const id = new Id().value;
-      const payload = { description: 'New description' };
-      const response = await supertest(app)
-        .patch(`/subject/${id}`)
-        .send(payload);
+      const payload = { id, description: 'New description' };
+      const response = await supertest(app).patch(`/subject`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(subjectController.update).toHaveBeenCalledWith({ id, ...payload });
+      expect(subjectController.update).toHaveBeenCalledWith(payload);
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -115,17 +113,15 @@ describe('SubjectRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/subject/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app)
-        .patch('/subject/invalid-id')
-        .send({});
+      const response = await supertest(app).patch('/subject').send({});
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -133,7 +129,7 @@ describe('SubjectRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/subject/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid payload on create', async () => {

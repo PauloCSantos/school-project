@@ -29,9 +29,7 @@ export class SubjectController {
     const response = await this.createSubject.execute(input);
     return response;
   }
-  async find(
-    input: FindSubjectInputDto
-  ): Promise<FindSubjectOutputDto | undefined> {
+  async find(input: FindSubjectInputDto): Promise<FindSubjectOutputDto | null> {
     const response = await this.findSubject.execute(input);
     return response;
   }

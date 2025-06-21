@@ -120,7 +120,7 @@ describe('AuthUserRoute with ExpressAdapter', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Todos os campos são obrigatórios',
+        error: 'Bad Request',
       });
     });
 
@@ -131,7 +131,7 @@ describe('AuthUserRoute with ExpressAdapter', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Credenciais inválidas',
+        error: 'Bad Request',
       });
     });
 
@@ -140,7 +140,7 @@ describe('AuthUserRoute with ExpressAdapter', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Email inválido',
+        error: 'Bad Request',
       });
     });
 
@@ -151,7 +151,7 @@ describe('AuthUserRoute with ExpressAdapter', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Email e/ou dados de atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -160,7 +160,7 @@ describe('AuthUserRoute with ExpressAdapter', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Email inválido',
+        error: 'Bad Request',
       });
     });
   });

@@ -4,15 +4,20 @@ import {
   HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import EvaluationController from '../controller/evaluation.controller';
-import { validId } from '@/modules/@shared/utils/validations';
 
 import {
   CreateEvaluationInputDto,
   UpdateEvaluationInputDto,
   FindAllEvaluationInputDto,
   FindEvaluationInputDto,
+  DeleteEvaluationInputDto,
 } from '../../application/dto/evaluation-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import {
+  FunctionCalled,
+  createRequestMiddleware,
+} from '@/modules/@shared/application/middleware/request.middleware';
+import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
 
 export default class EvaluationRoute {
   constructor(
@@ -22,34 +27,36 @@ export default class EvaluationRoute {
   ) {}
 
   public routes(): void {
-    this.httpGateway.get(
-      '/evaluations',
-      this.findAllEvaluations.bind(this),
-      this.authMiddleware
-    );
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS = ['teacher', 'lesson'];
+    const REQUIRED_FIELD = ['id'];
+    this.httpGateway.get('/evaluations', this.findAllEvaluations.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+    ]);
 
-    this.httpGateway.post(
-      '/evaluation',
-      this.createEvaluation.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.post('/evaluation', this.createEvaluation.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+    ]);
 
-    this.httpGateway.get(
-      '/evaluation/:id',
-      this.findEvaluation.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.get('/evaluation/:id', this.findEvaluation.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+    ]);
 
-    this.httpGateway.patch(
-      '/evaluation/:id',
-      this.updateEvaluation.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.patch('/evaluation', this.updateEvaluation.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+    ]);
 
     this.httpGateway.delete(
       '/evaluation/:id',
       this.deleteEvaluation.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+      ]
     );
   }
 
@@ -58,17 +65,11 @@ export default class EvaluationRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset estão incorretos' },
-        };
-      }
       const response = await this.evaluationController.findAll({
         quantity,
         offset,
       });
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -79,14 +80,8 @@ export default class EvaluationRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação de avaliação' },
-        };
-      }
       const response = await this.evaluationController.create(input);
-      return { statusCode: 201, body: response };
+      return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -97,67 +92,41 @@ export default class EvaluationRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
       const response = await this.evaluationController.find({ id });
-      return { statusCode: 200, body: response };
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
+      }
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error, 404);
     }
   }
 
   private async updateEvaluation(
-    req: HttpRequest<FindEvaluationInputDto, {}, UpdateEvaluationInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateEvaluationInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const response = await this.evaluationController.update({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.evaluationController.update(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async deleteEvaluation(
-    req: HttpRequest<FindEvaluationInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteEvaluationInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
-      const message = await this.evaluationController.delete({ id });
-      return { statusCode: 200, body: message };
+      const response = await this.evaluationController.delete({ id });
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    return (
-      quantity !== undefined &&
-      offset !== undefined &&
-      !isNaN(quantity) &&
-      !isNaN(offset)
-    );
-  }
-
-  private validateCreate(input: CreateEvaluationInputDto): boolean {
-    return (
-      input &&
-      typeof input.teacher === 'string' &&
-      input.teacher.trim() !== '' &&
-      typeof input.lesson === 'string' &&
-      input.lesson.trim() !== ''
-    );
   }
 
   private handleError(error: unknown, statusCode = 400): HttpResponseData {

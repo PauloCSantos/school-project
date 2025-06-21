@@ -7,10 +7,7 @@ import UserMasterGateway from '@/modules/user-management/infrastructure/gateway/
 
 export default class FindUserMaster
   implements
-    UseCaseInterface<
-      FindUserMasterInputDto,
-      FindUserMasterOutputDto | undefined
-    >
+    UseCaseInterface<FindUserMasterInputDto, FindUserMasterOutputDto | null>
 {
   private _userMasterRepository: UserMasterGateway;
 
@@ -19,7 +16,7 @@ export default class FindUserMaster
   }
   async execute({
     id,
-  }: FindUserMasterInputDto): Promise<FindUserMasterOutputDto | undefined> {
+  }: FindUserMasterInputDto): Promise<FindUserMasterOutputDto | null> {
     const response = await this._userMasterRepository.find(id);
     if (response) {
       return {

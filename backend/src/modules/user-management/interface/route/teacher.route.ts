@@ -1,4 +1,3 @@
-import { validId } from '@/modules/@shared/utils/validations';
 import {
   HttpServer,
   HttpResponseData,
@@ -13,6 +12,11 @@ import {
   UpdateUserTeacherInputDto,
   DeleteUserTeacherInputDto,
 } from '../../application/dto/teacher-usecase.dto';
+import {
+  FunctionCalled,
+  createRequestMiddleware,
+} from '@/modules/@shared/application/middleware/request.middleware';
+import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
 
 export class UserTeacherRoute {
   constructor(
@@ -22,34 +26,49 @@ export class UserTeacherRoute {
   ) {}
 
   public routes(): void {
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS = [
+      'name',
+      'address',
+      'email',
+      'birthday',
+      'salary',
+      'graduation',
+      'academicDegrees',
+    ];
+    const REQUIRED_FIELD = ['id'];
+
     this.httpGateway.get(
       '/users-teacher',
       this.findAllUserTeachers.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+      ]
     );
 
-    this.httpGateway.post(
-      '/user-teacher',
-      this.createUserTeacher.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.post('/user-teacher', this.createUserTeacher.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+    ]);
 
-    this.httpGateway.get(
-      '/user-teacher/:id',
-      this.findUserTeacher.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.get('/user-teacher/:id', this.findUserTeacher.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+    ]);
 
-    this.httpGateway.patch(
-      '/user-teacher/:id',
-      this.updateUserTeacher.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.patch('/user-teacher', this.updateUserTeacher.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+    ]);
 
     this.httpGateway.delete(
       '/user-teacher/:id',
       this.deleteUserTeacher.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+      ]
     );
   }
 
@@ -58,27 +77,14 @@ export class UserTeacherRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset incorretos' },
-        };
-      }
-      const teachers = await this.userTeacherController.findAll({
+      const response = await this.userTeacherController.findAll({
         quantity,
         offset,
       });
-      return { statusCode: 200, body: teachers };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    if (quantity === undefined || offset === undefined) {
-      return true;
-    }
-    return Number.isInteger(quantity) && Number.isInteger(offset);
   }
 
   private async createUserTeacher(
@@ -86,45 +92,11 @@ export class UserTeacherRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação do professor' },
-        };
-      }
-      const newTeacher = await this.userTeacherController.create(input);
-      return { statusCode: 201, body: newTeacher };
+      const resolve = await this.userTeacherController.create(input);
+      return { statusCode: StatusCodeEnum.CREATED, body: resolve };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validateCreate(input: CreateUserTeacherInputDto): boolean {
-    if (
-      !input.name ||
-      typeof input.name.firstName !== 'string' ||
-      typeof input.name.lastName !== 'string' ||
-      !input.address ||
-      typeof input.address.street !== 'string' ||
-      typeof input.address.city !== 'string' ||
-      typeof input.address.zip !== 'string' ||
-      typeof input.address.number !== 'number' ||
-      typeof input.address.avenue !== 'string' ||
-      typeof input.address.state !== 'string' ||
-      !input.email ||
-      typeof input.email !== 'string' ||
-      !input.birthday ||
-      typeof input.birthday !== 'string' ||
-      !input.salary ||
-      typeof input.salary.salary !== 'number' ||
-      !input.graduation ||
-      typeof input.graduation !== 'string' ||
-      !input.academicDegrees ||
-      typeof input.graduation !== 'string'
-    ) {
-      return false;
-    }
-    return true;
   }
 
   private async findUserTeacher(
@@ -132,33 +104,26 @@ export class UserTeacherRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!this.validFind(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
+      const response = await this.userTeacherController.find({ id });
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
       }
-      const teacher = await this.userTeacherController.find({ id });
-      return { statusCode: 200, body: teacher };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateUserTeacher(
-    req: HttpRequest<FindUserTeacherInputDto, {}, UpdateUserTeacherInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateUserTeacherInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!this.validUpdate(id)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const updatedTeacher = await this.userTeacherController.update({
-        ...input,
-        id,
-      });
-      return { statusCode: 200, body: updatedTeacher };
+      const resolve = await this.userTeacherController.update(input);
+      return { statusCode: StatusCodeEnum.OK, body: resolve };
     } catch (error) {
       return this.handleError(error);
     }
@@ -169,26 +134,11 @@ export class UserTeacherRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!this.validDelete(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
-      const deleted = await this.userTeacherController.delete({ id });
-      return { statusCode: 200, body: deleted };
+      const response = await this.userTeacherController.delete({ id });
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validFind(id: string): boolean {
-    return validId(id);
-  }
-
-  private validUpdate(id: string): boolean {
-    return validId(id);
-  }
-
-  private validDelete(id: string): boolean {
-    return validId(id);
   }
 
   private handleError(error: unknown, statusCode = 400): HttpResponseData {

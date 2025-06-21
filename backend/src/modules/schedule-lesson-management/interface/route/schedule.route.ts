@@ -5,7 +5,6 @@ import {
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import { ScheduleController } from '../controller/schedule.controller';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import { validId } from '@/modules/@shared/utils/validations';
 import {
   CreateScheduleInputDto,
   FindAllScheduleInputDto,
@@ -15,6 +14,11 @@ import {
   FindScheduleInputDto,
   DeleteScheduleInputDto,
 } from '../../application/dto/schedule-usecase.dto';
+import {
+  FunctionCalled,
+  createRequestMiddleware,
+} from '@/modules/@shared/application/middleware/request.middleware';
+import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
 
 /**
  * Route handler for schedule management endpoint.
@@ -27,40 +31,43 @@ export default class ScheduleRoute {
   ) {}
 
   public routes(): void {
-    this.httpGateway.get(
-      '/schedules',
-      this.findAllSchedules.bind(this),
-      this.authMiddleware
-    );
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS_ADD = ['id', 'newLessonsList'];
+    const REQUIRED_FIELDS_REMOVE = ['id', 'lessonsListToRemove'];
+    const REQUIRED_FIELDS = ['student', 'curriculum', 'lessonsList'];
+    const REQUIRED_FIELD = ['id'];
+
+    this.httpGateway.get('/schedules', this.findAllSchedules.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+    ]);
+    this.httpGateway.post('/schedule', this.createSchedule.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+    ]);
+    this.httpGateway.get('/schedule/:id', this.findSchedule.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+    ]);
+    this.httpGateway.patch('/schedule', this.updateSchedule.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+    ]);
+    this.httpGateway.delete('/schedule/:id', this.deleteSchedule.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+    ]);
+    this.httpGateway.post('/schedule/lesson/add', this.addLessons.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.ADD, REQUIRED_FIELDS_ADD),
+    ]);
     this.httpGateway.post(
-      '/schedule',
-      this.createSchedule.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.get(
-      '/schedule/:id',
-      this.findSchedule.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.patch(
-      '/schedule/:id',
-      this.updateSchedule.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.delete(
-      '/schedule/:id',
-      this.deleteSchedule.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.post(
-      '/schedule/:id/lesson/add',
-      this.addLessons.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.post(
-      '/schedule/:id/lesson/remove',
+      '/schedule/lesson/remove',
       this.removeLessons.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalled.REMOVE, REQUIRED_FIELDS_REMOVE),
+      ]
     );
   }
 
@@ -69,17 +76,11 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset incorretos' },
-        };
-      }
       const schedules = await this.scheduleController.findAll({
         quantity,
         offset,
       });
-      return { statusCode: 200, body: schedules };
+      return { statusCode: StatusCodeEnum.OK, body: schedules };
     } catch (error) {
       return this.handleError(error);
     }
@@ -90,14 +91,8 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação de evento' },
-        };
-      }
       const schedule = await this.scheduleController.create(input);
-      return { statusCode: 201, body: schedule };
+      return { statusCode: StatusCodeEnum.CREATED, body: schedule };
     } catch (error) {
       return this.handleError(error);
     }
@@ -108,30 +103,26 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
       const response = await this.scheduleController.find({ id });
-      return { statusCode: 200, body: response };
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
+      }
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateSchedule(
-    req: HttpRequest<FindScheduleInputDto, {}, UpdateScheduleInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateScheduleInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const response = await this.scheduleController.update({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.scheduleController.update(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -142,49 +133,32 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
       const response = await this.scheduleController.delete({ id });
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async addLessons(
-    req: HttpRequest<FindScheduleInputDto, {}, AddLessonsInputDto, {}>
+    req: HttpRequest<{}, {}, AddLessonsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id) || !this.validateAdd(input)) {
-        return { statusCode: 400, body: { error: 'Dados inválidos' } };
-      }
-      const response = await this.scheduleController.addLessons({
-        ...input,
-        id,
-      });
-      return { statusCode: 200, body: response };
+      const response = await this.scheduleController.addLessons(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async removeLessons(
-    req: HttpRequest<FindScheduleInputDto, {}, RemoveLessonsInputDto, {}>
+    req: HttpRequest<{}, {}, RemoveLessonsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id) || !this.validateRemove(input)) {
-        return { statusCode: 400, body: { error: 'Dados inválidos' } };
-      }
-      const response = await this.scheduleController.removeLessons({
-        ...input,
-        id,
-      });
-      return { statusCode: 200, body: response };
+      const response = await this.scheduleController.removeLessons(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -195,30 +169,5 @@ export default class ScheduleRoute {
       return { statusCode, body: { error: error.message } };
     }
     return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    if (quantity === undefined || offset === undefined) {
-      return true;
-    }
-    return Number.isInteger(quantity) && Number.isInteger(offset);
-  }
-
-  private validateCreate(input: CreateScheduleInputDto): boolean {
-    const { student, curriculum, lessonsList } = input;
-    return Boolean(student && curriculum && lessonsList);
-  }
-
-  private validateAdd(input: AddLessonsInputDto): boolean {
-    return (
-      Array.isArray(input.newLessonsList) && input.newLessonsList.length > 0
-    );
-  }
-
-  private validateRemove(input: RemoveLessonsInputDto): boolean {
-    return (
-      Array.isArray(input.lessonsListToRemove) &&
-      input.lessonsListToRemove.length > 0
-    );
   }
 }

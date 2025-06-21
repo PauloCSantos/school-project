@@ -4,15 +4,20 @@ import {
   HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import EventController from '../controller/calendar.controller';
-import { validId } from '@/modules/@shared/utils/validations';
 
 import {
   CreateEventInputDto,
   UpdateEventInputDto,
   FindEventInputDto,
   FindAllEventInputDto,
+  DeleteEventInputDto,
 } from '../../application/dto/calendar-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import {
+  FunctionCalled,
+  createRequestMiddleware,
+} from '@/modules/@shared/application/middleware/request.middleware';
+import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
 
 export default class EventRoute {
   constructor(
@@ -22,35 +27,42 @@ export default class EventRoute {
   ) {}
 
   public routes(): void {
-    this.httpGateway.get(
-      '/events',
-      this.findAllEvents.bind(this),
-      this.authMiddleware
-    );
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS = [
+      'creator',
+      'name',
+      'date',
+      'hour',
+      'day',
+      'type',
+      'place',
+    ];
+    const REQUIRED_FIELD = ['id'];
 
-    this.httpGateway.post(
-      '/event',
-      this.createEvent.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.get('/events', this.findAllEvents.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+    ]);
 
-    this.httpGateway.get(
-      '/event/:id',
-      this.findEvent.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.post('/event', this.createEvent.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+    ]);
 
-    this.httpGateway.patch(
-      '/event/:id',
-      this.updateEvent.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.get('/event/:id', this.findEvent.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+    ]);
 
-    this.httpGateway.delete(
-      '/event/:id',
-      this.deleteEvent.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.patch('/event', this.updateEvent.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+    ]);
+
+    this.httpGateway.delete('/event/:id', this.deleteEvent.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+    ]);
   }
 
   private async findAllEvents(
@@ -58,14 +70,8 @@ export default class EventRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset estão incorretos' },
-        };
-      }
       const response = await this.eventController.findAll({ quantity, offset });
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -76,14 +82,8 @@ export default class EventRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação de evento' },
-        };
-      }
       const response = await this.eventController.create(input);
-      return { statusCode: 201, body: response };
+      return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -94,65 +94,41 @@ export default class EventRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
       const response = await this.eventController.find({ id });
-      return { statusCode: 200, body: response };
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
+      }
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateEvent(
-    req: HttpRequest<FindEventInputDto, {}, UpdateEventInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateEventInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const response = await this.eventController.update({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.eventController.update(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async deleteEvent(
-    req: HttpRequest<FindEventInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteEventInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
       const response = await this.eventController.delete({ id });
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    return (
-      quantity !== undefined &&
-      offset !== undefined &&
-      !isNaN(quantity) &&
-      !isNaN(offset)
-    );
-  }
-
-  private validateCreate(input: CreateEventInputDto): boolean {
-    const { creator, name, date, hour, day, type, place } = input;
-    if (!creator || !name || !date || !hour || !day || !type || !place) {
-      return false;
-    }
-    return true;
   }
 
   private handleError(error: unknown, statusCode = 400): HttpResponseData {

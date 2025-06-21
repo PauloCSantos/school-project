@@ -33,7 +33,7 @@ export class UserWorkerController {
   }
   async find(
     input: FindUserWorkerInputDto
-  ): Promise<FindUserWorkerOutputDto | undefined> {
+  ): Promise<FindUserWorkerOutputDto | null> {
     const response = await this.findUserWorker.execute(input);
     return response;
   }

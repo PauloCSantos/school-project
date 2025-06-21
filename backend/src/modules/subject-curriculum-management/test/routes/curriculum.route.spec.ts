@@ -94,16 +94,11 @@ describe('CurriculumRoute with ExpressAdapter', () => {
 
     it('should update a curriculum by ID', async () => {
       const id = new Id().value;
-      const payload = { yearsToComplete: 6 };
-      const response = await supertest(app)
-        .patch(`/curriculum/${id}`)
-        .send(payload);
+      const payload = { id, yearsToComplete: 6 };
+      const response = await supertest(app).patch(`/curriculum`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(curriculumController.update).toHaveBeenCalledWith({
-        id,
-        ...payload,
-      });
+      expect(curriculumController.update).toHaveBeenCalledWith(payload);
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -129,10 +124,7 @@ describe('CurriculumRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(curriculumController.addSubjects).toHaveBeenCalledWith({
-        ...payload,
-        id,
-      });
+      expect(curriculumController.addSubjects).toHaveBeenCalledWith(payload);
       expect(response.body).toBeDefined();
     });
 
@@ -147,10 +139,7 @@ describe('CurriculumRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(curriculumController.removeSubjects).toHaveBeenCalledWith({
-        ...payload,
-        id,
-      });
+      expect(curriculumController.removeSubjects).toHaveBeenCalledWith(payload);
       expect(response.body).toBeDefined();
     });
   });
@@ -160,17 +149,17 @@ describe('CurriculumRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/curriculum/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
       const response = await supertest(app)
-        .patch('/curriculum/invalid-id')
-        .send({});
+        .patch('/curriculum')
+        .send({ id: 'invalid-id' });
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -178,7 +167,7 @@ describe('CurriculumRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/curriculum/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid payload on create', async () => {
@@ -198,7 +187,7 @@ describe('CurriculumRoute with ExpressAdapter', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para adicionar matérias inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -206,11 +195,11 @@ describe('CurriculumRoute with ExpressAdapter', () => {
       const id = new Id().value;
       const response = await supertest(app)
         .post(`/curriculum/subject/remove`)
-        .send({ id, subjectsListToRemove: [] });
+        .send({ id, subjectsListToRemove: 123 });
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para remover matérias inválidos',
+        error: 'Bad Request',
       });
     });
   });

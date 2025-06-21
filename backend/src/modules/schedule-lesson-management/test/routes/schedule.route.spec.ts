@@ -95,16 +95,11 @@ describe('ScheduleRoute with ExpressAdapter', () => {
 
     it('should update a schedule by ID', async () => {
       const id = new Id().value;
-      const payload = { curriculum: new Id().value };
-      const response = await supertest(app)
-        .patch(`/schedule/${id}`)
-        .send(payload);
+      const payload = { id, curriculum: new Id().value };
+      const response = await supertest(app).patch(`/schedule`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(scheduleController.update).toHaveBeenCalledWith({
-        id,
-        ...payload,
-      });
+      expect(scheduleController.update).toHaveBeenCalledWith(payload);
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -122,10 +117,11 @@ describe('ScheduleRoute with ExpressAdapter', () => {
     it('should add lessons to the schedule', async () => {
       const id = new Id().value;
       const payload = {
+        id,
         newLessonsList: [new Id().value],
       };
       const response = await supertest(app)
-        .post(`/schedule/${id}/lesson/add`)
+        .post(`/schedule/lesson/add`)
         .send(payload);
 
       expect(response.statusCode).toBe(200);
@@ -139,10 +135,11 @@ describe('ScheduleRoute with ExpressAdapter', () => {
     it('should remove lessons from the schedule', async () => {
       const id = new Id().value;
       const payload = {
+        id,
         lessonsListToRemove: [new Id().value, new Id().value],
       };
       const response = await supertest(app)
-        .post(`/schedule/${id}/lesson/remove`)
+        .post(`/schedule/lesson/remove`)
         .send(payload);
 
       expect(response.statusCode).toBe(200);
@@ -159,17 +156,15 @@ describe('ScheduleRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/schedule/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app)
-        .patch('/schedule/invalid-id')
-        .send({});
+      const response = await supertest(app).patch('/schedule').send({});
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -177,7 +172,7 @@ describe('ScheduleRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/schedule/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid payload on create', async () => {
@@ -192,48 +187,45 @@ describe('ScheduleRoute with ExpressAdapter', () => {
     it('should return 400 for invalid id on add lessons', async () => {
       const id = `invalid-id`;
       const response = await supertest(app)
-        .post(`/schedule/${id}/lesson/add`)
-        .send({ newLessonsList: [] });
+        .post(`/schedule/lesson/add`)
+        .send({ id, newLessonsList: [] });
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Dados inválidos',
+        error: 'Bad Request',
       });
     });
 
     it('should return 400 for invalid id on remove lessons', async () => {
       const id = `invalid-id`;
       const response = await supertest(app)
-        .post(`/schedule/${id}/lesson/remove`)
-        .send({ lessonsListToRemove: [] });
+        .post(`/schedule/lesson/remove`)
+        .send({ id, lessonsListToRemove: [] });
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Dados inválidos',
+        error: 'Bad Request',
       });
     });
 
     it('should return 400 for missing payload on add lessons', async () => {
-      const id = new Id().value;
-      const response = await supertest(app)
-        .post(`/schedule/${id}/lesson/add`)
-        .send({});
+      const response = await supertest(app).post(`/schedule/lesson/add`);
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Dados inválidos',
+        error: 'Bad Request',
       });
     });
 
     it('should return 400 for missing payload on remove lessons', async () => {
       const id = new Id().value;
       const response = await supertest(app)
-        .post(`/schedule/${id}/lesson/remove`)
-        .send({});
+        .post(`/schedule/lesson/remove`)
+        .send({ id });
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Dados inválidos',
+        error: 'Bad Request',
       });
     });
   });

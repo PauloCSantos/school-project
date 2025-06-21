@@ -11,13 +11,15 @@ export enum FunctionCalled {
   DELETE = 'delete',
   CREATE = 'create',
   UPDATE = 'update',
+  ADD = 'add',
+  REMOVE = 'remove',
 }
 
-export enum errorStatus {
+enum errorStatus {
   BADREQUEST = 400,
 }
 
-export enum ErrorMessage {
+enum ErrorMessage {
   BADREQUEST = 'Bad Request',
 }
 
@@ -30,91 +32,168 @@ export default class RequestMiddleware
   ) {}
 
   async handle(
-    req: HttpRequest<any, any, any, any>,
+    req: HttpRequest<any, any>,
     next: () => Promise<HttpResponseData>
   ): Promise<HttpResponseData> {
     switch (this.fn) {
-      case FunctionCalled.FIND_ALL:
-        const offset = req.query?.offset;
-        const limit = req.query?.limit;
-        if (offset !== undefined && isNaN(Number(offset))) {
+      case FunctionCalled.FIND_ALL: {
+        const offset = req.body?.offset;
+        const limit = req.body?.limit;
+        if (
+          offset !== undefined &&
+          (offset === '' || Number.isNaN(Number(offset)))
+        ) {
           return {
             statusCode: errorStatus.BADREQUEST,
-            body: { message: ErrorMessage.BADREQUEST },
+            body: { error: ErrorMessage.BADREQUEST },
           };
         }
-        if (limit !== undefined && isNaN(Number(limit))) {
+        if (
+          limit !== undefined &&
+          (limit === '' || Number.isNaN(Number(limit)))
+        ) {
           return {
             statusCode: errorStatus.BADREQUEST,
-            body: { message: ErrorMessage.BADREQUEST },
+            body: { error: ErrorMessage.BADREQUEST },
           };
         }
         break;
+      }
 
-      case FunctionCalled.FIND:
+      case FunctionCalled.FIND: {
         const searchId = req.params?.id as string | undefined;
         const searchEmail = req.params?.email as string | undefined;
         if (!searchId && !searchEmail) {
           return {
             statusCode: errorStatus.BADREQUEST,
-            body: { message: ErrorMessage.BADREQUEST },
+            body: { error: ErrorMessage.BADREQUEST },
           };
         }
         if (searchEmail) {
           if (!validEmail(searchEmail)) {
             return {
               statusCode: errorStatus.BADREQUEST,
-              body: { message: ErrorMessage.BADREQUEST },
+              body: { error: ErrorMessage.BADREQUEST },
             };
           }
         } else {
           if (!validId(searchId!)) {
             return {
               statusCode: errorStatus.BADREQUEST,
-              body: { message: ErrorMessage.BADREQUEST },
+              body: { error: ErrorMessage.BADREQUEST },
             };
           }
         }
         break;
+      }
 
-      case FunctionCalled.DELETE:
+      case FunctionCalled.DELETE: {
         const idToDelete = req.params?.id as string | undefined;
-        if (!idToDelete || !validId(idToDelete)) {
+        const emailToDelete = req.params?.email as string | undefined;
+        if (!idToDelete && !emailToDelete) {
           return {
             statusCode: errorStatus.BADREQUEST,
-            body: { message: ErrorMessage.BADREQUEST },
+            body: { error: ErrorMessage.BADREQUEST },
           };
         }
-        break;
-
-      case FunctionCalled.CREATE:
-        for (const field of this.requiredFields) {
-          if (req.body[field] === undefined) {
+        if (emailToDelete) {
+          if (!validEmail(emailToDelete)) {
             return {
               statusCode: errorStatus.BADREQUEST,
-              body: { message: ErrorMessage.BADREQUEST },
+              body: { error: ErrorMessage.BADREQUEST },
+            };
+          }
+        } else {
+          if (!validId(idToDelete!)) {
+            return {
+              statusCode: errorStatus.BADREQUEST,
+              body: { error: ErrorMessage.BADREQUEST },
             };
           }
         }
         break;
+      }
 
-      case FunctionCalled.UPDATE:
-        const idToUpdate = req.params?.id as string | undefined;
-        if (!idToUpdate || !validId(idToUpdate)) {
-          return {
-            statusCode: errorStatus.BADREQUEST,
-            body: { message: ErrorMessage.BADREQUEST },
-          };
-        }
+      case FunctionCalled.CREATE: {
         for (const field of this.requiredFields) {
           if (req.body[field] === undefined) {
             return {
               statusCode: errorStatus.BADREQUEST,
-              body: { message: ErrorMessage.BADREQUEST },
+              body: { error: ErrorMessage.BADREQUEST },
             };
           }
         }
         break;
+      }
+
+      case FunctionCalled.UPDATE: {
+        const idToUpdate = req.body?.id as string | undefined;
+        const emailToUpdate = req.params?.email as string | undefined;
+        if (!idToUpdate && !emailToUpdate) {
+          return {
+            statusCode: errorStatus.BADREQUEST,
+            body: { error: ErrorMessage.BADREQUEST },
+          };
+        }
+        if (emailToUpdate) {
+          if (!validEmail(emailToUpdate)) {
+            return {
+              statusCode: errorStatus.BADREQUEST,
+              body: { error: ErrorMessage.BADREQUEST },
+            };
+          }
+        } else {
+          if (!validId(idToUpdate!)) {
+            return {
+              statusCode: errorStatus.BADREQUEST,
+              body: { error: ErrorMessage.BADREQUEST },
+            };
+          }
+        }
+        let foundFields = 0;
+        for (const field of this.requiredFields) {
+          if (req.body[field] !== undefined) {
+            foundFields++;
+          }
+        }
+        if (foundFields === 0) {
+          return {
+            statusCode: errorStatus.BADREQUEST,
+            body: { error: ErrorMessage.BADREQUEST },
+          };
+        }
+
+        break;
+      }
+
+      case FunctionCalled.ADD:
+      case FunctionCalled.REMOVE: {
+        for (const field of this.requiredFields) {
+          if (req.body[field] === undefined) {
+            return {
+              statusCode: errorStatus.BADREQUEST,
+              body: { error: ErrorMessage.BADREQUEST },
+            };
+          }
+          if (field === 'id') {
+            if (!validId(req.body[field])) {
+              return {
+                statusCode: errorStatus.BADREQUEST,
+                body: { error: ErrorMessage.BADREQUEST },
+              };
+            }
+          } else {
+            if (!Array.isArray(req.body[field])) {
+              return {
+                statusCode: errorStatus.BADREQUEST,
+                body: { error: ErrorMessage.BADREQUEST },
+              };
+            }
+          }
+        }
+
+        break;
+      }
     }
 
     return next();
@@ -124,7 +203,6 @@ export default class RequestMiddleware
 export function createRequestMiddleware(
   fn: FunctionCalled,
   requiredFields: string[]
-) {
-  const mw = new RequestMiddleware(fn, requiredFields);
-  return mw.handle.bind(mw);
+): HttpMiddleware<any, any, any, any> {
+  return new RequestMiddleware(fn, requiredFields);
 }

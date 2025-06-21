@@ -5,7 +5,6 @@ import {
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import { SubjectController } from '../controller/subject.controller';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import { validId } from '@/modules/@shared/utils/validations';
 import {
   CreateSubjectInputDto,
   FindAllSubjectInputDto,
@@ -13,6 +12,11 @@ import {
   UpdateSubjectInputDto,
   DeleteSubjectInputDto,
 } from '../../application/dto/subject-usecase.dto';
+import {
+  FunctionCalled,
+  createRequestMiddleware,
+} from '@/modules/@shared/application/middleware/request.middleware';
+import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
 
 /**
  * Route handler for subject management endpoints.
@@ -26,31 +30,30 @@ export class SubjectRoute {
   ) {}
 
   public routes(): void {
-    this.httpGateway.get(
-      '/subjects',
-      this.findAllSubjects.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.get(
-      '/subject/:id',
-      this.findSubject.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.post(
-      '/subject',
-      this.createSubject.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.patch(
-      '/subject/:id',
-      this.updateSubject.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.delete(
-      '/subject/:id',
-      this.deleteSubject.bind(this),
-      this.authMiddleware
-    );
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS = ['name', 'description'];
+    const REQUIRED_FIELD = ['id'];
+
+    this.httpGateway.get('/subjects', this.findAllSubjects.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+    ]);
+    this.httpGateway.get('/subject/:id', this.findSubject.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+    ]);
+    this.httpGateway.post('/subject', this.createSubject.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+    ]);
+    this.httpGateway.patch('/subject', this.updateSubject.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELD),
+    ]);
+    this.httpGateway.delete('/subject/:id', this.deleteSubject.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+    ]);
   }
 
   private async findAllSubjects(
@@ -58,17 +61,11 @@ export class SubjectRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset incorretos' },
-        };
-      }
-      const subjects = await this.subjectController.findAll({
+      const response = await this.subjectController.findAll({
         quantity,
         offset,
       });
-      return { statusCode: 200, body: subjects };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -79,11 +76,14 @@ export class SubjectRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
+      const response = await this.subjectController.find({ id });
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
       }
-      const subject = await this.subjectController.find({ id });
-      return { statusCode: 200, body: subject };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -94,33 +94,20 @@ export class SubjectRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação de matéria' },
-        };
-      }
-      const subject = await this.subjectController.create(input);
-      return { statusCode: 201, body: subject };
+      const response = await this.subjectController.create(input);
+      return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateSubject(
-    req: HttpRequest<FindSubjectInputDto, {}, UpdateSubjectInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateSubjectInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const response = await this.subjectController.update({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.subjectController.update(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -131,11 +118,8 @@ export class SubjectRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
       const response = await this.subjectController.delete({ id });
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -146,24 +130,5 @@ export class SubjectRoute {
       return { statusCode, body: { error: error.message } };
     }
     return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    if (quantity === undefined || offset === undefined) {
-      return true;
-    }
-    return Number.isInteger(quantity) && Number.isInteger(offset);
-  }
-
-  private validateCreate(input: CreateSubjectInputDto): boolean {
-    if (
-      !input.name ||
-      typeof input.name !== 'string' ||
-      !input.description ||
-      typeof input.description !== 'string'
-    ) {
-      return false;
-    }
-    return true;
   }
 }

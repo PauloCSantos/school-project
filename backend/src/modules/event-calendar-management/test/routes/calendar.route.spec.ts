@@ -77,11 +77,11 @@ describe('EventRoute with ExpressAdapter', () => {
 
     it('should update an event by ID', async () => {
       const id = new Id().value;
-      const payload = { description: 'New description' };
-      const response = await supertest(app).patch(`/event/${id}`).send(payload);
+      const payload = { id, name: 'New description' };
+      const response = await supertest(app).patch(`/event`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(eventController.update).toHaveBeenCalledWith({ id, ...payload });
+      expect(eventController.update).toHaveBeenCalledWith(payload);
       expect(response.body).toEqual({ id });
     });
 
@@ -99,11 +99,11 @@ describe('EventRoute with ExpressAdapter', () => {
 
   describe('failure', () => {
     it('should return 400 for invalid quantity or offset', async () => {
-      const response = await supertest(app).get('/events').send({});
+      const response = await supertest(app).get('/events').send({ offset: '' });
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Quantity e/ou offset estão incorretos',
+        error: 'Bad Request',
       });
     });
 
@@ -111,15 +111,15 @@ describe('EventRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/event/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app).patch('/event/invalid-id').send({});
+      const response = await supertest(app).patch('/event').send({});
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -127,7 +127,7 @@ describe('EventRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/event/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
   });
 });

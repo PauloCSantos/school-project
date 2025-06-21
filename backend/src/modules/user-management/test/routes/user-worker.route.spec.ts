@@ -138,6 +138,7 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
     it('should update a worker by ID', async () => {
       const id = new Id().value;
       const payload = {
+        id,
         address: {
           street: 'Updated Street',
           city: 'City A',
@@ -147,15 +148,10 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
           state: 'State A',
         },
       };
-      const response = await supertest(app)
-        .patch(`/user-worker/${id}`)
-        .send(payload);
+      const response = await supertest(app).patch(`/user-worker`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(userWorkerController.update).toHaveBeenCalledWith({
-        id,
-        ...payload,
-      });
+      expect(userWorkerController.update).toHaveBeenCalledWith(payload);
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -176,17 +172,14 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/user-worker/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app)
-        .patch('/user-worker/invalid-id')
-        .send({});
-
+      const response = await supertest(app).patch('/user-worker').send({});
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -194,7 +187,7 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/user-worker/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid payload on create', async () => {

@@ -7,10 +7,7 @@ import UserWorkerGateway from '@/modules/user-management/infrastructure/gateway/
 
 export default class FindUserWorker
   implements
-    UseCaseInterface<
-      FindUserWorkerInputDto,
-      FindUserWorkerOutputDto | undefined
-    >
+    UseCaseInterface<FindUserWorkerInputDto, FindUserWorkerOutputDto | null>
 {
   private _userWorkerRepository: UserWorkerGateway;
 
@@ -19,7 +16,7 @@ export default class FindUserWorker
   }
   async execute({
     id,
-  }: FindUserWorkerInputDto): Promise<FindUserWorkerOutputDto | undefined> {
+  }: FindUserWorkerInputDto): Promise<FindUserWorkerOutputDto | null> {
     const response = await this._userWorkerRepository.find(id);
     if (response) {
       return {

@@ -72,17 +72,13 @@ describe('EvaluationRoute with ExpressAdapter', () => {
     it('should update an evaluation', async () => {
       const id = new Id().value;
       const payload = {
+        id,
         value: 10,
       };
-      const response = await supertest(app)
-        .patch(`/evaluation/${id}`)
-        .send(payload);
+      const response = await supertest(app).patch(`/evaluation`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(evaluationController.update).toHaveBeenCalledWith({
-        id,
-        ...payload,
-      });
+      expect(evaluationController.update).toHaveBeenCalledWith(payload);
       expect(response.body).toEqual({ id });
     });
 
@@ -100,11 +96,13 @@ describe('EvaluationRoute with ExpressAdapter', () => {
 
   describe('failure', () => {
     it('should return 400 for invalid quantity or offset', async () => {
-      const response = await supertest(app).get('/evaluations').send({});
+      const response = await supertest(app)
+        .get('/evaluations')
+        .send({ quantity: 'invalid', offset: 'invalid' });
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Quantity e/ou offset estão incorretos',
+        error: 'Bad Request',
       });
     });
 
@@ -112,17 +110,15 @@ describe('EvaluationRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/evaluation/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app)
-        .patch('/evaluation/invalid-id')
-        .send({});
+      const response = await supertest(app).patch('/evaluation').send({});
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -130,7 +126,7 @@ describe('EvaluationRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/evaluation/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
   });
 });

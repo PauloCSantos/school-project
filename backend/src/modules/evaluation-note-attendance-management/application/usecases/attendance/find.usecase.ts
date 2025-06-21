@@ -12,10 +12,7 @@ import AttendanceGateway from '@/modules/evaluation-note-attendance-management/i
  */
 export default class FindAttendance
   implements
-    UseCaseInterface<
-      FindAttendanceInputDto,
-      FindAttendanceOutputDto | undefined
-    >
+    UseCaseInterface<FindAttendanceInputDto, FindAttendanceOutputDto | null>
 {
   /** Repository for persisting and retrieving attendance records */
   private readonly _attendanceRepository: AttendanceGateway;
@@ -33,11 +30,11 @@ export default class FindAttendance
    * Executes the search for an attendance record by id.
    *
    * @param input - Input data containing the id to search for
-   * @returns Attendance data if found, undefined otherwise
+   * @returns Attendance data if found, null otherwise
    */
   async execute({
     id,
-  }: FindAttendanceInputDto): Promise<FindAttendanceOutputDto | undefined> {
+  }: FindAttendanceInputDto): Promise<FindAttendanceOutputDto | null> {
     const response = await this._attendanceRepository.find(id);
 
     if (response) {
@@ -51,6 +48,6 @@ export default class FindAttendance
       };
     }
 
-    return undefined;
+    return null;
   }
 }

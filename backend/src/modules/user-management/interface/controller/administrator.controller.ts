@@ -33,7 +33,7 @@ export class UserAdministratorController {
   }
   async find(
     input: FindUserAdministratorInputDto
-  ): Promise<FindUserAdministratorOutputDto | undefined> {
+  ): Promise<FindUserAdministratorOutputDto | null> {
     const response = await this.findUserAdministrator.execute(input);
     return response;
   }

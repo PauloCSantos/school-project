@@ -12,10 +12,7 @@ import EvaluationGateway from '@/modules/evaluation-note-attendance-management/i
  */
 export default class FindEvaluation
   implements
-    UseCaseInterface<
-      FindEvaluationInputDto,
-      FindEvaluationOutputDto | undefined
-    >
+    UseCaseInterface<FindEvaluationInputDto, FindEvaluationOutputDto | null>
 {
   /** Repository for persisting and retrieving evaluation records */
   private readonly _evaluationRepository: EvaluationGateway;
@@ -33,11 +30,11 @@ export default class FindEvaluation
    * Executes the search for an evaluation record by id.
    *
    * @param input - Input data containing the id to search for
-   * @returns Evaluation data if found, undefined otherwise
+   * @returns Evaluation data if found, null otherwise
    */
   async execute({
     id,
-  }: FindEvaluationInputDto): Promise<FindEvaluationOutputDto | undefined> {
+  }: FindEvaluationInputDto): Promise<FindEvaluationOutputDto | null> {
     const response = await this._evaluationRepository.find(id);
 
     if (response) {
@@ -50,6 +47,6 @@ export default class FindEvaluation
       };
     }
 
-    return undefined;
+    return null;
   }
 }

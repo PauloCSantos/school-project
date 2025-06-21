@@ -22,7 +22,7 @@ export class ExpressAdapter implements HttpServer {
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
     this.app.get(path, this.handleRequest(handler, middlewares));
   }
@@ -32,7 +32,7 @@ export class ExpressAdapter implements HttpServer {
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
     this.app.post(path, this.handleRequest(handler, middlewares));
   }
@@ -42,7 +42,7 @@ export class ExpressAdapter implements HttpServer {
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
     this.app.patch(path, this.handleRequest(handler, middlewares));
   }
@@ -52,7 +52,7 @@ export class ExpressAdapter implements HttpServer {
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
     this.app.delete(path, this.handleRequest(handler, middlewares));
   }

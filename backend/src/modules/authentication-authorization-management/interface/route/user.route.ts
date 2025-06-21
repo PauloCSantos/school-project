@@ -4,13 +4,6 @@ import {
   HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import AuthUserController from '../controller/user.controller';
-
-import {
-  isNotEmpty,
-  validEmail,
-  validRole,
-} from '@/modules/@shared/utils/validations';
-
 import {
   CreateAuthUserInputDto,
   FindAuthUserInputDto,
@@ -18,6 +11,11 @@ import {
   UpdateAuthUserInputDto,
 } from '../../application/dto/user-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import {
+  FunctionCalled,
+  createRequestMiddleware,
+} from '@/modules/@shared/application/middleware/request.middleware';
+import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
 
 export default class AuthUserRoute {
   constructor(
@@ -27,24 +25,35 @@ export default class AuthUserRoute {
   ) {}
 
   public routes(): void {
-    this.httpGateway.get(
-      '/authUser/:email',
-      this.findAuthUser.bind(this),
-      this.authMiddleware
-    );
-    this.httpGateway.patch(
-      '/authUser/:email',
-      this.updateAuthUser.bind(this),
-      this.authMiddleware
-    );
+    const REQUIRED_FIELDS = ['email', 'password', 'role'];
+    const REQUIRED_FIELD = ['email'];
+
+    this.httpGateway.get('/authUser/:email', this.findAuthUser.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+    ]);
+
+    this.httpGateway.patch('/authUser/:email', this.updateAuthUser.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+    ]);
+
     this.httpGateway.delete(
       '/authUser/:email',
       this.deleteAuthUser.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+      ]
     );
 
-    this.httpGateway.post('/register', this.createAuthUser.bind(this));
-    this.httpGateway.post('/login', this.loginAuthUser.bind(this));
+    this.httpGateway.post('/register', this.createAuthUser.bind(this), [
+      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+    ]);
+
+    this.httpGateway.post('/login', this.loginAuthUser.bind(this), [
+      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+    ]);
   }
 
   private async createAuthUser(
@@ -52,16 +61,9 @@ export default class AuthUserRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Todos os campos são obrigatórios' },
-        };
-      }
-
       const response = await this.authUserController.create(input);
       return {
-        statusCode: 201,
+        statusCode: StatusCodeEnum.CREATED,
         body: response,
       };
     } catch (error) {
@@ -74,27 +76,19 @@ export default class AuthUserRoute {
   ): Promise<HttpResponseData> {
     try {
       const { email } = req.params;
-      if (!validEmail(email)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Email inválido' },
-        };
-      }
-
       const response = await this.authUserController.find({ email });
       if (!response) {
         return {
-          statusCode: 404,
-          body: { error: 'Usuário não encontrado' },
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
         };
       }
-
       return {
-        statusCode: 200,
+        statusCode: StatusCodeEnum.OK,
         body: response,
       };
     } catch (error) {
-      return this.handleError(error, 404);
+      return this.handleError(error);
     }
   }
 
@@ -104,24 +98,14 @@ export default class AuthUserRoute {
     try {
       const { email } = req.params;
       const input = req.body;
-      if (
-        !validEmail(email) ||
-        !Object.values(input).some(v => v !== undefined)
-      ) {
-        return {
-          statusCode: 400,
-          body: { error: 'Email e/ou dados de atualização inválidos' },
-        };
-      }
-
-      const updateData = { ...input, email };
+      const updateData = { email, authUserDataToUpdate: input };
       const response = await this.authUserController.update(updateData);
       return {
-        statusCode: 200,
+        statusCode: StatusCodeEnum.OK,
         body: response,
       };
     } catch (error) {
-      return this.handleError(error, 404);
+      return this.handleError(error);
     }
   }
 
@@ -130,16 +114,9 @@ export default class AuthUserRoute {
   ): Promise<HttpResponseData> {
     try {
       const { email } = req.params;
-      if (!validEmail(email)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Email inválido' },
-        };
-      }
-
       const response = await this.authUserController.delete({ email });
       return {
-        statusCode: 200,
+        statusCode: StatusCodeEnum.OK,
         body: response,
       };
     } catch (error) {
@@ -152,20 +129,13 @@ export default class AuthUserRoute {
   ): Promise<HttpResponseData> {
     try {
       const { email, password, role } = req.body;
-      if (!validEmail(email) || !isNotEmpty(password) || !validRole(role)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Credenciais inválidas' },
-        };
-      }
-
       const response = await this.authUserController.login({
         email,
         password,
         role,
       });
       return {
-        statusCode: 200,
+        statusCode: StatusCodeEnum.OK,
         body: response,
       };
     } catch (error) {
@@ -184,13 +154,5 @@ export default class AuthUserRoute {
       statusCode: 500,
       body: { error: 'Erro interno do servidor' },
     };
-  }
-
-  private validateCreate(input: CreateAuthUserInputDto): boolean {
-    return (
-      input.email !== undefined &&
-      input.password !== undefined &&
-      input.role !== undefined
-    );
   }
 }

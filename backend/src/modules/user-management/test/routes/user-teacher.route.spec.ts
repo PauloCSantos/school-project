@@ -144,6 +144,7 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
     it('should update a teacher by ID', async () => {
       const id = new Id().value;
       const payload = {
+        id,
         address: {
           street: 'Updated Street',
           city: 'City A',
@@ -154,14 +155,11 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
         },
       };
       const response = await supertest(app)
-        .patch(`/user-teacher/${id}`)
+        .patch(`/user-teacher`)
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(userTeacherController.update).toHaveBeenCalledWith({
-        id,
-        ...payload,
-      });
+      expect(userTeacherController.update).toHaveBeenCalledWith(payload);
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -182,17 +180,17 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/user-teacher/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
       const response = await supertest(app)
-        .patch('/user-teacher/invalid-id')
-        .send({});
+        .patch('/user-teacher')
+        .send({ id: new Id().value });
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -200,7 +198,7 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/user-teacher/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid payload on create', async () => {

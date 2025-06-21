@@ -62,11 +62,11 @@ export default class AttendanceController {
   /**
    * Finds an attendance record by id.
    * @param input - The input containing the id to search for
-   * @returns Promise resolving to the found attendance data or undefined
+   * @returns Promise resolving to the found attendance data or null
    */
   async find(
     input: FindAttendanceInputDto
-  ): Promise<FindAttendanceOutputDto | undefined> {
+  ): Promise<FindAttendanceOutputDto | null> {
     const response = await this.findAttendance.execute(input);
     return response;
   }

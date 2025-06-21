@@ -97,8 +97,8 @@ describe('UserStudentRoute with ExpressAdapter', () => {
 
     it('should update an existing student', async () => {
       const response = await supertest(app)
-        .patch(`/user-student/${mockStudentData.id}`)
-        .send({ paymentYear: 51000 });
+        .patch(`/user-student`)
+        .send({ id: mockStudentData.id, paymentYear: 51000 });
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual({ ...mockStudentData, paymentYear: 51000 });
       expect(userStudentController.update).toHaveBeenCalledWith({
@@ -125,7 +125,7 @@ describe('UserStudentRoute with ExpressAdapter', () => {
     it('should return 400 for invalid id on find', async () => {
       const response = await supertest(app).get('/user-student/invalid-id');
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid payload on create', async () => {
@@ -135,19 +135,17 @@ describe('UserStudentRoute with ExpressAdapter', () => {
     });
 
     it('should return 400 for invalid id or data on update', async () => {
-      const response = await supertest(app)
-        .patch('/user-student/invalid-id')
-        .send({});
+      const response = await supertest(app).patch('/user-student').send({});
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
     it('should return 400 for invalid id on delete', async () => {
       const response = await supertest(app).delete('/user-student/invalid-id');
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
   });
 });

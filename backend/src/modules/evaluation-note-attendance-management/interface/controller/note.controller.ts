@@ -50,9 +50,9 @@ export default class NoteController {
   /**
    * Finds a note by id.
    * @param input - The input containing the id to search for
-   * @returns Promise resolving to the found note data or undefined
+   * @returns Promise resolving to the found note data or null
    */
-  async find(input: FindNoteInputDto): Promise<FindNoteOutputDto | undefined> {
+  async find(input: FindNoteInputDto): Promise<FindNoteOutputDto | null> {
     const response = await this.findNote.execute(input);
     return response;
   }

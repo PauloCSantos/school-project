@@ -71,12 +71,13 @@ describe('NoteRoute with ExpressAdapter', () => {
     it('should update a note', async () => {
       const id = new Id().value;
       const payload = {
-        /* campos para update */
+        id,
+        evaluation: new Id().value,
       };
-      const response = await supertest(app).patch(`/note/${id}`).send(payload);
+      const response = await supertest(app).patch(`/note`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(noteController.update).toHaveBeenCalledWith({ id, ...payload });
+      expect(noteController.update).toHaveBeenCalledWith(payload);
       expect(response.body).toEqual({ id });
     });
 
@@ -98,7 +99,7 @@ describe('NoteRoute with ExpressAdapter', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Quantity e/ou offset estão incorretos',
+        error: 'Bad Request',
       });
     });
 
@@ -106,15 +107,15 @@ describe('NoteRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/note/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app).patch('/note/invalid-id').send({});
+      const response = await supertest(app).patch('/note').send({});
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -122,7 +123,7 @@ describe('NoteRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/note/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
   });
 });

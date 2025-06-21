@@ -39,27 +39,27 @@ export interface HttpServer {
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void;
   post(
     path: string,
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void;
   patch(
     path: string,
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void;
   delete(
     path: string,
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void;
 }

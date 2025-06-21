@@ -1,4 +1,3 @@
-import { validId } from '@/modules/@shared/utils/validations';
 import {
   HttpServer,
   HttpResponseData,
@@ -13,6 +12,11 @@ import {
   UpdateUserWorkerInputDto,
   DeleteUserWorkerInputDto,
 } from '../../application/dto/worker-usecase.dto';
+import {
+  FunctionCalled,
+  createRequestMiddleware,
+} from '@/modules/@shared/application/middleware/request.middleware';
+import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
 
 export class UserWorkerRoute {
   constructor(
@@ -22,34 +26,37 @@ export class UserWorkerRoute {
   ) {}
 
   public routes(): void {
-    this.httpGateway.get(
-      '/users-worker',
-      this.findAllUserWorkers.bind(this),
-      this.authMiddleware
-    );
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS = ['name', 'address', 'email', 'birthday', 'salary'];
+    const REQUIRED_FIELD = ['id'];
 
-    this.httpGateway.post(
-      '/user-worker',
-      this.createUserWorker.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.get('/users-worker', this.findAllUserWorkers.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+    ]);
 
-    this.httpGateway.get(
-      '/user-worker/:id',
-      this.findUserWorker.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.post('/user-worker', this.createUserWorker.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+    ]);
 
-    this.httpGateway.patch(
-      '/user-worker/:id',
-      this.updateUserWorker.bind(this),
-      this.authMiddleware
-    );
+    this.httpGateway.get('/user-worker/:id', this.findUserWorker.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+    ]);
+
+    this.httpGateway.patch('/user-worker', this.updateUserWorker.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+    ]);
 
     this.httpGateway.delete(
       '/user-worker/:id',
       this.deleteUserWorker.bind(this),
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+      ]
     );
   }
 
@@ -58,17 +65,11 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset incorretos' },
-        };
-      }
-      const workers = await this.userWorkerController.findAll({
+      const response = await this.userWorkerController.findAll({
         quantity,
         offset,
       });
-      return { statusCode: 200, body: workers };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -79,11 +80,14 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!this.validFind(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
+      const response = await this.userWorkerController.find({ id });
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
       }
-      const worker = await this.userWorkerController.find({ id });
-      return { statusCode: 200, body: worker };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -94,36 +98,20 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação do worker' },
-        };
-      }
-      const newWorker = await this.userWorkerController.create(input);
-      return { statusCode: 201, body: newWorker };
+      const response = await this.userWorkerController.create(input);
+      return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateUserWorker(
-    req: HttpRequest<FindUserWorkerInputDto, {}, UpdateUserWorkerInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateUserWorkerInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!this.validUpdate(id, input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const updatedWorker = await this.userWorkerController.update({
-        ...input,
-        id,
-      });
-      return { statusCode: 200, body: updatedWorker };
+      const response = await this.userWorkerController.update(input);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -134,58 +122,11 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!this.validDelete(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
-      const deleted = await this.userWorkerController.delete({ id });
-      return { statusCode: 200, body: deleted };
+      const response = await this.userWorkerController.delete({ id });
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    if (quantity === undefined || offset === undefined) {
-      return true;
-    }
-    return Number.isInteger(quantity) && Number.isInteger(offset);
-  }
-
-  private validateCreate(input: CreateUserWorkerInputDto): boolean {
-    if (
-      !input.name ||
-      typeof input.name.firstName !== 'string' ||
-      typeof input.name.lastName !== 'string' ||
-      !input.address ||
-      typeof input.address.street !== 'string' ||
-      typeof input.address.city !== 'string' ||
-      typeof input.address.zip !== 'string' ||
-      typeof input.address.number !== 'number' ||
-      typeof input.address.avenue !== 'string' ||
-      typeof input.address.state !== 'string' ||
-      !input.email ||
-      typeof input.email !== 'string' ||
-      !input.birthday ||
-      typeof input.birthday !== 'string' ||
-      !input.salary ||
-      typeof input.salary.salary !== 'number'
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  private validFind(id: string): boolean {
-    return validId(id);
-  }
-
-  private validUpdate(id: string, input: UpdateUserWorkerInputDto): boolean {
-    if (!validId(id)) return false;
-    return Object.values(input).some(value => value !== undefined);
-  }
-
-  private validDelete(id: string): boolean {
-    return validId(id);
   }
 
   private handleError(error: unknown, statusCode = 400): HttpResponseData {
