@@ -45,7 +45,7 @@ export default class UpdateUserTeacher
       address?.state !== undefined &&
         (userTeacher.address.state = address.state);
       email !== undefined && (userTeacher.email = email);
-      birthday !== undefined && (userTeacher.birthday = birthday);
+      birthday !== undefined && (userTeacher.birthday = new Date(birthday));
       graduation !== undefined && (userTeacher.graduation = graduation);
       salary?.currency !== undefined &&
         (userTeacher.salary.currency = salary.currency);

@@ -28,7 +28,7 @@ export default class CreateUserStudent
       name: new Name(name),
       address: new Address(address),
       email,
-      birthday,
+      birthday: new Date(birthday),
       paymentYear,
     });
 

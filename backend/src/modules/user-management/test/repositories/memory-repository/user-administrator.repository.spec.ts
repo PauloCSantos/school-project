@@ -85,11 +85,11 @@ describe('MemoryUserAdministratorRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should received an undefined', async () => {
+    it('should received an null', async () => {
       const userId = new Id().value;
       const userAdministratorFound = await repository.find(userId);
 
-      expect(userAdministratorFound).toBeUndefined();
+      expect(userAdministratorFound).toBeNull();
     });
     it('should throw an error when the Id is wrong', async () => {
       const userAdministrator = new UserAdministrator({

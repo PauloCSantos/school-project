@@ -28,9 +28,9 @@ import RemoveStudents from '@/modules/evaluation-note-attendance-management/appl
 import EvaluationController from '@/modules/evaluation-note-attendance-management/interface/controller/evaluation.controller';
 import NoteController from '@/modules/evaluation-note-attendance-management/interface/controller/note.controller';
 import AttendanceController from '@/modules/evaluation-note-attendance-management/interface/controller/attendance.controller';
-import { EvaluationRoute } from '@/modules/evaluation-note-attendance-management/interface/route/evaluation.route';
-import { NoteRoute } from '@/modules/evaluation-note-attendance-management/interface/route/note.route';
-import { AttendanceRoute } from '@/modules/evaluation-note-attendance-management/interface/route/attendance.route';
+import EvaluationRoute from '@/modules/evaluation-note-attendance-management/interface/route/evaluation.route';
+import NoteRoute from '@/modules/evaluation-note-attendance-management/interface/route/note.route';
+import AttendanceRoute from '@/modules/evaluation-note-attendance-management/interface/route/attendance.route';
 
 describe('Evaluation note attendance management module end to end test', () => {
   let evaluationRepository: MemoryEvaluationRepository;
@@ -180,7 +180,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           expect(evaluation.body.error).toBeDefined();
         });
       });
-      describe('PATCH /evaluation/:id', () => {
+      describe('PATCH /evaluation', () => {
         it('should throw an error when the data to update an evaluation is wrong', async () => {
           const response = await supertest(app)
             .post('/evaluation')
@@ -196,15 +196,16 @@ describe('Evaluation note attendance management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedEvaluation = await supertest(app)
-            .patch(`/evaluation/${id}`)
+            .patch(`/evaluation`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               lesson: 123,
             });
-          expect(updatedEvaluation.status).toBe(404);
+          expect(updatedEvaluation.status).toBe(400);
           expect(updatedEvaluation.body.error).toBeDefined();
         });
       });
@@ -314,7 +315,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /evaluation/:id', () => {
+      describe('PATCH /evaluation', () => {
         it('should update an evaluation by ID', async () => {
           const response = await supertest(app)
             .post('/evaluation')
@@ -330,12 +331,13 @@ describe('Evaluation note attendance management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedEvaluation = await supertest(app)
-            .patch(`/evaluation/${id}`)
+            .patch(`/evaluation`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               lesson: new Id().value,
               teacher: new Id().value,
               type: 'evaluation',
@@ -414,7 +416,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           expect(note.body.error).toBeDefined();
         });
       });
-      describe('PATCH /note/:id', () => {
+      describe('PATCH /note', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/note')
@@ -429,13 +431,13 @@ describe('Evaluation note attendance management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedNote = await supertest(app)
-            .patch(`/note/${id}`)
+            .patch(`/note`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
-            .send({ note: 11 });
-          expect(updatedNote.status).toBe(404);
+            .send({ id, note: 11 });
+          expect(updatedNote.status).toBe(400);
           expect(updatedNote.body.error).toBeDefined();
         });
       });
@@ -540,7 +542,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /note/:id', () => {
+      describe('PATCH /note', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/note')
@@ -555,12 +557,13 @@ describe('Evaluation note attendance management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedNote = await supertest(app)
-            .patch(`/note/${id}`)
+            .patch(`/note`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               note: 5,
             });
           expect(updatedNote.status).toBe(200);
@@ -604,7 +607,7 @@ describe('Evaluation note attendance management module end to end test', () => {
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
-              date: new Date('02/10/26'),
+              date: new Date('02/10/30'),
               day: 'fri' as DayOfWeek,
               hour: '06:50' as Hour,
               lesson: new Id().value,
@@ -639,7 +642,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           expect(response.body.error).toBeDefined();
         });
       });
-      describe('PATCH /attendance/:id', () => {
+      describe('PATCH /attendance', () => {
         it('should throw an error when the data to update an attendance is wrong', async () => {
           const response = await supertest(app)
             .post('/attendance')
@@ -656,15 +659,16 @@ describe('Evaluation note attendance management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedAttendance = await supertest(app)
-            .patch(`/attendance/${id}`)
+            .patch(`/attendance`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               day: '',
             });
-          expect(updatedAttendance.status).toBe(404);
+          expect(updatedAttendance.status).toBe(400);
           expect(updatedAttendance.body.error).toBeDefined();
         });
       });
@@ -768,6 +772,7 @@ describe('Evaluation note attendance management module end to end test', () => {
               lesson: new Id().value,
               studentsPresent: [new Id().value, new Id().value, new Id().value],
             });
+
           expect(response.status).toBe(201);
           expect(response.body.id).toBeDefined();
         });
@@ -854,12 +859,13 @@ describe('Evaluation note attendance management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedAttendance = await supertest(app)
-            .patch(`/attendance/${id}`)
+            .patch(`/attendance`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               hour: '12:00',
             });
           expect(updatedAttendance.status).toBe(200);
@@ -918,7 +924,7 @@ describe('Evaluation note attendance management module end to end test', () => {
               id,
               newStudentsList: [new Id().value],
             });
-          expect(result.status).toBe(201);
+          expect(result.status).toBe(200);
           expect(result.body).toBeDefined();
         });
       });
@@ -949,7 +955,7 @@ describe('Evaluation note attendance management module end to end test', () => {
               id,
               studentsListToRemove: [input.studentsPresent[0]],
             });
-          expect(result.status).toBe(201);
+          expect(result.status).toBe(200);
           expect(result.body).toBeDefined();
         });
       });

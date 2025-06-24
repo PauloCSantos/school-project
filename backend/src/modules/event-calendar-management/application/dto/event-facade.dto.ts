@@ -9,7 +9,7 @@ import {
   IUpdateEventOutput,
   IDeleteEventInput,
   IDeleteEventOutput,
-} from './base-calendar.dto';
+} from './base-event.dto';
 
 export type FindEventInputDto = IFindEventInput;
 export type FindEventOutputDto = IFindEventOutput;

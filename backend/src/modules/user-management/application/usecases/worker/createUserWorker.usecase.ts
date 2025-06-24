@@ -29,7 +29,7 @@ export default class CreateUserWorker
       name: new Name(name),
       address: new Address(address),
       email,
-      birthday,
+      birthday: new Date(birthday),
       salary: new Salary(salary),
     });
 

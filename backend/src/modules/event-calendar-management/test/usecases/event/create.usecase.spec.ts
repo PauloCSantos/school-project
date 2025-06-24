@@ -1,7 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import CreateEvent from '@/modules/event-calendar-management/application/usecases/event/create.usecase';
-import Event from '@/modules/event-calendar-management/domain/entity/calendar.entity';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/calendar.gateway';
+import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
+import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
 
 // Crie o mock com tipagem explícita
 const MockRepository = (): jest.Mocked<EventGateway> => {

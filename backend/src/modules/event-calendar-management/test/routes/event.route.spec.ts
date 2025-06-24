@@ -2,8 +2,8 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import EventController from '../../interface/controller/calendar.controller';
-import EventRoute from '../../interface/route/calendar.route';
+import EventController from '../../interface/controller/event.controller';
+import EventRoute from '../../interface/route/event.route';
 
 describe('EventRoute with ExpressAdapter', () => {
   let http: ExpressAdapter;

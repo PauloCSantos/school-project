@@ -12,12 +12,12 @@ export default class MemoryUserAdministratorRepository
       : (this._administratorUsers = []);
   }
 
-  async find(id: string): Promise<UserAdministrator | undefined> {
+  async find(id: string): Promise<UserAdministrator | null> {
     const user = this._administratorUsers.find(user => user.id.value === id);
     if (user) {
       return user;
     } else {
-      return undefined;
+      return null;
     }
   }
   async findAll(

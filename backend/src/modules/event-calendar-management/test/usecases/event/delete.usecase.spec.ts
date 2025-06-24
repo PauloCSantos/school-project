@@ -1,7 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import DeleteEvent from '@/modules/event-calendar-management/application/usecases/event/delete.usecase';
-import Event from '@/modules/event-calendar-management/domain/entity/calendar.entity';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/calendar.gateway';
+import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
+import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
 
 // Crie o mock com tipagem explícita
 const MockRepository = (): jest.Mocked<EventGateway> => {
@@ -10,7 +10,7 @@ const MockRepository = (): jest.Mocked<EventGateway> => {
     findAll: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
-    delete: jest.fn((id: string) =>
+    delete: jest.fn((_id: string) =>
       Promise.resolve('Operação concluída com sucesso')
     ),
   } as jest.Mocked<EventGateway>;

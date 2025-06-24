@@ -48,10 +48,10 @@ describe('MemoryAttendanceRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should return undefined if attendance not found', async () => {
+    it('should return null if attendance not found', async () => {
       const attendanceId = new Id().value;
       const attendanceFound = await repository.find(attendanceId);
-      expect(attendanceFound).toBeUndefined();
+      expect(attendanceFound).toBeNull();
     });
 
     it('should throw an error when trying to update a non-existent attendance', async () => {
@@ -179,7 +179,7 @@ describe('MemoryAttendanceRepository unit test', () => {
 
       // Verify attendance was removed from repository
       const deletedAttendance = await repository.find(attendance1.id.value);
-      expect(deletedAttendance).toBeUndefined();
+      expect(deletedAttendance).toBeNull();
 
       // Verify repository state
       const allAttendances = await repository.findAll();

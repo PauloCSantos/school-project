@@ -10,13 +10,13 @@ import {
   FindAllEventOutputDto,
   UpdateEventInputDto,
   UpdateEventOutputDto,
-} from '../../application/dto/calendar-usecase.dto';
+} from '../../application/dto/event-usecase.dto';
 import CreateEvent from '../../application/usecases/event/create.usecase';
 import FindEvent from '../../application/usecases/event/find.usecase';
 import FindAllEvent from '../../application/usecases/event/find-all.usecase';
 import UpdateEvent from '../../application/usecases/event/update.usecase';
 import DeleteEvent from '../../application/usecases/event/delete.usecase';
-import EventController from '../../interface/controller/calendar.controller';
+import EventController from '../../interface/controller/event.controller';
 
 const mockCreateEvent: jest.Mocked<CreateEvent> = {
   execute: jest.fn(),

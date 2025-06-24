@@ -41,11 +41,10 @@ export default class UpdateAuthUser
    * @throws ValidationError if any of the updated data fails validation
    */
   async execute({
-    authUserDataToUpdate,
     email,
+    authUserDataToUpdate,
   }: UpdateAuthUserInputDto): Promise<UpdateAuthUserOutputDto> {
     const existingUser = await this._authUserRepository.find(email);
-
     if (!existingUser) {
       throw new Error('AuthUser not found');
     }

@@ -128,34 +128,40 @@ export default class RequestMiddleware
 
       case FunctionCalled.UPDATE: {
         const idToUpdate = req.body?.id as string | undefined;
-        const emailToUpdate = req.params?.email as string | undefined;
+        const emailToUpdate = req.body?.email as string | undefined;
         if (!idToUpdate && !emailToUpdate) {
           return {
             statusCode: errorStatus.BADREQUEST,
             body: { error: ErrorMessage.BADREQUEST },
           };
         }
-        if (emailToUpdate) {
-          if (!validEmail(emailToUpdate)) {
-            return {
-              statusCode: errorStatus.BADREQUEST,
-              body: { error: ErrorMessage.BADREQUEST },
-            };
-          }
-        } else {
+        let foundFields = 0;
+        if (idToUpdate) {
           if (!validId(idToUpdate!)) {
             return {
               statusCode: errorStatus.BADREQUEST,
               body: { error: ErrorMessage.BADREQUEST },
             };
           }
-        }
-        let foundFields = 0;
-        for (const field of this.requiredFields) {
-          if (req.body[field] !== undefined) {
-            foundFields++;
+          for (const field of this.requiredFields) {
+            if (req.body[field] !== undefined) {
+              foundFields++;
+            }
+          }
+        } else {
+          if (!validEmail(emailToUpdate!)) {
+            return {
+              statusCode: errorStatus.BADREQUEST,
+              body: { error: ErrorMessage.BADREQUEST },
+            };
+          }
+          for (const field of this.requiredFields) {
+            if (req.body.authUserDataToUpdate[field] !== undefined) {
+              foundFields++;
+            }
           }
         }
+
         if (foundFields === 0) {
           return {
             statusCode: errorStatus.BADREQUEST,

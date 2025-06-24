@@ -3,7 +3,7 @@ import {
   HttpResponseData,
   HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
-import EventController from '../controller/calendar.controller';
+import EventController from '../controller/event.controller';
 
 import {
   CreateEventInputDto,
@@ -11,7 +11,7 @@ import {
   FindEventInputDto,
   FindAllEventInputDto,
   DeleteEventInputDto,
-} from '../../application/dto/calendar-usecase.dto';
+} from '../../application/dto/event-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import {
   FunctionCalled,

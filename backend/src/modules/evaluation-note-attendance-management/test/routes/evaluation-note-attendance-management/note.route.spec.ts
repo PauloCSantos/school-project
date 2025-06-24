@@ -95,7 +95,9 @@ describe('NoteRoute with ExpressAdapter', () => {
 
   describe('failure', () => {
     it('should return 400 for invalid quantity or offset', async () => {
-      const response = await supertest(app).get('/notes').send({});
+      const response = await supertest(app)
+        .get('/notes')
+        .send({ offset: 'invalid' });
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({

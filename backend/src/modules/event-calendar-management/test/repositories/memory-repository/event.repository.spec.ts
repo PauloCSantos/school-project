@@ -1,6 +1,6 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Event from '@/modules/event-calendar-management/domain/entity/calendar.entity';
-import MemoryEventRepository from '@/modules/event-calendar-management/infrastructure/repositories/memory-repository/calendar.repository';
+import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
+import MemoryEventRepository from '@/modules/event-calendar-management/infrastructure/repositories/memory-repository/event.repository';
 
 describe('MemoryEventRepository unit test', () => {
   let repository: MemoryEventRepository;

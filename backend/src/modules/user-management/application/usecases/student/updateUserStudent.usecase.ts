@@ -43,7 +43,7 @@ export default class UpdateUserStudent
       address?.state !== undefined &&
         (userStudent.address.state = address.state);
       email !== undefined && (userStudent.email = email);
-      birthday !== undefined && (userStudent.birthday = birthday);
+      birthday !== undefined && (userStudent.birthday = new Date(birthday));
       paymentYear !== undefined && (userStudent.paymentYear = paymentYear);
 
       const result = await this._userStudentRepository.update(userStudent);

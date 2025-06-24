@@ -43,7 +43,7 @@ export default class CreateAttendance
     studentsPresent,
   }: CreateAttendanceInputDto): Promise<CreateAttendanceOutputDto> {
     const attendance = new Attendance({
-      date,
+      date: new Date(date),
       day,
       hour,
       lesson,

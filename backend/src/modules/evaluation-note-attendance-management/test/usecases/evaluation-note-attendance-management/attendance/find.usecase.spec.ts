@@ -56,13 +56,13 @@ describe('FindAttendance usecase unit test', () => {
       });
     });
 
-    it('should return undefined when id is not found', async () => {
-      attendanceRepository.find.mockResolvedValue(undefined);
+    it('should return null when id is not found', async () => {
+      attendanceRepository.find.mockResolvedValue(null);
 
       const result = await usecase.execute({ id: 'non-existent-id' });
 
       expect(attendanceRepository.find).toHaveBeenCalledWith('non-existent-id');
-      expect(result).toBeUndefined();
+      expect(result).toBeNull();
     });
   });
 });

@@ -9,13 +9,13 @@ import {
   FindEventOutputDto,
   UpdateEventInputDto,
   UpdateEventOutputDto,
-} from '../../dto/calendar-facade.dto';
+} from '../../dto/event-facade.dto';
 import CreateEvent from '../../usecases/event/create.usecase';
 import DeleteEvent from '../../usecases/event/delete.usecase';
 import FindAllEvent from '../../usecases/event/find-all.usecase';
 import FindEvent from '../../usecases/event/find.usecase';
 import UpdateEvent from '../../usecases/event/update.usecase';
-import EventFacadeInterface from '../interface/calendar-facade.interface';
+import EventFacadeInterface from '../interface/event-facade.interface';
 
 /**
  * Properties required to initialize the EventFacade

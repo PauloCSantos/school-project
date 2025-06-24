@@ -42,11 +42,11 @@ describe('MemoryEvaluationRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should return undefined if evaluation not found', async () => {
+    it('should return null if evaluation not found', async () => {
       const evaluationId = new Id().value;
       const evaluationFound = await repository.find(evaluationId);
 
-      expect(evaluationFound).toBeUndefined();
+      expect(evaluationFound).toBeNull();
     });
 
     it('should throw an error when trying to update a non-existent evaluation', async () => {
@@ -144,7 +144,7 @@ describe('MemoryEvaluationRepository unit test', () => {
 
       // Verify evaluation was removed from repository
       const deletedEvaluation = await repository.find(evaluation1.id.value);
-      expect(deletedEvaluation).toBeUndefined();
+      expect(deletedEvaluation).toBeNull();
 
       // Verify repository state
       const allEvaluations = await repository.findAll();

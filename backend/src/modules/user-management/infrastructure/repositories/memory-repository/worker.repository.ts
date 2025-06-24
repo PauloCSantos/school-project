@@ -8,12 +8,12 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
     workerUsers ? (this._workerUsers = workerUsers) : (this._workerUsers = []);
   }
 
-  async find(id: string): Promise<UserWorker | undefined> {
+  async find(id: string): Promise<UserWorker | null> {
     const user = this._workerUsers.find(user => user.id.value === id);
     if (user) {
       return user;
     } else {
-      return undefined;
+      return null;
     }
   }
   async findAll(

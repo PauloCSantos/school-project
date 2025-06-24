@@ -9,7 +9,7 @@ import {
   FindEventOutputDto,
   UpdateEventInputDto,
   UpdateEventOutputDto,
-} from '../../dto/calendar-facade.dto';
+} from '../../dto/event-facade.dto';
 
 /**
  * Interface for calendar event operations

@@ -30,7 +30,13 @@ export default class AttendanceRoute {
     const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
     const REQUIRED_FIELDS_ADD = ['id', 'newStudentsList'];
     const REQUIRED_FIELDS_REMOVE = ['id', 'studentsListToRemove'];
-    const REQUIRED_FIELDS = ['date', 'lesson', 'studentsPresent'];
+    const REQUIRED_FIELDS = [
+      'date',
+      'lesson',
+      'studentsPresent',
+      'hour',
+      'day',
+    ];
     const REQUIRED_FIELD = ['id'];
 
     this.httpGateway.get('/attendances', this.findAllAttendances.bind(this), [

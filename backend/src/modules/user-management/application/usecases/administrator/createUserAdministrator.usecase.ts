@@ -33,7 +33,7 @@ export default class CreateUserAdministrator
       name: new Name(name),
       address: new Address(address),
       email,
-      birthday,
+      birthday: new Date(birthday),
       graduation,
       salary: new Salary(salary),
     });

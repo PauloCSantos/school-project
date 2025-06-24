@@ -33,7 +33,7 @@ export default class AuthUserRoute {
       createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
     ]);
 
-    this.httpGateway.patch('/authUser/:email', this.updateAuthUser.bind(this), [
+    this.httpGateway.patch('/authUser', this.updateAuthUser.bind(this), [
       this.authMiddleware,
       createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
     ]);
@@ -93,13 +93,11 @@ export default class AuthUserRoute {
   }
 
   private async updateAuthUser(
-    req: HttpRequest<FindAuthUserInputDto, {}, UpdateAuthUserInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateAuthUserInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { email } = req.params;
       const input = req.body;
-      const updateData = { email, authUserDataToUpdate: input };
-      const response = await this.authUserController.update(updateData);
+      const response = await this.authUserController.update(input);
       return {
         statusCode: StatusCodeEnum.OK,
         body: response,

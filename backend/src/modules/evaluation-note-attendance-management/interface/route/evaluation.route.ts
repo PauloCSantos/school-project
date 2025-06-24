@@ -28,7 +28,7 @@ export default class EvaluationRoute {
 
   public routes(): void {
     const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
-    const REQUIRED_FIELDS = ['teacher', 'lesson'];
+    const REQUIRED_FIELDS = ['teacher', 'lesson', 'type', 'value'];
     const REQUIRED_FIELD = ['id'];
     this.httpGateway.get('/evaluations', this.findAllEvaluations.bind(this), [
       this.authMiddleware,

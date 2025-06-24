@@ -1,4 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsers } from '@/modules/@shared/type/enum';
 import AuthUserFacadeFactory from '@/modules/authentication-authorization-management/application/factory/user-facade.factory';
 
 describe('AuthUser facade integration test', () => {

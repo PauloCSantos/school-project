@@ -8,12 +8,12 @@ export default class MemorySubjectRepository implements SubjectGateway {
     subjects ? (this._subjects = subjects) : (this._subjects = []);
   }
 
-  async find(id: string): Promise<Subject | undefined> {
+  async find(id: string): Promise<Subject | null> {
     const subject = this._subjects.find(subject => subject.id.value === id);
     if (subject) {
       return subject;
     } else {
-      return undefined;
+      return null;
     }
   }
   async findAll(

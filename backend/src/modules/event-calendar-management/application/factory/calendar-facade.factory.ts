@@ -1,5 +1,5 @@
-import MemoryEventRepository from '../../infrastructure/repositories/memory-repository/calendar.repository';
-import EventFacade from '../facade/facade/calendar.facade';
+import MemoryEventRepository from '../../infrastructure/repositories/memory-repository/event.repository';
+import EventFacade from '../facade/facade/event.facade';
 import CreateEvent from '../usecases/event/create.usecase';
 import DeleteEvent from '../usecases/event/delete.usecase';
 import FindAllEvent from '../usecases/event/find-all.usecase';

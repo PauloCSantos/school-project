@@ -88,9 +88,10 @@ describe('AuthUserRoute with ExpressAdapter', () => {
 
     it('should update user', async () => {
       const response = await supertest(app)
-        .patch('/authUser/user@example.com')
+        .patch('/authUser')
         .send({
-          password: 'newpass',
+          email: 'user@example.com',
+          authUserDataToUpdate: { password: 'newpass' },
         });
 
       expect(response.statusCode).toBe(200);
@@ -145,9 +146,7 @@ describe('AuthUserRoute with ExpressAdapter', () => {
     });
 
     it('should return 400 for invalid update input', async () => {
-      const response = await supertest(app)
-        .patch('/authUser/invalid-email')
-        .send({});
+      const response = await supertest(app).patch('/authUser').send({});
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({

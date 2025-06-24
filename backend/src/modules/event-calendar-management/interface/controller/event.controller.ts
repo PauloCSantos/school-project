@@ -9,7 +9,7 @@ import {
   FindEventOutputDto,
   UpdateEventInputDto,
   UpdateEventOutputDto,
-} from '../../application/dto/calendar-usecase.dto';
+} from '../../application/dto/event-usecase.dto';
 import CreateEvent from '../../application/usecases/event/create.usecase';
 import DeleteEvent from '../../application/usecases/event/delete.usecase';
 import FindAllEvent from '../../application/usecases/event/find-all.usecase';

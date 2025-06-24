@@ -1,4 +1,4 @@
-import Event from '../../domain/entity/calendar.entity';
+import Event from '../../domain/entity/event.entity';
 
 /**
  * Interface for calendar event operations.

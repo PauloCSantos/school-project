@@ -10,12 +10,12 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
       : (this._teacherUsers = []);
   }
 
-  async find(id: string): Promise<UserTeacher | undefined> {
+  async find(id: string): Promise<UserTeacher | null> {
     const user = this._teacherUsers.find(user => user.id.value === id);
     if (user) {
       return user;
     } else {
-      return undefined;
+      return null;
     }
   }
   async findAll(

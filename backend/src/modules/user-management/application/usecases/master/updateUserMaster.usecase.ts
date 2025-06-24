@@ -43,7 +43,7 @@ export default class UpdateUserMaster
       address?.state !== undefined &&
         (userMaster.address.state = address.state);
       email !== undefined && (userMaster.email = email);
-      birthday !== undefined && (userMaster.birthday = birthday);
+      birthday !== undefined && (userMaster.birthday = new Date(birthday));
       cnpj !== undefined && (userMaster.cnpj = cnpj);
 
       const result = await this._userMasterRepository.update(userMaster);

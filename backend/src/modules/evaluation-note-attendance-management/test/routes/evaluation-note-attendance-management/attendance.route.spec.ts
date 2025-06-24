@@ -1,5 +1,3 @@
-// attendance.route.spec.ts
-
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
@@ -58,6 +56,8 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       const payload = {
         date: '2025-05-26',
         lesson: 'Aula 1',
+        hour: '10:00',
+        day: 'Mon',
         studentsPresent: [new Id().value],
       };
       const response = await supertest(app).post('/attendance').send(payload);

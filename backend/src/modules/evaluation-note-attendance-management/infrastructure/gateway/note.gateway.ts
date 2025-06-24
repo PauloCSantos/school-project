@@ -8,9 +8,9 @@ export default interface NoteGateway {
   /**
    * Finds a note by its unique identifier.
    * @param id - The unique identifier of the note to search for
-   * @returns Promise resolving to the found Note or undefined if not found
+   * @returns Promise resolving to the found Note or null if not found
    */
-  find(id: string): Promise<Note | undefined>;
+  find(id: string): Promise<Note | null>;
 
   /**
    * Retrieves a collection of notes with pagination support.

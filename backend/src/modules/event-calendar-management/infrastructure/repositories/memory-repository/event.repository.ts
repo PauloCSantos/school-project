@@ -1,5 +1,5 @@
-import Event from '@/modules/event-calendar-management/domain/entity/calendar.entity';
-import EventGateway from '../../gateway/calendar.gateway';
+import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
+import EventGateway from '../../gateway/event.gateway';
 
 /**
  * In-memory implementation of EventGateway.

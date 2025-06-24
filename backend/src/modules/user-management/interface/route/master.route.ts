@@ -79,6 +79,7 @@ export class UserMasterRoute {
     try {
       const input = req.body;
       const response = await this.userMasterController.update(input);
+
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);

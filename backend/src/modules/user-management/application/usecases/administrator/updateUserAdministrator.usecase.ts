@@ -45,7 +45,7 @@ export default class UpdateUserAdministrator
         (userAdm.address.avenue = address.avenue);
       address?.state !== undefined && (userAdm.address.state = address.state);
       email !== undefined && (userAdm.email = email);
-      birthday !== undefined && (userAdm.birthday = birthday);
+      birthday !== undefined && (userAdm.birthday = new Date(birthday));
       graduation !== undefined && (userAdm.graduation = graduation);
       salary?.currency !== undefined &&
         (userAdm.salary.currency = salary.currency);

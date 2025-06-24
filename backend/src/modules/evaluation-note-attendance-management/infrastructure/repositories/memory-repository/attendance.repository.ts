@@ -20,16 +20,16 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
   /**
    * Finds an attendance record by its unique identifier.
    * @param id - The unique identifier to search for
-   * @returns Promise resolving to the found Attendance or undefined if not found
+   * @returns Promise resolving to the found Attendance or null if not found
    */
-  async find(id: string): Promise<Attendance | undefined> {
+  async find(id: string): Promise<Attendance | null> {
     const attendance = this._attendance.find(
       attendance => attendance.id.value === id
     );
     if (attendance) {
       return attendance;
     } else {
-      return undefined;
+      return null;
     }
   }
 

@@ -277,7 +277,7 @@ describe('User management module end to end test', () => {
           expect(userAdministrator.body.error).toBeDefined();
         });
       });
-      describe('PATCH /user-administrator/:id', () => {
+      describe('PATCH /user-administrator', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-administrator')
@@ -307,12 +307,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-administrator/${id}`)
+            .patch(`/user-administrator`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               address: {
                 zip: '',
                 state: '',
@@ -390,6 +391,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
             });
+
           expect(response.status).toBe(201);
           expect(response.body.id).toBeDefined();
         });
@@ -433,7 +435,7 @@ describe('User management module end to end test', () => {
           expect(userAdministrator.body).toBeDefined();
         });
       });
-      describe('GET /user-administrators/', () => {
+      describe('GET /users-administrator/', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/user-administrator')
@@ -488,7 +490,7 @@ describe('User management module end to end test', () => {
               graduation: 'Spanish',
             });
           const response = await supertest(app)
-            .get('/user-administrators')
+            .get('/users-administrator')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -498,7 +500,7 @@ describe('User management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /user-administrator/:id', () => {
+      describe('PATCH /user-administrator', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-administrator')
@@ -528,12 +530,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-administrator/${id}`)
+            .patch(`/user-administrator`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               address: {
                 street: 'Street B',
                 city: 'City B',
@@ -542,7 +545,6 @@ describe('User management module end to end test', () => {
                 avenue: 'Avenue B',
                 state: 'State B',
               },
-              birthday: '01/01/2020',
             });
           expect(updatedUser.status).toBe(200);
           expect(updatedUser.body).toBeDefined();
@@ -595,6 +597,10 @@ describe('User management module end to end test', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-master')
+            .set(
+              'authorization',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -620,6 +626,10 @@ describe('User management module end to end test', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await supertest(app)
             .post('/user-master')
+            .set(
+              'authorization',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -647,10 +657,14 @@ describe('User management module end to end test', () => {
           expect(response.body.error).toBeDefined();
         });
       });
-      describe('PATCH /user-master/:id', () => {
+      describe('PATCH /user-master', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-master')
+            .set(
+              'authorization',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -670,12 +684,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-master/${id}`)
+            .patch(`/user-master`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               cnpj: '142154654',
             });
           expect(updatedUser.status).toBe(400);
@@ -688,6 +703,10 @@ describe('User management module end to end test', () => {
         it('should create a user', async () => {
           const response = await supertest(app)
             .post('/user-master')
+            .set(
+              'authorization',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: new Id().value,
               name: {
@@ -714,6 +733,10 @@ describe('User management module end to end test', () => {
         it('should find a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-master')
+            .set(
+              'authorization',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: new Id().value,
               name: {
@@ -743,10 +766,14 @@ describe('User management module end to end test', () => {
           expect(userMaster.body).toBeDefined();
         });
       });
-      describe('PATCH /user-master/:id', () => {
+      describe('PATCH /user-master', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-master')
+            .set(
+              'authorization',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: new Id().value,
               name: {
@@ -762,19 +789,20 @@ describe('User management module end to end test', () => {
                 state: 'State A',
               },
               birthday: '11-12-1995',
-              email: 'teste1@test.com',
+              email: 'teste2@test.com',
               cnpj: '35.741.901/0001-58',
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-master/${id}`)
+            .patch(`/user-master`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
-              email: 'teste2@test.com',
+              id,
               cnpj: '35.845.901/0001-58',
+              email: 'teste123@test.com',
             });
           expect(updatedUser.status).toBe(200);
           expect(updatedUser.body).toBeDefined();
@@ -848,7 +876,7 @@ describe('User management module end to end test', () => {
           expect(userStudent.body.error).toBeDefined();
         });
       });
-      describe('PATCH /user-student/:id', () => {
+      describe('PATCH /user-student', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-student')
@@ -875,14 +903,14 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-student/${id}`)
+            .patch(`/user-student`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               paymentYear: 0,
-              birthday: '18/02/2024',
             });
           expect(updatedUser.status).toBe(400);
           expect(updatedUser.body.error).toBeDefined();
@@ -990,7 +1018,7 @@ describe('User management module end to end test', () => {
           expect(userStudent.body).toBeDefined();
         });
       });
-      describe('GET /user-students/', () => {
+      describe('GET /users-student', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/user-student')
@@ -1039,7 +1067,7 @@ describe('User management module end to end test', () => {
               paymentYear: 20000,
             });
           const response = await supertest(app)
-            .get('/user-students')
+            .get('/users-student')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -1049,7 +1077,7 @@ describe('User management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /user-student/:id', () => {
+      describe('PATCH /user-student', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-student')
@@ -1076,12 +1104,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-student/${id}`)
+            .patch(`/user-student`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               name: {
                 firstName: 'John',
                 lastName: 'Doe',
@@ -1094,7 +1123,6 @@ describe('User management module end to end test', () => {
                 avenue: 'Avenue A',
                 state: 'State A',
               },
-              birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
@@ -1214,7 +1242,7 @@ describe('User management module end to end test', () => {
           expect(userTeacher.body.error).toBeDefined();
         });
       });
-      describe('PATCH /user-teacher/:id', () => {
+      describe('PATCH /user-teacher', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-teacher')
@@ -1245,12 +1273,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-teacher/${id}`)
+            .patch(`/user-teacher`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               academicDegrees: 0,
               birthday: '02/20/2024',
             });
@@ -1372,7 +1401,7 @@ describe('User management module end to end test', () => {
           expect(userTeacher.body).toBeDefined();
         });
       });
-      describe('GET /user-teachers/', () => {
+      describe('GET /users-teacher/', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/user-teacher')
@@ -1429,7 +1458,7 @@ describe('User management module end to end test', () => {
               academicDegrees: 'Msc',
             });
           const response = await supertest(app)
-            .get('/user-teachers')
+            .get('/users-teacher')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -1439,7 +1468,7 @@ describe('User management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /user-teacher/:id', () => {
+      describe('PATCH /user-teacher', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-teacher')
@@ -1470,12 +1499,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-teacher/${id}`)
+            .patch(`/user-teacher`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               name: {
                 firstName: 'John',
                 lastName: 'Doe',
@@ -1612,7 +1642,7 @@ describe('User management module end to end test', () => {
           expect(userWorker.body.error).toBeDefined();
         });
       });
-      describe('PATCH /user-worker/:id', () => {
+      describe('PATCH /user-worker', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/user-worker')
@@ -1641,13 +1671,14 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-worker/${id}`)
+            .patch(`/user-worker`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
               salary: {
+                id,
                 salary: 'a',
               },
             });
@@ -1763,7 +1794,7 @@ describe('User management module end to end test', () => {
           expect(userWorker.body).toBeDefined();
         });
       });
-      describe('GET /user-workers/', () => {
+      describe('GET /users-worker/', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/user-worker')
@@ -1816,7 +1847,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
             });
           const response = await supertest(app)
-            .get('/user-workers')
+            .get('/users-worker')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -1826,7 +1857,7 @@ describe('User management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /user-worker/:id', () => {
+      describe('PATCH /user-worker', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/user-worker')
@@ -1855,12 +1886,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-worker/${id}`)
+            .patch(`/user-worker`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               name: {
                 firstName: 'John',
                 lastName: 'Doe',

@@ -2,8 +2,8 @@ import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.in
 import {
   FindEventInputDto,
   FindEventOutputDto,
-} from '../../dto/calendar-usecase.dto';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/calendar.gateway';
+} from '../../dto/event-usecase.dto';
+import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
 
 /**
  * Use case responsible for finding an event by ID.

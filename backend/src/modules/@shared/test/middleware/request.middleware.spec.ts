@@ -1,7 +1,5 @@
 import RequestMiddleware, {
   FunctionCalled,
-  errorStatus,
-  ErrorMessage,
 } from '../../application/middleware/request.middleware';
 import * as validations from '../../utils/validations';
 
@@ -28,21 +26,21 @@ describe('RequestMiddleware unit test', () => {
     });
 
     test('should return bad request if offset is not a number', async () => {
-      mockReq.query = { offset: 'abc' };
+      mockReq.body = { offset: 'abc' };
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
-        statusCode: errorStatus.BADREQUEST,
-        body: { message: ErrorMessage.BADREQUEST },
+        statusCode: 400,
+        body: { error: 'Bad Request' },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
 
     test('should return bad request if limit is not a number', async () => {
-      mockReq.query = { limit: 'xyz' };
+      mockReq.body = { limit: 'xyz' };
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
-        statusCode: errorStatus.BADREQUEST,
-        body: { message: ErrorMessage.BADREQUEST },
+        statusCode: 400,
+        body: { error: 'Bad Request' },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -51,7 +49,7 @@ describe('RequestMiddleware unit test', () => {
       await middleware.handle(mockReq, mockNext);
       expect(mockNext).toHaveBeenCalled();
       mockNext.mockClear();
-      mockReq.query = { offset: '5', limit: '10' };
+      mockReq.body = { offset: '5', limit: '10' };
       await middleware.handle(mockReq, mockNext);
       expect(mockNext).toHaveBeenCalled();
     });
@@ -65,8 +63,8 @@ describe('RequestMiddleware unit test', () => {
     test('should return bad request if id and email are missing', async () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
-        statusCode: errorStatus.BADREQUEST,
-        body: { message: ErrorMessage.BADREQUEST },
+        statusCode: 400,
+        body: { error: 'Bad Request' },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -77,8 +75,8 @@ describe('RequestMiddleware unit test', () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(validations.validEmail).toHaveBeenCalledWith('invalid');
       expect(res).toEqual({
-        statusCode: errorStatus.BADREQUEST,
-        body: { message: ErrorMessage.BADREQUEST },
+        statusCode: 400,
+        body: { error: 'Bad Request' },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -98,8 +96,8 @@ describe('RequestMiddleware unit test', () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(validations.validId).toHaveBeenCalledWith('badId');
       expect(res).toEqual({
-        statusCode: errorStatus.BADREQUEST,
-        body: { message: ErrorMessage.BADREQUEST },
+        statusCode: 400,
+        body: { error: 'Bad Request' },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -121,8 +119,8 @@ describe('RequestMiddleware unit test', () => {
     test('should return bad request if id is missing', async () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
-        statusCode: errorStatus.BADREQUEST,
-        body: { message: ErrorMessage.BADREQUEST },
+        statusCode: 400,
+        body: { error: 'Bad Request' },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -133,8 +131,8 @@ describe('RequestMiddleware unit test', () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(validations.validId).toHaveBeenCalledWith('bad');
       expect(res).toEqual({
-        statusCode: errorStatus.BADREQUEST,
-        body: { message: ErrorMessage.BADREQUEST },
+        statusCode: 400,
+        body: { error: 'Bad Request' },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -156,8 +154,8 @@ describe('RequestMiddleware unit test', () => {
     test('should return bad request if required field is missing', async () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
-        statusCode: errorStatus.BADREQUEST,
-        body: { message: ErrorMessage.BADREQUEST },
+        statusCode: 400,
+        body: { error: 'Bad Request' },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -177,20 +175,20 @@ describe('RequestMiddleware unit test', () => {
     test('should return bad request if id is missing', async () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
-        statusCode: errorStatus.BADREQUEST,
-        body: { message: ErrorMessage.BADREQUEST },
+        statusCode: 400,
+        body: { error: 'Bad Request' },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
 
     test('should return bad request if id is invalid', async () => {
       (validations.validId as jest.Mock).mockReturnValue(false);
-      mockReq.params = { id: 'bad' };
+      mockReq.body = { id: 'bad' };
       const res = await middleware.handle(mockReq, mockNext);
       expect(validations.validId).toHaveBeenCalledWith('bad');
       expect(res).toEqual({
-        statusCode: errorStatus.BADREQUEST,
-        body: { message: ErrorMessage.BADREQUEST },
+        statusCode: 400,
+        body: { error: 'Bad Request' },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -200,16 +198,15 @@ describe('RequestMiddleware unit test', () => {
       mockReq.params = { id: '123' };
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
-        statusCode: errorStatus.BADREQUEST,
-        body: { message: ErrorMessage.BADREQUEST },
+        statusCode: 400,
+        body: { error: 'Bad Request' },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
 
     test('should call next if id is valid and required field is present', async () => {
       (validations.validId as jest.Mock).mockReturnValue(true);
-      mockReq.params = { id: '123' };
-      mockReq.body = { name: 'test' };
+      mockReq.body = { id: '123', name: 'test' };
       await middleware.handle(mockReq, mockNext);
       expect(validations.validId).toHaveBeenCalledWith('123');
       expect(mockNext).toHaveBeenCalled();

@@ -2,9 +2,9 @@ import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.in
 import {
   CreateEventInputDto,
   CreateEventOutputDto,
-} from '../../dto/calendar-usecase.dto';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/calendar.gateway';
-import Event from '@/modules/event-calendar-management/domain/entity/calendar.entity';
+} from '../../dto/event-usecase.dto';
+import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
+import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
 
 /**
  * Use case responsible for creating a new calendar event.
@@ -46,7 +46,7 @@ export default class CreateEvent
     // Create event entity with provided input
     const event = new Event({
       creator,
-      date,
+      date: new Date(date),
       day,
       hour,
       name,

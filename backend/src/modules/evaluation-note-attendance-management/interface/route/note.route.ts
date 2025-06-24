@@ -105,7 +105,7 @@ export default class NoteRoute {
     try {
       const input = req.body;
       const response = await this.noteController.update(input);
-      return { statusCode: StatusCodeEnum.CREATED, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }

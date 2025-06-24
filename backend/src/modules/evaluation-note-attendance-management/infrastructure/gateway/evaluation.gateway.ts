@@ -8,9 +8,9 @@ export default interface EvaluationGateway {
   /**
    * Finds an evaluation by its unique identifier.
    * @param id - The unique identifier of the evaluation to search for
-   * @returns Promise resolving to the found Evaluation or undefined if not found
+   * @returns Promise resolving to the found Evaluation or null if not found
    */
-  find(id: string): Promise<Evaluation | undefined>;
+  find(id: string): Promise<Evaluation | null>;
 
   /**
    * Retrieves a collection of evaluations with pagination support.

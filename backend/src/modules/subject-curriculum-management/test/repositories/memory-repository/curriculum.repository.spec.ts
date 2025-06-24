@@ -36,11 +36,11 @@ describe('MemoryCurriculumRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should received an undefined', async () => {
+    it('should received an null', async () => {
       const curriculumId = new Id().value;
       const curriculumFound = await repository.find(curriculumId);
 
-      expect(curriculumFound).toBeUndefined();
+      expect(curriculumFound).toBeNull();
     });
     it('should throw an error when the Id is wrong', async () => {
       const curriculum = new Curriculum({
