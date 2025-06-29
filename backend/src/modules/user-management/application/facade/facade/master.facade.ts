@@ -34,7 +34,7 @@ export default class MasterFacade implements MasterFacadeInterface {
   }
   async find(
     input: FindUserMasterInputDto
-  ): Promise<FindUserMasterOutputDto | undefined> {
+  ): Promise<FindUserMasterOutputDto | null> {
     return await this._findUserMaster.execute(input);
   }
   async update(

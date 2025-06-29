@@ -72,10 +72,10 @@ export default class ScheduleRoute {
   }
 
   private async findAllSchedules(
-    req: HttpRequest<{}, {}, FindAllScheduleInputDto, {}>
+    req: HttpRequest<{}, FindAllScheduleInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
+      const { quantity, offset } = req.query;
       const schedules = await this.scheduleController.findAll({
         quantity,
         offset,

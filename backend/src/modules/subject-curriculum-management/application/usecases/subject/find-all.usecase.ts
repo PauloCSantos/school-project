@@ -17,7 +17,7 @@ export default class FindAllSubject
     offset,
     quantity,
   }: FindAllSubjectInputDto): Promise<FindAllSubjectOutputDto> {
-    const results = await this._subjectRepository.findAll(offset, quantity);
+    const results = await this._subjectRepository.findAll(quantity, offset);
 
     const result = results.map(subject => ({
       id: subject.id.value,

@@ -66,10 +66,10 @@ export default class EventRoute {
   }
 
   private async findAllEvents(
-    req: HttpRequest<{}, {}, FindAllEventInputDto, {}>
+    req: HttpRequest<{}, FindAllEventInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
+      const { quantity, offset } = req.query;
       const response = await this.eventController.findAll({ quantity, offset });
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {

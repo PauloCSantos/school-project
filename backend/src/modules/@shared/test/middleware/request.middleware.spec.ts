@@ -26,7 +26,7 @@ describe('RequestMiddleware unit test', () => {
     });
 
     test('should return bad request if offset is not a number', async () => {
-      mockReq.body = { offset: 'abc' };
+      mockReq.query = { offset: 'abc' };
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
         statusCode: 400,
@@ -35,8 +35,8 @@ describe('RequestMiddleware unit test', () => {
       expect(mockNext).not.toHaveBeenCalled();
     });
 
-    test('should return bad request if limit is not a number', async () => {
-      mockReq.body = { limit: 'xyz' };
+    test('should return bad request if quantity is not a number', async () => {
+      mockReq.query = { quantity: 'xyz' };
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
         statusCode: 400,
@@ -45,11 +45,11 @@ describe('RequestMiddleware unit test', () => {
       expect(mockNext).not.toHaveBeenCalled();
     });
 
-    test('should call next if offset and limit are valid or absent', async () => {
+    test('should call next if offset and quantity are valid or absent', async () => {
       await middleware.handle(mockReq, mockNext);
       expect(mockNext).toHaveBeenCalled();
       mockNext.mockClear();
-      mockReq.body = { offset: '5', limit: '10' };
+      mockReq.body = { offset: '5', quantity: '10' };
       await middleware.handle(mockReq, mockNext);
       expect(mockNext).toHaveBeenCalled();
     });

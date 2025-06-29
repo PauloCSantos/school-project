@@ -221,7 +221,7 @@ describe('Subject curriculum management module end to end test', () => {
           expect(subject.body).toBeDefined();
         });
       });
-      describe('GET /subjects/', () => {
+      describe('GET /subjects', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/subject')

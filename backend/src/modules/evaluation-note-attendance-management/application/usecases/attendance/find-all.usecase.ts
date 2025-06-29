@@ -36,7 +36,7 @@ export default class FindAllAttendance
     offset,
     quantity,
   }: FindAllAttendanceInputDto): Promise<FindAllAttendanceOutputDto> {
-    const results = await this._attendanceRepository.findAll(offset, quantity);
+    const results = await this._attendanceRepository.findAll(quantity, offset);
 
     const result = results.map(attendance => ({
       id: attendance.id.value,

@@ -94,7 +94,9 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
 
   describe('success', () => {
     it('should find all administrators', async () => {
-      const response = await supertest(app).get('/users-administrator');
+      const response = await supertest(app).get(
+        '/users-administrator?quantity=2&offset=0'
+      );
 
       expect(response.statusCode).toBe(200);
       expect(userAdministratorController.findAll).toHaveBeenCalled();

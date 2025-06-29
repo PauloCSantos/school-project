@@ -21,7 +21,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
     offSet?: number | undefined
   ): Promise<Subject[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const subjects = this._subjects.slice(offS, qtd);
 
     return subjects;

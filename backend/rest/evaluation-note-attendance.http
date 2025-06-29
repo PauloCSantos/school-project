@@ -1,0 +1,332 @@
+#################################################
+## Variables
+#################################################
+
+@baseUrl = http://localhost:3003
+
+@masterEmail = master@teste.com.br
+@adminEmail = admin@teste.com.br
+@teacherEmail = teacher@teste.com.br
+@studentEmail = student@teste.com.br
+@workerEmail = worker@teste.com.br
+
+@masterPassword = MasterPass123
+@adminPassword = AdminPass123
+@teacherPassword = TeacherPass123
+@studentPassword = StudentPass123
+@workerPassword = WorkerPass123
+
+#################################################
+## User Login Flow
+#################################################
+
+### loginMaster
+# @name loginMaster
+# Authenticate as master
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{masterEmail}}",
+  "password": "{{masterPassword}}",
+  "role": "master"
+}
+###
+@masterToken = Bearer {{loginMaster.response.body.token}}
+
+### loginAdmin
+# @name loginAdmin
+# Authenticate as administrator
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "role": "administrator"
+}
+###
+@adminToken = Bearer {{loginAdmin.response.body.token}}
+
+### loginTeacher
+# @name loginTeacher
+# Authenticate as teacher
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{teacherEmail}}",
+  "password": "{{teacherPassword}}",
+  "role": "teacher"
+}
+###
+@teacherToken = Bearer {{loginTeacher.response.body.token}}
+
+### loginStudent
+# @name loginStudent
+# Authenticate as student
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{studentEmail}}",
+  "password": "{{studentPassword}}",
+  "role": "student"
+}
+###
+@studentToken = Bearer {{loginStudent.response.body.token}}
+
+### loginWorker
+# @name loginWorker
+# Authenticate as worker
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{workerEmail}}",
+  "password": "{{workerPassword}}",
+  "role": "worker"
+}
+###
+@workerToken = Bearer {{loginWorker.response.body.token}}
+
+#################################################
+## Load Required IDs
+#################################################
+
+### listTeachers
+# @name listTeachers
+# Retrieve list of teachers to obtain an ID
+GET {{baseUrl}}/users-teacher
+Authorization: {{teacherToken}}
+###
+@teacherId = {{listTeachers.response.body.0.id}}
+
+### listStudents
+# @name listStudents
+# Retrieve list of students to obtain IDs
+GET {{baseUrl}}/users-student
+Authorization: {{studentToken}}
+###
+@studentId1 = {{listStudents.response.body.0.id}}
+@studentId2 = {{listStudents.response.body.1.id}}
+@studentId3 = {{listStudents.response.body.2.id}}
+
+### listSubjects
+# @name listSubjects
+# Retrieve list of subjects to obtain an ID
+GET {{baseUrl}}/subjects
+Authorization: {{masterToken}}
+###
+@subjectId = {{listSubjects.response.body.0.id}}
+
+### listCurriculums
+# @name listCurriculums
+# Retrieve list of curriculums to obtain an ID
+GET {{baseUrl}}/curriculums
+Authorization: {{masterToken}}
+###
+@curriculumId = {{listCurriculums.response.body.0.id}}
+
+### listLessons
+# @name listLessons
+# Retrieve list of lessons to obtain an ID
+GET {{baseUrl}}/lessons
+Authorization: {{masterToken}}
+###
+@lessonId = {{listLessons.response.body.0.id}}
+
+#################################################
+## 1. Attendance Routes
+#################################################
+
+### createAttendance
+# @name createAttendance
+# Create a new attendance record
+POST {{baseUrl}}/attendance
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "date": "2025-05-26",
+  "lesson": "{{lessonId}}",
+  "hour": "10:00",
+  "day": "Mon",
+  "studentsPresent": ["{{studentId1}}", "{{studentId2}}"]
+}
+###
+
+### listAttendances
+# @name listAttendances
+# List all attendance records
+GET {{baseUrl}}/attendances
+Content-Type: application/json
+Authorization: {{masterToken}}
+###
+
+@attendanceId = {{createAttendance.response.body.id}}
+
+### getAttendanceById
+# @name getAttendanceById
+# Retrieve an attendance record by ID
+GET {{baseUrl}}/attendance/{{attendanceId}}
+Authorization: {{masterToken}}
+###
+
+### updateAttendance
+# @name updateAttendance
+# Update an existing attendance record
+PATCH {{baseUrl}}/attendance
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{attendanceId}}",
+  "lesson": "{{lessonId}}",
+  "hour": "14:00"
+}
+###
+
+### deleteAttendance
+# @name deleteAttendance
+# Delete an attendance record
+DELETE {{baseUrl}}/attendance/{{attendanceId}}
+Authorization: {{masterToken}}
+###
+
+### addStudentsToAttendance
+# @name addStudentsToAttendance
+# Add students to an attendance record
+POST {{baseUrl}}/attendance/add/students
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{attendanceId}}",
+  "newStudentsList": ["{{studentId3}}"]
+}
+###
+
+### removeStudentsFromAttendance
+# @name removeStudentsFromAttendance
+# Remove students from an attendance record
+POST {{baseUrl}}/attendance/remove/students
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{attendanceId}}",
+  "studentsListToRemove": ["{{studentId1}}"]
+}
+###
+
+#################################################
+## 2. Evaluation Routes
+#################################################
+
+### createEvaluation
+# @name createEvaluation
+# Create a new evaluation
+POST {{baseUrl}}/evaluation
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "teacher": "{{teacherId}}",
+  "lesson": "{{lessonId}}",
+  "type": "Exam",
+  "value": 10
+}
+###
+@evaluationId = {{createEvaluation.response.body.id}}
+
+### listEvaluations
+# @name listEvaluations
+# List all evaluations
+GET {{baseUrl}}/evaluations
+Content-Type: application/json
+Authorization: {{masterToken}}
+###
+
+### getEvaluationById
+# @name getEvaluationById
+# Retrieve an evaluation by ID
+GET {{baseUrl}}/evaluation/{{evaluationId}}
+Authorization: {{masterToken}}
+###
+
+### updateEvaluation
+# @name updateEvaluation
+# Update an existing evaluation
+PATCH {{baseUrl}}/evaluation
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{evaluationId}}",
+  "value": 8.5,
+  "type": "Quiz"
+}
+###
+
+### deleteEvaluation
+# @name deleteEvaluation
+# Delete an evaluation
+DELETE {{baseUrl}}/evaluation/{{evaluationId}}
+Authorization: {{masterToken}}
+###
+
+#################################################
+## 3. Note Routes
+#################################################
+
+### createNote
+# @name createNote
+# Create a new note for a student evaluation
+POST {{baseUrl}}/note
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "evaluation": "{{evaluationId}}",
+  "student": "{{studentId1}}",
+  "note": 9.5
+}
+###
+@noteId = {{createNote.response.body.id}}
+
+### listNotes
+# @name listNotes
+# List all notes
+GET {{baseUrl}}/notes
+Content-Type: application/json
+Authorization: {{masterToken}}
+###
+
+### getNoteById
+# @name getNoteById
+# Retrieve a note by ID
+GET {{baseUrl}}/note/{{noteId}}
+Authorization: {{masterToken}}
+###
+
+### updateNote
+# @name updateNote
+# Update an existing note
+PATCH {{baseUrl}}/note
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{noteId}}",
+  "note": 8.0,
+  "evaluation": "{{evaluationId}}"
+}
+###
+
+### deleteNote
+# @name deleteNote
+# Delete a note
+DELETE {{baseUrl}}/note/{{noteId}}
+Authorization: {{masterToken}}
+###

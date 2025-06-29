@@ -115,10 +115,10 @@ export default class LessonRoute {
   }
 
   private async findAllLessons(
-    req: HttpRequest<{}, {}, FindAllLessonInputDto, {}>
+    req: HttpRequest<{}, FindAllLessonInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
+      const { quantity, offset } = req.query;
       const lessons = await this.lessonController.findAll({ quantity, offset });
       return { statusCode: StatusCodeEnum.OK, body: lessons };
     } catch (error) {

@@ -21,10 +21,10 @@ export default class FindAllSchedule
    * Fetches a schedule by its unique identifier.
    */
   async execute({
-    offset,
     quantity,
+    offset,
   }: FindAllScheduleInputDto): Promise<FindAllScheduleOutputDto> {
-    const results = await this._scheduleRepository.findAll(offset, quantity);
+    const results = await this._scheduleRepository.findAll(quantity, offset);
 
     const result = results.map(schedule => ({
       id: schedule.id.value,

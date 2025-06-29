@@ -81,10 +81,10 @@ export class CurriculumRoute {
   }
 
   private async findAllCurriculums(
-    req: HttpRequest<{}, {}, FindAllCurriculumInputDto, {}>
+    req: HttpRequest<{}, FindAllCurriculumInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
+      const { quantity, offset } = req.query;
       const response = await this.curriculumController.findAll({
         quantity,
         offset,

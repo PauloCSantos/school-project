@@ -1,0 +1,256 @@
+#################################################
+## Variables
+#################################################
+
+@baseUrl = http://localhost:3003
+
+@masterEmail = master@teste.com.br
+@adminEmail = admin@teste.com.br
+@teacherEmail = teacher@teste.com.br
+@studentEmail = student@teste.com.br
+@workerEmail = worker@teste.com.br
+
+@masterPassword = MasterPass123
+@adminPassword = AdminPass123
+@teacherPassword = TeacherPass123
+@studentPassword = StudentPass123
+@workerPassword = WorkerPass123
+
+#################################################
+## User Login Flow
+#################################################
+
+### loginMaster
+# @name loginMaster
+# Authenticate as master
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{masterEmail}}",
+  "password": "{{masterPassword}}",
+  "role": "master"
+}
+###
+@masterToken = Bearer {{loginMaster.response.body.token}}
+
+### loginAdmin
+# @name loginAdmin
+# Authenticate as administrator
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "role": "administrator"
+}
+###
+@adminToken = Bearer {{loginAdmin.response.body.token}}
+
+### loginTeacher
+# @name loginTeacher
+# Authenticate as teacher
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{teacherEmail}}",
+  "password": "{{teacherPassword}}",
+  "role": "teacher"
+}
+###
+@teacherToken = Bearer {{loginTeacher.response.body.token}}
+
+### loginStudent
+# @name loginStudent
+# Authenticate as student
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{studentEmail}}",
+  "password": "{{studentPassword}}",
+  "role": "student"
+}
+###
+@studentToken = Bearer {{loginStudent.response.body.token}}
+
+### loginWorker
+# @name loginWorker
+# Authenticate as worker
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{workerEmail}}",
+  "password": "{{workerPassword}}",
+  "role": "worker"
+}
+###
+@workerToken = Bearer {{loginWorker.response.body.token}}
+
+#################################################
+## 1. Subject Routes
+#################################################
+
+### createSubject1
+# @name createSubject1
+# Create the first subject
+POST {{baseUrl}}/subject
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "name": "Math",
+  "description": "Described a subject"
+}
+###
+@subjectId1 = {{createSubject1.response.body.id}}
+
+### createSubject2
+# @name createSubject2
+# Create the second subject
+POST {{baseUrl}}/subject
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "name": "Spanish",
+  "description": "Described a subject"
+}
+###
+@subjectId2 = {{createSubject2.response.body.id}}
+
+### createSubject3
+# @name createSubject3
+# Create the third subject
+POST {{baseUrl}}/subject
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "name": "History",
+  "description": "Described a subject"
+}
+###
+@subjectId3 = {{createSubject3.response.body.id}}
+
+### listSubjects
+# @name listSubjects
+# List all subjects
+GET {{baseUrl}}/subjects
+Authorization: {{masterToken}}
+###
+
+### getSubjectById
+# @name getSubjectById
+# Retrieve a subject by ID
+GET {{baseUrl}}/subject/{{subjectId1}}
+Authorization: {{masterToken}}
+###
+
+### updateSubject
+# @name updateSubject
+# Update the subject's description
+PATCH {{baseUrl}}/subject
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{subjectId1}}",
+  "description": "Updated description"
+}
+###
+
+### deleteSubject
+# @name deleteSubject
+# Delete the third subject
+DELETE {{baseUrl}}/subject/{{subjectId3}}
+Authorization: {{masterToken}}
+###
+
+#################################################
+## 2. Curriculum Routes
+#################################################
+
+### createCurriculum
+# @name createCurriculum
+# Create a new curriculum
+POST {{baseUrl}}/curriculum
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "name": "Computer Science",
+  "subjectsList": [
+    "{{subjectId1}}",
+    "{{subjectId2}}",
+    "{{subjectId3}}"
+  ],
+  "yearsToComplete": 4
+}
+###
+@curriculumId = {{createCurriculum.response.body.id}}
+
+### listCurriculums
+# @name listCurriculums
+# List all curriculums
+GET {{baseUrl}}/curriculums
+Authorization: {{masterToken}}
+###
+
+### getCurriculumById
+# @name getCurriculumById
+# Retrieve a curriculum by ID
+GET {{baseUrl}}/curriculum/{{curriculumId}}
+Authorization: {{masterToken}}
+###
+
+### updateCurriculum
+# @name updateCurriculum
+# Update curriculum's years to complete
+PATCH {{baseUrl}}/curriculum
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{curriculumId}}",
+  "yearsToComplete": 5
+}
+###
+
+### deleteCurriculum
+# @name deleteCurriculum
+# Delete the curriculum
+DELETE {{baseUrl}}/curriculum/{{curriculumId}}
+Authorization: {{masterToken}}
+###
+
+### addSubjectsToCurriculum
+# @name addSubjectsToCurriculum
+# Add subjects to a curriculum
+POST {{baseUrl}}/curriculum/subject/add
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{curriculumId}}",
+  "newSubjectsList": ["{{subjectId1}}"]
+}
+###
+
+### removeSubjectsFromCurriculum
+# @name removeSubjectsFromCurriculum
+# Remove subjects from a curriculum
+POST {{baseUrl}}/curriculum/subject/remove
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{curriculumId}}",
+  "subjectsListToRemove": [
+    "{{subjectId1}}"
+  ]
+}
+###

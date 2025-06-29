@@ -36,7 +36,7 @@ export default class FindAllEvaluation
     offset,
     quantity,
   }: FindAllEvaluationInputDto): Promise<FindAllEvaluationOutputDto> {
-    const results = await this._evaluationRepository.findAll(offset, quantity);
+    const results = await this._evaluationRepository.findAll(quantity, offset);
 
     const result = results.map(evaluation => ({
       id: evaluation.id.value,

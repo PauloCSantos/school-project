@@ -18,7 +18,7 @@ export default class FindAllCurriculum
     offset,
     quantity,
   }: FindAllCurriculumInputDto): Promise<FindAllCurriculumOutputDto> {
-    const results = await this._curriculumRepository.findAll(offset, quantity);
+    const results = await this._curriculumRepository.findAll(quantity, offset);
 
     const result = results.map(curriculum => ({
       id: curriculum.id.value,

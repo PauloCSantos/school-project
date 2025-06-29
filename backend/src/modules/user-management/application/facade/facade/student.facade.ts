@@ -46,7 +46,7 @@ export default class StudentFacade implements StudentFacadeInterface {
   }
   async find(
     input: FindUserStudentInputDto
-  ): Promise<FindUserStudentOutputDto | undefined> {
+  ): Promise<FindUserStudentOutputDto | null> {
     return await this._findUserStudent.execute(input);
   }
   async findAll(

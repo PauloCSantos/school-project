@@ -46,7 +46,7 @@ export default class TeacherFacade implements TeacherFacadeInterface {
   }
   async find(
     input: FindUserTeacherInputDto
-  ): Promise<FindUserTeacherOutputDto | undefined> {
+  ): Promise<FindUserTeacherOutputDto | null> {
     return await this._findUserTeacher.execute(input);
   }
   async findAll(

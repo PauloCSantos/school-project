@@ -23,7 +23,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     offSet?: number | undefined
   ): Promise<Curriculum[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const curriculums = this._curriculums.slice(offS, qtd);
 
     return curriculums;

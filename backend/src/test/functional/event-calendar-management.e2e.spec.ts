@@ -215,7 +215,7 @@ describe('Event calendar management module end to end test', () => {
           expect(event.body).toBeDefined();
         });
       });
-      describe('GET /events/', () => {
+      describe('GET /events', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/event')

@@ -48,7 +48,7 @@ export default class AdministratorFacade
   }
   async find(
     input: FindUserAdministratorInputDto
-  ): Promise<FindUserAdministratorOutputDto | undefined> {
+  ): Promise<FindUserAdministratorOutputDto | null> {
     return await this._findUserAdministrator.execute(input);
   }
   async findAll(

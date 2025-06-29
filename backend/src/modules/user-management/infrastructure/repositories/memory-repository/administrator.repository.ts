@@ -25,7 +25,7 @@ export default class MemoryUserAdministratorRepository
     offSet?: number | undefined
   ): Promise<UserAdministrator[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const users = this._administratorUsers.slice(offS, qtd);
 
     return users;

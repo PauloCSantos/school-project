@@ -15,7 +15,7 @@ export default interface StudentFacadeInterface {
   create(input: CreateUserStudentInputDto): Promise<CreateUserStudentOutputDto>;
   find(
     input: FindUserStudentInputDto
-  ): Promise<FindUserStudentOutputDto | undefined>;
+  ): Promise<FindUserStudentOutputDto | null>;
   findAll(
     input: FindAllUserStudentInputDto
   ): Promise<FindAllUserStudentOutputDto>;

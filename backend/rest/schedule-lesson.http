@@ -1,0 +1,292 @@
+#################################################
+## Variables
+#################################################
+
+@baseUrl = http://localhost:3003
+
+@masterEmail = master@teste.com.br
+@adminEmail = admin@teste.com.br
+@teacherEmail = teacher@teste.com.br
+@studentEmail = student@teste.com.br
+@workerEmail = worker@teste.com.br
+
+@masterPassword = MasterPass123
+@adminPassword = AdminPass123
+@teacherPassword = TeacherPass123
+@studentPassword = StudentPass123
+@workerPassword = WorkerPass123
+
+#################################################
+## User Login Flow
+#################################################
+
+### loginMaster
+# @name loginMaster
+# Authenticate as master
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{masterEmail}}",
+  "password": "{{masterPassword}}",
+  "role": "master"
+}
+###
+@masterToken = Bearer {{loginMaster.response.body.token}}
+
+### loginAdmin
+# @name loginAdmin
+# Authenticate as administrator
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "role": "administrator"
+}
+###
+@adminToken = Bearer {{loginAdmin.response.body.token}}
+
+### loginTeacher
+# @name loginTeacher
+# Authenticate as teacher
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{teacherEmail}}",
+  "password": "{{teacherPassword}}",
+  "role": "teacher"
+}
+###
+@teacherToken = Bearer {{loginTeacher.response.body.token}}
+
+### loginStudent
+# @name loginStudent
+# Authenticate as student
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{studentEmail}}",
+  "password": "{{studentPassword}}",
+  "role": "student"
+}
+###
+@studentToken = Bearer {{loginStudent.response.body.token}}
+
+### loginWorker
+# @name loginWorker
+# Authenticate as worker
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{workerEmail}}",
+  "password": "{{workerPassword}}",
+  "role": "worker"
+}
+###
+@workerToken = Bearer {{loginWorker.response.body.token}}
+
+#################################################
+## Load Required IDs
+#################################################
+
+### listTeachers
+# @name listTeachers
+# Retrieve list of teachers to obtain an ID
+GET {{baseUrl}}/users-teacher
+Authorization: {{teacherToken}}
+###
+@teacherId = {{listTeachers.response.body.0.id}}
+
+### listStudents
+# @name listStudents
+# Retrieve list of students to obtain IDs
+GET {{baseUrl}}/users-student
+Authorization: {{studentToken}}
+###
+@studentId1 = {{listStudents.response.body.0.id}}
+@studentId2 = {{listStudents.response.body.1.id}}
+@studentId3 = {{listStudents.response.body.2.id}}
+
+### listSubjects
+# @name listSubjects
+# Retrieve list of subjects to obtain an ID
+GET {{baseUrl}}/subjects
+Authorization: {{masterToken}}
+###
+@subjectId = {{listSubjects.response.body.0.id}}
+
+### listCurriculums
+# @name listCurriculums
+# Retrieve list of curriculums to obtain an ID
+GET {{baseUrl}}/curriculums
+Authorization: {{masterToken}}
+###
+@curriculumId = {{listCurriculums.response.body.0.id}}
+
+#################################################
+## 1. Lesson Routes
+#################################################
+
+### createLesson
+# @name createLesson
+# Create a new lesson
+POST {{baseUrl}}/lesson
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "name": "Math Advanced I",
+  "duration": 60,
+  "teacher": "{{teacherId}}",
+  "studentsList": ["{{studentId1}}","{{studentId2}}","{{studentId3}}"],
+  "subject": "{{subjectId}}",
+  "days": ["mon","fri"],
+  "times": ["15:55","19:00"],
+  "semester": 2
+}
+###
+@lessonId = {{createLesson.response.body.id}}
+
+### listLessons
+# @name listLessons
+# List all lessons
+GET {{baseUrl}}/lessons
+Authorization: {{masterToken}}
+###
+
+### getLessonById
+# @name getLessonById
+# Retrieve a lesson by ID
+GET {{baseUrl}}/lesson/{{lessonId}}
+Authorization: {{masterToken}}
+###
+
+### updateLesson
+# @name updateLesson
+# Update lesson duration
+PATCH {{baseUrl}}/lesson
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{lessonId}}",
+  "duration": 50
+}
+###
+
+### deleteLesson
+# @name deleteLesson
+# Delete a lesson
+DELETE {{baseUrl}}/lesson/{{lessonId}}
+Authorization: {{masterToken}}
+###
+
+### addTimesToLesson
+# @name addTimesToLesson
+# Add new times to a lesson
+POST {{baseUrl}}/lesson/time/add
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{lessonId}}",
+  "newTimesList": ["22:00"]
+}
+###
+
+### removeTimesFromLesson
+# @name removeTimesFromLesson
+# Remove times from a lesson
+POST {{baseUrl}}/lesson/time/remove
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{lessonId}}",
+  "timesListToRemove": ["22:00"]
+}
+###
+
+#################################################
+## 2. Schedule Routes
+#################################################
+
+### createSchedule
+# @name createSchedule
+# Create a new schedule
+POST {{baseUrl}}/schedule
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "student": "{{studentId1}}",
+  "curriculum": "{{curriculumId}}",
+  "lessonsList": ["{{lessonId}}"]
+}
+###
+@scheduleId = {{createSchedule.response.body.id}}
+
+### listSchedules
+# @name listSchedules
+# List all schedules
+GET {{baseUrl}}/schedules
+Authorization: {{masterToken}}
+###
+
+### getScheduleById
+# @name getScheduleById
+# Retrieve a schedule by ID
+GET {{baseUrl}}/schedule/{{scheduleId}}
+Authorization: {{masterToken}}
+###
+
+### updateSchedule
+# @name updateSchedule
+# Update schedule curriculum
+PATCH {{baseUrl}}/schedule
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{scheduleId}}",
+  "curriculum": "{{curriculumId}}"
+}
+###
+
+### deleteSchedule
+# @name deleteSchedule
+# Delete a schedule
+DELETE {{baseUrl}}/schedule/{{scheduleId}}
+Authorization: {{masterToken}}
+###
+
+### addLessonsToSchedule
+# @name addLessonsToSchedule
+# Add lessons to a schedule
+POST {{baseUrl}}/schedule/lesson/add
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{scheduleId}}",
+  "newLessonsList": ["{{lessonId}}"]
+}
+###
+
+### removeLessonsFromSchedule
+# @name removeLessonsFromSchedule
+# Remove lessons from a schedule
+POST {{baseUrl}}/schedule/lesson/remove
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{scheduleId}}",
+  "lessonsListToRemove": ["{{lessonId}}"]
+}
+###

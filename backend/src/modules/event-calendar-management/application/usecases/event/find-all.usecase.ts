@@ -35,7 +35,7 @@ export default class FindAllEvent
     offset,
     quantity,
   }: FindAllEventInputDto): Promise<FindAllEventOutputDto> {
-    const results = await this._eventRepository.findAll(offset, quantity);
+    const results = await this._eventRepository.findAll(quantity, offset);
 
     return results.map(event => ({
       id: event.id.value,

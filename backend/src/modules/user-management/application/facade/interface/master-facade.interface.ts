@@ -9,8 +9,6 @@ import {
 
 export default interface MasterFacadeInterface {
   create(input: CreateUserMasterInputDto): Promise<CreateUserMasterOutputDto>;
-  find(
-    input: FindUserMasterInputDto
-  ): Promise<FindUserMasterOutputDto | undefined>;
+  find(input: FindUserMasterInputDto): Promise<FindUserMasterOutputDto | null>;
   update(input: UpdateUserMasterInputDto): Promise<UpdateUserMasterOutputDto>;
 }

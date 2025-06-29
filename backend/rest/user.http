@@ -1,0 +1,408 @@
+#################################################
+## Variables
+#################################################
+
+@baseUrl = http://localhost:3003
+
+@masterEmail = master@teste.com.br
+@adminEmail = admin@teste.com.br
+@teacherEmail = teacher@teste.com.br
+@studentEmail = student@teste.com.br
+@workerEmail = worker@teste.com.br
+
+@masterPassword = MasterPass123
+@adminPassword = AdminPass123
+@teacherPassword = TeacherPass123
+@studentPassword = StudentPass123
+@workerPassword = WorkerPass123
+
+#################################################
+## User Login Flow
+#################################################
+
+### loginMaster
+# @name loginMaster
+# Authenticate as master
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{masterEmail}}",
+  "password": "{{masterPassword}}",
+  "role": "master"
+}
+###
+@masterToken = Bearer {{loginMaster.response.body.token}}
+
+### loginAdmin
+# @name loginAdmin
+# Authenticate as administrator
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "role": "administrator"
+}
+###
+@adminToken = Bearer {{loginAdmin.response.body.token}}
+
+### loginTeacher
+# @name loginTeacher
+# Authenticate as teacher
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{teacherEmail}}",
+  "password": "{{teacherPassword}}",
+  "role": "teacher"
+}
+###
+@teacherToken = Bearer {{loginTeacher.response.body.token}}
+
+### loginStudent
+# @name loginStudent
+# Authenticate as student
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{studentEmail}}",
+  "password": "{{studentPassword}}",
+  "role": "student"
+}
+###
+@studentToken = Bearer {{loginStudent.response.body.token}}
+
+### loginWorker
+# @name loginWorker
+# Authenticate as worker
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{workerEmail}}",
+  "password": "{{workerPassword}}",
+  "role": "worker"
+}
+###
+@workerToken = Bearer {{loginWorker.response.body.token}}
+
+#################################################
+## 1. Master User
+#################################################
+
+### createMaster
+# @name createMaster
+# Create a new master user
+POST {{baseUrl}}/user-master
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "name": {
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "address": {
+    "street": "Street A",
+    "city": "City A",
+    "zip": "111111-111",
+    "number": 1,
+    "avenue": "Avenue A",
+    "state": "State A"
+  },
+  "birthday": "11/12/1990",
+  "email": "teste1@test.com",
+  "cnpj": "35.741.901/0001-58"
+}
+###
+@masterId = {{createMaster.response.body.id}}
+
+### getMasterById
+# Retrieve master user by ID
+GET {{baseUrl}}/user-master/{{masterId}}
+Authorization: {{masterToken}}
+###
+
+### updateMaster
+# Update master user's address
+PATCH {{baseUrl}}/user-master
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{masterId}}",
+  "address": {
+    "street": "Updated Street",
+    "city": "City A",
+    "zip": "111111-111",
+    "number": 1,
+    "avenue": "Avenue A",
+    "state": "State A"
+  }
+}
+###
+
+#################################################
+## 2. Administrator User
+#################################################
+
+### createAdmin
+# @name createAdmin
+# Create a new administrator user
+POST {{baseUrl}}/user-administrator
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "name": {
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "address": {
+    "street": "Street A",
+    "city": "City A",
+    "zip": "111111-111",
+    "number": 1,
+    "avenue": "Avenue A",
+    "state": "State A"
+  },
+  "salary": { "salary": 5000 },
+  "birthday": "11/07/1985",
+  "email": "teste1@test.com",
+  "graduation": "Math"
+}
+###
+@adminId = {{createAdmin.response.body.id}}
+
+### listAdmins
+# List all administrator users
+GET {{baseUrl}}/users-administrator?quantity=2&offset=0
+Authorization: {{adminToken}}
+###
+
+### getAdminById
+# Retrieve administrator user by ID
+GET {{baseUrl}}/user-administrator/{{adminId}}
+Authorization: {{adminToken}}
+###
+
+### updateAdmin
+# Update administrator user's address
+PATCH {{baseUrl}}/user-administrator
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "id": "{{adminId}}",
+  "address": {
+    "street": "Updated Street",
+    "city": "City AB",
+    "zip": "111111-122",
+    "number": 12,
+    "avenue": "Avenue B",
+    "state": "State A"
+  }
+}
+###
+
+### deleteAdmin
+# Delete an administrator user
+DELETE {{baseUrl}}/user-administrator/{{adminId}}
+Authorization: {{adminToken}}
+###
+
+#################################################
+## 3. Teacher User
+#################################################
+
+### createTeacher
+# @name createTeacher
+# Create a new teacher user
+POST {{baseUrl}}/user-teacher
+Content-Type: application/json
+Authorization: {{teacherToken}}
+
+{
+  "name": {
+    "firstName": "John",
+    "lastName": "Does"
+  },
+  "address": {
+    "street": "Street A",
+    "city": "City A",
+    "zip": "111111-111",
+    "number": 1,
+    "avenue": "Avenue A",
+    "state": "State A"
+  },
+  "salary": { "salary": 5000 },
+  "birthday": "10/10/1990",
+  "email": "teste1@test.com",
+  "graduation": "Math",
+  "academicDegrees": "Msc"
+}
+###
+@teacherId = {{createTeacher.response.body.id}}
+
+### listTeachers
+# List all teacher users
+GET {{baseUrl}}/users-teacher
+Authorization: {{teacherToken}}
+###
+
+### getTeacherById
+# Retrieve teacher user by ID
+GET {{baseUrl}}/user-teacher/{{teacherId}}
+Authorization: {{teacherToken}}
+###
+
+### updateTeacher
+# Update teacher user's address
+PATCH {{baseUrl}}/user-teacher
+Content-Type: application/json
+Authorization: {{teacherToken}}
+
+{
+  "id": "{{teacherId}}",
+  "address": {
+    "street": "Updated Street",
+    "city": "City AB",
+    "zip": "111111-122",
+    "number": 12,
+    "avenue": "Avenue B",
+    "state": "State A"
+  }
+}
+###
+
+### deleteTeacher
+# Delete a teacher user
+DELETE {{baseUrl}}/user-teacher/{{teacherId}}
+Authorization: {{teacherToken}}
+###
+
+#################################################
+## 4. Student User
+#################################################
+
+### createStudent
+# @name createStudent
+# Create a new student user
+POST {{baseUrl}}/user-student
+Content-Type: application/json
+Authorization: {{studentToken}}
+
+{
+  "name": {
+    "firstName": "Lucas",
+    "lastName": "Doe"
+  },
+  "address": {
+    "street": "Street A",
+    "city": "City A",
+    "zip": "111111-111",
+    "number": 1,
+    "avenue": "Avenue A",
+    "state": "State A"
+  },
+  "paymentYear": 50000,
+  "birthday": "11/06/1966",
+  "email": "teste1@test.com"
+}
+###
+@studentId = {{createStudent.response.body.id}}
+
+### listStudents
+# List all student users
+GET {{baseUrl}}/users-student
+Authorization: {{studentToken}}
+###
+
+### getStudentById
+# Retrieve student user by ID
+GET {{baseUrl}}/user-student/{{studentId}}
+Authorization: {{studentToken}}
+###
+
+### updateStudent
+# Update student user's payment year
+PATCH {{baseUrl}}/user-student
+Content-Type: application/json
+Authorization: {{studentToken}}
+
+{
+  "id": "{{studentId}}",
+  "paymentYear": 51000
+}
+###
+
+### deleteStudent
+# Delete a student user
+DELETE {{baseUrl}}/user-student/{{studentId}}
+Authorization: {{studentToken}}
+###
+
+#################################################
+## 5. Worker User
+#################################################
+
+### createWorker
+# @name createWorker
+# Create a new worker user
+POST {{baseUrl}}/user-worker
+Content-Type: application/json
+Authorization: {{workerToken}}
+
+{
+  "name": {
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "address": {
+    "street": "Street A",
+    "city": "City A",
+    "zip": "111111-111",
+    "number": 1,
+    "avenue": "Avenue A",
+    "state": "State A"
+  },
+  "salary": { "salary": 5000 },
+  "birthday": "01/01/1990",
+  "email": "teste1@test.com"
+}
+###
+@workerId = {{createWorker.response.body.id}}
+
+### listWorkers
+# List all worker users
+GET {{baseUrl}}/users-worker
+Authorization: {{workerToken}}
+###
+
+### getWorkerById
+# Retrieve worker user by ID
+GET {{baseUrl}}/user-worker/{{workerId}}
+Authorization: {{workerToken}}
+###
+
+### updateWorker
+# Update worker user's email
+PATCH {{baseUrl}}/user-worker
+Content-Type: application/json
+Authorization: {{workerToken}}
+
+{
+  "id": "{{workerId}}",
+  "email": "updated.worker@teste.com"
+}
+###
+
+### deleteWorker
+# Delete a worker user
+DELETE {{baseUrl}}/user-worker/{{workerId}}
+Authorization: {{workerToken}}
+###

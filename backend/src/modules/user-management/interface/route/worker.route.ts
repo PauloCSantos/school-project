@@ -61,10 +61,10 @@ export class UserWorkerRoute {
   }
 
   private async findAllUserWorkers(
-    req: HttpRequest<{}, {}, FindAllUserWorkerInputDto, {}>
+    req: HttpRequest<{}, FindAllUserWorkerInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
+      const { quantity, offset } = req.query;
       const response = await this.userWorkerController.findAll({
         quantity,
         offset,

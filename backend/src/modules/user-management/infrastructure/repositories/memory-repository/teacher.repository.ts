@@ -23,7 +23,7 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
     offSet?: number | undefined
   ): Promise<UserTeacher[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const users = this._teacherUsers.slice(offS, qtd);
 
     return users;

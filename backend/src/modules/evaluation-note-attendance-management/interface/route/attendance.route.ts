@@ -11,6 +11,7 @@ import {
   AddStudentsInputDto,
   RemoveStudentsInputDto,
   DeleteAttendanceInputDto,
+  FindAllAttendanceInputDto,
 } from '../../application/dto/attendance-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import {
@@ -88,10 +89,10 @@ export default class AttendanceRoute {
   }
 
   private async findAllAttendances(
-    req: HttpRequest<{}, {}, { quantity?: number; offset?: number }, {}>
+    req: HttpRequest<{}, FindAllAttendanceInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
+      const { quantity, offset } = req.query;
       const response = await this.attendanceController.findAll({
         quantity,
         offset,

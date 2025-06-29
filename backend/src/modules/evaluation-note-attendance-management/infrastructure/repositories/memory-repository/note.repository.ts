@@ -42,7 +42,7 @@ export default class MemoryNoteRepository implements NoteGateway {
     offSet?: number | undefined
   ): Promise<Note[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const notes = this._note.slice(offS, qtd);
 
     return notes;

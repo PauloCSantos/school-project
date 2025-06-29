@@ -84,10 +84,10 @@ export class UserAdministratorRoute {
   }
 
   private async findAllUserAdministrators(
-    req: HttpRequest<{}, {}, FindAllUserAdministratorInputDto, {}>
+    req: HttpRequest<{}, FindAllUserAdministratorInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
+      const { quantity, offset } = req.query;
       const response = await this.userAdministratorController.findAll({
         quantity,
         offset,

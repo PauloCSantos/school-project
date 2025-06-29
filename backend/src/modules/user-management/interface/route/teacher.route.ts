@@ -73,10 +73,10 @@ export class UserTeacherRoute {
   }
 
   private async findAllUserTeachers(
-    req: HttpRequest<{}, {}, FindAllUserTeacherInputDto, {}>
+    req: HttpRequest<{}, FindAllUserTeacherInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
+      const { quantity, offset } = req.query;
       const response = await this.userTeacherController.findAll({
         quantity,
         offset,

@@ -1,12 +1,11 @@
 import TokenService from '../../infraestructure/service/token.service';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-} from '../../application/middleware/authUser.middleware';
+import AuthUserMiddleware from '../../application/middleware/authUser.middleware';
 import { RoleUsers, RoleUsersEnum } from '../../type/enum';
+import { HttpRequest } from '../../infraestructure/http/http.interface';
 
 describe('AuthUserMiddleware unit test', () => {
   let middleware: AuthUserMiddleware;
-  let mockReq: AuthHttpRequest;
+  let mockReq: HttpRequest;
   let mockNext: jest.Mock;
   let tokenService: TokenService;
 
@@ -117,7 +116,6 @@ describe('AuthUserMiddleware unit test', () => {
 
     mockReq.headers.authorization = 'Bearer someTokenCausingUnexpectedError';
     await middleware.handle(mockReq, mockNext);
-
     expect(mockReq.tokenData).toBeUndefined();
     expect(mockNext).not.toHaveBeenCalled();
   });

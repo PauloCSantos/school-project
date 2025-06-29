@@ -40,14 +40,14 @@ describe('AttendanceRoute with ExpressAdapter', () => {
 
   describe('success', () => {
     it('should find all attendances', async () => {
-      const response = await supertest(app)
-        .get('/attendances')
-        .send({ quantity: 2, offset: 0 });
+      const response = await supertest(app).get(
+        '/attendances?quantity=2&offset=0'
+      );
 
       expect(response.statusCode).toBe(200);
       expect(attendanceController.findAll).toHaveBeenCalledWith({
-        quantity: 2,
-        offset: 0,
+        quantity: '2',
+        offset: '0',
       });
       expect(response.body).toEqual([{ id: expect.any(String) }]);
     });
@@ -134,9 +134,7 @@ describe('AttendanceRoute with ExpressAdapter', () => {
 
   describe('failure', () => {
     it('should return 400 for invalid quantity or offset', async () => {
-      const response = await supertest(app)
-        .get('/attendances')
-        .send({ offset: 'a' });
+      const response = await supertest(app).get('/attendances?offset=a');
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({

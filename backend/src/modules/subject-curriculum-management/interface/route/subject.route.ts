@@ -57,10 +57,10 @@ export class SubjectRoute {
   }
 
   private async findAllSubjects(
-    req: HttpRequest<{}, {}, FindAllSubjectInputDto, {}>
+    req: HttpRequest<{}, FindAllSubjectInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
+      const { quantity, offset } = req.query;
       const response = await this.subjectController.findAll({
         quantity,
         offset,

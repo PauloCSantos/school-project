@@ -278,7 +278,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           expect(evaluation.body).toBeDefined();
         });
       });
-      describe('GET /evaluations/', () => {
+      describe('GET /evaluations', () => {
         it('should find all evaluations', async () => {
           await supertest(app)
             .post('/evaluation')
@@ -803,7 +803,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           expect(note.body).toBeDefined();
         });
       });
-      describe('GET /attendances/', () => {
+      describe('GET /attendances', () => {
         it('should find all attendance', async () => {
           await supertest(app)
             .post('/attendance')

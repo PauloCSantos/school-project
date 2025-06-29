@@ -42,7 +42,7 @@ export default class MemoryEventRepository implements EventGateway {
     offSet?: number | undefined
   ): Promise<Event[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const events = this._events.slice(offS, qtd);
 
     return events;

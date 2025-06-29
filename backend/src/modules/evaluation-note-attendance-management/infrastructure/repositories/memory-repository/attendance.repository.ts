@@ -44,7 +44,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
     offSet?: number | undefined
   ): Promise<Attendance[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const attendances = this._attendance.slice(offS, qtd);
 
     return attendances;

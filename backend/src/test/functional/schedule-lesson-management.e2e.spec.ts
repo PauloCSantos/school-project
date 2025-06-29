@@ -299,7 +299,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(schedule.body).toBeDefined();
         });
       });
-      describe('GET /schedules/', () => {
+      describe('GET /schedules', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/schedule')
@@ -324,14 +324,14 @@ describe('Schedule lesson management module end to end test', () => {
               lessonsList: [new Id().value, new Id().value, new Id().value],
             });
           const response = await supertest(app)
-            .get('/schedules')
+            .get('/schedules?quantity=1&offset=0')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             );
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
-          expect(response.body.length).toBe(2);
+          expect(response.body.length).toBe(1);
         });
       });
       describe('PATCH /schedule', () => {
@@ -811,7 +811,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(lesson.body).toBeDefined();
         });
       });
-      describe('GET /lessons/', () => {
+      describe('GET /lessons', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/lesson')

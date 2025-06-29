@@ -18,7 +18,7 @@ export default class FindAllUserWorker
     offset,
     quantity,
   }: FindAllUserWorkerInputDto): Promise<FindAllUserWorkerOutputDto> {
-    const results = await this._userWorkerRepository.findAll(offset, quantity);
+    const results = await this._userWorkerRepository.findAll(quantity, offset);
 
     const result = results.map(userWorker => ({
       id: userWorker.id.value,

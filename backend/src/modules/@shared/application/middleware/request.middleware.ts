@@ -32,13 +32,13 @@ export default class RequestMiddleware
   ) {}
 
   async handle(
-    req: HttpRequest<any, any>,
+    req: HttpRequest<any, any, any, any>,
     next: () => Promise<HttpResponseData>
   ): Promise<HttpResponseData> {
     switch (this.fn) {
       case FunctionCalled.FIND_ALL: {
-        const offset = req.body?.offset;
-        const limit = req.body?.limit;
+        const offset = req.query?.offset;
+        const quantity = req.query?.quantity;
         if (
           offset !== undefined &&
           (offset === '' || Number.isNaN(Number(offset)))
@@ -49,8 +49,8 @@ export default class RequestMiddleware
           };
         }
         if (
-          limit !== undefined &&
-          (limit === '' || Number.isNaN(Number(limit)))
+          quantity !== undefined &&
+          (quantity === '' || Number.isNaN(Number(quantity)))
         ) {
           return {
             statusCode: errorStatus.BADREQUEST,

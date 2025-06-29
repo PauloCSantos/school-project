@@ -15,7 +15,7 @@ export default interface TeacherFacadeInterface {
   create(input: CreateUserTeacherInputDto): Promise<CreateUserTeacherOutputDto>;
   find(
     input: FindUserTeacherInputDto
-  ): Promise<FindUserTeacherOutputDto | undefined>;
+  ): Promise<FindUserTeacherOutputDto | null>;
   findAll(
     input: FindAllUserTeacherInputDto
   ): Promise<FindAllUserTeacherOutputDto>;

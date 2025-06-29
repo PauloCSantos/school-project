@@ -58,10 +58,10 @@ export default class NoteRoute {
   }
 
   private async findAllNotes(
-    req: HttpRequest<{}, {}, FindAllNoteInputDto, {}>
+    req: HttpRequest<{}, FindAllNoteInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
+      const { quantity, offset } = req.query;
       const response = await this.noteController.findAll({ quantity, offset });
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {

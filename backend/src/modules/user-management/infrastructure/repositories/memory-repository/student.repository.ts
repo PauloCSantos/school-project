@@ -23,7 +23,7 @@ export default class MemoryUserStudentRepository implements UserStudentGateway {
     offSet?: number | undefined
   ): Promise<UserStudent[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const users = this._studentUsers.slice(offS, qtd);
     return users;
   }

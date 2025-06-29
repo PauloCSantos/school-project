@@ -44,7 +44,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
     offSet?: number | undefined
   ): Promise<Evaluation[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const evaluations = this._evaluation.slice(offS, qtd);
 
     return evaluations;

@@ -36,13 +36,11 @@ describe('EventRoute with ExpressAdapter', () => {
 
   describe('success', () => {
     it('should find all events', async () => {
-      const response = await supertest(app)
-        .get('/events')
-        .send({ quantity: 2, offset: 0 });
+      const response = await supertest(app).get('/events?quantity=2&offset=0');
       expect(response.statusCode).toBe(200);
       expect(eventController.findAll).toHaveBeenCalledWith({
-        quantity: 2,
-        offset: 0,
+        quantity: '2',
+        offset: '0',
       });
       expect(response.body).toEqual(expect.any(Array));
       expect(response.body.length).toBe(2);
@@ -99,7 +97,7 @@ describe('EventRoute with ExpressAdapter', () => {
 
   describe('failure', () => {
     it('should return 400 for invalid quantity or offset', async () => {
-      const response = await supertest(app).get('/events').send({ offset: '' });
+      const response = await supertest(app).get('/events?offset=invalid');
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({

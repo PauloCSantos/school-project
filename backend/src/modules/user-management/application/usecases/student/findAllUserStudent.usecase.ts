@@ -18,7 +18,7 @@ export default class FindAllUserStudent
     offset,
     quantity,
   }: FindAllUserStudentInputDto): Promise<FindAllUserStudentOutputDto> {
-    const results = await this._userStudentRepository.findAll(offset, quantity);
+    const results = await this._userStudentRepository.findAll(quantity, offset);
 
     const result = results.map(userStudent => ({
       id: userStudent.id.value,

@@ -13,9 +13,7 @@ import {
 
 export default interface WorkerFacadeInterface {
   create(input: CreateUserWorkerInputDto): Promise<CreateUserWorkerOutputDto>;
-  find(
-    input: FindUserWorkerInputDto
-  ): Promise<FindUserWorkerOutputDto | undefined>;
+  find(input: FindUserWorkerInputDto): Promise<FindUserWorkerOutputDto | null>;
   findAll(
     input: FindAllUserWorkerInputDto
   ): Promise<FindAllUserWorkerOutputDto>;

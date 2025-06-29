@@ -35,7 +35,7 @@ export default class FindAllNote
     offset,
     quantity,
   }: FindAllNoteInputDto): Promise<FindAllNoteOutputDto> {
-    const results = await this._noteRepository.findAll(offset, quantity);
+    const results = await this._noteRepository.findAll(quantity, offset);
 
     const result = results.map(note => ({
       id: note.id.value,

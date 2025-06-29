@@ -24,7 +24,7 @@ export default class FindAllLesson
     offset,
     quantity,
   }: FindAllLessonInputDto): Promise<FindAllLessonOutputDto> {
-    const results = await this._lessonRepository.findAll(offset, quantity);
+    const results = await this._lessonRepository.findAll(quantity, offset);
 
     const result = results.map(lesson => ({
       id: lesson.id.value,

@@ -21,7 +21,7 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
     offSet?: number | undefined
   ): Promise<UserWorker[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const users = this._workerUsers.slice(offS, qtd);
 
     return users;

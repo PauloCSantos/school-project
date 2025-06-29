@@ -5,12 +5,13 @@ import FindAllUserStudent from '@/modules/user-management/application/usecases/s
 import FindUserStudent from '@/modules/user-management/application/usecases/student/findUserStudent.usecase';
 import UpdateUserStudent from '@/modules/user-management/application/usecases/student/updateUserStudent.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryUserStudentRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/student.repository';
 import { UserStudentController } from '@/modules/user-management/interface/controller/student.controller';
 import { UserStudentRoute } from '@/modules/user-management/interface/route/student.route';
+import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
 
-export default function initializeUserStudent(express: ExpressHttp): void {
+export default function initializeUserStudent(express: HttpServer): void {
   const userStudentRepository = new MemoryUserStudentRepository();
   const createUserStudentUsecase = new CreateUserStudent(userStudentRepository);
   const findUserStudentUsecase = new FindUserStudent(userStudentRepository);
@@ -28,10 +29,10 @@ export default function initializeUserStudent(express: ExpressHttp): void {
   );
   const tokenService = tokenInstance();
   const allowedRoles: RoleUsers[] = [
-    'master',
-    'administrator',
-    'student',
-    'teacher',
+    RoleUsersEnum.MASTER,
+    RoleUsersEnum.ADMINISTRATOR,
+    RoleUsersEnum.TEACHER,
+    RoleUsersEnum.STUDENT,
   ];
   const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
   const userStudentRoute = new UserStudentRoute(

@@ -61,10 +61,10 @@ export default class EvaluationRoute {
   }
 
   private async findAllEvaluations(
-    req: HttpRequest<{}, {}, FindAllEvaluationInputDto, {}>
+    req: HttpRequest<{}, FindAllEvaluationInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
+      const { quantity, offset } = req.query;
       const response = await this.evaluationController.findAll({
         quantity,
         offset,

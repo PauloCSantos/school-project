@@ -17,7 +17,7 @@ export default interface AdministratorFacadeInterface {
   ): Promise<CreateUserAdministratorOutputDto>;
   find(
     input: FindUserAdministratorInputDto
-  ): Promise<FindUserAdministratorOutputDto | undefined>;
+  ): Promise<FindUserAdministratorOutputDto | null>;
   findAll(
     input: FindAllUserAdministratorInputDto
   ): Promise<FindAllUserAdministratorOutputDto>;

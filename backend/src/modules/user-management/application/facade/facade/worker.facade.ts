@@ -46,7 +46,7 @@ export default class WorkerFacade implements WorkerFacadeInterface {
   }
   async find(
     input: FindUserWorkerInputDto
-  ): Promise<FindUserWorkerOutputDto | undefined> {
+  ): Promise<FindUserWorkerOutputDto | null> {
     return await this._findUserWorker.execute(input);
   }
   async findAll(
