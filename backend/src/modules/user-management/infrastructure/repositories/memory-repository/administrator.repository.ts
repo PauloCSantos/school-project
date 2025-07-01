@@ -20,6 +20,14 @@ export default class MemoryUserAdministratorRepository
       return null;
     }
   }
+  async findByEmail(email: string): Promise<UserAdministrator | null> {
+    const user = this._administratorUsers.find(user => user.email === email);
+    if (user) {
+      return user;
+    } else {
+      return null;
+    }
+  }
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined

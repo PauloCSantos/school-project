@@ -10,11 +10,18 @@ import { UserAdministratorController } from '@/modules/user-management/interface
 import { UserAdministratorRoute } from '@/modules/user-management/interface/route/administrator.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 
 export default function initializeUserAdministrator(express: HttpServer): void {
   const userAdministratorRepository = new MemoryUserAdministratorRepository();
+  const authUserRepository = new MemoryAuthUserRepository();
+  const emailValidatorService = new EmailAuthValidatorService(
+    authUserRepository
+  );
   const createUserAdministratorUsecase = new CreateUserAdministrator(
-    userAdministratorRepository
+    userAdministratorRepository,
+    emailValidatorService
   );
   const findUserAdministratorUsecase = new FindUserAdministrator(
     userAdministratorRepository

@@ -18,6 +18,14 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
       return null;
     }
   }
+  async findByEmail(email: string): Promise<UserTeacher | null> {
+    const user = this._teacherUsers.find(user => user.email === email);
+    if (user) {
+      return user;
+    } else {
+      return null;
+    }
+  }
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined

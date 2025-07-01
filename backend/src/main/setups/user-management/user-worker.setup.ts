@@ -10,10 +10,19 @@ import { UserWorkerController } from '@/modules/user-management/interface/contro
 import { UserWorkerRoute } from '@/modules/user-management/interface/route/worker.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
+import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
 
 export default function initializeUserWorker(express: HttpServer): void {
   const userWorkerRepository = new MemoryUserWorkerRepository();
-  const createUserWorkerUsecase = new CreateUserWorker(userWorkerRepository);
+  const authUserRepository = new MemoryAuthUserRepository();
+  const emailValidatorService = new EmailAuthValidatorService(
+    authUserRepository
+  );
+  const createUserWorkerUsecase = new CreateUserWorker(
+    userWorkerRepository,
+    emailValidatorService
+  );
   const findUserWorkerUsecase = new FindUserWorker(userWorkerRepository);
   const findAllUserWorkerUsecase = new FindAllUserWorker(userWorkerRepository);
   const deleteUserWorkerUsecase = new DeleteUserWorker(userWorkerRepository);

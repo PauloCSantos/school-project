@@ -8,6 +8,7 @@ import {
 import UserMasterGateway from '@/modules/user-management/infrastructure/gateway/master.gateway';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
+import { EmailAuthValidator } from '../../services/email-auth-validator.service';
 
 export default class CreateUserMaster
   implements
@@ -15,7 +16,10 @@ export default class CreateUserMaster
 {
   private _userMasterRepository: UserMasterGateway;
 
-  constructor(userMasterRepository: UserMasterGateway) {
+  constructor(
+    userMasterRepository: UserMasterGateway,
+    readonly emailValidatorService: EmailAuthValidator
+  ) {
     this._userMasterRepository = userMasterRepository;
   }
   async execute({
@@ -26,6 +30,10 @@ export default class CreateUserMaster
     birthday,
     cnpj,
   }: CreateUserMasterInputDto): Promise<CreateUserMasterOutputDto> {
+    if (!(await this.emailValidatorService.validate(email))) {
+      throw new Error('You must register this email before creating the user.');
+    }
+
     const userMaster = new UserMaster({
       id: new Id(id),
       name: new Name(name),
@@ -35,8 +43,8 @@ export default class CreateUserMaster
       cnpj,
     });
 
-    const userVerification = await this._userMasterRepository.find(
-      userMaster.id.value
+    const userVerification = await this._userMasterRepository.findByEmail(
+      userMaster.email
     );
     if (userVerification) throw new Error('User already exists');
 

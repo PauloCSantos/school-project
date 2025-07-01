@@ -78,4 +78,8 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
       throw new Error('AuthUser not found');
     }
   }
+
+  async verify(email: string): Promise<boolean> {
+    return this._authUser.some(authUser => authUser.email === email);
+  }
 }

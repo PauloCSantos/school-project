@@ -7,6 +7,7 @@ import {
 import UserStudentGateway from '@/modules/user-management/infrastructure/gateway/student.gateway';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
+import { EmailAuthValidator } from '../../services/email-auth-validator.service';
 
 export default class CreateUserStudent
   implements
@@ -14,7 +15,10 @@ export default class CreateUserStudent
 {
   private _userStudentRepository: UserStudentGateway;
 
-  constructor(userStudentRepository: UserStudentGateway) {
+  constructor(
+    userStudentRepository: UserStudentGateway,
+    readonly emailValidatorService: EmailAuthValidator
+  ) {
     this._userStudentRepository = userStudentRepository;
   }
   async execute({
@@ -24,6 +28,10 @@ export default class CreateUserStudent
     birthday,
     paymentYear,
   }: CreateUserStudentInputDto): Promise<CreateUserStudentOutputDto> {
+    if (!(await this.emailValidatorService.validate(email))) {
+      throw new Error('You must register this email before creating the user.');
+    }
+
     const userStudent = new UserStudent({
       name: new Name(name),
       address: new Address(address),
@@ -32,8 +40,8 @@ export default class CreateUserStudent
       paymentYear,
     });
 
-    const userVerification = await this._userStudentRepository.find(
-      userStudent.id.value
+    const userVerification = await this._userStudentRepository.findByEmail(
+      userStudent.email
     );
     if (userVerification) throw new Error('User already exists');
 

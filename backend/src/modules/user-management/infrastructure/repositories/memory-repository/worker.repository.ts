@@ -16,6 +16,14 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
       return null;
     }
   }
+  async findByEmail(email: string): Promise<UserWorker | null> {
+    const user = this._workerUsers.find(user => user.email === email);
+    if (user) {
+      return user;
+    } else {
+      return null;
+    }
+  }
   async findAll(
     quantity?: number | undefined,
     offSet?: number | undefined

@@ -8,10 +8,19 @@ import { UserMasterController } from '@/modules/user-management/interface/contro
 import { UserMasterRoute } from '@/modules/user-management/interface/route/master.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
+import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
 
 export default function initializeUserMaster(express: HttpServer): void {
   const userMasterRepository = new MemoryUserMasterRepository();
-  const createUserMasterUsecase = new CreateUserMaster(userMasterRepository);
+  const authUserRepository = new MemoryAuthUserRepository();
+  const emailValidatorService = new EmailAuthValidatorService(
+    authUserRepository
+  );
+  const createUserMasterUsecase = new CreateUserMaster(
+    userMasterRepository,
+    emailValidatorService
+  );
   const findUserMasterUsecase = new FindUserMaster(userMasterRepository);
   const updateUserMasterUsecase = new UpdateUserMaster(userMasterRepository);
   const userMasterController = new UserMasterController(

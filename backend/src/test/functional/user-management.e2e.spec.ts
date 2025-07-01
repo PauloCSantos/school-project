@@ -41,6 +41,23 @@ import { UserMasterRoute } from '@/modules/user-management/interface/route/maste
 import { UserStudentRoute } from '@/modules/user-management/interface/route/student.route';
 import { UserTeacherRoute } from '@/modules/user-management/interface/route/teacher.route';
 import { UserWorkerRoute } from '@/modules/user-management/interface/route/worker.route';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
+import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
+
+async function createAuthUserInMemory(
+  email: string,
+  repository: any,
+  role = 'master'
+) {
+  await repository.create({
+    id: new Id().value,
+    email,
+    password: 'testPassword123',
+    masterId: new Id().value,
+    role,
+    isHashed: false,
+  });
+}
 
 describe('User management module end to end test', () => {
   let userAdministratorRepository = new MemoryUserAdministratorRepository();
@@ -48,6 +65,8 @@ describe('User management module end to end test', () => {
   let userStudentRepository = new MemoryUserStudentRepository();
   let userTeacherRepository = new MemoryUserTeacherRepository();
   let userWorkerRepository = new MemoryUserWorkerRepository();
+  let authUserRepository = new MemoryAuthUserRepository();
+  let emailValidatorService = new EmailAuthValidatorService(authUserRepository);
   let app: any;
   beforeEach(() => {
     userAdministratorRepository = new MemoryUserAdministratorRepository();
@@ -55,8 +74,11 @@ describe('User management module end to end test', () => {
     userStudentRepository = new MemoryUserStudentRepository();
     userTeacherRepository = new MemoryUserTeacherRepository();
     userWorkerRepository = new MemoryUserWorkerRepository();
+    authUserRepository = new MemoryAuthUserRepository();
+    emailValidatorService = new EmailAuthValidatorService(authUserRepository);
     const createUserAdministratorUsecase = new CreateUserAdministrator(
-      userAdministratorRepository
+      userAdministratorRepository,
+      emailValidatorService
     );
     const findUserAdministratorUsecase = new FindUserAdministrator(
       userAdministratorRepository
@@ -70,12 +92,16 @@ describe('User management module end to end test', () => {
     const deleteUserAdministratorUsecase = new DeleteUserAdministrator(
       userAdministratorRepository
     );
-    const createUserMasterUsecase = new CreateUserMaster(userMasterRepository);
+    const createUserMasterUsecase = new CreateUserMaster(
+      userMasterRepository,
+      emailValidatorService
+    );
     const findUserMasterUsecase = new FindUserMaster(userMasterRepository);
     const updateUserMasterUsecase = new UpdateUserMaster(userMasterRepository);
 
     const createUserStudentUsecase = new CreateUserStudent(
-      userStudentRepository
+      userStudentRepository,
+      emailValidatorService
     );
     const findUserStudentUsecase = new FindUserStudent(userStudentRepository);
     const findAllUserStudentUsecase = new FindAllUserStudent(
@@ -89,7 +115,8 @@ describe('User management module end to end test', () => {
     );
 
     const createUserTeacherUsecase = new CreateUserTeacher(
-      userTeacherRepository
+      userTeacherRepository,
+      emailValidatorService
     );
     const findUserTeacherUsecase = new FindUserTeacher(userTeacherRepository);
     const findAllUserTeacherUsecase = new FindAllUserTeacher(
@@ -102,7 +129,10 @@ describe('User management module end to end test', () => {
       userTeacherRepository
     );
 
-    const createUserWorkerUsecase = new CreateUserWorker(userWorkerRepository);
+    const createUserWorkerUsecase = new CreateUserWorker(
+      userWorkerRepository,
+      emailValidatorService
+    );
     const findUserWorkerUsecase = new FindUserWorker(userWorkerRepository);
     const findAllUserWorkerUsecase = new FindAllUserWorker(
       userWorkerRepository
@@ -209,6 +239,7 @@ describe('User management module end to end test', () => {
     describe('On error', () => {
       describe('POST /user-administrator', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
             .set(
@@ -241,6 +272,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-administrator/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-administrator')
             .set(
@@ -279,6 +311,7 @@ describe('User management module end to end test', () => {
       });
       describe('PATCH /user-administrator', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
             .set(
@@ -325,6 +358,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-administrator/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-administrator')
             .set(
@@ -365,6 +399,7 @@ describe('User management module end to end test', () => {
     describe('On success', () => {
       describe('POST /user-administrator', () => {
         it('should create a user', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
             .set(
@@ -398,6 +433,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-administrator/:id', () => {
         it('should find a user by ID', async () => {
+          await createAuthUserInMemory('teste2@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
             .set(
@@ -421,7 +457,7 @@ describe('User management module end to end test', () => {
                 salary: 5000,
               },
               birthday: '11-12-1995',
-              email: 'teste1@test.com',
+              email: 'teste2@test.com',
               graduation: 'Math',
             });
           const id = response.body.id;
@@ -435,8 +471,10 @@ describe('User management module end to end test', () => {
           expect(userAdministrator.body).toBeDefined();
         });
       });
-      describe('GET /users-administrator/', () => {
+      describe('GET /users-administrator', () => {
         it('should find all users', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
+          await createAuthUserInMemory('teste2@test.com', authUserRepository);
           await supertest(app)
             .post('/user-administrator')
             .set(
@@ -486,7 +524,7 @@ describe('User management module end to end test', () => {
                 salary: 5000,
               },
               birthday: '11-12-1995',
-              email: 'teste1@test.com',
+              email: 'teste2@test.com',
               graduation: 'Spanish',
             });
           const response = await supertest(app)
@@ -502,6 +540,7 @@ describe('User management module end to end test', () => {
       });
       describe('PATCH /user-administrator', () => {
         it('should update a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
             .set(
@@ -552,6 +591,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-administrator/:id', () => {
         it('should delete a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
             .set(
@@ -595,6 +635,7 @@ describe('User management module end to end test', () => {
     describe('On error', () => {
       describe('POST /user-master', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
             .set(
@@ -624,6 +665,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-master/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-master')
             .set(
@@ -659,6 +701,7 @@ describe('User management module end to end test', () => {
       });
       describe('PATCH /user-master', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
             .set(
@@ -701,6 +744,7 @@ describe('User management module end to end test', () => {
     describe('On sucess', () => {
       describe('POST /user-master', () => {
         it('should create a user', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
             .set(
@@ -731,6 +775,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-master/:id', () => {
         it('should find a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
             .set(
@@ -768,6 +813,7 @@ describe('User management module end to end test', () => {
       });
       describe('PATCH /user-master', () => {
         it('should update a user by ID', async () => {
+          await createAuthUserInMemory('teste2@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
             .set(
@@ -814,6 +860,7 @@ describe('User management module end to end test', () => {
     describe('On error', () => {
       describe('POST /user-student', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
             .set(
@@ -843,6 +890,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-student/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-student')
             .set(
@@ -878,6 +926,7 @@ describe('User management module end to end test', () => {
       });
       describe('PATCH /user-student', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
             .set(
@@ -918,6 +967,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-student/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-student')
             .set(
@@ -955,6 +1005,7 @@ describe('User management module end to end test', () => {
     describe('On sucess', () => {
       describe('POST /user-student', () => {
         it('should create a user', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
             .set(
@@ -984,6 +1035,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-student/:id', () => {
         it('should find a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
             .set(
@@ -1020,6 +1072,8 @@ describe('User management module end to end test', () => {
       });
       describe('GET /users-student', () => {
         it('should find all users', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
+          await createAuthUserInMemory('teste2@test.com', authUserRepository);
           await supertest(app)
             .post('/user-student')
             .set(
@@ -1063,7 +1117,7 @@ describe('User management module end to end test', () => {
                 state: 'State A',
               },
               birthday: new Date('11-12-1995'),
-              email: 'teste1@test.com',
+              email: 'teste2@test.com',
               paymentYear: 20000,
             });
           const response = await supertest(app)
@@ -1079,6 +1133,7 @@ describe('User management module end to end test', () => {
       });
       describe('PATCH /user-student', () => {
         it('should update a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
             .set(
@@ -1132,6 +1187,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-student/:id', () => {
         it('should delete a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
             .set(
@@ -1172,6 +1228,7 @@ describe('User management module end to end test', () => {
     describe('On error', () => {
       describe('POST /user-teacher', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1205,6 +1262,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-teacher/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1244,6 +1302,7 @@ describe('User management module end to end test', () => {
       });
       describe('PATCH /user-teacher', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1289,6 +1348,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-teacher/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1330,6 +1390,7 @@ describe('User management module end to end test', () => {
     describe('On sucess', () => {
       describe('POST /user-teacher', () => {
         it('should create a user', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1363,6 +1424,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-teacher/:id', () => {
         it('should find a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1401,8 +1463,10 @@ describe('User management module end to end test', () => {
           expect(userTeacher.body).toBeDefined();
         });
       });
-      describe('GET /users-teacher/', () => {
+      describe('GET /users-teacher', () => {
         it('should find all users', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
+          await createAuthUserInMemory('teste2@test.com', authUserRepository);
           await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1453,7 +1517,7 @@ describe('User management module end to end test', () => {
                 salary: 5000,
               },
               birthday: new Date('11-12-1995'),
-              email: 'teste1@test.com',
+              email: 'teste2@test.com',
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
@@ -1470,6 +1534,7 @@ describe('User management module end to end test', () => {
       });
       describe('PATCH /user-teacher', () => {
         it('should update a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1532,6 +1597,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-teacher/:id', () => {
         it('should delete a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1576,6 +1642,7 @@ describe('User management module end to end test', () => {
     describe('On error', () => {
       describe('POST /user-worker', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
             .set(
@@ -1607,6 +1674,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-worker/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-worker')
             .set(
@@ -1644,6 +1712,7 @@ describe('User management module end to end test', () => {
       });
       describe('PATCH /user-worker', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
             .set(
@@ -1688,6 +1757,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-worker/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-worker')
             .set(
@@ -1727,6 +1797,7 @@ describe('User management module end to end test', () => {
     describe('On sucess', () => {
       describe('POST /user-worker', () => {
         it('should create a user', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
             .set(
@@ -1758,6 +1829,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-worker/:id', () => {
         it('should find a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
             .set(
@@ -1796,6 +1868,8 @@ describe('User management module end to end test', () => {
       });
       describe('GET /users-worker/', () => {
         it('should find all users', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
+          await createAuthUserInMemory('teste2@test.com', authUserRepository);
           await supertest(app)
             .post('/user-worker')
             .set(
@@ -1844,7 +1918,7 @@ describe('User management module end to end test', () => {
                 salary: 5000,
               },
               birthday: new Date('11-12-1995'),
-              email: 'teste1@test.com',
+              email: 'teste2@test.com',
             });
           const response = await supertest(app)
             .get('/users-worker')
@@ -1859,6 +1933,7 @@ describe('User management module end to end test', () => {
       });
       describe('PATCH /user-worker', () => {
         it('should update a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
             .set(
@@ -1917,6 +1992,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-worker/:id', () => {
         it('should delete a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
             .set(

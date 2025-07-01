@@ -8,6 +8,7 @@ import Address from '@/modules/user-management/domain/@shared/value-object/addre
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserAdministratorGateway from '@/modules/user-management/infrastructure/gateway/administrator.gateway';
 import UserAdministrator from '@/modules/user-management/domain/entity/administrator.entity';
+import { EmailAuthValidator } from '../../services/email-auth-validator.service';
 
 export default class CreateUserAdministrator
   implements
@@ -18,7 +19,10 @@ export default class CreateUserAdministrator
 {
   private _userAdministratorRepository: UserAdministratorGateway;
 
-  constructor(userAdministratorRepository: UserAdministratorGateway) {
+  constructor(
+    userAdministratorRepository: UserAdministratorGateway,
+    readonly emailValidatorService: EmailAuthValidator
+  ) {
     this._userAdministratorRepository = userAdministratorRepository;
   }
   async execute({
@@ -29,6 +33,10 @@ export default class CreateUserAdministrator
     graduation,
     salary,
   }: CreateUserAdministratorInputDto): Promise<CreateUserAdministratorOutputDto> {
+    if (!(await this.emailValidatorService.validate(email))) {
+      throw new Error('You must register this email before creating the user.');
+    }
+
     const userAdministrator = new UserAdministrator({
       name: new Name(name),
       address: new Address(address),
@@ -38,9 +46,10 @@ export default class CreateUserAdministrator
       salary: new Salary(salary),
     });
 
-    const userVerification = await this._userAdministratorRepository.find(
-      userAdministrator.id.value
-    );
+    const userVerification =
+      await this._userAdministratorRepository.findByEmail(
+        userAdministrator.email
+      );
     if (userVerification) throw new Error('User already exists');
 
     const result =

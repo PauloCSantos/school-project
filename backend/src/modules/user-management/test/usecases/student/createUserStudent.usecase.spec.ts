@@ -6,12 +6,17 @@ import UserStudent from '@/modules/user-management/domain/entity/student.entity'
 const MockRepository = () => {
   return {
     find: jest.fn(),
+    findByEmail: jest.fn(),
     findAll: jest.fn(),
     create: jest.fn(userStudent => Promise.resolve(userStudent.id.value)),
     update: jest.fn(),
     delete: jest.fn(),
   };
 };
+
+const MockEmailAuthValidatorService = () => ({
+  validate: jest.fn().mockResolvedValue(true),
+});
 
 describe('createUserStudent usecase unit test', () => {
   const input = {
@@ -43,33 +48,49 @@ describe('createUserStudent usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the user already exists', async () => {
       const userStudentRepository = MockRepository();
-      userStudentRepository.find.mockResolvedValue(userStudent);
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
 
-      const usecase = new CreateUserStudent(userStudentRepository);
+      userStudentRepository.findByEmail.mockResolvedValue(userStudent);
+
+      const usecase = new CreateUserStudent(
+        userStudentRepository,
+        emailAuthValidatorService
+      );
 
       await expect(usecase.execute(input)).rejects.toThrow(
         'User already exists'
       );
-      expect(userStudentRepository.find).toHaveBeenCalledWith(
+      expect(userStudentRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
       expect(userStudentRepository.create).not.toHaveBeenCalled();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
+        input.email
+      );
     });
   });
 
   describe('On success', () => {
     it('should create a user student', async () => {
       const userStudentRepository = MockRepository();
-      userStudentRepository.find.mockResolvedValue(undefined);
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
 
-      const usecase = new CreateUserStudent(userStudentRepository);
+      userStudentRepository.findByEmail.mockResolvedValue(null);
+
+      const usecase = new CreateUserStudent(
+        userStudentRepository,
+        emailAuthValidatorService
+      );
       const result = await usecase.execute(input);
 
-      expect(userStudentRepository.find).toHaveBeenCalledWith(
+      expect(userStudentRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
       expect(userStudentRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
+        input.email
+      );
     });
   });
 });

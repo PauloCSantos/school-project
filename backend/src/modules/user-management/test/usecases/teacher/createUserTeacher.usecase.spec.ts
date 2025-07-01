@@ -4,15 +4,18 @@ import Name from '@/modules/user-management/domain/@shared/value-object/name.val
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserTeacher from '@/modules/user-management/domain/entity/teacher.entity';
 
-const MockRepository = () => {
-  return {
-    find: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(userTeacher => Promise.resolve(userTeacher.id.value)),
-    update: jest.fn(),
-    delete: jest.fn(),
-  };
-};
+const MockRepository = () => ({
+  find: jest.fn(),
+  findByEmail: jest.fn(),
+  findAll: jest.fn(),
+  create: jest.fn(userTeacher => Promise.resolve(userTeacher.id.value)),
+  update: jest.fn(),
+  delete: jest.fn(),
+});
+
+const MockEmailAuthValidatorService = () => ({
+  validate: jest.fn().mockResolvedValue(true),
+});
 
 describe('createUserTeacher usecase unit test', () => {
   const input = {
@@ -50,33 +53,49 @@ describe('createUserTeacher usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the user already exists', async () => {
       const userTeacherRepository = MockRepository();
-      userTeacherRepository.find.mockResolvedValue(userTeacher);
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
 
-      const usecase = new CreateUserTeacher(userTeacherRepository);
+      userTeacherRepository.findByEmail.mockResolvedValue(userTeacher);
+
+      const usecase = new CreateUserTeacher(
+        userTeacherRepository,
+        emailAuthValidatorService
+      );
 
       await expect(usecase.execute(input)).rejects.toThrow(
         'User already exists'
       );
-      expect(userTeacherRepository.find).toHaveBeenCalledWith(
+      expect(userTeacherRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
       expect(userTeacherRepository.create).not.toHaveBeenCalled();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
+        input.email
+      );
     });
   });
 
   describe('On success', () => {
     it('should create a user teacher', async () => {
       const userTeacherRepository = MockRepository();
-      userTeacherRepository.find.mockResolvedValue(undefined);
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
 
-      const usecase = new CreateUserTeacher(userTeacherRepository);
+      userTeacherRepository.findByEmail.mockResolvedValue(null);
+
+      const usecase = new CreateUserTeacher(
+        userTeacherRepository,
+        emailAuthValidatorService
+      );
       const result = await usecase.execute(input);
 
-      expect(userTeacherRepository.find).toHaveBeenCalledWith(
+      expect(userTeacherRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
       expect(userTeacherRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
+        input.email
+      );
     });
   });
 });

@@ -8,6 +8,7 @@ import UserTeacherGateway from '@/modules/user-management/infrastructure/gateway
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
+import { EmailAuthValidator } from '../../services/email-auth-validator.service';
 
 export default class CreateUserTeacher
   implements
@@ -15,7 +16,10 @@ export default class CreateUserTeacher
 {
   private _userTeacherRepository: UserTeacherGateway;
 
-  constructor(userTeacherRepository: UserTeacherGateway) {
+  constructor(
+    userTeacherRepository: UserTeacherGateway,
+    readonly emailValidatorService: EmailAuthValidator
+  ) {
     this._userTeacherRepository = userTeacherRepository;
   }
   async execute({
@@ -27,6 +31,10 @@ export default class CreateUserTeacher
     salary,
     academicDegrees,
   }: CreateUserTeacherInputDto): Promise<CreateUserTeacherOutputDto> {
+    if (!(await this.emailValidatorService.validate(email))) {
+      throw new Error('You must register this email before creating the user.');
+    }
+
     const userTeacher = new UserTeacher({
       name: new Name(name),
       address: new Address(address),
@@ -37,8 +45,8 @@ export default class CreateUserTeacher
       academicDegrees,
     });
 
-    const userVerification = await this._userTeacherRepository.find(
-      userTeacher.id.value
+    const userVerification = await this._userTeacherRepository.findByEmail(
+      userTeacher.email
     );
     if (userVerification) throw new Error('User already exists');
 

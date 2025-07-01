@@ -4,15 +4,18 @@ import Name from '@/modules/user-management/domain/@shared/value-object/name.val
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
 
-const MockRepository = () => {
-  return {
-    find: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(userWorker => Promise.resolve(userWorker.id.value)),
-    update: jest.fn(),
-    delete: jest.fn(),
-  };
-};
+const MockRepository = () => ({
+  find: jest.fn(),
+  findByEmail: jest.fn(),
+  findAll: jest.fn(),
+  create: jest.fn(userWorker => Promise.resolve(userWorker.id.value)),
+  update: jest.fn(),
+  delete: jest.fn(),
+});
+
+const MockEmailAuthValidatorService = () => ({
+  validate: jest.fn().mockResolvedValue(true),
+});
 
 describe('createUserWorker usecase unit test', () => {
   const input = {
@@ -46,33 +49,49 @@ describe('createUserWorker usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the user already exists', async () => {
       const userWorkerRepository = MockRepository();
-      userWorkerRepository.find.mockResolvedValue(userWorker);
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
 
-      const usecase = new CreateUserWorker(userWorkerRepository);
+      userWorkerRepository.findByEmail.mockResolvedValue(userWorker);
+
+      const usecase = new CreateUserWorker(
+        userWorkerRepository,
+        emailAuthValidatorService
+      );
 
       await expect(usecase.execute(input)).rejects.toThrow(
         'User already exists'
       );
-      expect(userWorkerRepository.find).toHaveBeenCalledWith(
+      expect(userWorkerRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
       expect(userWorkerRepository.create).not.toHaveBeenCalled();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
+        input.email
+      );
     });
   });
 
   describe('On success', () => {
-    it('should create a user administrator', async () => {
+    it('should create a user worker', async () => {
       const userWorkerRepository = MockRepository();
-      userWorkerRepository.find.mockResolvedValue(undefined);
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
 
-      const usecase = new CreateUserWorker(userWorkerRepository);
+      userWorkerRepository.findByEmail.mockResolvedValue(null);
+
+      const usecase = new CreateUserWorker(
+        userWorkerRepository,
+        emailAuthValidatorService
+      );
       const result = await usecase.execute(input);
 
-      expect(userWorkerRepository.find).toHaveBeenCalledWith(
+      expect(userWorkerRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
       expect(userWorkerRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
+        input.email
+      );
     });
   });
 });

@@ -10,10 +10,19 @@ import { UserStudentController } from '@/modules/user-management/interface/contr
 import { UserStudentRoute } from '@/modules/user-management/interface/route/student.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
+import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
 
 export default function initializeUserStudent(express: HttpServer): void {
   const userStudentRepository = new MemoryUserStudentRepository();
-  const createUserStudentUsecase = new CreateUserStudent(userStudentRepository);
+  const authUserRepository = new MemoryAuthUserRepository();
+  const emailValidatorService = new EmailAuthValidatorService(
+    authUserRepository
+  );
+  const createUserStudentUsecase = new CreateUserStudent(
+    userStudentRepository,
+    emailValidatorService
+  );
   const findUserStudentUsecase = new FindUserStudent(userStudentRepository);
   const findAllUserStudentUsecase = new FindAllUserStudent(
     userStudentRepository
