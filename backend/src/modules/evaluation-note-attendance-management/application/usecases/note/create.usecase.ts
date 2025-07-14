@@ -5,6 +5,13 @@ import {
   CreateNoteOutputDto,
 } from '../../dto/note-usecase.dto';
 import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for creating a new note.
@@ -33,11 +40,21 @@ export default class CreateNote
    * @returns Output data of the created note
    * @throws Error if a note with the same id already exists
    */
-  async execute({
-    evaluation,
-    note,
-    student,
-  }: CreateNoteInputDto): Promise<CreateNoteOutputDto> {
+  async execute(
+    { evaluation, note, student }: CreateNoteInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<CreateNoteOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.NOTE,
+        FunctionCalledEnum.CREATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const noteInstance = new Note({
       evaluation,
       note,

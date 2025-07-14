@@ -9,7 +9,7 @@ import DeleteSubject from '@/modules/subject-curriculum-management/application/u
 import { SubjectController } from '@/modules/subject-curriculum-management/interface/controller/subject.controller';
 import { SubjectRoute } from '@/modules/subject-curriculum-management/interface/route/subject.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 
 export default function initializeSubject(express: HttpServer): void {
   const subjectRepository = new MemorySubjectRepository();

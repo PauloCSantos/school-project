@@ -9,7 +9,7 @@ import MemoryUserStudentRepository from '@/modules/user-management/infrastructur
 import { UserStudentController } from '@/modules/user-management/interface/controller/student.controller';
 import { UserStudentRoute } from '@/modules/user-management/interface/route/student.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
 

@@ -1,20 +1,39 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import FindAllUserAdministrator from '@/modules/user-management/application/usecases/administrator/findAllUserAdministrator.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserAdministrator from '@/modules/user-management/domain/entity/administrator.entity';
 
-const MockRepository = () => {
-  return {
-    find: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-  };
-};
-
 describe('findAllUserAdministrator usecase unit test', () => {
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let token: TokenData;
+
+  const MockRepository = () => {
+    return {
+      find: jest.fn(),
+      findByEmail: jest.fn(),
+      findAll: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    };
+  };
+
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
+    ({
+      verifyPolicies: jest.fn(),
+    }) as jest.Mocked<PoliciesServiceInterface>;
+
+  policieService = MockPolicyService();
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   const userAdministrator1 = new UserAdministrator({
     name: new Name({
       firstName: 'John',
@@ -60,9 +79,10 @@ describe('findAllUserAdministrator usecase unit test', () => {
         userAdministrator1,
         userAdministrator2,
       ]);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
       const usecase = new FindAllUserAdministrator(userAdministratorRepository);
 
-      const result = await usecase.execute({});
+      const result = await usecase.execute({}, policieService, token);
 
       expect(userAdministratorRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(2);
@@ -70,9 +90,10 @@ describe('findAllUserAdministrator usecase unit test', () => {
     it('should return an empty array when the repository is empty', async () => {
       const userAdministratorRepository = MockRepository();
       userAdministratorRepository.findAll.mockResolvedValue([]);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
       const usecase = new FindAllUserAdministrator(userAdministratorRepository);
 
-      const result = await usecase.execute({});
+      const result = await usecase.execute({}, policieService, token);
 
       expect(userAdministratorRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(0);

@@ -1,10 +1,13 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import { RoleUsers } from '@/modules/@shared/type/enum';
+import { RoleUsers, TokenData } from '@/modules/@shared/type/sharedTypes';
 
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import MemoryTeacherRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/teacher.repository';
 
-import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import {
+  AuthUserService,
+  AuthUserServiceInterface,
+} from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import CreateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/create-user.usecase';
 import DeleteAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/delete-user.usecase';
 import FindAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/find-user.usecase';
@@ -19,14 +22,19 @@ import FindUserTeacher from '@/modules/user-management/application/usecases/teac
 import UpdateUserTeacher from '@/modules/user-management/application/usecases/teacher/updateUserTeacher.usecase';
 import TeacherFacade from '@/modules/user-management/application/facade/facade/teacher.facade';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
-import TokenService from '@/modules/@shared/infraestructure/service/token.service';
+import TokenService from '@/modules/@shared/infraestructure/services/token.service';
+import TokenServiceInterface from '@/modules/@shared/infraestructure/services/token.service';
+import {
+  PoliciesService,
+  PoliciesServiceInterface,
+} from '@/modules/@shared/application/services/policies.service';
 
 describe('User Teacher facade integration test', () => {
   let authUserRepository: MemoryAuthUserRepository;
   let teacherRepository: MemoryTeacherRepository;
   let emailAuthValidator: EmailAuthValidatorService;
-  let authUserService: AuthUserService;
-  let tokenService: TokenService;
+  let authUserService: AuthUserServiceInterface;
+  let tokenService: TokenServiceInterface;
   let createAuthUser: CreateAuthUser;
   let deleteAuthUser: DeleteAuthUser;
   let findAuthUser: FindAuthUser;
@@ -40,6 +48,8 @@ describe('User Teacher facade integration test', () => {
   let findUserTeacher: FindUserTeacher;
   let updateUserTeacher: UpdateUserTeacher;
   let facadeTeacher: TeacherFacade;
+
+  let policiesService: PoliciesServiceInterface;
 
   const input = {
     name: {
@@ -104,15 +114,22 @@ describe('User Teacher facade integration test', () => {
     graduation: 'Japanese',
     academicDegrees: 'Dr.',
   };
+  const token: TokenData = {
+    email: 'teste@teste.com.br',
+    masterId: 'validID',
+    role: 'master',
+  };
 
   async function createAuthUserFor(email: string) {
-    await facadeAuthUser.create({
-      email,
-      password: 'XpA2Jjd4',
-      masterId: new Id().value,
-      role: 'master' as RoleUsers,
-      isHashed: false,
-    });
+    await facadeAuthUser.create(
+      {
+        email,
+        password: 'XpA2Jjd4',
+        masterId: new Id().value,
+        role: 'master' as RoleUsers,
+      },
+      token
+    );
   }
 
   beforeEach(() => {
@@ -133,12 +150,15 @@ describe('User Teacher facade integration test', () => {
       tokenService
     );
 
+    policiesService = new PoliciesService();
+
     facadeAuthUser = new AuthUserFacade({
       createAuthUser,
       findAuthUser,
       updateAuthUser,
       deleteAuthUser,
       loginAuthUser,
+      policiesService,
     });
 
     createUserTeacher = new CreateUserTeacher(
@@ -156,20 +176,21 @@ describe('User Teacher facade integration test', () => {
       findAllUserTeacher,
       findUserTeacher,
       updateUserTeacher,
+      policiesService,
     });
   });
 
   it('should create a Teacher user using the facade', async () => {
     await createAuthUserFor(input.email);
-    const result = await facadeTeacher.create(input);
+    const result = await facadeTeacher.create(input, token);
 
     expect(result.id).toBeDefined();
   });
 
   it('should find a Teacher user using the facade', async () => {
     await createAuthUserFor(input.email);
-    const result = await facadeTeacher.create(input);
-    const userTeacher = await facadeTeacher.find(result);
+    const result = await facadeTeacher.create(input, token);
+    const userTeacher = await facadeTeacher.find(result, token);
 
     expect(userTeacher).toBeDefined();
   });
@@ -179,10 +200,10 @@ describe('User Teacher facade integration test', () => {
     await createAuthUserFor(input2.email);
     await createAuthUserFor(input3.email);
 
-    await facadeTeacher.create(input);
-    await facadeTeacher.create(input2);
-    await facadeTeacher.create(input3);
-    const allUsers = await facadeTeacher.findAll({});
+    await facadeTeacher.create(input, token);
+    await facadeTeacher.create(input2, token);
+    await facadeTeacher.create(input3, token);
+    const allUsers = await facadeTeacher.findAll({}, token);
 
     expect(allUsers.length).toBe(3);
   });
@@ -192,11 +213,11 @@ describe('User Teacher facade integration test', () => {
     await createAuthUserFor(input2.email);
     await createAuthUserFor(input3.email);
 
-    await facadeTeacher.create(input);
-    const id2 = await facadeTeacher.create(input2);
-    await facadeTeacher.create(input3);
-    const result = await facadeTeacher.delete({ id: id2.id });
-    const allUsers = await facadeTeacher.findAll({});
+    await facadeTeacher.create(input, token);
+    const id2 = await facadeTeacher.create(input2, token);
+    await facadeTeacher.create(input3, token);
+    const result = await facadeTeacher.delete({ id: id2.id }, token);
+    const allUsers = await facadeTeacher.findAll({}, token);
 
     expect(result.message).toBe('Operação concluída com sucesso');
     expect(allUsers.length).toBe(2);
@@ -204,19 +225,22 @@ describe('User Teacher facade integration test', () => {
 
   it('should update a Teacher user using the facade', async () => {
     await createAuthUserFor(input.email);
-    const id = await facadeTeacher.create(input);
+    const id = await facadeTeacher.create(input, token);
 
-    const result = await facadeTeacher.update({
-      id: id.id,
-      address: {
-        street: 'Street B',
-        city: 'City B',
-        zip: '111111-111',
-        number: 1,
-        avenue: 'Avenue B',
-        state: 'State B',
+    const result = await facadeTeacher.update(
+      {
+        id: id.id,
+        address: {
+          street: 'Street B',
+          city: 'City B',
+          zip: '111111-111',
+          number: 1,
+          avenue: 'Avenue B',
+          state: 'State B',
+        },
       },
-    });
+      token
+    );
 
     expect(result).toBeDefined();
   });

@@ -9,7 +9,7 @@ import DeleteEvaluation from '@/modules/evaluation-note-attendance-management/ap
 import EvaluationController from '@/modules/evaluation-note-attendance-management/interface/controller/evaluation.controller';
 import EvaluationRoute from '@/modules/evaluation-note-attendance-management/interface/route/evaluation.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 
 export default function initializeEvaluation(express: HttpServer): void {
   const evaluationRepository = new MemoryEvaluationRepository();

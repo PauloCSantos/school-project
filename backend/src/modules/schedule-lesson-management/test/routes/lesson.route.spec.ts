@@ -76,7 +76,14 @@ describe('LessonRoute with ExpressAdapter', () => {
     } as unknown as LessonController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new LessonRoute(lessonController, http, middleware).routes();
@@ -106,7 +113,14 @@ describe('LessonRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/lesson').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(lessonController.create).toHaveBeenCalledWith(payload);
+      expect(lessonController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -115,7 +129,14 @@ describe('LessonRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/lesson/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(lessonController.find).toHaveBeenCalledWith({ id });
+      expect(lessonController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -125,7 +146,14 @@ describe('LessonRoute with ExpressAdapter', () => {
       const response = await supertest(app).patch(`/lesson`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(lessonController.update).toHaveBeenCalledWith(payload);
+      expect(lessonController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -134,7 +162,14 @@ describe('LessonRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/lesson/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(lessonController.delete).toHaveBeenCalledWith({ id });
+      expect(lessonController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -151,7 +186,14 @@ describe('LessonRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(lessonController.addStudents).toHaveBeenCalledWith(payload);
+      expect(lessonController.addStudents).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toBeDefined();
     });
 
@@ -166,7 +208,14 @@ describe('LessonRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(lessonController.removeStudents).toHaveBeenCalledWith(payload);
+      expect(lessonController.removeStudents).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toBeDefined();
     });
 
@@ -181,7 +230,14 @@ describe('LessonRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(lessonController.addDay).toHaveBeenCalledWith(payload);
+      expect(lessonController.addDay).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toBeDefined();
     });
 
@@ -196,7 +252,14 @@ describe('LessonRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(lessonController.removeDay).toHaveBeenCalledWith(payload);
+      expect(lessonController.removeDay).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toBeDefined();
     });
 
@@ -211,7 +274,14 @@ describe('LessonRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(lessonController.addTime).toHaveBeenCalledWith(payload);
+      expect(lessonController.addTime).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toBeDefined();
     });
 
@@ -226,7 +296,14 @@ describe('LessonRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(lessonController.removeTime).toHaveBeenCalledWith(payload);
+      expect(lessonController.removeTime).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toBeDefined();
     });
   });

@@ -1,3 +1,4 @@
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import MemoryEventRepository from '../../infrastructure/repositories/memory-repository/event.repository';
 import EventFacade from '../facade/facade/event.facade';
 import CreateEvent from '../usecases/event/create.usecase';
@@ -19,6 +20,7 @@ export default class EventFacadeFactory {
     // Currently using memory repository only
     // Future implementation will use environment variables to determine repository type
     const repository = new MemoryEventRepository();
+    const policiesService = new PoliciesService();
 
     // Create all required use cases
     const createEvent = new CreateEvent(repository);
@@ -34,6 +36,7 @@ export default class EventFacadeFactory {
       findAllEvent,
       findEvent,
       updateEvent,
+      policiesService,
     });
 
     return facade;

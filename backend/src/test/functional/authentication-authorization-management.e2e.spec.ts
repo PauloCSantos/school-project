@@ -10,10 +10,11 @@ import AuthUserController from '@/modules/authentication-authorization-managemen
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/user.route';
-import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import { AuthUserService } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
-import TokenService from '@/modules/@shared/infraestructure/service/token.service';
-import { RoleUsers } from '@/modules/@shared/type/enum';
+import TokenService from '@/modules/@shared/infraestructure/services/token.service';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 describe('Authentication authorization management module end to end test', () => {
   let authUserRepository = new MemoryAuthUserRepository();
@@ -40,12 +41,15 @@ describe('Authentication authorization management module end to end test', () =>
       tokenService
     );
 
+    const policiesService = new PoliciesService();
+
     const authUserController = new AuthUserController(
       createAuthUserUsecase,
       findAuthUserUsecase,
       updateAuthUserUsecase,
       deleteAuthUserUsecase,
-      loginAuthUserUsecase
+      loginAuthUserUsecase,
+      policiesService
     );
 
     const expressHttp = new ExpressAdapter();

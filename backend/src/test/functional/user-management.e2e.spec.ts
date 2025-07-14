@@ -43,6 +43,7 @@ import { UserTeacherRoute } from '@/modules/user-management/interface/route/teac
 import { UserWorkerRoute } from '@/modules/user-management/interface/route/worker.route';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 async function createAuthUserInMemory(
   email: string,
@@ -140,38 +141,45 @@ describe('User management module end to end test', () => {
     const updateUserWorkerUsecase = new UpdateUserWorker(userWorkerRepository);
     const deleteUserWorkerUsecase = new DeleteUserWorker(userWorkerRepository);
 
+    const policiesService = new PoliciesService();
+
     const userAdministratorController = new UserAdministratorController(
       createUserAdministratorUsecase,
       findUserAdministratorUsecase,
       findAllUserAdministratorUsecase,
       updateUserAdministratorUsecase,
-      deleteUserAdministratorUsecase
+      deleteUserAdministratorUsecase,
+      policiesService
     );
     const userMasterController = new UserMasterController(
       createUserMasterUsecase,
       findUserMasterUsecase,
-      updateUserMasterUsecase
+      updateUserMasterUsecase,
+      policiesService
     );
     const userStudentController = new UserStudentController(
       createUserStudentUsecase,
       findUserStudentUsecase,
       findAllUserStudentUsecase,
       updateUserStudentUsecase,
-      deleteUserStudentUsecase
+      deleteUserStudentUsecase,
+      policiesService
     );
     const userTeacherController = new UserTeacherController(
       createUserTeacherUsecase,
       findUserTeacherUsecase,
       findAllUserTeacherUsecase,
       updateUserTeacherUsecase,
-      deleteUserTeacherUsecase
+      deleteUserTeacherUsecase,
+      policiesService
     );
     const userWorkerController = new UserWorkerController(
       createUserWorkerUsecase,
       findUserWorkerUsecase,
       findAllUserWorkerUsecase,
       updateUserWorkerUsecase,
-      deleteUserWorkerUsecase
+      deleteUserWorkerUsecase,
+      policiesService
     );
     const expressHttp = new ExpressAdapter();
     const tokerService = tokenInstance();

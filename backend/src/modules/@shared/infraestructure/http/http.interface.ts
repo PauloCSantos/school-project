@@ -1,4 +1,4 @@
-import { RoleUsers } from '../../type/enum';
+import { TokenData } from '../../type/sharedTypes';
 
 export interface HttpRequest<P = any, Q = any, B = any, H = any> {
   params: P;
@@ -11,12 +11,6 @@ export interface HttpRequest<P = any, Q = any, B = any, H = any> {
 export interface HttpResponseData {
   statusCode: number;
   body: any;
-}
-
-interface TokenData {
-  email: string;
-  role: RoleUsers;
-  masterId: string;
 }
 
 export interface HttpMiddleware<P = any, Q = any, B = any, H = any> {

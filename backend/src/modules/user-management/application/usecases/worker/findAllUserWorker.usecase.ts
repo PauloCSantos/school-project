@@ -4,6 +4,13 @@ import {
   FindAllUserWorkerOutputDto,
 } from '../../dto/worker-usecase.dto';
 import UserWorkerGateway from '@/modules/user-management/infrastructure/gateway/worker.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class FindAllUserWorker
   implements
@@ -14,10 +21,21 @@ export default class FindAllUserWorker
   constructor(userWorkerRepository: UserWorkerGateway) {
     this._userWorkerRepository = userWorkerRepository;
   }
-  async execute({
-    offset,
-    quantity,
-  }: FindAllUserWorkerInputDto): Promise<FindAllUserWorkerOutputDto> {
+  async execute(
+    { offset, quantity }: FindAllUserWorkerInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindAllUserWorkerOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.WORKER,
+        FunctionCalledEnum.FIND_ALL,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const results = await this._userWorkerRepository.findAll(quantity, offset);
 
     const result = results.map(userWorker => ({

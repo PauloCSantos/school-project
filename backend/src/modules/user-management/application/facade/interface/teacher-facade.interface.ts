@@ -1,3 +1,4 @@
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   CreateUserTeacherInputDto,
   CreateUserTeacherOutputDto,
@@ -12,13 +13,24 @@ import {
 } from '../../dto/teacher-facade.dto';
 
 export default interface TeacherFacadeInterface {
-  create(input: CreateUserTeacherInputDto): Promise<CreateUserTeacherOutputDto>;
+  create(
+    input: CreateUserTeacherInputDto,
+    token: TokenData
+  ): Promise<CreateUserTeacherOutputDto>;
   find(
-    input: FindUserTeacherInputDto
+    input: FindUserTeacherInputDto,
+    token: TokenData
   ): Promise<FindUserTeacherOutputDto | null>;
   findAll(
-    input: FindAllUserTeacherInputDto
+    input: FindAllUserTeacherInputDto,
+    token: TokenData
   ): Promise<FindAllUserTeacherOutputDto>;
-  delete(input: DeleteUserTeacherInputDto): Promise<DeleteUserTeacherOutputDto>;
-  update(input: UpdateUserTeacherInputDto): Promise<UpdateUserTeacherOutputDto>;
+  delete(
+    input: DeleteUserTeacherInputDto,
+    token: TokenData
+  ): Promise<DeleteUserTeacherOutputDto>;
+  update(
+    input: UpdateUserTeacherInputDto,
+    token: TokenData
+  ): Promise<UpdateUserTeacherOutputDto>;
 }

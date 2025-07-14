@@ -55,7 +55,14 @@ describe('ScheduleRoute with ExpressAdapter', () => {
     } as unknown as ScheduleController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new ScheduleRoute(scheduleController, http, middleware).routes();
@@ -80,7 +87,14 @@ describe('ScheduleRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/schedule').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(scheduleController.create).toHaveBeenCalledWith(payload);
+      expect(scheduleController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -89,7 +103,14 @@ describe('ScheduleRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/schedule/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(scheduleController.find).toHaveBeenCalledWith({ id });
+      expect(scheduleController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -99,7 +120,14 @@ describe('ScheduleRoute with ExpressAdapter', () => {
       const response = await supertest(app).patch(`/schedule`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(scheduleController.update).toHaveBeenCalledWith(payload);
+      expect(scheduleController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -108,7 +136,14 @@ describe('ScheduleRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/schedule/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(scheduleController.delete).toHaveBeenCalledWith({ id });
+      expect(scheduleController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -125,10 +160,17 @@ describe('ScheduleRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(scheduleController.addLessons).toHaveBeenCalledWith({
-        ...payload,
-        id,
-      });
+      expect(scheduleController.addLessons).toHaveBeenCalledWith(
+        {
+          ...payload,
+          id,
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toBeDefined();
     });
 
@@ -143,10 +185,17 @@ describe('ScheduleRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(scheduleController.removeLessons).toHaveBeenCalledWith({
-        ...payload,
-        id,
-      });
+      expect(scheduleController.removeLessons).toHaveBeenCalledWith(
+        {
+          ...payload,
+          id,
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toBeDefined();
     });
   });

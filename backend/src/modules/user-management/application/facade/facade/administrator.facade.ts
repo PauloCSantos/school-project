@@ -16,22 +16,26 @@ import DeleteUserAdministrator from '../../usecases/administrator/deleteUserAdmi
 import FindAllUserAdministrator from '../../usecases/administrator/findAllUserAdministrator.usecase';
 import FindUserAdministrator from '../../usecases/administrator/findUserAdministrator.usecase';
 import UpdateUserAdministrator from '../../usecases/administrator/updateUserAdministrator.usecase';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 type AdministratorFacadeProps = {
-  createUserAdministrator: CreateUserAdministrator;
-  deleteUserAdministrator: DeleteUserAdministrator;
-  findAllUserAdministrator: FindAllUserAdministrator;
-  findUserAdministrator: FindUserAdministrator;
-  updateUserAdministrator: UpdateUserAdministrator;
+  readonly createUserAdministrator: CreateUserAdministrator;
+  readonly deleteUserAdministrator: DeleteUserAdministrator;
+  readonly findAllUserAdministrator: FindAllUserAdministrator;
+  readonly findUserAdministrator: FindUserAdministrator;
+  readonly updateUserAdministrator: UpdateUserAdministrator;
+  readonly policiesService: PoliciesServiceInterface;
 };
 export default class AdministratorFacade
   implements AdministratorFacadeInterface
 {
-  private _createUserAdministrator: CreateUserAdministrator;
-  private _deleteUserAdministrator: DeleteUserAdministrator;
-  private _findAllUserAdministrator: FindAllUserAdministrator;
-  private _findUserAdministrator: FindUserAdministrator;
-  private _updateUserAdministrator: UpdateUserAdministrator;
+  private readonly _createUserAdministrator: CreateUserAdministrator;
+  private readonly _deleteUserAdministrator: DeleteUserAdministrator;
+  private readonly _findAllUserAdministrator: FindAllUserAdministrator;
+  private readonly _findUserAdministrator: FindUserAdministrator;
+  private readonly _updateUserAdministrator: UpdateUserAdministrator;
+  private readonly _policiesService: PoliciesServiceInterface;
 
   constructor(input: AdministratorFacadeProps) {
     this._createUserAdministrator = input.createUserAdministrator;
@@ -39,31 +43,57 @@ export default class AdministratorFacade
     this._findAllUserAdministrator = input.findAllUserAdministrator;
     this._findUserAdministrator = input.findUserAdministrator;
     this._updateUserAdministrator = input.updateUserAdministrator;
+    this._policiesService = input.policiesService;
   }
 
   async create(
-    input: CreateUserAdministratorInputDto
+    input: CreateUserAdministratorInputDto,
+    token: TokenData
   ): Promise<CreateUserAdministratorOutputDto> {
-    return await this._createUserAdministrator.execute(input);
+    return await this._createUserAdministrator.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async find(
-    input: FindUserAdministratorInputDto
+    input: FindUserAdministratorInputDto,
+    token: TokenData
   ): Promise<FindUserAdministratorOutputDto | null> {
-    return await this._findUserAdministrator.execute(input);
+    return await this._findUserAdministrator.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async findAll(
-    input: FindAllUserAdministratorInputDto
+    input: FindAllUserAdministratorInputDto,
+    token: TokenData
   ): Promise<FindAllUserAdministratorOutputDto> {
-    return await this._findAllUserAdministrator.execute(input);
+    return await this._findAllUserAdministrator.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async delete(
-    input: DeleteUserAdministratorInputDto
+    input: DeleteUserAdministratorInputDto,
+    token: TokenData
   ): Promise<DeleteUserAdministratorOutputDto> {
-    return await this._deleteUserAdministrator.execute(input);
+    return await this._deleteUserAdministrator.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async update(
-    input: UpdateUserAdministratorInputDto
+    input: UpdateUserAdministratorInputDto,
+    token: TokenData
   ): Promise<UpdateUserAdministratorOutputDto> {
-    return await this._updateUserAdministrator.execute(input);
+    return await this._updateUserAdministrator.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 }

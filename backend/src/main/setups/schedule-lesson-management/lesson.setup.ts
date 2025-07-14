@@ -15,7 +15,7 @@ import RemoveTime from '@/modules/schedule-lesson-management/application/usecase
 import { LessonController } from '@/modules/schedule-lesson-management/interface/controller/lesson.controller';
 import LessonRoute from '@/modules/schedule-lesson-management/interface/route/lesson.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 
 export default function initializeLesson(express: HttpServer): void {
   const lessonRepository = new MemoryLessonRepository();

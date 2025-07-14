@@ -1,3 +1,4 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateNoteInputDto,
   CreateNoteOutputDto,
@@ -15,6 +16,7 @@ import DeleteNote from '../../application/usecases/note/delete.usecase';
 import FindAllNote from '../../application/usecases/note/find-all.usecase';
 import FindNote from '../../application/usecases/note/find.usecase';
 import UpdateNote from '../../application/usecases/note/update.usecase';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Controller for note management operations.
@@ -34,7 +36,8 @@ export default class NoteController {
     private readonly findNote: FindNote,
     private readonly findAllNote: FindAllNote,
     private readonly updateNote: UpdateNote,
-    private readonly deleteNote: DeleteNote
+    private readonly deleteNote: DeleteNote,
+    private readonly policiesService: PoliciesServiceInterface
   ) {}
 
   /**
@@ -42,8 +45,15 @@ export default class NoteController {
    * @param input - The data for creating a new note
    * @returns Promise resolving to the created note data
    */
-  async create(input: CreateNoteInputDto): Promise<CreateNoteOutputDto> {
-    const response = await this.createNote.execute(input);
+  async create(
+    input: CreateNoteInputDto,
+    token: TokenData
+  ): Promise<CreateNoteOutputDto> {
+    const response = await this.createNote.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -52,8 +62,15 @@ export default class NoteController {
    * @param input - The input containing the id to search for
    * @returns Promise resolving to the found note data or null
    */
-  async find(input: FindNoteInputDto): Promise<FindNoteOutputDto | null> {
-    const response = await this.findNote.execute(input);
+  async find(
+    input: FindNoteInputDto,
+    token: TokenData
+  ): Promise<FindNoteOutputDto | null> {
+    const response = await this.findNote.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -62,8 +79,15 @@ export default class NoteController {
    * @param input - The criteria for finding notes
    * @returns Promise resolving to the found note records
    */
-  async findAll(input: FindAllNoteInputDto): Promise<FindAllNoteOutputDto> {
-    const response = await this.findAllNote.execute(input);
+  async findAll(
+    input: FindAllNoteInputDto,
+    token: TokenData
+  ): Promise<FindAllNoteOutputDto> {
+    const response = await this.findAllNote.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -72,8 +96,15 @@ export default class NoteController {
    * @param input - The input containing the note data to update
    * @returns Promise resolving to the updated note data
    */
-  async update(input: UpdateNoteInputDto): Promise<UpdateNoteOutputDto> {
-    const response = await this.updateNote.execute(input);
+  async update(
+    input: UpdateNoteInputDto,
+    token: TokenData
+  ): Promise<UpdateNoteOutputDto> {
+    const response = await this.updateNote.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -82,8 +113,15 @@ export default class NoteController {
    * @param input - The input containing the id of the note to delete
    * @returns Promise resolving to the deletion confirmation
    */
-  async delete(input: DeleteNoteInputDto): Promise<DeleteNoteOutputDto> {
-    const response = await this.deleteNote.execute(input);
+  async delete(
+    input: DeleteNoteInputDto,
+    token: TokenData
+  ): Promise<DeleteNoteOutputDto> {
+    const response = await this.deleteNote.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 }

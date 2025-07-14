@@ -1,3 +1,4 @@
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   AddLessonsInputDto,
   AddLessonsOutputDto,
@@ -27,47 +28,68 @@ export default interface ScheduleFacadeInterface {
    * @param input Schedule creation parameters
    * @returns Information about the created schedule
    */
-  create(input: CreateScheduleInputDto): Promise<CreateScheduleOutputDto>;
+  create(
+    input: CreateScheduleInputDto,
+    token: TokenData
+  ): Promise<CreateScheduleOutputDto>;
 
   /**
    * Finds a schedule by ID
    * @param input Search parameters
    * @returns Schedule information if found, null otherwise
    */
-  find(input: FindScheduleInputDto): Promise<FindScheduleOutputDto | null>;
+  find(
+    input: FindScheduleInputDto,
+    token: TokenData
+  ): Promise<FindScheduleOutputDto | null>;
 
   /**
    * Retrieves all schedules with optional filtering
    * @param input Search parameters for filtering schedules
    * @returns Collection of schedules matching criteria
    */
-  findAll(input: FindAllScheduleInputDto): Promise<FindAllScheduleOutputDto>;
+  findAll(
+    input: FindAllScheduleInputDto,
+    token: TokenData
+  ): Promise<FindAllScheduleOutputDto>;
 
   /**
    * Deletes a schedule
    * @param input Schedule identification
    * @returns Confirmation message
    */
-  delete(input: DeleteScheduleInputDto): Promise<DeleteScheduleOutputDto>;
+  delete(
+    input: DeleteScheduleInputDto,
+    token: TokenData
+  ): Promise<DeleteScheduleOutputDto>;
 
   /**
    * Updates a schedule's information
    * @param input Schedule identification and data to update
    * @returns Updated schedule information
    */
-  update(input: UpdateScheduleInputDto): Promise<UpdateScheduleOutputDto>;
+  update(
+    input: UpdateScheduleInputDto,
+    token: TokenData
+  ): Promise<UpdateScheduleOutputDto>;
 
   /**
    * Adds lessons to a schedule
    * @param input Schedule ID and lesson IDs to add
    * @returns Updated schedule information
    */
-  addLessons(input: AddLessonsInputDto): Promise<AddLessonsOutputDto>;
+  addLessons(
+    input: AddLessonsInputDto,
+    token: TokenData
+  ): Promise<AddLessonsOutputDto>;
 
   /**
    * Removes lessons from a schedule
    * @param input Schedule ID and lesson IDs to remove
    * @returns Updated schedule information
    */
-  removeLessons(input: RemoveLessonsInputDto): Promise<RemoveLessonsOutputDto>;
+  removeLessons(
+    input: RemoveLessonsInputDto,
+    token: TokenData
+  ): Promise<RemoveLessonsOutputDto>;
 }

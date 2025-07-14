@@ -10,11 +10,12 @@ import {
   FindUserMasterInputDto,
   UpdateUserMasterInputDto,
 } from '../../application/dto/master-usecase.dto';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
-  FunctionCalled,
-  createRequestMiddleware,
-} from '@/modules/@shared/application/middleware/request.middleware';
-import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 export class UserMasterRoute {
   constructor(
@@ -29,17 +30,17 @@ export class UserMasterRoute {
 
     this.httpGateway.post('/user-master', this.createUserMaster.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
     ]);
 
     this.httpGateway.get('/user-master/:id', this.findUserMaster.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
     ]);
 
     this.httpGateway.patch('/user-master', this.updateUserMaster.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
     ]);
   }
 
@@ -48,7 +49,10 @@ export class UserMasterRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const reponse = await this.userMasterController.create(input);
+      const reponse = await this.userMasterController.create(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.CREATED, body: reponse };
     } catch (error) {
       return this.handleError(error);
@@ -60,7 +64,10 @@ export class UserMasterRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userMasterController.find({ id });
+      const response = await this.userMasterController.find(
+        { id },
+        req.tokenData!
+      );
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
@@ -78,7 +85,10 @@ export class UserMasterRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.userMasterController.update(input);
+      const response = await this.userMasterController.update(
+        input,
+        req.tokenData!
+      );
 
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {

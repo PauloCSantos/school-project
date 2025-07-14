@@ -82,7 +82,14 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
     } as unknown as UserWorkerController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new UserWorkerRoute(userWorkerController, http, middleware).routes();
@@ -122,7 +129,14 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/user-worker').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(userWorkerController.create).toHaveBeenCalledWith(payload);
+      expect(userWorkerController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -131,7 +145,14 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/user-worker/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(userWorkerController.find).toHaveBeenCalledWith({ id });
+      expect(userWorkerController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -151,7 +172,14 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       const response = await supertest(app).patch(`/user-worker`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(userWorkerController.update).toHaveBeenCalledWith(payload);
+      expect(userWorkerController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -160,7 +188,14 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/user-worker/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(userWorkerController.delete).toHaveBeenCalledWith({ id });
+      expect(userWorkerController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });

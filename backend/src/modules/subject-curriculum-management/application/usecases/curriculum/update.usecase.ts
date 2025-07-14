@@ -4,6 +4,13 @@ import {
   UpdateCurriculumOutputDto,
 } from '../../dto/curriculum-usecase.dto';
 import CurriculumGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/curriculum.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class UpdateCurriculum
   implements
@@ -14,11 +21,21 @@ export default class UpdateCurriculum
   constructor(curriculumRepository: CurriculumGateway) {
     this._curriculumRepository = curriculumRepository;
   }
-  async execute({
-    id,
-    name,
-    yearsToComplete,
-  }: UpdateCurriculumInputDto): Promise<UpdateCurriculumOutputDto> {
+  async execute(
+    { id, name, yearsToComplete }: UpdateCurriculumInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<UpdateCurriculumOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.CURRICULUM,
+        FunctionCalledEnum.ADD,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const curriculum = await this._curriculumRepository.find(id);
     if (!curriculum) throw new Error('Curriculum not found');
 

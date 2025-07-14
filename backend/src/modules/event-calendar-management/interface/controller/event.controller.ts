@@ -1,3 +1,4 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateEventInputDto,
   CreateEventOutputDto,
@@ -15,6 +16,7 @@ import DeleteEvent from '../../application/usecases/event/delete.usecase';
 import FindAllEvent from '../../application/usecases/event/find-all.usecase';
 import FindEvent from '../../application/usecases/event/find.usecase';
 import UpdateEvent from '../../application/usecases/event/update.usecase';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Controller for event calendar management operations.
@@ -34,7 +36,8 @@ export default class EventController {
     private readonly findEvent: FindEvent,
     private readonly findAllEvent: FindAllEvent,
     private readonly updateEvent: UpdateEvent,
-    private readonly deleteEvent: DeleteEvent
+    private readonly deleteEvent: DeleteEvent,
+    private readonly policiesService: PoliciesServiceInterface
   ) {}
 
   /**
@@ -42,8 +45,15 @@ export default class EventController {
    * @param input - The data for creating a new event
    * @returns Promise resolving to the created event data
    */
-  async create(input: CreateEventInputDto): Promise<CreateEventOutputDto> {
-    const response = await this.createEvent.execute(input);
+  async create(
+    input: CreateEventInputDto,
+    token: TokenData
+  ): Promise<CreateEventOutputDto> {
+    const response = await this.createEvent.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -52,8 +62,15 @@ export default class EventController {
    * @param input - The input containing the ID to search for
    * @returns Promise resolving to the found event data or null
    */
-  async find(input: FindEventInputDto): Promise<FindEventOutputDto | null> {
-    const response = await this.findEvent.execute(input);
+  async find(
+    input: FindEventInputDto,
+    token: TokenData
+  ): Promise<FindEventOutputDto | null> {
+    const response = await this.findEvent.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -62,8 +79,15 @@ export default class EventController {
    * @param input - The input containing search and pagination parameters
    * @returns Promise resolving to the collection of events
    */
-  async findAll(input: FindAllEventInputDto): Promise<FindAllEventOutputDto> {
-    const response = await this.findAllEvent.execute(input);
+  async findAll(
+    input: FindAllEventInputDto,
+    token: TokenData
+  ): Promise<FindAllEventOutputDto> {
+    const response = await this.findAllEvent.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -72,8 +96,15 @@ export default class EventController {
    * @param input - The input containing the ID of the event to delete
    * @returns Promise resolving to the deletion confirmation
    */
-  async delete(input: DeleteEventInputDto): Promise<DeleteEventOutputDto> {
-    const response = await this.deleteEvent.execute(input);
+  async delete(
+    input: DeleteEventInputDto,
+    token: TokenData
+  ): Promise<DeleteEventOutputDto> {
+    const response = await this.deleteEvent.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -82,8 +113,15 @@ export default class EventController {
    * @param input - The input containing the event data to update
    * @returns Promise resolving to the updated event data
    */
-  async update(input: UpdateEventInputDto): Promise<UpdateEventOutputDto> {
-    const response = await this.updateEvent.execute(input);
+  async update(
+    input: UpdateEventInputDto,
+    token: TokenData
+  ): Promise<UpdateEventOutputDto> {
+    const response = await this.updateEvent.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 }

@@ -3,17 +3,8 @@ import {
   HttpRequest,
   HttpResponseData,
 } from '../../infraestructure/http/http.interface';
+import { FunctionCalledEnum } from '../../type/sharedTypes';
 import { validEmail, validId } from '../../utils/validations';
-
-export enum FunctionCalled {
-  FIND_ALL = 'findAll',
-  FIND = 'find',
-  DELETE = 'delete',
-  CREATE = 'create',
-  UPDATE = 'update',
-  ADD = 'add',
-  REMOVE = 'remove',
-}
 
 enum errorStatus {
   BADREQUEST = 400,
@@ -27,7 +18,7 @@ export default class RequestMiddleware
   implements HttpMiddleware<any, any, any, any>
 {
   constructor(
-    private readonly fn: FunctionCalled,
+    private readonly fn: FunctionCalledEnum,
     private readonly requiredFields: string[]
   ) {}
 
@@ -36,7 +27,7 @@ export default class RequestMiddleware
     next: () => Promise<HttpResponseData>
   ): Promise<HttpResponseData> {
     switch (this.fn) {
-      case FunctionCalled.FIND_ALL: {
+      case FunctionCalledEnum.FIND_ALL: {
         const offset = req.query?.offset;
         const quantity = req.query?.quantity;
         if (
@@ -60,7 +51,7 @@ export default class RequestMiddleware
         break;
       }
 
-      case FunctionCalled.FIND: {
+      case FunctionCalledEnum.FIND: {
         const searchId = req.params?.id as string | undefined;
         const searchEmail = req.params?.email as string | undefined;
         if (!searchId && !searchEmail) {
@@ -87,7 +78,7 @@ export default class RequestMiddleware
         break;
       }
 
-      case FunctionCalled.DELETE: {
+      case FunctionCalledEnum.DELETE: {
         const idToDelete = req.params?.id as string | undefined;
         const emailToDelete = req.params?.email as string | undefined;
         if (!idToDelete && !emailToDelete) {
@@ -114,7 +105,7 @@ export default class RequestMiddleware
         break;
       }
 
-      case FunctionCalled.CREATE: {
+      case FunctionCalledEnum.CREATE: {
         for (const field of this.requiredFields) {
           if (req.body[field] === undefined) {
             return {
@@ -126,7 +117,7 @@ export default class RequestMiddleware
         break;
       }
 
-      case FunctionCalled.UPDATE: {
+      case FunctionCalledEnum.UPDATE: {
         const idToUpdate = req.body?.id as string | undefined;
         const emailToUpdate = req.body?.email as string | undefined;
         if (!idToUpdate && !emailToUpdate) {
@@ -172,8 +163,8 @@ export default class RequestMiddleware
         break;
       }
 
-      case FunctionCalled.ADD:
-      case FunctionCalled.REMOVE: {
+      case FunctionCalledEnum.ADD:
+      case FunctionCalledEnum.REMOVE: {
         for (const field of this.requiredFields) {
           if (req.body[field] === undefined) {
             return {
@@ -207,7 +198,7 @@ export default class RequestMiddleware
 }
 
 export function createRequestMiddleware(
-  fn: FunctionCalled,
+  fn: FunctionCalledEnum,
   requiredFields: string[]
 ): HttpMiddleware<any, any, any, any> {
   return new RequestMiddleware(fn, requiredFields);

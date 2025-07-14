@@ -1,6 +1,6 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import { AuthUserService } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 
 describe('MemoryAuthUserRepository unit test', () => {

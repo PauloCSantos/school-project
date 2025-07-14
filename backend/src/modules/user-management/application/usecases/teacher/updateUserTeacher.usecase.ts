@@ -4,6 +4,13 @@ import {
   UpdateUserTeacherOutputDto,
 } from '../../dto/teacher-usecase.dto';
 import UserTeacherGateway from '@/modules/user-management/infrastructure/gateway/teacher.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class UpdateUserTeacher
   implements
@@ -14,16 +21,30 @@ export default class UpdateUserTeacher
   constructor(userTeacherRepository: UserTeacherGateway) {
     this._userTeacherRepository = userTeacherRepository;
   }
-  async execute({
-    id,
-    name,
-    address,
-    email,
-    birthday,
-    graduation,
-    salary,
-    academicDegrees,
-  }: UpdateUserTeacherInputDto): Promise<UpdateUserTeacherOutputDto> {
+  async execute(
+    {
+      id,
+      name,
+      address,
+      email,
+      birthday,
+      graduation,
+      salary,
+      academicDegrees,
+    }: UpdateUserTeacherInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<UpdateUserTeacherOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.TEACHER,
+        FunctionCalledEnum.UPDATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const userTeacher = await this._userTeacherRepository.find(id);
     if (!userTeacher) throw new Error('User not found');
 

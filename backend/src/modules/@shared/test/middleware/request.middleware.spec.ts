@@ -1,6 +1,5 @@
-import RequestMiddleware, {
-  FunctionCalled,
-} from '../../application/middleware/request.middleware';
+import RequestMiddleware from '../../application/middleware/request.middleware';
+import { FunctionCalledEnum } from '../../type/sharedTypes';
 import * as validations from '../../utils/validations';
 
 jest.mock('../../utils/validations', () => ({
@@ -22,7 +21,7 @@ describe('RequestMiddleware unit test', () => {
 
   describe('FIND_ALL', () => {
     beforeEach(() => {
-      middleware = new RequestMiddleware(FunctionCalled.FIND_ALL, []);
+      middleware = new RequestMiddleware(FunctionCalledEnum.FIND_ALL, []);
     });
 
     test('should return bad request if offset is not a number', async () => {
@@ -57,7 +56,7 @@ describe('RequestMiddleware unit test', () => {
 
   describe('FIND', () => {
     beforeEach(() => {
-      middleware = new RequestMiddleware(FunctionCalled.FIND, []);
+      middleware = new RequestMiddleware(FunctionCalledEnum.FIND, []);
     });
 
     test('should return bad request if id and email are missing', async () => {
@@ -113,7 +112,7 @@ describe('RequestMiddleware unit test', () => {
 
   describe('DELETE', () => {
     beforeEach(() => {
-      middleware = new RequestMiddleware(FunctionCalled.DELETE, []);
+      middleware = new RequestMiddleware(FunctionCalledEnum.DELETE, []);
     });
 
     test('should return bad request if id is missing', async () => {
@@ -148,7 +147,7 @@ describe('RequestMiddleware unit test', () => {
 
   describe('CREATE', () => {
     beforeEach(() => {
-      middleware = new RequestMiddleware(FunctionCalled.CREATE, ['name']);
+      middleware = new RequestMiddleware(FunctionCalledEnum.CREATE, ['name']);
     });
 
     test('should return bad request if required field is missing', async () => {
@@ -169,7 +168,7 @@ describe('RequestMiddleware unit test', () => {
 
   describe('UPDATE', () => {
     beforeEach(() => {
-      middleware = new RequestMiddleware(FunctionCalled.UPDATE, ['name']);
+      middleware = new RequestMiddleware(FunctionCalledEnum.UPDATE, ['name']);
     });
 
     test('should return bad request if id is missing', async () => {

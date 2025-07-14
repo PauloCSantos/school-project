@@ -9,6 +9,13 @@ import Name from '@/modules/user-management/domain/@shared/value-object/name.val
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import { EmailAuthValidator } from '../../services/email-auth-validator.service';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class CreateUserWorker
   implements
@@ -22,13 +29,21 @@ export default class CreateUserWorker
   ) {
     this._userWorkerRepository = userWorkerRepository;
   }
-  async execute({
-    name,
-    address,
-    email,
-    birthday,
-    salary,
-  }: CreateUserWorkerInputDto): Promise<CreateUserWorkerOutputDto> {
+  async execute(
+    { name, address, email, birthday, salary }: CreateUserWorkerInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<CreateUserWorkerOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.WORKER,
+        FunctionCalledEnum.CREATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     if (!(await this.emailValidatorService.validate(email))) {
       throw new Error('You must register this email before creating the user.');
     }

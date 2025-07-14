@@ -32,7 +32,14 @@ describe('AttendanceRoute with ExpressAdapter', () => {
     } as unknown as AttendanceController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_req, next) => {
+        _req.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new AttendanceRoute(attendanceController, http, middleware).routes();
@@ -45,10 +52,17 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       );
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.findAll).toHaveBeenCalledWith({
-        quantity: '2',
-        offset: '0',
-      });
+      expect(attendanceController.findAll).toHaveBeenCalledWith(
+        {
+          quantity: '2',
+          offset: '0',
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual([{ id: expect.any(String) }]);
     });
 
@@ -63,7 +77,14 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/attendance').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(attendanceController.create).toHaveBeenCalledWith(payload);
+      expect(attendanceController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -72,7 +93,14 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/attendance/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.find).toHaveBeenCalledWith({ id });
+      expect(attendanceController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
@@ -82,7 +110,14 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       const response = await supertest(app).patch(`/attendance`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.update).toHaveBeenCalledWith(payload);
+      expect(attendanceController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
@@ -91,7 +126,14 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/attendance/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.delete).toHaveBeenCalledWith({ id });
+      expect(attendanceController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -105,10 +147,17 @@ describe('AttendanceRoute with ExpressAdapter', () => {
         .send({ id, newStudentsList });
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.addStudents).toHaveBeenCalledWith({
-        id,
-        newStudentsList,
-      });
+      expect(attendanceController.addStudents).toHaveBeenCalledWith(
+        {
+          id,
+          newStudentsList,
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -122,10 +171,17 @@ describe('AttendanceRoute with ExpressAdapter', () => {
         .send({ id, studentsListToRemove });
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.removeStudents).toHaveBeenCalledWith({
-        id,
-        studentsListToRemove,
-      });
+      expect(attendanceController.removeStudents).toHaveBeenCalledWith(
+        {
+          id,
+          studentsListToRemove,
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });

@@ -1,12 +1,12 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import AuthUserService from '../../application/service/user-entity.service';
 import {
   isNotEmpty,
   validEmail,
   validId,
   validRole,
 } from '@/modules/@shared/utils/validations';
-import { RoleUsers } from '@/modules/@shared/type/enum';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
+import { AuthUserServiceInterface } from '../../application/service/user-entity.service';
 
 /**
  * Properties required to create an authenticated user
@@ -30,7 +30,7 @@ export default class AuthUser {
   private _masterId: string;
   private _role: RoleUsers;
   private _isHashed: boolean;
-  private readonly _authService: AuthUserService;
+  private readonly _authService: AuthUserServiceInterface;
 
   /**
    * Creates a new authenticated user
@@ -39,8 +39,8 @@ export default class AuthUser {
    * @param authService - Service for password hashing and verification
    * @throws Error if any required field is missing or invalid
    */
-  constructor(input: AuthUserProps, authService: AuthUserService) {
-    this.validateConstructorParams(input, authService);
+  constructor(input: AuthUserProps, authService: AuthUserServiceInterface) {
+    this.validateConstructorParams(input);
 
     this._authService = authService;
     this._email = input.email;
@@ -54,20 +54,13 @@ export default class AuthUser {
   /**
    * Validates all parameters provided to the constructor
    */
-  private validateConstructorParams(
-    input: AuthUserProps,
-    authService: AuthUserService
-  ): void {
+  private validateConstructorParams(input: AuthUserProps): void {
     if (
       input.email === undefined ||
       input.password === undefined ||
       input.role === undefined
     ) {
       throw new Error('All fields are mandatory');
-    }
-
-    if (!(authService instanceof AuthUserService)) {
-      throw new Error('authservice type is incorrect');
     }
 
     if (!this.validateEmail(input.email)) {

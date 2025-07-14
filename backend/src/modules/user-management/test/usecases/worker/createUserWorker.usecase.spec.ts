@@ -1,23 +1,41 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateUserWorker from '@/modules/user-management/application/usecases/worker/createUserWorker.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
 
-const MockRepository = () => ({
-  find: jest.fn(),
-  findByEmail: jest.fn(),
-  findAll: jest.fn(),
-  create: jest.fn(userWorker => Promise.resolve(userWorker.id.value)),
-  update: jest.fn(),
-  delete: jest.fn(),
-});
-
-const MockEmailAuthValidatorService = () => ({
-  validate: jest.fn().mockResolvedValue(true),
-});
-
 describe('createUserWorker usecase unit test', () => {
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let token: TokenData;
+
+  const MockRepository = () => ({
+    find: jest.fn(),
+    findByEmail: jest.fn(),
+    findAll: jest.fn(),
+    create: jest.fn(userWorker => Promise.resolve(userWorker.id.value)),
+    update: jest.fn(),
+    delete: jest.fn(),
+  });
+
+  const MockEmailAuthValidatorService = () => ({
+    validate: jest.fn().mockResolvedValue(true),
+  });
+
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
+    ({
+      verifyPolicies: jest.fn(),
+    }) as jest.Mocked<PoliciesServiceInterface>;
+
+  policieService = MockPolicyService();
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   const input = {
     name: {
       firstName: 'John',
@@ -52,15 +70,16 @@ describe('createUserWorker usecase unit test', () => {
       const emailAuthValidatorService = MockEmailAuthValidatorService();
 
       userWorkerRepository.findByEmail.mockResolvedValue(userWorker);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       const usecase = new CreateUserWorker(
         userWorkerRepository,
         emailAuthValidatorService
       );
 
-      await expect(usecase.execute(input)).rejects.toThrow(
-        'User already exists'
-      );
+      await expect(
+        usecase.execute(input, policieService, token)
+      ).rejects.toThrow('User already exists');
       expect(userWorkerRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
@@ -75,6 +94,7 @@ describe('createUserWorker usecase unit test', () => {
     it('should create a user worker', async () => {
       const userWorkerRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       userWorkerRepository.findByEmail.mockResolvedValue(null);
 
@@ -82,7 +102,7 @@ describe('createUserWorker usecase unit test', () => {
         userWorkerRepository,
         emailAuthValidatorService
       );
-      const result = await usecase.execute(input);
+      const result = await usecase.execute(input, policieService, token);
 
       expect(userWorkerRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)

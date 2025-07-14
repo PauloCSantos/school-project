@@ -1,3 +1,4 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import CreateUserStudent from '../../application/usecases/student/createUserStudent.usecase';
 import DeleteUserStudent from '../../application/usecases/student/deleteUserStudent.usecase';
 import FindAllUserStudent from '../../application/usecases/student/findAllUserStudent.usecase';
@@ -5,8 +6,12 @@ import FindUserStudent from '../../application/usecases/student/findUserStudent.
 import UpdateUserStudent from '../../application/usecases/student/updateUserStudent.usecase';
 import { UserStudentController } from '../../interface/controller/student.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 describe('UserStudentController unit test', () => {
+  let policieService: PoliciesServiceInterface;
+  let token: TokenData;
+
   const mockCreateUserStudent = jest.fn(() => {
     return {
       execute: jest.fn().mockResolvedValue(new Id().value),
@@ -98,68 +103,88 @@ describe('UserStudentController unit test', () => {
     } as unknown as DeleteUserStudent;
   });
 
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
+    verifyPolicies: jest.fn(),
+  });
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   const createUserStudent = mockCreateUserStudent();
   const deleteUserStudent = mockDeleteUserStudent();
   const findAllUserStudent = mockFindAllUserStudent();
   const findUserStudent = mockFindUserStudent();
   const updateUserStudent = mockUpdateUserStudent();
+  policieService = MockPolicyService();
 
   const controller = new UserStudentController(
     createUserStudent,
     findUserStudent,
     findAllUserStudent,
     updateUserStudent,
-    deleteUserStudent
+    deleteUserStudent,
+    policieService
   );
 
   it('should return a id for the new user created', async () => {
-    const result = await controller.create({
-      name: {
-        firstName: 'John',
-        lastName: 'Doe',
+    const result = await controller.create(
+      {
+        name: {
+          firstName: 'John',
+          lastName: 'Doe',
+        },
+        address: {
+          street: 'Street A',
+          city: 'City A',
+          zip: '111111-111',
+          number: 1,
+          avenue: 'Avenue A',
+          state: 'State A',
+        },
+        birthday: new Date('11-12-1995'),
+        email: 'teste1@test.com',
+        paymentYear: 40000,
       },
-      address: {
-        street: 'Street A',
-        city: 'City A',
-        zip: '111111-111',
-        number: 1,
-        avenue: 'Avenue A',
-        state: 'State A',
-      },
-      birthday: new Date('11-12-1995'),
-      email: 'teste1@test.com',
-      paymentYear: 40000,
-    });
+      token
+    );
 
     expect(result).toBeDefined();
     expect(createUserStudent.execute).toHaveBeenCalled();
   });
   it('should return a user', async () => {
-    const result = await controller.find({ id: new Id().value });
+    const result = await controller.find({ id: new Id().value }, token);
 
     expect(result).toBeDefined();
     expect(findUserStudent.execute).toHaveBeenCalled();
   });
   it('should return all users', async () => {
-    const result = await controller.findAll({});
+    const result = await controller.findAll({}, token);
 
     expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllUserStudent.execute).toHaveBeenCalled();
   });
   it('should update an user', async () => {
-    const result = await controller.update({
-      id: new Id().value,
-      paymentYear: 42000,
-    });
+    const result = await controller.update(
+      {
+        id: new Id().value,
+        paymentYear: 42000,
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(updateUserStudent.execute).toHaveBeenCalled();
   });
   it('should delete an user', async () => {
-    const result = await controller.delete({
-      id: new Id().value,
-    });
+    const result = await controller.delete(
+      {
+        id: new Id().value,
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(deleteUserStudent.execute).toHaveBeenCalled();

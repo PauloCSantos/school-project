@@ -1,3 +1,4 @@
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   CreateUserAdministratorInputDto,
   CreateUserAdministratorOutputDto,
@@ -13,18 +14,23 @@ import {
 
 export default interface AdministratorFacadeInterface {
   create(
-    input: CreateUserAdministratorInputDto
+    input: CreateUserAdministratorInputDto,
+    token: TokenData
   ): Promise<CreateUserAdministratorOutputDto>;
   find(
-    input: FindUserAdministratorInputDto
+    input: FindUserAdministratorInputDto,
+    token: TokenData
   ): Promise<FindUserAdministratorOutputDto | null>;
   findAll(
-    input: FindAllUserAdministratorInputDto
+    input: FindAllUserAdministratorInputDto,
+    token: TokenData
   ): Promise<FindAllUserAdministratorOutputDto>;
   delete(
-    input: DeleteUserAdministratorInputDto
+    input: DeleteUserAdministratorInputDto,
+    token: TokenData
   ): Promise<DeleteUserAdministratorOutputDto>;
   update(
-    input: UpdateUserAdministratorInputDto
+    input: UpdateUserAdministratorInputDto,
+    token: TokenData
   ): Promise<UpdateUserAdministratorOutputDto>;
 }

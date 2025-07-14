@@ -1,4 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import EventFacadeFactory from '@/modules/event-calendar-management/application/factory/calendar-facade.factory';
 
 describe('Event facade integration test', () => {
@@ -29,48 +30,56 @@ describe('Event facade integration test', () => {
     type: 'event',
     place: 'school',
   };
+  const token: TokenData = {
+    email: 'teste@teste.com.br',
+    masterId: 'validID',
+    role: 'master',
+  };
 
   it('should create an event using the facade', async () => {
     const facade = EventFacadeFactory.create();
-    const result = await facade.create(input);
+    const result = await facade.create(input, token);
 
     expect(result.id).toBeDefined();
   });
   it('should find an event using the facade', async () => {
     const facade = EventFacadeFactory.create();
-    const result = await facade.create(input);
-    const Event = await facade.find(result);
+    const result = await facade.create(input, token);
+    const Event = await facade.find(result, token);
 
     expect(Event).toBeDefined();
   });
   it('should find all event using the facade', async () => {
     const facade = EventFacadeFactory.create();
-    await facade.create(input);
-    await facade.create(input2);
-    await facade.create(input3);
-    const alls = await facade.findAll({});
+    await facade.create(input, token);
+    await facade.create(input2, token);
+    await facade.create(input3, token);
+    const alls = await facade.findAll({}, token);
 
     expect(alls.length).toBe(3);
   });
   it('should delete an event using the facade', async () => {
     const facade = EventFacadeFactory.create();
-    await facade.create(input);
-    const id2 = await facade.create(input2);
-    await facade.create(input3);
-    const result = await facade.delete({ id: id2.id });
-    const alls = await facade.findAll({});
+    await facade.create(input, token);
+    const id2 = await facade.create(input2, token);
+    await facade.create(input3, token);
+    const result = await facade.delete({ id: id2.id }, token);
+    const alls = await facade.findAll({}, token);
 
     expect(result.message).toBe('Operação concluída com sucesso');
     expect(alls.length).toBe(2);
   });
   it('should update an  Event using the facade', async () => {
     const facade = EventFacadeFactory.create();
-    const id = await facade.create(input);
+    const id = await facade.create(input, token);
 
-    const result = await facade.update({
-      id: id.id,
-      place: 'Airport',
-    });
+    const result = await facade.update(
+      {
+        id: id.id,
+        place: 'Airport',
+      },
+      token
+    );
 
     expect(result).toBeDefined();
   });

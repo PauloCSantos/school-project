@@ -12,11 +12,12 @@ import {
   UpdateSubjectInputDto,
   DeleteSubjectInputDto,
 } from '../../application/dto/subject-usecase.dto';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
-  FunctionCalled,
-  createRequestMiddleware,
-} from '@/modules/@shared/application/middleware/request.middleware';
-import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Route handler for subject management endpoints.
@@ -36,23 +37,23 @@ export class SubjectRoute {
 
     this.httpGateway.get('/subjects', this.findAllSubjects.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+      createRequestMiddleware(FunctionCalledEnum.FIND_ALL, REQUIRED_FIELDS_ALL),
     ]);
     this.httpGateway.get('/subject/:id', this.findSubject.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
     ]);
     this.httpGateway.post('/subject', this.createSubject.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
     ]);
     this.httpGateway.patch('/subject', this.updateSubject.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELD),
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELD),
     ]);
     this.httpGateway.delete('/subject/:id', this.deleteSubject.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+      createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
     ]);
   }
 
@@ -61,10 +62,13 @@ export class SubjectRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.query;
-      const response = await this.subjectController.findAll({
-        quantity,
-        offset,
-      });
+      const response = await this.subjectController.findAll(
+        {
+          quantity,
+          offset,
+        },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -76,7 +80,10 @@ export class SubjectRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.subjectController.find({ id });
+      const response = await this.subjectController.find(
+        { id },
+        req.tokenData!
+      );
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
@@ -94,7 +101,10 @@ export class SubjectRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.subjectController.create(input);
+      const response = await this.subjectController.create(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -106,7 +116,10 @@ export class SubjectRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.subjectController.update(input);
+      const response = await this.subjectController.update(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -118,7 +131,10 @@ export class SubjectRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.subjectController.delete({ id });
+      const response = await this.subjectController.delete(
+        { id },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);

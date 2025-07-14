@@ -4,6 +4,13 @@ import {
   FindAllLessonOutputDto,
 } from '../../dto/lesson-usecase.dto';
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for retrieving all lessons with pagination.
@@ -20,10 +27,20 @@ export default class FindAllLesson
   /**
    * Fetches all lessons using offset and quantity.
    */
-  async execute({
-    offset,
-    quantity,
-  }: FindAllLessonInputDto): Promise<FindAllLessonOutputDto> {
+  async execute(
+    { offset, quantity }: FindAllLessonInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindAllLessonOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.LESSON,
+        FunctionCalledEnum.FIND_ALL,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
     const results = await this._lessonRepository.findAll(quantity, offset);
 
     const result = results.map(lesson => ({

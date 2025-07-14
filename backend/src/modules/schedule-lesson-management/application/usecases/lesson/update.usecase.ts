@@ -4,6 +4,13 @@ import {
   UpdateLessonOutputDto,
 } from '../../dto/lesson-usecase.dto';
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for updating an existing lesson.
@@ -20,14 +27,21 @@ export default class UpdateLesson
   /**
    * Updates lesson fields and persists changes.
    */
-  async execute({
-    id,
-    duration,
-    name,
-    semester,
-    subject,
-    teacher,
-  }: UpdateLessonInputDto): Promise<UpdateLessonOutputDto> {
+  async execute(
+    { id, duration, name, semester, subject, teacher }: UpdateLessonInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<UpdateLessonOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.LESSON,
+        FunctionCalledEnum.UPDATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const lesson = await this._lessonRepository.find(id);
     if (!lesson) throw new Error('Lesson not found');
 

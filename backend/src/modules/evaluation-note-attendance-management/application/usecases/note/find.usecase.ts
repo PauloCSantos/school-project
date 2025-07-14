@@ -4,6 +4,13 @@ import {
   FindNoteOutputDto,
 } from '../../dto/note-usecase.dto';
 import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for finding a note by id.
@@ -31,7 +38,21 @@ export default class FindNote
    * @param input - Input data containing the id to search for
    * @returns Note data if found, null otherwise
    */
-  async execute({ id }: FindNoteInputDto): Promise<FindNoteOutputDto | null> {
+  async execute(
+    { id }: FindNoteInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindNoteOutputDto | null> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.NOTE,
+        FunctionCalledEnum.FIND,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const response = await this._noteRepository.find(id);
 
     if (response) {

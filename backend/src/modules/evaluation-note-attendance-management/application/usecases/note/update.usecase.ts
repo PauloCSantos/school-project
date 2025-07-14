@@ -4,6 +4,13 @@ import {
   UpdateNoteOutputDto,
 } from '../../dto/note-usecase.dto';
 import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for updating a note.
@@ -32,12 +39,21 @@ export default class UpdateNote
    * @returns Output data of the updated note
    * @throws Error if the note with the specified id does not exist
    */
-  async execute({
-    id,
-    evaluation,
-    note,
-    student,
-  }: UpdateNoteInputDto): Promise<UpdateNoteOutputDto> {
+  async execute(
+    { id, evaluation, note, student }: UpdateNoteInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<UpdateNoteOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.NOTE,
+        FunctionCalledEnum.DELETE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const noteInstance = await this._noteRepository.find(id);
     if (!noteInstance) throw new Error('Note not found');
 

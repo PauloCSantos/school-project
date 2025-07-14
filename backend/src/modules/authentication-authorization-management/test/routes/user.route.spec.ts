@@ -31,12 +31,17 @@ describe('AuthUserRoute with ExpressAdapter', () => {
         updatedFields: ['password'],
       }),
       delete: jest.fn().mockResolvedValue({
-        message: 'Usuário user@example.com deletado com sucesso',
+        message: 'Operação realizada com sucesso',
       }),
     } as unknown as AuthUserController;
 
     middleware = {
       handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
         return next();
       }),
     } as unknown as AuthUserMiddleware;
@@ -76,10 +81,17 @@ describe('AuthUserRoute with ExpressAdapter', () => {
       const response = await supertest(app)
         .get('/authUser/user@example.com')
         .set('Authorization', 'Bearer teste-token');
+
       expect(response.statusCode).toBe(200);
-      expect(controller.find).toHaveBeenCalledWith({
-        email: 'user@example.com',
-      });
+      expect(controller.find).toHaveBeenCalledWith(
+        { email: 'user@example.com' },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
+
       expect(response.body).toEqual({
         email: 'user@example.com',
         role: 'administrator',
@@ -108,7 +120,7 @@ describe('AuthUserRoute with ExpressAdapter', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual({
-        message: 'Usuário user@example.com deletado com sucesso',
+        message: 'Operação realizada com sucesso',
       });
     });
   });

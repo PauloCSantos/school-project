@@ -8,9 +8,9 @@ import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import AuthUserController from '@/modules/authentication-authorization-management/interface/controller/user.controller';
 import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/user.route';
 import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
-import TokenService from '@/modules/@shared/infraestructure/service/token.service';
+import TokenService from '@/modules/@shared/infraestructure/services/token.service';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 
 export default function initializeAuthUser(express: HttpServer): void {

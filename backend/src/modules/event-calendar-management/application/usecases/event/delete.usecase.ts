@@ -4,6 +4,13 @@ import {
   DeleteEventOutputDto,
 } from '../../dto/event-usecase.dto';
 import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for deleting a calendar event.
@@ -32,7 +39,21 @@ export default class DeleteEvent
    * @returns Output data with the result message
    * @throws Error if the event with the specified id does not exist
    */
-  async execute({ id }: DeleteEventInputDto): Promise<DeleteEventOutputDto> {
+  async execute(
+    { id }: DeleteEventInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<DeleteEventOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.EVENT,
+        FunctionCalledEnum.DELETE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const existingEvent = await this._eventRepository.find(id);
     if (!existingEvent) throw new Error('Event not found');
 

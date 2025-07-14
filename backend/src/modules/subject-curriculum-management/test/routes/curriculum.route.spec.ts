@@ -54,7 +54,14 @@ describe('CurriculumRoute with ExpressAdapter', () => {
     } as unknown as CurriculumController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new CurriculumRoute(curriculumController, http, middleware).routes();
@@ -79,7 +86,14 @@ describe('CurriculumRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/curriculum').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(curriculumController.create).toHaveBeenCalledWith(payload);
+      expect(curriculumController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -88,7 +102,14 @@ describe('CurriculumRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/curriculum/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(curriculumController.find).toHaveBeenCalledWith({ id });
+      expect(curriculumController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -98,7 +119,14 @@ describe('CurriculumRoute with ExpressAdapter', () => {
       const response = await supertest(app).patch(`/curriculum`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(curriculumController.update).toHaveBeenCalledWith(payload);
+      expect(curriculumController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -107,7 +135,14 @@ describe('CurriculumRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/curriculum/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(curriculumController.delete).toHaveBeenCalledWith({ id });
+      expect(curriculumController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -124,7 +159,14 @@ describe('CurriculumRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(curriculumController.addSubjects).toHaveBeenCalledWith(payload);
+      expect(curriculumController.addSubjects).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toBeDefined();
     });
 
@@ -139,7 +181,14 @@ describe('CurriculumRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(curriculumController.removeSubjects).toHaveBeenCalledWith(payload);
+      expect(curriculumController.removeSubjects).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toBeDefined();
     });
   });

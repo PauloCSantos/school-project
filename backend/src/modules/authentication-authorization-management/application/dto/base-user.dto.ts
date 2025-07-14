@@ -1,4 +1,4 @@
-import { RoleUsers } from '@/modules/@shared/type/enum';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
 
 export interface IFindAuthUserInput {
   email: string;
@@ -16,7 +16,7 @@ export interface ICreateAuthUserInput {
   password: string;
   masterId?: string;
   role: RoleUsers;
-  isHashed?: boolean;
+  // isHashed?: boolean;
 }
 
 export interface ICreateAuthUserOutput {

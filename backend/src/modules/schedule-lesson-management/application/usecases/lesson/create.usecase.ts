@@ -5,6 +5,13 @@ import {
   CreateLessonOutputDto,
 } from '../../dto/lesson-usecase.dto';
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for creating a new lesson.
@@ -33,16 +40,30 @@ export default class CreateLesson
    * @returns Output DTO containing the lesson ID
    * @throws Error if a lesson with the same ID already exists
    */
-  async execute({
-    days,
-    duration,
-    name,
-    semester,
-    studentsList,
-    subject,
-    teacher,
-    times,
-  }: CreateLessonInputDto): Promise<CreateLessonOutputDto> {
+  async execute(
+    {
+      days,
+      duration,
+      name,
+      semester,
+      studentsList,
+      subject,
+      teacher,
+      times,
+    }: CreateLessonInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<CreateLessonOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.LESSON,
+        FunctionCalledEnum.CREATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const lesson = new Lesson({
       days,
       duration,

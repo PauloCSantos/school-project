@@ -4,6 +4,13 @@ import {
   FindAllEventOutputDto,
 } from '../../dto/event-usecase.dto';
 import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for finding all events with pagination.
@@ -31,10 +38,20 @@ export default class FindAllEvent
    * @param input - Input data containing pagination parameters (offset and quantity)
    * @returns Array of event data matching the pagination criteria
    */
-  async execute({
-    offset,
-    quantity,
-  }: FindAllEventInputDto): Promise<FindAllEventOutputDto> {
+  async execute(
+    { offset, quantity }: FindAllEventInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindAllEventOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.EVENT,
+        FunctionCalledEnum.FIND_ALL,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
     const results = await this._eventRepository.findAll(quantity, offset);
 
     return results.map(event => ({

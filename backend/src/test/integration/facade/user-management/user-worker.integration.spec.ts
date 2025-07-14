@@ -1,10 +1,13 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import { RoleUsers } from '@/modules/@shared/type/enum';
+import { RoleUsers, TokenData } from '@/modules/@shared/type/sharedTypes';
 
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import MemoryWorkerRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/worker.repository';
 
-import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import {
+  AuthUserService,
+  AuthUserServiceInterface,
+} from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import CreateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/create-user.usecase';
 import DeleteAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/delete-user.usecase';
 import FindAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/find-user.usecase';
@@ -19,14 +22,19 @@ import FindUserWorker from '@/modules/user-management/application/usecases/worke
 import UpdateUserWorker from '@/modules/user-management/application/usecases/worker/updateUserWorker.usecase';
 import WorkerFacade from '@/modules/user-management/application/facade/facade/worker.facade';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
-import TokenService from '@/modules/@shared/infraestructure/service/token.service';
+import TokenService from '@/modules/@shared/infraestructure/services/token.service';
+import TokenServiceInterface from '@/modules/@shared/infraestructure/services/token.service';
+import {
+  PoliciesService,
+  PoliciesServiceInterface,
+} from '@/modules/@shared/application/services/policies.service';
 
 describe('User Worker facade integration test', () => {
   let authUserRepository: MemoryAuthUserRepository;
   let workerRepository: MemoryWorkerRepository;
   let emailAuthValidator: EmailAuthValidatorService;
-  let authUserService: AuthUserService;
-  let tokenService: TokenService;
+  let authUserService: AuthUserServiceInterface;
+  let tokenService: TokenServiceInterface;
   let createAuthUser: CreateAuthUser;
   let deleteAuthUser: DeleteAuthUser;
   let findAuthUser: FindAuthUser;
@@ -40,6 +48,8 @@ describe('User Worker facade integration test', () => {
   let findUserWorker: FindUserWorker;
   let updateUserWorker: UpdateUserWorker;
   let facadeWorker: WorkerFacade;
+
+  let policiesService: PoliciesServiceInterface;
 
   const input = {
     name: {
@@ -98,15 +108,22 @@ describe('User Worker facade integration test', () => {
     birthday: new Date('11-12-1995'),
     email: 'teste3@test.com',
   };
+  const token: TokenData = {
+    email: 'teste@teste.com.br',
+    masterId: 'validID',
+    role: 'master',
+  };
 
   async function createAuthUserFor(email: string) {
-    await facadeAuthUser.create({
-      email,
-      password: 'XpA2Jjd4',
-      masterId: new Id().value,
-      role: 'master' as RoleUsers,
-      isHashed: false,
-    });
+    await facadeAuthUser.create(
+      {
+        email,
+        password: 'XpA2Jjd4',
+        masterId: new Id().value,
+        role: 'master' as RoleUsers,
+      },
+      token
+    );
   }
 
   beforeEach(() => {
@@ -128,12 +145,15 @@ describe('User Worker facade integration test', () => {
       tokenService
     );
 
+    policiesService = new PoliciesService();
+
     facadeAuthUser = new AuthUserFacade({
       createAuthUser,
       findAuthUser,
       updateAuthUser,
       deleteAuthUser,
       loginAuthUser,
+      policiesService,
     });
 
     createUserWorker = new CreateUserWorker(
@@ -151,20 +171,21 @@ describe('User Worker facade integration test', () => {
       findAllUserWorker,
       findUserWorker,
       updateUserWorker,
+      policiesService,
     });
   });
 
   it('should create a Worker user using the facade', async () => {
     await createAuthUserFor(input.email);
-    const result = await facadeWorker.create(input);
+    const result = await facadeWorker.create(input, token);
 
     expect(result.id).toBeDefined();
   });
 
   it('should find a Worker user using the facade', async () => {
     await createAuthUserFor(input.email);
-    const result = await facadeWorker.create(input);
-    const userWorker = await facadeWorker.find(result);
+    const result = await facadeWorker.create(input, token);
+    const userWorker = await facadeWorker.find(result, token);
 
     expect(userWorker).toBeDefined();
   });
@@ -174,10 +195,10 @@ describe('User Worker facade integration test', () => {
     await createAuthUserFor(input2.email);
     await createAuthUserFor(input3.email);
 
-    await facadeWorker.create(input);
-    await facadeWorker.create(input2);
-    await facadeWorker.create(input3);
-    const allUsers = await facadeWorker.findAll({});
+    await facadeWorker.create(input, token);
+    await facadeWorker.create(input2, token);
+    await facadeWorker.create(input3, token);
+    const allUsers = await facadeWorker.findAll({}, token);
 
     expect(allUsers.length).toBe(3);
   });
@@ -187,11 +208,11 @@ describe('User Worker facade integration test', () => {
     await createAuthUserFor(input2.email);
     await createAuthUserFor(input3.email);
 
-    await facadeWorker.create(input);
-    const id2 = await facadeWorker.create(input2);
-    await facadeWorker.create(input3);
-    const result = await facadeWorker.delete({ id: id2.id });
-    const allUsers = await facadeWorker.findAll({});
+    await facadeWorker.create(input, token);
+    const id2 = await facadeWorker.create(input2, token);
+    await facadeWorker.create(input3, token);
+    const result = await facadeWorker.delete({ id: id2.id }, token);
+    const allUsers = await facadeWorker.findAll({}, token);
 
     expect(result.message).toBe('Operação concluída com sucesso');
     expect(allUsers.length).toBe(2);
@@ -199,19 +220,22 @@ describe('User Worker facade integration test', () => {
 
   it('should update a Worker user using the facade', async () => {
     await createAuthUserFor(input.email);
-    const id = await facadeWorker.create(input);
+    const id = await facadeWorker.create(input, token);
 
-    const result = await facadeWorker.update({
-      id: id.id,
-      address: {
-        street: 'Street B',
-        city: 'City B',
-        zip: '111111-111',
-        number: 1,
-        avenue: 'Avenue B',
-        state: 'State B',
+    const result = await facadeWorker.update(
+      {
+        id: id.id,
+        address: {
+          street: 'Street B',
+          city: 'City B',
+          zip: '111111-111',
+          number: 1,
+          avenue: 'Avenue B',
+          state: 'State B',
+        },
       },
-    });
+      token
+    );
 
     expect(result).toBeDefined();
   });

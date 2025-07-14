@@ -1,3 +1,4 @@
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import MemoryAttendanceRepository from '../../infrastructure/repositories/memory-repository/attendance.repository';
 import AttendanceFacade from '../facade/facade/attendance.facade';
 import AddStudents from '../usecases/attendance/add-students.usecase';
@@ -21,6 +22,7 @@ export default class AttendanceFacadeFactory {
     // Currently using memory repository only
     // Future implementation will use environment variables to determine repository type
     const repository = new MemoryAttendanceRepository();
+    const policiesService = new PoliciesService();
 
     // Create all required use cases
     const createAttendance = new CreateAttendance(repository);
@@ -40,6 +42,7 @@ export default class AttendanceFacadeFactory {
       updateAttendance,
       addStudents,
       removeStudents,
+      policiesService,
     });
 
     return facade;

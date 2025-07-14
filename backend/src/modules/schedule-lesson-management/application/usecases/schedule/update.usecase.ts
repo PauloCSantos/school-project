@@ -4,6 +4,13 @@ import {
   UpdateScheduleOutputDto,
 } from '../../dto/schedule-usecase.dto';
 import ScheduleGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/schedule.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for schedule operation.
@@ -19,10 +26,21 @@ export default class UpdateSchedule
   /**
    * Executes the schedule use case.
    */
-  async execute({
-    id,
-    curriculum,
-  }: UpdateScheduleInputDto): Promise<UpdateScheduleOutputDto> {
+  async execute(
+    { id, curriculum }: UpdateScheduleInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<UpdateScheduleOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.SCHEDULE,
+        FunctionCalledEnum.ADD,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const schedule = await this._scheduleRepository.find(id);
     if (!schedule) throw new Error('Schedule not found');
     try {

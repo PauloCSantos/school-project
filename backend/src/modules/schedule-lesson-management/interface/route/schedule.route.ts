@@ -14,11 +14,12 @@ import {
   FindScheduleInputDto,
   DeleteScheduleInputDto,
 } from '../../application/dto/schedule-usecase.dto';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
-  FunctionCalled,
-  createRequestMiddleware,
-} from '@/modules/@shared/application/middleware/request.middleware';
-import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Route handler for schedule management endpoint.
@@ -39,34 +40,37 @@ export default class ScheduleRoute {
 
     this.httpGateway.get('/schedules', this.findAllSchedules.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+      createRequestMiddleware(FunctionCalledEnum.FIND_ALL, REQUIRED_FIELDS_ALL),
     ]);
     this.httpGateway.post('/schedule', this.createSchedule.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
     ]);
     this.httpGateway.get('/schedule/:id', this.findSchedule.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
     ]);
     this.httpGateway.patch('/schedule', this.updateSchedule.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
     ]);
     this.httpGateway.delete('/schedule/:id', this.deleteSchedule.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+      createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
     ]);
     this.httpGateway.post('/schedule/lesson/add', this.addLessons.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.ADD, REQUIRED_FIELDS_ADD),
+      createRequestMiddleware(FunctionCalledEnum.ADD, REQUIRED_FIELDS_ADD),
     ]);
     this.httpGateway.post(
       '/schedule/lesson/remove',
       this.removeLessons.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.REMOVE, REQUIRED_FIELDS_REMOVE),
+        createRequestMiddleware(
+          FunctionCalledEnum.REMOVE,
+          REQUIRED_FIELDS_REMOVE
+        ),
       ]
     );
   }
@@ -76,10 +80,13 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.query;
-      const schedules = await this.scheduleController.findAll({
-        quantity,
-        offset,
-      });
+      const schedules = await this.scheduleController.findAll(
+        {
+          quantity,
+          offset,
+        },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: schedules };
     } catch (error) {
       return this.handleError(error);
@@ -91,7 +98,10 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const schedule = await this.scheduleController.create(input);
+      const schedule = await this.scheduleController.create(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.CREATED, body: schedule };
     } catch (error) {
       return this.handleError(error);
@@ -103,7 +113,10 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.scheduleController.find({ id });
+      const response = await this.scheduleController.find(
+        { id },
+        req.tokenData!
+      );
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
@@ -121,7 +134,10 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.scheduleController.update(input);
+      const response = await this.scheduleController.update(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -133,7 +149,10 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.scheduleController.delete({ id });
+      const response = await this.scheduleController.delete(
+        { id },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -145,7 +164,10 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.scheduleController.addLessons(input);
+      const response = await this.scheduleController.addLessons(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -157,7 +179,10 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.scheduleController.removeLessons(input);
+      const response = await this.scheduleController.removeLessons(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);

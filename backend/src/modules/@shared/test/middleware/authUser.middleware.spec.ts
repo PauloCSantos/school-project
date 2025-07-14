@@ -1,13 +1,14 @@
-import TokenService from '../../infraestructure/service/token.service';
+import TokenService from '../../infraestructure/services/token.service';
 import AuthUserMiddleware from '../../application/middleware/authUser.middleware';
-import { RoleUsers, RoleUsersEnum } from '../../type/enum';
+import { RoleUsers, RoleUsersEnum } from '../../type/sharedTypes';
 import { HttpRequest } from '../../infraestructure/http/http.interface';
+import TokenServiceInterface from '../../infraestructure/services/token.service';
 
 describe('AuthUserMiddleware unit test', () => {
   let middleware: AuthUserMiddleware;
   let mockReq: HttpRequest;
   let mockNext: jest.Mock;
-  let tokenService: TokenService;
+  let tokenService: TokenServiceInterface;
 
   const allowedRoles: RoleUsers[] = [RoleUsersEnum.ADMINISTRATOR];
 

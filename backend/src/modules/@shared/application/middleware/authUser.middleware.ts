@@ -1,30 +1,17 @@
-import TokenService from '../../infraestructure/service/token.service';
+import TokenServiceInterface from '../../infraestructure/services/token.service';
 import { isNotEmpty } from '../../utils/validations';
 import {
   HttpRequest,
   HttpResponseData,
   HttpMiddleware,
 } from '../../infraestructure/http/http.interface';
-import { RoleUsers } from '../../type/enum';
-
-enum HttpStatus {
-  UNAUTHORIZED = 401,
-  FORBIDDEN = 403,
-  INTERNAL_SERVER_ERROR = 500,
-}
-
-enum ErrorMessage {
-  MISSING_TOKEN = 'Missing Token',
-  INVALID_TOKEN = 'Invalid token',
-  ACCESS_DENIED = 'User does not have access permission',
-  INTERNAL_ERROR = 'Internal server error',
-}
+import { ErrorMessage, HttpStatus, RoleUsers } from '../../type/sharedTypes';
 
 export default class AuthUserMiddleware
   implements HttpMiddleware<any, any, any, any>
 {
   constructor(
-    private readonly tokenService: TokenService,
+    private readonly tokenService: TokenServiceInterface,
     private readonly allowedRoles: RoleUsers[] = []
   ) {}
 

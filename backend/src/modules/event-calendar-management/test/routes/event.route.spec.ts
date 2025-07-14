@@ -28,7 +28,14 @@ describe('EventRoute with ExpressAdapter', () => {
     } as unknown as EventController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new EventRoute(eventController, http, middleware).routes();
@@ -38,10 +45,17 @@ describe('EventRoute with ExpressAdapter', () => {
     it('should find all events', async () => {
       const response = await supertest(app).get('/events?quantity=2&offset=0');
       expect(response.statusCode).toBe(200);
-      expect(eventController.findAll).toHaveBeenCalledWith({
-        quantity: '2',
-        offset: '0',
-      });
+      expect(eventController.findAll).toHaveBeenCalledWith(
+        {
+          quantity: '2',
+          offset: '0',
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.any(Array));
       expect(response.body.length).toBe(2);
     });
@@ -60,7 +74,14 @@ describe('EventRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/event').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(eventController.create).toHaveBeenCalledWith(payload);
+      expect(eventController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -69,7 +90,14 @@ describe('EventRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/event/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(eventController.find).toHaveBeenCalledWith({ id });
+      expect(eventController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
@@ -79,7 +107,14 @@ describe('EventRoute with ExpressAdapter', () => {
       const response = await supertest(app).patch(`/event`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(eventController.update).toHaveBeenCalledWith(payload);
+      expect(eventController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
@@ -88,7 +123,14 @@ describe('EventRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/event/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(eventController.delete).toHaveBeenCalledWith({ id });
+      expect(eventController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });

@@ -10,7 +10,7 @@ import AddSubjects from '@/modules/subject-curriculum-management/application/use
 import RemoveSubjects from '@/modules/subject-curriculum-management/application/usecases/curriculum/remove-subjects.usecase';
 import { CurriculumController } from '@/modules/subject-curriculum-management/interface/controller/curriculum.controller';
 import { CurriculumRoute } from '@/modules/subject-curriculum-management/interface/route/curriculum.route';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 
 export default function initializeCurriculum(express: HttpServer): void {

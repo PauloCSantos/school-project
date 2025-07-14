@@ -4,6 +4,13 @@ import {
   UpdateEvaluationOutputDto,
 } from '../../dto/evaluation-usecase.dto';
 import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for updating an evaluation record.
@@ -34,13 +41,20 @@ export default class UpdateEvaluation
    * @throws Error if the evaluation record with the specified id does not exist
    * @throws ValidationError if any of the updated data fails validation
    */
-  async execute({
-    id,
-    lesson,
-    teacher,
-    type,
-    value,
-  }: UpdateEvaluationInputDto): Promise<UpdateEvaluationOutputDto> {
+  async execute(
+    { id, lesson, teacher, type, value }: UpdateEvaluationInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<UpdateEvaluationOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.EVALUATION,
+        FunctionCalledEnum.CREATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
     const evaluation = await this._evaluationRepository.find(id);
 
     if (!evaluation) {

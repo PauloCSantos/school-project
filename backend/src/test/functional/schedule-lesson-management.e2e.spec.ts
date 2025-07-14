@@ -27,6 +27,7 @@ import { ScheduleController } from '@/modules/schedule-lesson-management/interfa
 import { LessonController } from '@/modules/schedule-lesson-management/interface/controller/lesson.controller';
 import ScheduleRoute from '@/modules/schedule-lesson-management/interface/route/schedule.route';
 import LessonRoute from '@/modules/schedule-lesson-management/interface/route/lesson.route';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 describe('Schedule lesson management module end to end test', () => {
   let scheduleRepository = new MemoryScheduleRepository();
@@ -56,6 +57,8 @@ describe('Schedule lesson management module end to end test', () => {
     const addTime = new AddTime(lessonRepository);
     const removeTime = new RemoveTime(lessonRepository);
 
+    const policiesService = new PoliciesService();
+
     const scheduleController = new ScheduleController(
       createScheduleUsecase,
       findScheduleUsecase,
@@ -63,7 +66,8 @@ describe('Schedule lesson management module end to end test', () => {
       updateScheduleUsecase,
       deleteScheduleUsecase,
       addLessons,
-      removeLessons
+      removeLessons,
+      policiesService
     );
     const lessonController = new LessonController(
       createLessonUsecase,
@@ -76,7 +80,8 @@ describe('Schedule lesson management module end to end test', () => {
       addDay,
       removeDay,
       addTime,
-      removeTime
+      removeTime,
+      policiesService
     );
 
     const expressHttp = new ExpressAdapter();

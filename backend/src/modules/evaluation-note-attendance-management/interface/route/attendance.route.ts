@@ -14,11 +14,12 @@ import {
   FindAllAttendanceInputDto,
 } from '../../application/dto/attendance-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
-  FunctionCalled,
-  createRequestMiddleware,
-} from '@/modules/@shared/application/middleware/request.middleware';
-import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class AttendanceRoute {
   constructor(
@@ -42,22 +43,22 @@ export default class AttendanceRoute {
 
     this.httpGateway.get('/attendances', this.findAllAttendances.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+      createRequestMiddleware(FunctionCalledEnum.FIND_ALL, REQUIRED_FIELDS_ALL),
     ]);
 
     this.httpGateway.post('/attendance', this.createAttendance.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
     ]);
 
     this.httpGateway.get('/attendance/:id', this.findAttendance.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
     ]);
 
     this.httpGateway.patch('/attendance', this.updateAttendance.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
     ]);
 
     this.httpGateway.delete(
@@ -65,7 +66,7 @@ export default class AttendanceRoute {
       this.deleteAttendance.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
       ]
     );
 
@@ -74,7 +75,7 @@ export default class AttendanceRoute {
       this.addStudents.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.ADD, REQUIRED_FIELDS_ADD),
+        createRequestMiddleware(FunctionCalledEnum.ADD, REQUIRED_FIELDS_ADD),
       ]
     );
 
@@ -83,7 +84,10 @@ export default class AttendanceRoute {
       this.removeStudents.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.REMOVE, REQUIRED_FIELDS_REMOVE),
+        createRequestMiddleware(
+          FunctionCalledEnum.REMOVE,
+          REQUIRED_FIELDS_REMOVE
+        ),
       ]
     );
   }
@@ -93,10 +97,14 @@ export default class AttendanceRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.query;
-      const response = await this.attendanceController.findAll({
-        quantity,
-        offset,
-      });
+      const response = await this.attendanceController.findAll(
+        {
+          quantity,
+          offset,
+        },
+        req.tokenData!
+      );
+
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -108,7 +116,11 @@ export default class AttendanceRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.attendanceController.create(input);
+      const response = await this.attendanceController.create(
+        input,
+        req.tokenData!
+      );
+
       return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -120,16 +132,21 @@ export default class AttendanceRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.attendanceController.find({ id });
+      const response = await this.attendanceController.find(
+        { id },
+        req.tokenData!
+      );
+
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
           body: { error: StatusMessageEnum.NOT_FOUND },
         };
       }
+
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
-      return this.handleError(error, 404);
+      return this.handleError(error);
     }
   }
 
@@ -138,7 +155,10 @@ export default class AttendanceRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.attendanceController.update(input);
+      const response = await this.attendanceController.update(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -150,7 +170,10 @@ export default class AttendanceRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.attendanceController.delete({ id });
+      const response = await this.attendanceController.delete(
+        { id },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -162,7 +185,10 @@ export default class AttendanceRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.attendanceController.addStudents(input);
+      const response = await this.attendanceController.addStudents(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -174,7 +200,10 @@ export default class AttendanceRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.attendanceController.removeStudents(input);
+      const response = await this.attendanceController.removeStudents(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -185,6 +214,7 @@ export default class AttendanceRoute {
     if (error instanceof Error) {
       return { statusCode, body: { error: error.message } };
     }
+
     return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
   }
 }

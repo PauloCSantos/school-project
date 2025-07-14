@@ -13,6 +13,7 @@ import UpdateEvent from '@/modules/event-calendar-management/application/usecase
 import DeleteEvent from '@/modules/event-calendar-management/application/usecases/event/delete.usecase';
 import EventController from '@/modules/event-calendar-management/interface/controller/event.controller';
 import EventRoute from '@/modules/event-calendar-management/interface/route/event.route';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 describe('Event calendar management module end to end test', () => {
   let eventRepository = new MemoryEventRepository();
@@ -27,12 +28,15 @@ describe('Event calendar management module end to end test', () => {
     const updateEventUsecase = new UpdateEvent(eventRepository);
     const deleteEventUsecase = new DeleteEvent(eventRepository);
 
+    const policiesService = new PoliciesService();
+
     const eventController = new EventController(
       createEventUsecase,
       findEventUsecase,
       findAllEventUsecase,
       updateEventUsecase,
-      deleteEventUsecase
+      deleteEventUsecase,
+      policiesService
     );
 
     const expressHttp = new ExpressAdapter();

@@ -13,11 +13,12 @@ import {
   DeleteEventInputDto,
 } from '../../application/dto/event-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
-  FunctionCalled,
-  createRequestMiddleware,
-} from '@/modules/@shared/application/middleware/request.middleware';
-import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class EventRoute {
   constructor(
@@ -41,27 +42,27 @@ export default class EventRoute {
 
     this.httpGateway.get('/events', this.findAllEvents.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+      createRequestMiddleware(FunctionCalledEnum.FIND_ALL, REQUIRED_FIELDS_ALL),
     ]);
 
     this.httpGateway.post('/event', this.createEvent.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
     ]);
 
     this.httpGateway.get('/event/:id', this.findEvent.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
     ]);
 
     this.httpGateway.patch('/event', this.updateEvent.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
     ]);
 
     this.httpGateway.delete('/event/:id', this.deleteEvent.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+      createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
     ]);
   }
 
@@ -70,7 +71,10 @@ export default class EventRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.query;
-      const response = await this.eventController.findAll({ quantity, offset });
+      const response = await this.eventController.findAll(
+        { quantity, offset },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -82,7 +86,7 @@ export default class EventRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.eventController.create(input);
+      const response = await this.eventController.create(input, req.tokenData!);
       return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -94,7 +98,7 @@ export default class EventRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.eventController.find({ id });
+      const response = await this.eventController.find({ id }, req.tokenData!);
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
@@ -112,7 +116,7 @@ export default class EventRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.eventController.update(input);
+      const response = await this.eventController.update(input, req.tokenData!);
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -124,7 +128,10 @@ export default class EventRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.eventController.delete({ id });
+      const response = await this.eventController.delete(
+        { id },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);

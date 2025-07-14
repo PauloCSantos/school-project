@@ -11,11 +11,12 @@ import {
   UpdateAuthUserInputDto,
 } from '../../application/dto/user-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
-  FunctionCalled,
-  createRequestMiddleware,
-} from '@/modules/@shared/application/middleware/request.middleware';
-import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class AuthUserRoute {
   constructor(
@@ -30,12 +31,12 @@ export default class AuthUserRoute {
 
     this.httpGateway.get('/authUser/:email', this.findAuthUser.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
     ]);
 
     this.httpGateway.patch('/authUser', this.updateAuthUser.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
     ]);
 
     this.httpGateway.delete(
@@ -43,16 +44,16 @@ export default class AuthUserRoute {
       this.deleteAuthUser.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
       ]
     );
 
     this.httpGateway.post('/register', this.createAuthUser.bind(this), [
-      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
     ]);
 
     this.httpGateway.post('/login', this.loginAuthUser.bind(this), [
-      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
     ]);
   }
 
@@ -61,7 +62,10 @@ export default class AuthUserRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.authUserController.create(input);
+      const response = await this.authUserController.create(
+        input,
+        req.tokenData!
+      );
       return {
         statusCode: StatusCodeEnum.CREATED,
         body: response,
@@ -76,7 +80,10 @@ export default class AuthUserRoute {
   ): Promise<HttpResponseData> {
     try {
       const { email } = req.params;
-      const response = await this.authUserController.find({ email });
+      const response = await this.authUserController.find(
+        { email },
+        req.tokenData!
+      );
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
@@ -97,7 +104,10 @@ export default class AuthUserRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.authUserController.update(input);
+      const response = await this.authUserController.update(
+        input,
+        req.tokenData!
+      );
       return {
         statusCode: StatusCodeEnum.OK,
         body: response,
@@ -112,7 +122,10 @@ export default class AuthUserRoute {
   ): Promise<HttpResponseData> {
     try {
       const { email } = req.params;
-      const response = await this.authUserController.delete({ email });
+      const response = await this.authUserController.delete(
+        { email },
+        req.tokenData!
+      );
       return {
         statusCode: StatusCodeEnum.OK,
         body: response,

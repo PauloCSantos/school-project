@@ -55,7 +55,14 @@ describe('UserMasterRoute with ExpressAdapter', () => {
     } as unknown as UserMasterController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new UserMasterRoute(userMasterController, http, middleware).routes();
@@ -84,7 +91,14 @@ describe('UserMasterRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/user-master').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(userMasterController.create).toHaveBeenCalledWith(payload);
+      expect(userMasterController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -93,7 +107,14 @@ describe('UserMasterRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/user-master/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(userMasterController.find).toHaveBeenCalledWith({ id });
+      expect(userMasterController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -113,7 +134,14 @@ describe('UserMasterRoute with ExpressAdapter', () => {
       const response = await supertest(app).patch(`/user-master`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(userMasterController.update).toHaveBeenCalledWith(payload);
+      expect(userMasterController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
   });

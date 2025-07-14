@@ -4,6 +4,13 @@ import {
   FindAllUserStudentOutputDto,
 } from '../../dto/student-usecase.dto';
 import UserStudentGateway from '@/modules/user-management/infrastructure/gateway/student.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class FindAllUserStudent
   implements
@@ -14,10 +21,21 @@ export default class FindAllUserStudent
   constructor(userStudentRepository: UserStudentGateway) {
     this._userStudentRepository = userStudentRepository;
   }
-  async execute({
-    offset,
-    quantity,
-  }: FindAllUserStudentInputDto): Promise<FindAllUserStudentOutputDto> {
+  async execute(
+    { offset, quantity }: FindAllUserStudentInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindAllUserStudentOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.STUDENT,
+        FunctionCalledEnum.FIND_ALL,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const results = await this._userStudentRepository.findAll(quantity, offset);
 
     const result = results.map(userStudent => ({

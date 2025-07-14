@@ -22,6 +22,8 @@ import {
   UpdateScheduleInputDto,
   UpdateScheduleOutputDto,
 } from '../../dto/schedule-facade.dto';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Properties required to initialize the ScheduleFacade
@@ -34,6 +36,7 @@ type ScheduleFacadeProps = {
   readonly updateSchedule: UpdateSchedule;
   readonly addLessons: AddLessons;
   readonly removeLessons: RemoveLessons;
+  readonly policiesService: PoliciesServiceInterface;
 };
 
 /**
@@ -50,6 +53,7 @@ export default class ScheduleFacade implements ScheduleFacadeInterface {
   private readonly _updateSchedule: UpdateSchedule;
   private readonly _addLessons: AddLessons;
   private readonly _removeLessons: RemoveLessons;
+  private readonly _policiesService: PoliciesServiceInterface;
 
   /**
    * Creates a new instance of ScheduleFacade
@@ -63,6 +67,7 @@ export default class ScheduleFacade implements ScheduleFacadeInterface {
     this._updateSchedule = input.updateSchedule;
     this._addLessons = input.addLessons;
     this._removeLessons = input.removeLessons;
+    this._policiesService = input.policiesService;
   }
 
   /**
@@ -71,9 +76,14 @@ export default class ScheduleFacade implements ScheduleFacadeInterface {
    * @returns Information about the created schedule
    */
   public async create(
-    input: CreateScheduleInputDto
+    input: CreateScheduleInputDto,
+    token: TokenData
   ): Promise<CreateScheduleOutputDto> {
-    return await this._createSchedule.execute(input);
+    return await this._createSchedule.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -82,9 +92,14 @@ export default class ScheduleFacade implements ScheduleFacadeInterface {
    * @returns Schedule information if found, null otherwise
    */
   public async find(
-    input: FindScheduleInputDto
+    input: FindScheduleInputDto,
+    token: TokenData
   ): Promise<FindScheduleOutputDto | null> {
-    const result = await this._findSchedule.execute(input);
+    const result = await this._findSchedule.execute(
+      input,
+      this._policiesService,
+      token
+    );
     return result || null;
   }
 
@@ -94,9 +109,14 @@ export default class ScheduleFacade implements ScheduleFacadeInterface {
    * @returns Collection of schedules matching criteria
    */
   public async findAll(
-    input: FindAllScheduleInputDto
+    input: FindAllScheduleInputDto,
+    token: TokenData
   ): Promise<FindAllScheduleOutputDto> {
-    return await this._findAllSchedule.execute(input);
+    return await this._findAllSchedule.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -105,9 +125,14 @@ export default class ScheduleFacade implements ScheduleFacadeInterface {
    * @returns Confirmation message
    */
   public async delete(
-    input: DeleteScheduleInputDto
+    input: DeleteScheduleInputDto,
+    token: TokenData
   ): Promise<DeleteScheduleOutputDto> {
-    return await this._deleteSchedule.execute(input);
+    return await this._deleteSchedule.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -116,9 +141,14 @@ export default class ScheduleFacade implements ScheduleFacadeInterface {
    * @returns Updated schedule information
    */
   public async update(
-    input: UpdateScheduleInputDto
+    input: UpdateScheduleInputDto,
+    token: TokenData
   ): Promise<UpdateScheduleOutputDto> {
-    return await this._updateSchedule.execute(input);
+    return await this._updateSchedule.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -127,9 +157,10 @@ export default class ScheduleFacade implements ScheduleFacadeInterface {
    * @returns Updated schedule information
    */
   public async addLessons(
-    input: AddLessonsInputDto
+    input: AddLessonsInputDto,
+    token: TokenData
   ): Promise<AddLessonsOutputDto> {
-    return await this._addLessons.execute(input);
+    return await this._addLessons.execute(input, this._policiesService, token);
   }
 
   /**
@@ -138,8 +169,13 @@ export default class ScheduleFacade implements ScheduleFacadeInterface {
    * @returns Updated schedule information
    */
   public async removeLessons(
-    input: RemoveLessonsInputDto
+    input: RemoveLessonsInputDto,
+    token: TokenData
   ): Promise<RemoveLessonsOutputDto> {
-    return await this._removeLessons.execute(input);
+    return await this._removeLessons.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 }

@@ -16,6 +16,8 @@ import {
   LoginAuthUserInputDto,
   LoginAuthUserOutputDto,
 } from '../../dto/user-facade.dto';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Properties required to initialize the AuthUserFacade
@@ -26,6 +28,7 @@ type AuthUserFacadeProps = {
   readonly findAuthUser: FindAuthUser;
   readonly updateAuthUser: UpdateAuthUser;
   readonly loginAuthUser: LoginAuthUser;
+  readonly policiesService: PoliciesServiceInterface;
 };
 
 /**
@@ -40,6 +43,7 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
   private readonly _findAuthUser: FindAuthUser;
   private readonly _updateAuthUser: UpdateAuthUser;
   private readonly _loginAuthUser: LoginAuthUser;
+  private readonly _policiesService: PoliciesServiceInterface;
 
   /**
    * Creates a new instance of AuthUserFacade
@@ -51,6 +55,7 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
     this._findAuthUser = input.findAuthUser;
     this._updateAuthUser = input.updateAuthUser;
     this._loginAuthUser = input.loginAuthUser;
+    this._policiesService = input.policiesService;
   }
 
   /**
@@ -59,9 +64,14 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
    * @returns Information about the created user
    */
   public async create(
-    input: CreateAuthUserInputDto
+    input: CreateAuthUserInputDto,
+    token: TokenData
   ): Promise<CreateAuthUserOutputDto> {
-    return await this._createAuthUser.execute(input);
+    return await this._createAuthUser.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -70,10 +80,15 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
    * @returns User information if found, null otherwise
    */
   public async find(
-    input: FindAuthUserInputDto
+    input: FindAuthUserInputDto,
+    token: TokenData
   ): Promise<FindAuthUserOutputDto | null> {
     // Changed from undefined to null for better semantic meaning
-    const result = await this._findAuthUser.execute(input);
+    const result = await this._findAuthUser.execute(
+      input,
+      this._policiesService,
+      token
+    );
     return result || null;
   }
 
@@ -83,9 +98,14 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
    * @returns Confirmation message
    */
   public async delete(
-    input: DeleteAuthUserInputDto
+    input: DeleteAuthUserInputDto,
+    token: TokenData
   ): Promise<DeleteAuthUserOutputDto> {
-    return await this._deleteAuthUser.execute(input);
+    return await this._deleteAuthUser.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -94,9 +114,14 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
    * @returns Updated user information
    */
   public async update(
-    input: UpdateAuthUserInputDto
+    input: UpdateAuthUserInputDto,
+    token: TokenData
   ): Promise<UpdateAuthUserOutputDto> {
-    return await this._updateAuthUser.execute(input);
+    return await this._updateAuthUser.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**

@@ -12,11 +12,12 @@ import {
   UpdateUserAdministratorInputDto,
   DeleteUserAdministratorInputDto,
 } from '../../application/dto/administrator-usecase.dto';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
-  FunctionCalled,
-  createRequestMiddleware,
-} from '@/modules/@shared/application/middleware/request.middleware';
-import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 export class UserAdministratorRoute {
   constructor(
@@ -42,7 +43,10 @@ export class UserAdministratorRoute {
       this.findAllUserAdministrators.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+        createRequestMiddleware(
+          FunctionCalledEnum.FIND_ALL,
+          REQUIRED_FIELDS_ALL
+        ),
       ]
     );
 
@@ -51,7 +55,7 @@ export class UserAdministratorRoute {
       this.createUserAdministrator.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+        createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
       ]
     );
 
@@ -60,7 +64,7 @@ export class UserAdministratorRoute {
       this.findUserAdministrator.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+        createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
       ]
     );
 
@@ -69,7 +73,7 @@ export class UserAdministratorRoute {
       this.updateUserAdministrator.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+        createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
       ]
     );
 
@@ -78,7 +82,7 @@ export class UserAdministratorRoute {
       this.deleteUserAdministrator.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
       ]
     );
   }
@@ -88,10 +92,13 @@ export class UserAdministratorRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.query;
-      const response = await this.userAdministratorController.findAll({
-        quantity,
-        offset,
-      });
+      const response = await this.userAdministratorController.findAll(
+        {
+          quantity,
+          offset,
+        },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -103,7 +110,10 @@ export class UserAdministratorRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userAdministratorController.find({ id });
+      const response = await this.userAdministratorController.find(
+        { id },
+        req.tokenData!
+      );
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
@@ -121,7 +131,10 @@ export class UserAdministratorRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.userAdministratorController.create(input);
+      const response = await this.userAdministratorController.create(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -134,7 +147,7 @@ export class UserAdministratorRoute {
     try {
       const input = req.body;
       const updatedAdministrator =
-        await this.userAdministratorController.update(input);
+        await this.userAdministratorController.update(input, req.tokenData!);
       return { statusCode: StatusCodeEnum.OK, body: updatedAdministrator };
     } catch (error) {
       return this.handleError(error);
@@ -146,7 +159,10 @@ export class UserAdministratorRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userAdministratorController.delete({ id });
+      const response = await this.userAdministratorController.delete(
+        { id },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);

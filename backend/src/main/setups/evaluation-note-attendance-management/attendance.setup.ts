@@ -11,7 +11,7 @@ import RemoveStudents from '@/modules/evaluation-note-attendance-management/appl
 import AttendanceController from '@/modules/evaluation-note-attendance-management/interface/controller/attendance.controller';
 import AttendanceRoute from '@/modules/evaluation-note-attendance-management/interface/route/attendance.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 
 export default function initializeAttendance(express: HttpServer): void {
   const attendanceRepository = new MemoryAttendanceRepository();

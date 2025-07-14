@@ -1,3 +1,4 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateAuthUserInputDto,
   CreateAuthUserOutputDto,
@@ -15,6 +16,7 @@ import DeleteAuthUser from '../../application/usecases/authUser/delete-user.usec
 import FindAuthUser from '../../application/usecases/authUser/find-user.usecase';
 import LoginAuthUser from '../../application/usecases/authUser/login-user.usecase';
 import UpdateAuthUser from '../../application/usecases/authUser/update-user.usecase';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Controller for authentication and user management operations.
@@ -34,7 +36,8 @@ export default class AuthUserController {
     private readonly findAuthUser: FindAuthUser,
     private readonly updateAuthUser: UpdateAuthUser,
     private readonly deleteAuthUser: DeleteAuthUser,
-    private readonly loginAuthUser: LoginAuthUser
+    private readonly loginAuthUser: LoginAuthUser,
+    private readonly policiesService: PoliciesServiceInterface
   ) {}
 
   /**
@@ -43,9 +46,14 @@ export default class AuthUserController {
    * @returns Promise resolving to the created user data
    */
   async create(
-    input: CreateAuthUserInputDto
+    input: CreateAuthUserInputDto,
+    token: TokenData
   ): Promise<CreateAuthUserOutputDto> {
-    const response = await this.createAuthUser.execute(input);
+    const response = await this.createAuthUser.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -55,9 +63,14 @@ export default class AuthUserController {
    * @returns Promise resolving to the found user data or null
    */
   async find(
-    input: FindAuthUserInputDto
+    input: FindAuthUserInputDto,
+    token: TokenData
   ): Promise<FindAuthUserOutputDto | null> {
-    const response = await this.findAuthUser.execute(input);
+    const response = await this.findAuthUser.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -67,9 +80,14 @@ export default class AuthUserController {
    * @returns Promise resolving to the deletion confirmation
    */
   async delete(
-    input: DeleteAuthUserInputDto
+    input: DeleteAuthUserInputDto,
+    token: TokenData
   ): Promise<DeleteAuthUserOutputDto> {
-    const response = await this.deleteAuthUser.execute(input);
+    const response = await this.deleteAuthUser.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -79,9 +97,14 @@ export default class AuthUserController {
    * @returns Promise resolving to the updated user data
    */
   async update(
-    input: UpdateAuthUserInputDto
+    input: UpdateAuthUserInputDto,
+    token: TokenData
   ): Promise<UpdateAuthUserOutputDto> {
-    const response = await this.updateAuthUser.execute(input);
+    const response = await this.updateAuthUser.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 

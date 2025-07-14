@@ -1,3 +1,4 @@
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   CreateUserStudentInputDto,
   CreateUserStudentOutputDto,
@@ -12,13 +13,24 @@ import {
 } from '../../dto/student-facade.dto';
 
 export default interface StudentFacadeInterface {
-  create(input: CreateUserStudentInputDto): Promise<CreateUserStudentOutputDto>;
+  create(
+    input: CreateUserStudentInputDto,
+    token: TokenData
+  ): Promise<CreateUserStudentOutputDto>;
   find(
-    input: FindUserStudentInputDto
+    input: FindUserStudentInputDto,
+    token: TokenData
   ): Promise<FindUserStudentOutputDto | null>;
   findAll(
-    input: FindAllUserStudentInputDto
+    input: FindAllUserStudentInputDto,
+    token: TokenData
   ): Promise<FindAllUserStudentOutputDto>;
-  delete(input: DeleteUserStudentInputDto): Promise<DeleteUserStudentOutputDto>;
-  update(input: UpdateUserStudentInputDto): Promise<UpdateUserStudentOutputDto>;
+  delete(
+    input: DeleteUserStudentInputDto,
+    token: TokenData
+  ): Promise<DeleteUserStudentOutputDto>;
+  update(
+    input: UpdateUserStudentInputDto,
+    token: TokenData
+  ): Promise<UpdateUserStudentOutputDto>;
 }

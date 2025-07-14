@@ -9,6 +9,13 @@ import UserMasterGateway from '@/modules/user-management/infrastructure/gateway/
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import { EmailAuthValidator } from '../../services/email-auth-validator.service';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class CreateUserMaster
   implements
@@ -22,14 +29,21 @@ export default class CreateUserMaster
   ) {
     this._userMasterRepository = userMasterRepository;
   }
-  async execute({
-    id,
-    name,
-    address,
-    email,
-    birthday,
-    cnpj,
-  }: CreateUserMasterInputDto): Promise<CreateUserMasterOutputDto> {
+  async execute(
+    { id, name, address, email, birthday, cnpj }: CreateUserMasterInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<CreateUserMasterOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.MASTER,
+        FunctionCalledEnum.CREATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     if (!(await this.emailValidatorService.validate(email))) {
       throw new Error('You must register this email before creating the user.');
     }

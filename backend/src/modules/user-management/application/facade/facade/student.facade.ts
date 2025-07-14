@@ -16,20 +16,24 @@ import {
   UpdateUserStudentInputDto,
   UpdateUserStudentOutputDto,
 } from '../../dto/student-facade.dto';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 type StudentFacadeProps = {
-  createUserStudent: CreateUserStudent;
-  deleteUserStudent: DeleteUserStudent;
-  findAllUserStudent: FindAllUserStudent;
-  findUserStudent: FindUserStudent;
-  updateUserStudent: UpdateUserStudent;
+  readonly createUserStudent: CreateUserStudent;
+  readonly deleteUserStudent: DeleteUserStudent;
+  readonly findAllUserStudent: FindAllUserStudent;
+  readonly findUserStudent: FindUserStudent;
+  readonly updateUserStudent: UpdateUserStudent;
+  readonly policiesService: PoliciesServiceInterface;
 };
 export default class StudentFacade implements StudentFacadeInterface {
-  private _createUserStudent: CreateUserStudent;
-  private _deleteUserStudent: DeleteUserStudent;
-  private _findAllUserStudent: FindAllUserStudent;
-  private _findUserStudent: FindUserStudent;
-  private _updateUserStudent: UpdateUserStudent;
+  private readonly _createUserStudent: CreateUserStudent;
+  private readonly _deleteUserStudent: DeleteUserStudent;
+  private readonly _findAllUserStudent: FindAllUserStudent;
+  private readonly _findUserStudent: FindUserStudent;
+  private readonly _updateUserStudent: UpdateUserStudent;
+  private readonly _policiesService: PoliciesServiceInterface;
 
   constructor(input: StudentFacadeProps) {
     this._createUserStudent = input.createUserStudent;
@@ -37,31 +41,57 @@ export default class StudentFacade implements StudentFacadeInterface {
     this._findAllUserStudent = input.findAllUserStudent;
     this._findUserStudent = input.findUserStudent;
     this._updateUserStudent = input.updateUserStudent;
+    this._policiesService = input.policiesService;
   }
 
   async create(
-    input: CreateUserStudentInputDto
+    input: CreateUserStudentInputDto,
+    token: TokenData
   ): Promise<CreateUserStudentOutputDto> {
-    return await this._createUserStudent.execute(input);
+    return await this._createUserStudent.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async find(
-    input: FindUserStudentInputDto
+    input: FindUserStudentInputDto,
+    token: TokenData
   ): Promise<FindUserStudentOutputDto | null> {
-    return await this._findUserStudent.execute(input);
+    return await this._findUserStudent.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async findAll(
-    input: FindAllUserStudentInputDto
+    input: FindAllUserStudentInputDto,
+    token: TokenData
   ): Promise<FindAllUserStudentOutputDto> {
-    return await this._findAllUserStudent.execute(input);
+    return await this._findAllUserStudent.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async delete(
-    input: DeleteUserStudentInputDto
+    input: DeleteUserStudentInputDto,
+    token: TokenData
   ): Promise<DeleteUserStudentOutputDto> {
-    return await this._deleteUserStudent.execute(input);
+    return await this._deleteUserStudent.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async update(
-    input: UpdateUserStudentInputDto
+    input: UpdateUserStudentInputDto,
+    token: TokenData
   ): Promise<UpdateUserStudentOutputDto> {
-    return await this._updateUserStudent.execute(input);
+    return await this._updateUserStudent.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 }

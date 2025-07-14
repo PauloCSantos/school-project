@@ -4,6 +4,13 @@ import {
   UpdateAttendanceOutputDto,
 } from '../../dto/attendance-usecase.dto';
 import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for updating an attendance record.
@@ -34,13 +41,21 @@ export default class UpdateAttendance
    * @throws Error if the attendance record with the specified id does not exist
    * @throws ValidationError if any of the updated data fails validation
    */
-  async execute({
-    id,
-    date,
-    day,
-    hour,
-    lesson,
-  }: UpdateAttendanceInputDto): Promise<UpdateAttendanceOutputDto> {
+  async execute(
+    { id, date, day, hour, lesson }: UpdateAttendanceInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<UpdateAttendanceOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.ATTENDANCE,
+        FunctionCalledEnum.UPDATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const attendance = await this._attendanceRepository.find(id);
 
     if (!attendance) {

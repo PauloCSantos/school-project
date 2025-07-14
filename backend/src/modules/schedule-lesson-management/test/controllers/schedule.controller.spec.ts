@@ -8,8 +8,13 @@ import UpdateSchedule from '../../application/usecases/schedule/update.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import AddLessons from '../../application/usecases/schedule/add-lessons.usecase';
 import { ScheduleController } from '../../interface/controller/schedule.controller';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 describe('ScheduleController unit test', () => {
+  let policieService: PoliciesServiceInterface;
+  let token: TokenData;
+
   const mockCreateSchedule = jest.fn(() => {
     return {
       execute: jest.fn().mockResolvedValue(new Id().value),
@@ -72,6 +77,15 @@ describe('ScheduleController unit test', () => {
     } as unknown as RemoveLessons;
   });
 
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
+    verifyPolicies: jest.fn(),
+  });
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   const createSchedule = mockCreateSchedule();
   const deleteSchedule = mockDeleteSchedule();
   const findAllSchedule = mockFindAllSchedule();
@@ -79,6 +93,7 @@ describe('ScheduleController unit test', () => {
   const updateSchedule = mockUpdateSchedule();
   const addLessons = mockAddLessons();
   const removeLessons = mockRemoveLessons();
+  policieService = MockPolicyService();
 
   const controller = new ScheduleController(
     createSchedule,
@@ -87,67 +102,83 @@ describe('ScheduleController unit test', () => {
     updateSchedule,
     deleteSchedule,
     addLessons,
-    removeLessons
+    removeLessons,
+    policieService
   );
 
   it('should return a id for the new schedule created', async () => {
-    const result = await controller.create({
-      student: 'fcb7a16f-5108-460d-9154-8f973a61dc93',
-      curriculum: 'e6ca1138-2f37-4057-8bba-41f9d263318f',
-      lessonsList: [
-        '84859123-575c-417f-95b8-33514f25bf57',
-        '1889c4d6-4a11-4f84-bc14-e27a208bab14',
-        '33b60d7e-af4f-462b-a966-3ee8eefe4d00',
-      ],
-    });
+    const result = await controller.create(
+      {
+        student: 'fcb7a16f-5108-460d-9154-8f973a61dc93',
+        curriculum: 'e6ca1138-2f37-4057-8bba-41f9d263318f',
+        lessonsList: [
+          '84859123-575c-417f-95b8-33514f25bf57',
+          '1889c4d6-4a11-4f84-bc14-e27a208bab14',
+          '33b60d7e-af4f-462b-a966-3ee8eefe4d00',
+        ],
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(createSchedule.execute).toHaveBeenCalled();
   });
   it('should return a schedule', async () => {
-    const result = await controller.find({ id: new Id().value });
+    const result = await controller.find({ id: new Id().value }, token);
 
     expect(result).toBeDefined();
     expect(findSchedule.execute).toHaveBeenCalled();
   });
   it('should return all schedules', async () => {
-    const result = await controller.findAll({});
+    const result = await controller.findAll({}, token);
 
     expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllSchedule.execute).toHaveBeenCalled();
   });
   it('should update a schedule', async () => {
-    const result = await controller.update({
-      id: new Id().value,
-      curriculum: new Id().value,
-    });
+    const result = await controller.update(
+      {
+        id: new Id().value,
+        curriculum: new Id().value,
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(updateSchedule.execute).toHaveBeenCalled();
   });
   it('should delete a schedule', async () => {
-    const result = await controller.delete({
-      id: new Id().value,
-    });
+    const result = await controller.delete(
+      {
+        id: new Id().value,
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(deleteSchedule.execute).toHaveBeenCalled();
   });
   it('should add a subject to the schedule', async () => {
-    const result = await controller.addLessons({
-      id: new Id().value,
-      newLessonsList: [new Id().value],
-    });
+    const result = await controller.addLessons(
+      {
+        id: new Id().value,
+        newLessonsList: [new Id().value],
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(addLessons.execute).toHaveBeenCalled();
   });
   it('should remove a subject from the schedule', async () => {
-    const result = await controller.removeLessons({
-      id: new Id().value,
-      lessonsListToRemove: [new Id().value, new Id().value],
-    });
+    const result = await controller.removeLessons(
+      {
+        id: new Id().value,
+        lessonsListToRemove: [new Id().value, new Id().value],
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(removeLessons.execute).toHaveBeenCalled();

@@ -4,6 +4,13 @@ import {
   FindUserAdministratorOutputDto,
 } from '../../dto/administrator-usecase.dto';
 import UserAdministratorGateway from '@/modules/user-management/infrastructure/gateway/administrator.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class FindUserAdministrator
   implements
@@ -17,9 +24,21 @@ export default class FindUserAdministrator
   constructor(userAdministratorRepository: UserAdministratorGateway) {
     this._userAdministratorRepository = userAdministratorRepository;
   }
-  async execute({
-    id,
-  }: FindUserAdministratorInputDto): Promise<FindUserAdministratorOutputDto | null> {
+  async execute(
+    { id }: FindUserAdministratorInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindUserAdministratorOutputDto | null> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.ADMINISTRATOR,
+        FunctionCalledEnum.FIND,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const response = await this._userAdministratorRepository.find(id);
     if (response) {
       return {

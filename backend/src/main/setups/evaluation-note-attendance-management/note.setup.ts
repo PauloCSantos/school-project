@@ -8,7 +8,7 @@ import UpdateNote from '@/modules/evaluation-note-attendance-management/applicat
 import DeleteNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/delete.usecase';
 import NoteController from '@/modules/evaluation-note-attendance-management/interface/controller/note.controller';
 import NoteRoute from '@/modules/evaluation-note-attendance-management/interface/route/note.route';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 
 export default function initializeNote(express: HttpServer): void {

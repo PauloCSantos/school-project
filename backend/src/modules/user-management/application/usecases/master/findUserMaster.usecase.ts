@@ -4,6 +4,13 @@ import {
   FindUserMasterOutputDto,
 } from '../../dto/master-usecase.dto';
 import UserMasterGateway from '@/modules/user-management/infrastructure/gateway/master.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class FindUserMaster
   implements
@@ -14,9 +21,21 @@ export default class FindUserMaster
   constructor(userMasterRepository: UserMasterGateway) {
     this._userMasterRepository = userMasterRepository;
   }
-  async execute({
-    id,
-  }: FindUserMasterInputDto): Promise<FindUserMasterOutputDto | null> {
+  async execute(
+    { id }: FindUserMasterInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindUserMasterOutputDto | null> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.MASTER,
+        FunctionCalledEnum.FIND,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const response = await this._userMasterRepository.find(id);
     if (response) {
       return {

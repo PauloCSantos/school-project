@@ -1,3 +1,4 @@
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   AddSubjectsInputDto,
   AddSubjectsOutputDto,
@@ -16,17 +17,32 @@ import {
 } from '../../dto/curriculum-facade.dto';
 
 export default interface CurriculumFacadeInterface {
-  create(input: CreateCurriculumInputDto): Promise<CreateCurriculumOutputDto>;
+  create(
+    input: CreateCurriculumInputDto,
+    token: TokenData
+  ): Promise<CreateCurriculumOutputDto>;
   find(
-    input: FindCurriculumInputDto
-  ): Promise<FindCurriculumOutputDto | undefined>;
+    input: FindCurriculumInputDto,
+    token: TokenData
+  ): Promise<FindCurriculumOutputDto | null>;
   findAll(
-    input: FindAllCurriculumInputDto
+    input: FindAllCurriculumInputDto,
+    token: TokenData
   ): Promise<FindAllCurriculumOutputDto>;
-  delete(input: DeleteCurriculumInputDto): Promise<DeleteCurriculumOutputDto>;
-  update(input: UpdateCurriculumInputDto): Promise<UpdateCurriculumOutputDto>;
-  addSubjects(input: AddSubjectsInputDto): Promise<AddSubjectsOutputDto>;
+  delete(
+    input: DeleteCurriculumInputDto,
+    token: TokenData
+  ): Promise<DeleteCurriculumOutputDto>;
+  update(
+    input: UpdateCurriculumInputDto,
+    token: TokenData
+  ): Promise<UpdateCurriculumOutputDto>;
+  addSubjects(
+    input: AddSubjectsInputDto,
+    token: TokenData
+  ): Promise<AddSubjectsOutputDto>;
   removeSubjects(
-    input: RemoveSubjectsInputDto
+    input: RemoveSubjectsInputDto,
+    token: TokenData
   ): Promise<RemoveSubjectsOutputDto>;
 }

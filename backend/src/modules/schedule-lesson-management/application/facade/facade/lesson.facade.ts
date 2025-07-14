@@ -34,6 +34,8 @@ import {
   UpdateLessonInputDto,
   UpdateLessonOutputDto,
 } from '../../dto/lesson-facade.dto';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Properties required to initialize the LessonFacade
@@ -50,6 +52,7 @@ type LessonFacadeProps = {
   readonly removeDay: RemoveDay;
   readonly addTime: AddTime;
   readonly removeTime: RemoveTime;
+  readonly policiesService: PoliciesServiceInterface;
 };
 
 /**
@@ -70,6 +73,7 @@ export default class LessonFacade implements LessonFacadeInterface {
   private readonly _removeDay: RemoveDay;
   private readonly _addTime: AddTime;
   private readonly _removeTime: RemoveTime;
+  private readonly _policiesService: PoliciesServiceInterface;
 
   /**
    * Creates a new instance of LessonFacade
@@ -87,6 +91,7 @@ export default class LessonFacade implements LessonFacadeInterface {
     this._removeDay = input.removeDay;
     this._addTime = input.addTime;
     this._removeTime = input.removeTime;
+    this._policiesService = input.policiesService;
   }
 
   /**
@@ -95,9 +100,14 @@ export default class LessonFacade implements LessonFacadeInterface {
    * @returns Information about the created lesson
    */
   public async create(
-    input: CreateLessonInputDto
+    input: CreateLessonInputDto,
+    token: TokenData
   ): Promise<CreateLessonOutputDto> {
-    return await this._createLesson.execute(input);
+    return await this._createLesson.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -106,9 +116,14 @@ export default class LessonFacade implements LessonFacadeInterface {
    * @returns Lesson information if found, null otherwise
    */
   public async find(
-    input: FindLessonInputDto
+    input: FindLessonInputDto,
+    token: TokenData
   ): Promise<FindLessonOutputDto | null> {
-    const result = await this._findLesson.execute(input);
+    const result = await this._findLesson.execute(
+      input,
+      this._policiesService,
+      token
+    );
     return result || null;
   }
 
@@ -118,9 +133,14 @@ export default class LessonFacade implements LessonFacadeInterface {
    * @returns Collection of lessons matching criteria
    */
   public async findAll(
-    input: FindAllLessonInputDto
+    input: FindAllLessonInputDto,
+    token: TokenData
   ): Promise<FindAllLessonOutputDto> {
-    return await this._findAllLesson.execute(input);
+    return await this._findAllLesson.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -129,9 +149,14 @@ export default class LessonFacade implements LessonFacadeInterface {
    * @returns Confirmation message
    */
   public async delete(
-    input: DeleteLessonInputDto
+    input: DeleteLessonInputDto,
+    token: TokenData
   ): Promise<DeleteLessonOutputDto> {
-    return await this._deleteLesson.execute(input);
+    return await this._deleteLesson.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -140,9 +165,14 @@ export default class LessonFacade implements LessonFacadeInterface {
    * @returns Updated lesson information
    */
   public async update(
-    input: UpdateLessonInputDto
+    input: UpdateLessonInputDto,
+    token: TokenData
   ): Promise<UpdateLessonOutputDto> {
-    return await this._updateLesson.execute(input);
+    return await this._updateLesson.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -151,9 +181,10 @@ export default class LessonFacade implements LessonFacadeInterface {
    * @returns Updated lesson information
    */
   public async addStudents(
-    input: AddStudentsInputDto
+    input: AddStudentsInputDto,
+    token: TokenData
   ): Promise<AddStudentsOutputDto> {
-    return await this._addStudents.execute(input);
+    return await this._addStudents.execute(input, this._policiesService, token);
   }
 
   /**
@@ -162,9 +193,14 @@ export default class LessonFacade implements LessonFacadeInterface {
    * @returns Updated lesson information
    */
   public async removeStudents(
-    input: RemoveStudentsInputDto
+    input: RemoveStudentsInputDto,
+    token: TokenData
   ): Promise<RemoveStudentsOutputDto> {
-    return await this._removeStudents.execute(input);
+    return await this._removeStudents.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -172,8 +208,11 @@ export default class LessonFacade implements LessonFacadeInterface {
    * @param input Lesson ID and day to add
    * @returns Updated lesson information
    */
-  public async addDay(input: AddDayInputDto): Promise<AddDayOutputDto> {
-    return await this._addDay.execute(input);
+  public async addDay(
+    input: AddDayInputDto,
+    token: TokenData
+  ): Promise<AddDayOutputDto> {
+    return await this._addDay.execute(input, this._policiesService, token);
   }
 
   /**
@@ -182,9 +221,10 @@ export default class LessonFacade implements LessonFacadeInterface {
    * @returns Updated lesson information
    */
   public async removeDay(
-    input: RemoveDayInputDto
+    input: RemoveDayInputDto,
+    token: TokenData
   ): Promise<RemoveDayOutputDto> {
-    return await this._removeDay.execute(input);
+    return await this._removeDay.execute(input, this._policiesService, token);
   }
 
   /**
@@ -192,8 +232,11 @@ export default class LessonFacade implements LessonFacadeInterface {
    * @param input Lesson ID and time to add
    * @returns Updated lesson information
    */
-  public async addTime(input: AddTimeInputDto): Promise<AddTimeOutputDto> {
-    return await this._addTime.execute(input);
+  public async addTime(
+    input: AddTimeInputDto,
+    token: TokenData
+  ): Promise<AddTimeOutputDto> {
+    return await this._addTime.execute(input, this._policiesService, token);
   }
 
   /**
@@ -202,8 +245,9 @@ export default class LessonFacade implements LessonFacadeInterface {
    * @returns Updated lesson information
    */
   public async removeTime(
-    input: RemoveTimeInputDto
+    input: RemoveTimeInputDto,
+    token: TokenData
   ): Promise<RemoveTimeOutputDto> {
-    return await this._removeTime.execute(input);
+    return await this._removeTime.execute(input, this._policiesService, token);
   }
 }

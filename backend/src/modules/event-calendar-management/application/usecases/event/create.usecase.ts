@@ -5,6 +5,13 @@ import {
 } from '../../dto/event-usecase.dto';
 import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
 import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for creating a new calendar event.
@@ -34,15 +41,20 @@ export default class CreateEvent
    * @throws Error if an event with the same ID already exists
    * @throws ValidationError if any of the input data fails validation during entity creation
    */
-  async execute({
-    creator,
-    date,
-    day,
-    hour,
-    name,
-    place,
-    type,
-  }: CreateEventInputDto): Promise<CreateEventOutputDto> {
+  async execute(
+    { creator, date, day, hour, name, place, type }: CreateEventInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<CreateEventOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.EVENT,
+        FunctionCalledEnum.CREATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
     // Create event entity with provided input
     const event = new Event({
       creator,

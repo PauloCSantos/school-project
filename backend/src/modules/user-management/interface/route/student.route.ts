@@ -12,11 +12,12 @@ import {
   UpdateUserStudentInputDto,
   DeleteUserStudentInputDto,
 } from '../../application/dto/student-usecase.dto';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
-  FunctionCalled,
-  createRequestMiddleware,
-} from '@/modules/@shared/application/middleware/request.middleware';
-import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 export class UserStudentRoute {
   constructor(
@@ -41,23 +42,26 @@ export class UserStudentRoute {
       this.findAllUserStudents.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+        createRequestMiddleware(
+          FunctionCalledEnum.FIND_ALL,
+          REQUIRED_FIELDS_ALL
+        ),
       ]
     );
 
     this.httpGateway.post('/user-student', this.createUserStudent.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
     ]);
 
     this.httpGateway.get('/user-student/:id', this.findUserStudent.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
     ]);
 
     this.httpGateway.patch('/user-student', this.updateUserStudent.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
     ]);
 
     this.httpGateway.delete(
@@ -65,7 +69,7 @@ export class UserStudentRoute {
       this.deleteUserStudent.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
       ]
     );
   }
@@ -75,10 +79,13 @@ export class UserStudentRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.query;
-      const response = await this.userStudentController.findAll({
-        quantity,
-        offset,
-      });
+      const response = await this.userStudentController.findAll(
+        {
+          quantity,
+          offset,
+        },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -90,7 +97,10 @@ export class UserStudentRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userStudentController.find({ id });
+      const response = await this.userStudentController.find(
+        { id },
+        req.tokenData!
+      );
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
@@ -108,7 +118,10 @@ export class UserStudentRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.userStudentController.create(input);
+      const response = await this.userStudentController.create(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -120,7 +133,10 @@ export class UserStudentRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.userStudentController.update(input);
+      const response = await this.userStudentController.update(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -132,7 +148,10 @@ export class UserStudentRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userStudentController.delete({ id });
+      const response = await this.userStudentController.delete(
+        { id },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);

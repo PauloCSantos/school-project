@@ -1,3 +1,4 @@
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import MemorySubjectRepository from '../../infrastructure/repositories/memory-repository/subject.repository';
 import SubjectFacade from '../facade/facade/subject.facade';
 import CreateSubject from '../usecases/subject/create.usecase';
@@ -9,6 +10,8 @@ import UpdateSubject from '../usecases/subject/update.usecase';
 export default class SubjectFacadeFactory {
   static create(): SubjectFacade {
     const repository = new MemorySubjectRepository();
+    const policiesService = new PoliciesService();
+
     const createSubject = new CreateSubject(repository);
     const deleteSubject = new DeleteSubject(repository);
     const findAllSubject = new FindAllSubject(repository);
@@ -20,6 +23,7 @@ export default class SubjectFacadeFactory {
       findAllSubject,
       findSubject,
       updateSubject,
+      policiesService,
     });
 
     return facade;

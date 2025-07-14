@@ -86,7 +86,14 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
     } as unknown as UserTeacherController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new UserTeacherRoute(userTeacherController, http, middleware).routes();
@@ -128,7 +135,14 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/user-teacher').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(userTeacherController.create).toHaveBeenCalledWith(payload);
+      expect(userTeacherController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -137,7 +151,14 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/user-teacher/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(userTeacherController.find).toHaveBeenCalledWith({ id });
+      expect(userTeacherController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -159,7 +180,14 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(userTeacherController.update).toHaveBeenCalledWith(payload);
+      expect(userTeacherController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -168,7 +196,14 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/user-teacher/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(userTeacherController.delete).toHaveBeenCalledWith({ id });
+      expect(userTeacherController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });

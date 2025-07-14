@@ -31,6 +31,7 @@ import AttendanceController from '@/modules/evaluation-note-attendance-managemen
 import EvaluationRoute from '@/modules/evaluation-note-attendance-management/interface/route/evaluation.route';
 import NoteRoute from '@/modules/evaluation-note-attendance-management/interface/route/note.route';
 import AttendanceRoute from '@/modules/evaluation-note-attendance-management/interface/route/attendance.route';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 describe('Evaluation note attendance management module end to end test', () => {
   let evaluationRepository: MemoryEvaluationRepository;
@@ -66,19 +67,23 @@ describe('Evaluation note attendance management module end to end test', () => {
     const addStudents = new AddStudents(attendanceRepository);
     const removeStudents = new RemoveStudents(attendanceRepository);
 
+    const policiesService = new PoliciesService();
+
     const evaluationController = new EvaluationController(
       createEvaluationUsecase,
       findEvaluationUsecase,
       findAllEvaluationUsecase,
       updateEvaluationUsecase,
-      deleteEvaluationUsecase
+      deleteEvaluationUsecase,
+      policiesService
     );
     const noteController = new NoteController(
       createNoteUsecase,
       findNoteUsecase,
       findAllNoteUsecase,
       updateNoteUsecase,
-      deleteNoteUsecase
+      deleteNoteUsecase,
+      policiesService
     );
     const attendanceController = new AttendanceController(
       createAttendanceUsecase,
@@ -87,7 +92,8 @@ describe('Evaluation note attendance management module end to end test', () => {
       updateAttendanceUsecase,
       deleteAttendanceUsecase,
       addStudents,
-      removeStudents
+      removeStudents,
+      policiesService
     );
 
     const expressHttp = new ExpressAdapter();

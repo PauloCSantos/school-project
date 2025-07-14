@@ -4,6 +4,13 @@ import {
   FindAttendanceOutputDto,
 } from '../../dto/attendance-usecase.dto';
 import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for finding an attendance record by id.
@@ -32,9 +39,21 @@ export default class FindAttendance
    * @param input - Input data containing the id to search for
    * @returns Attendance data if found, null otherwise
    */
-  async execute({
-    id,
-  }: FindAttendanceInputDto): Promise<FindAttendanceOutputDto | null> {
+  async execute(
+    { id }: FindAttendanceInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindAttendanceOutputDto | null> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.ATTENDANCE,
+        FunctionCalledEnum.FIND,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const response = await this._attendanceRepository.find(id);
 
     if (response) {

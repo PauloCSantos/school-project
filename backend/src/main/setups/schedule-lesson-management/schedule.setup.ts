@@ -11,7 +11,7 @@ import RemoveLessons from '@/modules/schedule-lesson-management/application/usec
 import { ScheduleController } from '@/modules/schedule-lesson-management/interface/controller/schedule.controller';
 import ScheduleRoute from '@/modules/schedule-lesson-management/interface/route/schedule.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 
 export default function initializeSchedule(express: HttpServer): void {
   const scheduleRepository = new MemoryScheduleRepository();

@@ -4,6 +4,13 @@ import {
   DeleteAuthUserOutputDto,
 } from '../../dto/user-usecase.dto';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 
 /**
  * Use case responsible for deleting an authenticated user.
@@ -32,9 +39,21 @@ export default class DeleteAuthUser
    * @returns Output data with the result message
    * @throws Error if the user with the specified email does not exist
    */
-  async execute({
-    email,
-  }: DeleteAuthUserInputDto): Promise<DeleteAuthUserOutputDto> {
+  async execute(
+    { email }: DeleteAuthUserInputDto,
+    policiesService: PoliciesServiceInterface,
+    token: TokenData
+  ): Promise<DeleteAuthUserOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.AUTHUSER,
+        FunctionCalledEnum.DELETE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const authUserVerification = await this._authUserRepository.find(email);
     if (!authUserVerification) throw new Error('AuthUser not found');
 

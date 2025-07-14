@@ -8,7 +8,7 @@ import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import MemoryUserTeacherRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/teacher.repository';
 import { UserTeacherController } from '@/modules/user-management/interface/controller/teacher.controller';
 import { UserTeacherRoute } from '@/modules/user-management/interface/route/teacher.route';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';

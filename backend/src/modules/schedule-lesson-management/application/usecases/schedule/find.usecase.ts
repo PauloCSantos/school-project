@@ -4,6 +4,13 @@ import {
   FindScheduleOutputDto,
 } from '../../dto/schedule-usecase.dto';
 import ScheduleGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/schedule.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for schedule operation.
@@ -20,9 +27,21 @@ export default class FindSchedule
   /**
    * Executes the schedule use case.
    */
-  async execute({
-    id,
-  }: FindScheduleInputDto): Promise<FindScheduleOutputDto | null> {
+  async execute(
+    { id }: FindScheduleInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindScheduleOutputDto | null> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.SCHEDULE,
+        FunctionCalledEnum.ADD,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const response = await this._scheduleRepository.find(id);
     if (response) {
       return {

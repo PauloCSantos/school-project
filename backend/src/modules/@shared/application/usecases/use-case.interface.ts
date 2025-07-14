@@ -1,3 +1,6 @@
+import { TokenData } from '../../type/sharedTypes';
+import { PoliciesServiceInterface } from '../services/policies.service';
+
 /**
  * @interface UseCaseInterface
  * @description Defines the contract for all use cases in the application
@@ -11,5 +14,9 @@ export default interface UseCaseInterface<InputT, ResultT> {
    * @returns A promise that resolves to the result of the use case
    * @throws {Error} - When the use case execution fails
    */
-  execute(input: InputT): Promise<ResultT>;
+  execute(
+    input: InputT,
+    policiesService: PoliciesServiceInterface,
+    token: TokenData
+  ): Promise<ResultT>;
 }

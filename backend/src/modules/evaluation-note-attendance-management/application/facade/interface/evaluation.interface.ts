@@ -1,3 +1,4 @@
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   CreateEvaluationInputDto,
   CreateEvaluationOutputDto,
@@ -22,14 +23,20 @@ export default interface EvaluationFacadeInterface {
    * @param input Evaluation creation parameters
    * @returns Information about the created evaluation
    */
-  create(input: CreateEvaluationInputDto): Promise<CreateEvaluationOutputDto>;
+  create(
+    input: CreateEvaluationInputDto,
+    token: TokenData
+  ): Promise<CreateEvaluationOutputDto>;
 
   /**
    * Finds an evaluation by its identifier
    * @param input Search parameters
    * @returns Evaluation information if found, null otherwise
    */
-  find(input: FindEvaluationInputDto): Promise<FindEvaluationOutputDto | null>;
+  find(
+    input: FindEvaluationInputDto,
+    token: TokenData
+  ): Promise<FindEvaluationOutputDto | null>;
 
   /**
    * Retrieves all evaluations matching filter criteria
@@ -37,7 +44,8 @@ export default interface EvaluationFacadeInterface {
    * @returns List of evaluations
    */
   findAll(
-    input: FindAllEvaluationInputDto
+    input: FindAllEvaluationInputDto,
+    token: TokenData
   ): Promise<FindAllEvaluationOutputDto>;
 
   /**
@@ -45,12 +53,18 @@ export default interface EvaluationFacadeInterface {
    * @param input Evaluation identification
    * @returns Confirmation message
    */
-  delete(input: DeleteEvaluationInputDto): Promise<DeleteEvaluationOutputDto>;
+  delete(
+    input: DeleteEvaluationInputDto,
+    token: TokenData
+  ): Promise<DeleteEvaluationOutputDto>;
 
   /**
    * Updates an evaluation's information
    * @param input Evaluation identification and data to update
    * @returns Updated evaluation information
    */
-  update(input: UpdateEvaluationInputDto): Promise<UpdateEvaluationOutputDto>;
+  update(
+    input: UpdateEvaluationInputDto,
+    token: TokenData
+  ): Promise<UpdateEvaluationOutputDto>;
 }

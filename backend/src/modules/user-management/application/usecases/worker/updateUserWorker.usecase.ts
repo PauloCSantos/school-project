@@ -4,6 +4,13 @@ import {
   UpdateUserWorkerOutputDto,
 } from '../../dto/worker-usecase.dto';
 import UserWorkerGateway from '@/modules/user-management/infrastructure/gateway/worker.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class UpdateUserWorker
   implements
@@ -14,14 +21,21 @@ export default class UpdateUserWorker
   constructor(userWorkerRepository: UserWorkerGateway) {
     this._userWorkerRepository = userWorkerRepository;
   }
-  async execute({
-    id,
-    name,
-    address,
-    email,
-    birthday,
-    salary,
-  }: UpdateUserWorkerInputDto): Promise<UpdateUserWorkerOutputDto> {
+  async execute(
+    { id, name, address, email, birthday, salary }: UpdateUserWorkerInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<UpdateUserWorkerOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.WORKER,
+        FunctionCalledEnum.UPDATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const userAdm = await this._userWorkerRepository.find(id);
     if (!userAdm) throw new Error('User not found');
 

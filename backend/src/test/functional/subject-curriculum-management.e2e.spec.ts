@@ -21,6 +21,7 @@ import { SubjectController } from '@/modules/subject-curriculum-management/inter
 import { CurriculumController } from '@/modules/subject-curriculum-management/interface/controller/curriculum.controller';
 import { SubjectRoute } from '@/modules/subject-curriculum-management/interface/route/subject.route';
 import { CurriculumRoute } from '@/modules/subject-curriculum-management/interface/route/curriculum.route';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 describe('Subject curriculum management module end to end test', () => {
   let subjectRepository = new MemorySubjectRepository();
@@ -46,12 +47,15 @@ describe('Subject curriculum management module end to end test', () => {
     const addSubjects = new AddSubjects(curriculumRepository);
     const removeSubjects = new RemoveSubjects(curriculumRepository);
 
+    const policiesService = new PoliciesService();
+
     const subjectController = new SubjectController(
       createSubjectUsecase,
       findSubjectUsecase,
       findAllSubjectUsecase,
       updateSubjectUsecase,
-      deleteSubjectUsecase
+      deleteSubjectUsecase,
+      policiesService
     );
     const curriculumController = new CurriculumController(
       createCurriculumUsecase,
@@ -60,7 +64,8 @@ describe('Subject curriculum management module end to end test', () => {
       updateCurriculumUsecase,
       deleteCurriculumUsecase,
       addSubjects,
-      removeSubjects
+      removeSubjects,
+      policiesService
     );
 
     const expressHttp = new ExpressAdapter();

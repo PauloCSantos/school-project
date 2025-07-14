@@ -7,6 +7,13 @@ import {
 } from '../../dto/lesson-usecase.dto';
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
 import LessonMapper from '../../mapper/lesson-usecase.mapper';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for adding students to a lesson.
@@ -23,10 +30,21 @@ export default class AddStudents
   /**
    * Adds a list of students to the specified lesson.
    */
-  async execute({
-    id,
-    newStudentsList,
-  }: AddStudentsInputDto): Promise<AddStudentsOutputDto> {
+  async execute(
+    { id, newStudentsList }: AddStudentsInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<AddStudentsOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.LESSON,
+        FunctionCalledEnum.ADD,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const lessonVerification = await this._lessonRepository.find(id);
     if (!lessonVerification) throw new Error('Lesson not found');
     const lessonObj = LessonMapper.toObj(lessonVerification);
@@ -35,18 +53,15 @@ export default class AddStudents
       ...newLesson,
       id: new Id(newLesson.id),
     });
-    try {
-      newStudentsList.forEach(studentId => {
-        lesson.addStudent(studentId);
-      });
-      const result = await this._lessonRepository.addStudents(
-        id,
-        newStudentsList
-      );
 
-      return { message: result };
-    } catch (error) {
-      throw error;
-    }
+    newStudentsList.forEach(studentId => {
+      lesson.addStudent(studentId);
+    });
+    const result = await this._lessonRepository.addStudents(
+      id,
+      newStudentsList
+    );
+
+    return { message: result };
   }
 }

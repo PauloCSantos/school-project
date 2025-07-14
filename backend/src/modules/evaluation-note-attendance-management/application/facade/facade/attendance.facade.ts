@@ -1,3 +1,4 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   AddStudentsInputDto,
   AddStudentsOutputDto,
@@ -22,6 +23,7 @@ import FindAttendance from '../../usecases/attendance/find.usecase';
 import RemoveStudents from '../../usecases/attendance/remove-students.usecase';
 import UpdateAttendance from '../../usecases/attendance/update.usecase';
 import AttendanceFacadeInterface from '../interface/attendance.interface';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Properties required to initialize the AttendanceFacade
@@ -34,6 +36,7 @@ type AttendanceFacadeProps = {
   readonly updateAttendance: UpdateAttendance;
   readonly addStudents: AddStudents;
   readonly removeStudents: RemoveStudents;
+  readonly policiesService: PoliciesServiceInterface;
 };
 
 /**
@@ -50,6 +53,7 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
   private readonly _updateAttendance: UpdateAttendance;
   private readonly _addStudents: AddStudents;
   private readonly _removeStudents: RemoveStudents;
+  private readonly _policiesService: PoliciesServiceInterface;
 
   /**
    * Creates a new instance of AttendanceFacade
@@ -63,6 +67,7 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
     this._updateAttendance = input.updateAttendance;
     this._addStudents = input.addStudents;
     this._removeStudents = input.removeStudents;
+    this._policiesService = input.policiesService;
   }
 
   /**
@@ -71,9 +76,14 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
    * @returns Information about the created attendance record
    */
   async create(
-    input: CreateAttendanceInputDto
+    input: CreateAttendanceInputDto,
+    token: TokenData
   ): Promise<CreateAttendanceOutputDto> {
-    return await this._createAttendance.execute(input);
+    return await this._createAttendance.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -82,10 +92,15 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
    * @returns Attendance information if found, null otherwise
    */
   async find(
-    input: FindAttendanceInputDto
+    input: FindAttendanceInputDto,
+    token: TokenData
   ): Promise<FindAttendanceOutputDto | null> {
     // Changed from undefined to null for better semantic meaning
-    const result = await this._findAttendance.execute(input);
+    const result = await this._findAttendance.execute(
+      input,
+      this._policiesService,
+      token
+    );
     return result || null;
   }
 
@@ -95,9 +110,14 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
    * @returns Collection of attendance information
    */
   async findAll(
-    input: FindAllAttendanceInputDto
+    input: FindAllAttendanceInputDto,
+    token: TokenData
   ): Promise<FindAllAttendanceOutputDto> {
-    return await this._findAllAttendance.execute(input);
+    return await this._findAllAttendance.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -106,9 +126,14 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
    * @returns Confirmation message
    */
   async delete(
-    input: DeleteAttendanceInputDto
+    input: DeleteAttendanceInputDto,
+    token: TokenData
   ): Promise<DeleteAttendanceOutputDto> {
-    return await this._deleteAttendance.execute(input);
+    return await this._deleteAttendance.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -117,9 +142,14 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
    * @returns Updated attendance information
    */
   async update(
-    input: UpdateAttendanceInputDto
+    input: UpdateAttendanceInputDto,
+    token: TokenData
   ): Promise<UpdateAttendanceOutputDto> {
-    return await this._updateAttendance.execute(input);
+    return await this._updateAttendance.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -127,8 +157,11 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
    * @param input Attendance ID and student IDs to add
    * @returns Updated attendance information
    */
-  async addStudents(input: AddStudentsInputDto): Promise<AddStudentsOutputDto> {
-    return await this._addStudents.execute(input);
+  async addStudents(
+    input: AddStudentsInputDto,
+    token: TokenData
+  ): Promise<AddStudentsOutputDto> {
+    return await this._addStudents.execute(input, this._policiesService, token);
   }
 
   /**
@@ -137,8 +170,13 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
    * @returns Updated attendance information
    */
   async removeStudents(
-    input: RemoveStudentsInputDto
+    input: RemoveStudentsInputDto,
+    token: TokenData
   ): Promise<RemoveStudentsOutputDto> {
-    return await this._removeStudents.execute(input);
+    return await this._removeStudents.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 }

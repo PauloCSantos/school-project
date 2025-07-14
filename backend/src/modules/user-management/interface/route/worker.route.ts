@@ -12,11 +12,12 @@ import {
   UpdateUserWorkerInputDto,
   DeleteUserWorkerInputDto,
 } from '../../application/dto/worker-usecase.dto';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
-  FunctionCalled,
-  createRequestMiddleware,
-} from '@/modules/@shared/application/middleware/request.middleware';
-import { StatusCodeEnum, StatusMessageEnum } from '@/modules/@shared/type/enum';
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 export class UserWorkerRoute {
   constructor(
@@ -32,22 +33,22 @@ export class UserWorkerRoute {
 
     this.httpGateway.get('/users-worker', this.findAllUserWorkers.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND_ALL, REQUIRED_FIELDS_ALL),
+      createRequestMiddleware(FunctionCalledEnum.FIND_ALL, REQUIRED_FIELDS_ALL),
     ]);
 
     this.httpGateway.post('/user-worker', this.createUserWorker.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
     ]);
 
     this.httpGateway.get('/user-worker/:id', this.findUserWorker.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.FIND, REQUIRED_FIELD),
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
     ]);
 
     this.httpGateway.patch('/user-worker', this.updateUserWorker.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalled.UPDATE, REQUIRED_FIELDS),
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
     ]);
 
     this.httpGateway.delete(
@@ -55,7 +56,7 @@ export class UserWorkerRoute {
       this.deleteUserWorker.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalled.DELETE, REQUIRED_FIELD),
+        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
       ]
     );
   }
@@ -65,10 +66,13 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const { quantity, offset } = req.query;
-      const response = await this.userWorkerController.findAll({
-        quantity,
-        offset,
-      });
+      const response = await this.userWorkerController.findAll(
+        {
+          quantity,
+          offset,
+        },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -80,7 +84,10 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userWorkerController.find({ id });
+      const response = await this.userWorkerController.find(
+        { id },
+        req.tokenData!
+      );
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
@@ -98,7 +105,10 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.userWorkerController.create(input);
+      const response = await this.userWorkerController.create(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -110,7 +120,10 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.userWorkerController.update(input);
+      const response = await this.userWorkerController.update(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -122,7 +135,10 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userWorkerController.delete({ id });
+      const response = await this.userWorkerController.delete(
+        { id },
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);

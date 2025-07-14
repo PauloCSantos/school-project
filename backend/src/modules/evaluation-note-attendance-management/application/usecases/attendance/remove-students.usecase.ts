@@ -7,6 +7,13 @@ import {
 } from '../../dto/attendance-usecase.dto';
 import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
 import AttendanceMapper from '../../mapper/attendance.mapper';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for removing students from an attendance record.
@@ -36,10 +43,21 @@ export default class RemoveStudents
    * @throws Error if the attendance record with the specified id does not exist
    * @throws ValidationError if any student cannot be removed due to business rules
    */
-  async execute({
-    id,
-    studentsListToRemove,
-  }: RemoveStudentsInputDto): Promise<RemoveStudentsOutputDto> {
+  async execute(
+    { id, studentsListToRemove }: RemoveStudentsInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<RemoveStudentsOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.ATTENDANCE,
+        FunctionCalledEnum.REMOVE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const attendanceVerification = await this._attendanceRepository.find(id);
 
     if (!attendanceVerification) {

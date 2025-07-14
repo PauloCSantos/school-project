@@ -4,6 +4,13 @@ import {
   DeleteSubjectOutputDto,
 } from '../../dto/subject-usecase.dto';
 import SubjectGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/subject.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class DeleteSubject
   implements UseCaseInterface<DeleteSubjectInputDto, DeleteSubjectOutputDto>
@@ -13,9 +20,20 @@ export default class DeleteSubject
   constructor(subjectRepository: SubjectGateway) {
     this._subjectRepository = subjectRepository;
   }
-  async execute({
-    id,
-  }: DeleteSubjectInputDto): Promise<DeleteSubjectOutputDto> {
+  async execute(
+    { id }: DeleteSubjectInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<DeleteSubjectOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.SUBJECT,
+        FunctionCalledEnum.DELETE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
     const subjectVerification = await this._subjectRepository.find(id);
     if (!subjectVerification) throw new Error('Subject not found');
 

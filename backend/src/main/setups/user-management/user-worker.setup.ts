@@ -9,7 +9,7 @@ import MemoryUserWorkerRepository from '@/modules/user-management/infrastructure
 import { UserWorkerController } from '@/modules/user-management/interface/controller/worker.controller';
 import { UserWorkerRoute } from '@/modules/user-management/interface/route/worker.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
 

@@ -3,21 +3,38 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import UserMaster from '@/modules/user-management/domain/entity/master.entity';
-
-const MockRepository = () => {
-  return {
-    find: jest.fn(),
-    findByEmail: jest.fn(),
-    create: jest.fn(userMaster => Promise.resolve(userMaster.id.value)),
-    update: jest.fn(),
-  };
-};
-
-const MockEmailAuthValidatorService = () => ({
-  validate: jest.fn().mockResolvedValue(true),
-});
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 describe('createUserMaster usecase unit test', () => {
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let token: TokenData;
+
+  const MockRepository = () => {
+    return {
+      find: jest.fn(),
+      findByEmail: jest.fn(),
+      create: jest.fn(userMaster => Promise.resolve(userMaster.id.value)),
+      update: jest.fn(),
+    };
+  };
+
+  const MockEmailAuthValidatorService = () => ({
+    validate: jest.fn().mockResolvedValue(true),
+  });
+
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
+    ({
+      verifyPolicies: jest.fn(),
+    }) as jest.Mocked<PoliciesServiceInterface>;
+
+  policieService = MockPolicyService();
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   const input = {
     id: new Id().value,
     name: {
@@ -52,6 +69,7 @@ describe('createUserMaster usecase unit test', () => {
       const emailAuthValidatorService = MockEmailAuthValidatorService();
 
       userMasterRepository.findByEmail.mockResolvedValue(userMaster);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       const usecase = new CreateUserMaster(
         userMasterRepository,
@@ -59,9 +77,13 @@ describe('createUserMaster usecase unit test', () => {
       );
 
       await expect(
-        usecase.execute({
-          ...input,
-        })
+        usecase.execute(
+          {
+            ...input,
+          },
+          policieService,
+          token
+        )
       ).rejects.toThrow('User already exists');
       expect(userMasterRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
@@ -79,12 +101,13 @@ describe('createUserMaster usecase unit test', () => {
       const emailAuthValidatorService = MockEmailAuthValidatorService();
 
       userMasterRepository.findByEmail.mockResolvedValue(null);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       const usecase = new CreateUserMaster(
         userMasterRepository,
         emailAuthValidatorService
       );
-      const result = await usecase.execute({ ...input });
+      const result = await usecase.execute({ ...input }, policieService, token);
 
       expect(userMasterRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)

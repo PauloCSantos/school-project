@@ -1,3 +1,4 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateEvaluationInputDto,
   CreateEvaluationOutputDto,
@@ -16,6 +17,7 @@ import FindAllEvaluation from '../../usecases/evaluation/find-all.usecase';
 import FindEvaluation from '../../usecases/evaluation/find.usecase';
 import UpdateEvaluation from '../../usecases/evaluation/update.usecase';
 import EvaluationFacadeInterface from '../interface/evaluation.interface';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Properties required to initialize the EvaluationFacade
@@ -26,6 +28,7 @@ type EvaluationFacadeProps = {
   readonly findAllEvaluation: FindAllEvaluation;
   readonly findEvaluation: FindEvaluation;
   readonly updateEvaluation: UpdateEvaluation;
+  readonly policiesService: PoliciesServiceInterface;
 };
 
 /**
@@ -40,6 +43,7 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
   private readonly _findAllEvaluation: FindAllEvaluation;
   private readonly _findEvaluation: FindEvaluation;
   private readonly _updateEvaluation: UpdateEvaluation;
+  private readonly _policiesService: PoliciesServiceInterface;
 
   /**
    * Creates a new instance of EvaluationFacade
@@ -51,6 +55,7 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
     this._findAllEvaluation = input.findAllEvaluation;
     this._findEvaluation = input.findEvaluation;
     this._updateEvaluation = input.updateEvaluation;
+    this._policiesService = input.policiesService;
   }
 
   /**
@@ -59,9 +64,14 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
    * @returns Information about the created evaluation
    */
   async create(
-    input: CreateEvaluationInputDto
+    input: CreateEvaluationInputDto,
+    token: TokenData
   ): Promise<CreateEvaluationOutputDto> {
-    return await this._createEvaluation.execute(input);
+    return await this._createEvaluation.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -70,10 +80,15 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
    * @returns Evaluation information if found, null otherwise
    */
   async find(
-    input: FindEvaluationInputDto
+    input: FindEvaluationInputDto,
+    token: TokenData
   ): Promise<FindEvaluationOutputDto | null> {
     // Changed from undefined to null for better semantic meaning
-    const result = await this._findEvaluation.execute(input);
+    const result = await this._findEvaluation.execute(
+      input,
+      this._policiesService,
+      token
+    );
     return result || null;
   }
 
@@ -83,9 +98,14 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
    * @returns Collection of evaluation information
    */
   async findAll(
-    input: FindAllEvaluationInputDto
+    input: FindAllEvaluationInputDto,
+    token: TokenData
   ): Promise<FindAllEvaluationOutputDto> {
-    return await this._findAllEvaluation.execute(input);
+    return await this._findAllEvaluation.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -94,9 +114,14 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
    * @returns Confirmation message
    */
   async delete(
-    input: DeleteEvaluationInputDto
+    input: DeleteEvaluationInputDto,
+    token: TokenData
   ): Promise<DeleteEvaluationOutputDto> {
-    return await this._deleteEvaluation.execute(input);
+    return await this._deleteEvaluation.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -105,8 +130,13 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
    * @returns Updated evaluation information
    */
   async update(
-    input: UpdateEvaluationInputDto
+    input: UpdateEvaluationInputDto,
+    token: TokenData
   ): Promise<UpdateEvaluationOutputDto> {
-    return await this._updateEvaluation.execute(input);
+    return await this._updateEvaluation.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 }

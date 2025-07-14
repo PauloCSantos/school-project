@@ -1,5 +1,3 @@
-// evaluation.route.spec.ts
-
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
@@ -28,7 +26,14 @@ describe('EvaluationRoute with ExpressAdapter', () => {
     } as unknown as EvaluationController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new EvaluationRoute(evaluationController, http, middleware).routes();
@@ -40,10 +45,17 @@ describe('EvaluationRoute with ExpressAdapter', () => {
         '/evaluations?quantity=2&offset=0'
       );
       expect(response.statusCode).toBe(200);
-      expect(evaluationController.findAll).toHaveBeenCalledWith({
-        quantity: '2',
-        offset: '0',
-      });
+      expect(evaluationController.findAll).toHaveBeenCalledWith(
+        {
+          quantity: '2',
+          offset: '0',
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual([{ id: expect.any(String) }]);
     });
 
@@ -56,7 +68,14 @@ describe('EvaluationRoute with ExpressAdapter', () => {
       };
       const response = await supertest(app).post('/evaluation').send(payload);
       expect(response.statusCode).toBe(201);
-      expect(evaluationController.create).toHaveBeenCalledWith(payload);
+      expect(evaluationController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -64,7 +83,14 @@ describe('EvaluationRoute with ExpressAdapter', () => {
       const id = new Id().value;
       const response = await supertest(app).get(`/evaluation/${id}`);
       expect(response.statusCode).toBe(200);
-      expect(evaluationController.find).toHaveBeenCalledWith({ id });
+      expect(evaluationController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
@@ -77,7 +103,14 @@ describe('EvaluationRoute with ExpressAdapter', () => {
       const response = await supertest(app).patch(`/evaluation`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(evaluationController.update).toHaveBeenCalledWith(payload);
+      expect(evaluationController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
@@ -86,7 +119,14 @@ describe('EvaluationRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/evaluation/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(evaluationController.delete).toHaveBeenCalledWith({ id });
+      expect(evaluationController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });

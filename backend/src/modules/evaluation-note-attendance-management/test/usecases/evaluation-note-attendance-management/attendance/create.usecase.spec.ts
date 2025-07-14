@@ -1,24 +1,33 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/create.usecase';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
 import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
 
-const MockRepository = (): jest.Mocked<AttendanceGateway> => {
-  return {
-    find: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(attendance => Promise.resolve(attendance.id.value)),
-    update: jest.fn(),
-    delete: jest.fn(),
-    addStudent: jest.fn(),
-    removeStudent: jest.fn(),
-  };
-};
-
 describe('CreateAttendance usecase unit test', () => {
   let input: any;
   let repository: jest.Mocked<AttendanceGateway>;
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let token: TokenData;
   let usecase: CreateAttendance;
+
+  const MockRepository = (): jest.Mocked<AttendanceGateway> => {
+    return {
+      find: jest.fn(),
+      findAll: jest.fn(),
+      create: jest.fn(attendance => Promise.resolve(attendance.id.value)),
+      update: jest.fn(),
+      delete: jest.fn(),
+      addStudent: jest.fn(),
+      removeStudent: jest.fn(),
+    };
+  };
+
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
+    ({
+      verifyPolicies: jest.fn(),
+    }) as jest.Mocked<PoliciesServiceInterface>;
 
   beforeEach(() => {
     input = {
@@ -29,6 +38,12 @@ describe('CreateAttendance usecase unit test', () => {
       studentsPresent: [new Id().value, new Id().value, new Id().value],
     };
     repository = MockRepository();
+    policieService = MockPolicyService();
+    token = {
+      email: 'caller@domain.com',
+      role: 'master',
+      masterId: new Id().value,
+    };
     usecase = new CreateAttendance(repository);
   });
 
@@ -37,9 +52,10 @@ describe('CreateAttendance usecase unit test', () => {
   });
 
   it('should create an attendance and return its id', async () => {
-    repository.find.mockResolvedValueOnce(undefined);
+    repository.find.mockResolvedValueOnce(null);
+    policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-    const result = await usecase.execute(input);
+    const result = await usecase.execute(input, policieService, token);
 
     expect(repository.find).toHaveBeenCalledWith(expect.any(String));
     expect(repository.create).toHaveBeenCalledTimes(1);
@@ -48,9 +64,10 @@ describe('CreateAttendance usecase unit test', () => {
   });
 
   it('should check if attendance already exists before creating', async () => {
-    repository.find.mockResolvedValueOnce(undefined);
+    repository.find.mockResolvedValueOnce(null);
+    policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-    await usecase.execute(input);
+    await usecase.execute(input, policieService, token);
 
     expect(repository.find).toHaveBeenCalledWith(expect.any(String));
     expect(repository.find).toHaveBeenCalledTimes(1);
@@ -58,17 +75,19 @@ describe('CreateAttendance usecase unit test', () => {
 
   it('should throw an error if attendance already exists', async () => {
     repository.find.mockResolvedValueOnce(new Attendance(input));
+    policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-    await expect(usecase.execute(input)).rejects.toThrow(
+    await expect(usecase.execute(input, policieService, token)).rejects.toThrow(
       'Attendance already exists'
     );
     expect(repository.create).not.toHaveBeenCalled();
   });
 
   it('should pass the correct entity to repository.create', async () => {
-    repository.find.mockResolvedValueOnce(undefined);
+    repository.find.mockResolvedValueOnce(null);
+    policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-    await usecase.execute(input);
+    await usecase.execute(input, policieService, token);
 
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -83,10 +102,11 @@ describe('CreateAttendance usecase unit test', () => {
 
   it('should return the result from repository.create', async () => {
     const expectedId = 'some-id';
-    repository.find.mockResolvedValueOnce(undefined);
+    repository.find.mockResolvedValueOnce(null);
     repository.create.mockResolvedValueOnce(expectedId);
+    policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-    const result = await usecase.execute(input);
+    const result = await usecase.execute(input, policieService, token);
 
     expect(result.id).toEqual(expectedId);
   });

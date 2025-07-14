@@ -49,7 +49,14 @@ describe('SubjectRoute with ExpressAdapter', () => {
     } as unknown as SubjectController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new SubjectRoute(subjectController, http, middleware).routes();
@@ -73,7 +80,14 @@ describe('SubjectRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/subject').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(subjectController.create).toHaveBeenCalledWith(payload);
+      expect(subjectController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -82,7 +96,14 @@ describe('SubjectRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/subject/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(subjectController.find).toHaveBeenCalledWith({ id });
+      expect(subjectController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -92,7 +113,14 @@ describe('SubjectRoute with ExpressAdapter', () => {
       const response = await supertest(app).patch(`/subject`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(subjectController.update).toHaveBeenCalledWith(payload);
+      expect(subjectController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -101,7 +129,14 @@ describe('SubjectRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/subject/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(subjectController.delete).toHaveBeenCalledWith({ id });
+      expect(subjectController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });

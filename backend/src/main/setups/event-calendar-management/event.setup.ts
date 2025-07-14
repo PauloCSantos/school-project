@@ -9,7 +9,7 @@ import UpdateEvent from '@/modules/event-calendar-management/application/usecase
 import DeleteEvent from '@/modules/event-calendar-management/application/usecases/event/delete.usecase';
 import EventController from '@/modules/event-calendar-management/interface/controller/event.controller';
 import EventRoute from '@/modules/event-calendar-management/interface/route/event.route';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 
 export default function initializeEvent(express: HttpServer): void {

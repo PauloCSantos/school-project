@@ -7,7 +7,7 @@ import MemoryUserMasterRepository from '@/modules/user-management/infrastructure
 import { UserMasterController } from '@/modules/user-management/interface/controller/master.controller';
 import { UserMasterRoute } from '@/modules/user-management/interface/route/master.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/enum';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
 

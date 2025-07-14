@@ -1,16 +1,19 @@
 import jwt from 'jsonwebtoken';
 import AuthUser from '../../../authentication-authorization-management/domain/entity/user.entity';
+import { TokenData } from '../../type/sharedTypes';
 
-type TokenDecodedProps = {
-  email: string;
-  role: string;
-  masterId: string;
-};
-
+export default interface TokenServiceInterface {
+  generateToken(
+    authUser: AuthUser,
+    timeToExpire?: number | string
+  ): Promise<string>;
+  validateToken(token: string): Promise<TokenData | null>;
+  refreshExpiresToken(token: string): Promise<string>;
+}
 /**
  * Service responsible for generating, validating, and refreshing JWT tokens.
  */
-export default class TokenService {
+export default class TokenService implements TokenServiceInterface {
   /**
    * Secret key used to sign and verify JWT tokens.
    */
@@ -55,9 +58,9 @@ export default class TokenService {
    * @param token - The JWT token to validate.
    * @returns A Promise that resolves to the decoded token payload if valid, or `null` if invalid or expired.
    */
-  async validateToken(token: string): Promise<TokenDecodedProps | null> {
+  async validateToken(token: string): Promise<TokenData | null> {
     try {
-      const decoded = jwt.verify(token, this.secretKey) as TokenDecodedProps;
+      const decoded = jwt.verify(token, this.secretKey) as TokenData;
       return {
         email: decoded.email,
         role: decoded.role,
@@ -75,7 +78,7 @@ export default class TokenService {
    * @returns A Promise that resolves to a new JWT token with updated expiration time.
    */
   async refreshExpiresToken(token: string): Promise<string> {
-    const decoded = jwt.verify(token, this.secretKey) as TokenDecodedProps;
+    const decoded = jwt.verify(token, this.secretKey) as TokenData;
 
     const payload = {
       masterId: decoded.masterId,

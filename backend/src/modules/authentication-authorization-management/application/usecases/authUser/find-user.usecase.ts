@@ -4,6 +4,13 @@ import {
   FindAuthUserOutputDto,
 } from '../../dto/user-usecase.dto';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 
 /**
  * Use case responsible for finding an authenticated user by email.
@@ -31,9 +38,22 @@ export default class FindAuthUser
    * @param input - Input data containing the email to search for
    * @returns User data if found, undefined otherwise
    */
-  async execute({
-    email,
-  }: FindAuthUserInputDto): Promise<FindAuthUserOutputDto | null> {
+  async execute(
+    { email }: FindAuthUserInputDto,
+    policiesService: PoliciesServiceInterface,
+    token: TokenData
+  ): Promise<FindAuthUserOutputDto | null> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.AUTHUSER,
+        FunctionCalledEnum.FIND,
+        token,
+        { targetEmail: email }
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const response = await this._authUserRepository.find(email);
 
     if (response) {
