@@ -82,7 +82,14 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
     } as unknown as UserWorkerController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new UserWorkerRoute(userWorkerController, http, middleware).routes();
@@ -122,7 +129,14 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/user-worker').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(userWorkerController.create).toHaveBeenCalledWith(payload);
+      expect(userWorkerController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -131,13 +145,21 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/user-worker/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(userWorkerController.find).toHaveBeenCalledWith({ id });
+      expect(userWorkerController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
     it('should update a worker by ID', async () => {
       const id = new Id().value;
       const payload = {
+        id,
         address: {
           street: 'Updated Street',
           city: 'City A',
@@ -147,15 +169,17 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
           state: 'State A',
         },
       };
-      const response = await supertest(app)
-        .patch(`/user-worker/${id}`)
-        .send(payload);
+      const response = await supertest(app).patch(`/user-worker`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(userWorkerController.update).toHaveBeenCalledWith({
-        id,
-        ...payload,
-      });
+      expect(userWorkerController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -164,7 +188,14 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/user-worker/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(userWorkerController.delete).toHaveBeenCalledWith({ id });
+      expect(userWorkerController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -176,17 +207,14 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/user-worker/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app)
-        .patch('/user-worker/invalid-id')
-        .send({});
-
+      const response = await supertest(app).patch('/user-worker').send({});
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -194,7 +222,7 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/user-worker/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid payload on create', async () => {

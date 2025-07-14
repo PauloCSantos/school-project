@@ -4,6 +4,13 @@ import {
   DeleteUserStudentOutputDto,
 } from '../../dto/student-usecase.dto';
 import UserStudentGateway from '@/modules/user-management/infrastructure/gateway/student.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class DeleteUserStudent
   implements
@@ -14,9 +21,21 @@ export default class DeleteUserStudent
   constructor(userStudentRepository: UserStudentGateway) {
     this._userStudentRepository = userStudentRepository;
   }
-  async execute({
-    id,
-  }: DeleteUserStudentInputDto): Promise<DeleteUserStudentOutputDto> {
+  async execute(
+    { id }: DeleteUserStudentInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<DeleteUserStudentOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.STUDENT,
+        FunctionCalledEnum.DELETE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const userVerification = await this._userStudentRepository.find(id);
     if (!userVerification) throw new Error('User not found');
 

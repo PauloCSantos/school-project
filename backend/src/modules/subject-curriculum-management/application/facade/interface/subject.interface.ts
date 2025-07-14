@@ -1,3 +1,4 @@
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   CreateSubjectInputDto,
   CreateSubjectOutputDto,
@@ -12,9 +13,24 @@ import {
 } from '../../dto/subject-facade.dto';
 
 export default interface SubjectFacadeInterface {
-  create(input: CreateSubjectInputDto): Promise<CreateSubjectOutputDto>;
-  find(input: FindSubjectInputDto): Promise<FindSubjectOutputDto | undefined>;
-  findAll(input: FindAllSubjectInputDto): Promise<FindAllSubjectOutputDto>;
-  delete(input: DeleteSubjectInputDto): Promise<DeleteSubjectOutputDto>;
-  update(input: UpdateSubjectInputDto): Promise<UpdateSubjectOutputDto>;
+  create(
+    input: CreateSubjectInputDto,
+    token: TokenData
+  ): Promise<CreateSubjectOutputDto>;
+  find(
+    input: FindSubjectInputDto,
+    token: TokenData
+  ): Promise<FindSubjectOutputDto | null>;
+  findAll(
+    input: FindAllSubjectInputDto,
+    token: TokenData
+  ): Promise<FindAllSubjectOutputDto>;
+  delete(
+    input: DeleteSubjectInputDto,
+    token: TokenData
+  ): Promise<DeleteSubjectOutputDto>;
+  update(
+    input: UpdateSubjectInputDto,
+    token: TokenData
+  ): Promise<UpdateSubjectOutputDto>;
 }

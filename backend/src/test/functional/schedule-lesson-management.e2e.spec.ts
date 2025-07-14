@@ -25,8 +25,9 @@ import AddTime from '@/modules/schedule-lesson-management/application/usecases/l
 import RemoveTime from '@/modules/schedule-lesson-management/application/usecases/lesson/remove-time.usecase';
 import { ScheduleController } from '@/modules/schedule-lesson-management/interface/controller/schedule.controller';
 import { LessonController } from '@/modules/schedule-lesson-management/interface/controller/lesson.controller';
-import { ScheduleRoute } from '@/modules/schedule-lesson-management/interface/route/schedule.route';
-import { LessonRoute } from '@/modules/schedule-lesson-management/interface/route/lesson.route';
+import ScheduleRoute from '@/modules/schedule-lesson-management/interface/route/schedule.route';
+import LessonRoute from '@/modules/schedule-lesson-management/interface/route/lesson.route';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 describe('Schedule lesson management module end to end test', () => {
   let scheduleRepository = new MemoryScheduleRepository();
@@ -56,6 +57,8 @@ describe('Schedule lesson management module end to end test', () => {
     const addTime = new AddTime(lessonRepository);
     const removeTime = new RemoveTime(lessonRepository);
 
+    const policiesService = new PoliciesService();
+
     const scheduleController = new ScheduleController(
       createScheduleUsecase,
       findScheduleUsecase,
@@ -63,7 +66,8 @@ describe('Schedule lesson management module end to end test', () => {
       updateScheduleUsecase,
       deleteScheduleUsecase,
       addLessons,
-      removeLessons
+      removeLessons,
+      policiesService
     );
     const lessonController = new LessonController(
       createLessonUsecase,
@@ -76,17 +80,18 @@ describe('Schedule lesson management module end to end test', () => {
       addDay,
       removeDay,
       addTime,
-      removeTime
+      removeTime,
+      policiesService
     );
 
     const expressHttp = new ExpressAdapter();
-    const tokerService = tokenInstance();
+    const tokenService = tokenInstance();
 
-    const authUserMiddlewareSchedule = new AuthUserMiddleware(tokerService, [
+    const authUserMiddlewareSchedule = new AuthUserMiddleware(tokenService, [
       'master',
       'administrator',
     ]);
-    const authUserMiddlewareLesson = new AuthUserMiddleware(tokerService, [
+    const authUserMiddlewareLesson = new AuthUserMiddleware(tokenService, [
       'master',
       'administrator',
     ]);
@@ -149,7 +154,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(schedule.body.error).toBeDefined();
         });
       });
-      describe('PATCH /schedule/:id', () => {
+      describe('PATCH /schedule', () => {
         it('should throw an error when the data to update a schedule is wrong', async () => {
           const response = await supertest(app)
             .post('/schedule')
@@ -164,12 +169,13 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedSchedule = await supertest(app)
-            .patch(`/schedule/${id}`)
+            .patch(`/schedule`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               curriculum: 24,
             });
           expect(updatedSchedule.status).toBe(400);
@@ -199,7 +205,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(result.body.error).toBeDefined();
         });
       });
-      describe('POST /schedule/add', () => {
+      describe('POST /schedule/lesson/add', () => {
         it('should add lessons to the schedule', async () => {
           const response = await supertest(app)
             .post('/schedule')
@@ -214,7 +220,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/schedule/add')
+            .post('/schedule/lesson/add')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -227,7 +233,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(result.body.error).toBeDefined();
         });
       });
-      describe('POST /schedule/remove', () => {
+      describe('POST /schedule/lesson/remove', () => {
         it('should remove lessons from the schedule', async () => {
           const input = {
             student: new Id().value,
@@ -242,7 +248,7 @@ describe('Schedule lesson management module end to end test', () => {
             )
             .send(input);
           const result = await supertest(app)
-            .post('/schedule/remove')
+            .post('/schedule/lesson/remove')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -298,7 +304,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(schedule.body).toBeDefined();
         });
       });
-      describe('GET /schedules/', () => {
+      describe('GET /schedules', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/schedule')
@@ -323,17 +329,17 @@ describe('Schedule lesson management module end to end test', () => {
               lessonsList: [new Id().value, new Id().value, new Id().value],
             });
           const response = await supertest(app)
-            .get('/schedules')
+            .get('/schedules?quantity=1&offset=0')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             );
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
-          expect(response.body.length).toBe(2);
+          expect(response.body.length).toBe(1);
         });
       });
-      describe('PATCH /schedule/:id', () => {
+      describe('PATCH /schedule', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/schedule')
@@ -348,12 +354,13 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedSchedule = await supertest(app)
-            .patch(`/schedule/${id}`)
+            .patch(`/schedule`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               student: new Id().value,
               curriculum: new Id().value,
               lessonsList: [new Id().value, new Id().value, new Id().value],
@@ -386,7 +393,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
       });
-      describe('POST /schedule/add', () => {
+      describe('POST /schedule/lesson/add', () => {
         it('should add lessons to the schedule', async () => {
           const response = await supertest(app)
             .post('/schedule')
@@ -401,7 +408,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/schedule/add')
+            .post('/schedule/lesson/add')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -410,11 +417,11 @@ describe('Schedule lesson management module end to end test', () => {
               id: id,
               newLessonsList: [new Id().value],
             });
-          expect(result.status).toBe(201);
+          expect(result.status).toBe(200);
           expect(result.body).toBeDefined();
         });
       });
-      describe('POST /schedule/remove', () => {
+      describe('POST /schedule/lesson/remove', () => {
         it('should remove lessons from the schedule', async () => {
           const input = {
             student: new Id().value,
@@ -430,7 +437,7 @@ describe('Schedule lesson management module end to end test', () => {
             .send(input);
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/schedule/remove')
+            .post('/schedule/lesson/remove')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -439,7 +446,7 @@ describe('Schedule lesson management module end to end test', () => {
               id: id,
               lessonsListToRemove: [input.lessonsList[0]],
             });
-          expect(result.status).toBe(201);
+          expect(result.status).toBe(200);
           expect(result.body).toBeDefined();
         });
       });
@@ -496,7 +503,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(lesson.body.error).toBeDefined();
         });
       });
-      describe('PATCH /lesson/:id', () => {
+      describe('PATCH /lesson', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/lesson')
@@ -516,12 +523,13 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedLesson = await supertest(app)
-            .patch(`/lesson/${id}`)
+            .patch(`/lesson`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               name: 'Math advanced I',
               duration: -60,
             });
@@ -557,7 +565,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(result.body.error).toBeDefined();
         });
       });
-      describe('POST /lesson/add/students', () => {
+      describe('POST /lesson/student/add', () => {
         it('should throw an error when the schedule`ID is incorrect', async () => {
           const response = await supertest(app)
             .post('/lesson')
@@ -577,7 +585,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/lesson/add/students')
+            .post('/lesson/student/add')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -590,7 +598,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(result.body.error).toBeDefined();
         });
       });
-      describe('POST /lesson/remove/students', () => {
+      describe('POST /lesson/student/remove', () => {
         it('should throw an error when the ID is incorrect', async () => {
           const input = {
             name: 'Math advanced I',
@@ -610,7 +618,7 @@ describe('Schedule lesson management module end to end test', () => {
             )
             .send(input);
           const result = await supertest(app)
-            .post('/lesson/remove/students')
+            .post('/lesson/student/remove')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -623,7 +631,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(result.body.error).toBeDefined();
         });
       });
-      describe('POST /lesson/add/day', () => {
+      describe('POST /lesson/day/add', () => {
         it('should throw an error when the day is incorrect', async () => {
           const response = await supertest(app)
             .post('/lesson')
@@ -643,7 +651,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/lesson/add/day')
+            .post('/lesson/day/add')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -656,7 +664,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(result.body.error).toBeDefined();
         });
       });
-      describe('POST /lesson/remove/day', () => {
+      describe('POST /lesson/day/remove', () => {
         it('should throw an error when the day is not in lesson', async () => {
           const input = {
             name: 'Math advanced I',
@@ -676,7 +684,7 @@ describe('Schedule lesson management module end to end test', () => {
             )
             .send(input);
           const result = await supertest(app)
-            .post('/lesson/remove/day')
+            .post('/lesson/day/remove')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -689,7 +697,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(result.body.error).toBeDefined();
         });
       });
-      describe('POST /lesson/add/time', () => {
+      describe('POST /lesson/time/add', () => {
         it('should throw an error when the time format is incorrect', async () => {
           const response = await supertest(app)
             .post('/lesson')
@@ -709,7 +717,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/lesson/add/time')
+            .post('/lesson/time/add')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -722,7 +730,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(result.body.error).toBeDefined();
         });
       });
-      describe('POST /lesson/remove/time', () => {
+      describe('POST /lesson/time/remove', () => {
         it('should throw an error when the ID is incorrect', async () => {
           const input = {
             name: 'Math advanced I',
@@ -742,7 +750,7 @@ describe('Schedule lesson management module end to end test', () => {
             )
             .send(input);
           const result = await supertest(app)
-            .post('/lesson/remove/time')
+            .post('/lesson/time/remove')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -808,7 +816,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(lesson.body).toBeDefined();
         });
       });
-      describe('GET /lessons/', () => {
+      describe('GET /lessons', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/lesson')
@@ -853,7 +861,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /lesson/:id', () => {
+      describe('PATCH /lesson', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/lesson')
@@ -873,12 +881,13 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedLesson = await supertest(app)
-            .patch(`/lesson/${id}`)
+            .patch(`/lesson`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               duration: 75,
             });
           expect(updatedLesson.status).toBe(200);
@@ -914,7 +923,7 @@ describe('Schedule lesson management module end to end test', () => {
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
       });
-      describe('POST /lesson/add/students', () => {
+      describe('POST /lesson/student/add', () => {
         it('should add students to the lesson', async () => {
           const response = await supertest(app)
             .post('/lesson')
@@ -934,7 +943,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/lesson/add/students')
+            .post('/lesson/student/add')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -943,11 +952,11 @@ describe('Schedule lesson management module end to end test', () => {
               id: id,
               newStudentsList: [new Id().value],
             });
-          expect(result.status).toBe(201);
+          expect(result.status).toBe(200);
           expect(result.body).toBeDefined();
         });
       });
-      describe('POST /lesson/remove/students', () => {
+      describe('POST /lesson/student/remove', () => {
         it('should remove students from the lesson', async () => {
           const input = {
             name: 'Math advanced I',
@@ -968,7 +977,7 @@ describe('Schedule lesson management module end to end test', () => {
             .send(input);
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/lesson/remove/students')
+            .post('/lesson/student/remove')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -977,11 +986,11 @@ describe('Schedule lesson management module end to end test', () => {
               id: id,
               studentsListToRemove: [input.studentsList[0]],
             });
-          expect(result.status).toBe(201);
+          expect(result.status).toBe(200);
           expect(result.body).toBeDefined();
         });
       });
-      describe('POST /lesson/add/day', () => {
+      describe('POST /lesson/day/add', () => {
         it('should add day to the lesson', async () => {
           const response = await supertest(app)
             .post('/lesson')
@@ -1001,7 +1010,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/lesson/add/day')
+            .post('/lesson/day/add')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -1010,11 +1019,11 @@ describe('Schedule lesson management module end to end test', () => {
               id: id,
               newDaysList: ['tue'],
             });
-          expect(result.status).toBe(201);
+          expect(result.status).toBe(200);
           expect(result.body).toBeDefined();
         });
       });
-      describe('POST /lesson/remove/day', () => {
+      describe('POST /lesson/day/remove', () => {
         it('should remove students from the lesson', async () => {
           const input = {
             name: 'Math advanced I',
@@ -1034,7 +1043,7 @@ describe('Schedule lesson management module end to end test', () => {
             )
             .send(input);
           const result = await supertest(app)
-            .post('/lesson/remove/day')
+            .post('/lesson/day/remove')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -1043,11 +1052,11 @@ describe('Schedule lesson management module end to end test', () => {
               id: id.body.id,
               daysListToRemove: ['mon'],
             });
-          expect(result.status).toBe(201);
+          expect(result.status).toBe(200);
           expect(result.body.message).toBeDefined();
         });
       });
-      describe('POST /lesson/add/time', () => {
+      describe('POST /lesson/time/add', () => {
         it('should add time to the lesson', async () => {
           const response = await supertest(app)
             .post('/lesson')
@@ -1067,7 +1076,7 @@ describe('Schedule lesson management module end to end test', () => {
             });
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/lesson/add/time')
+            .post('/lesson/time/add')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -1076,11 +1085,11 @@ describe('Schedule lesson management module end to end test', () => {
               id: id,
               newTimesList: ['07:00'],
             });
-          expect(result.status).toBe(201);
+          expect(result.status).toBe(200);
           expect(result.body.message).toBeDefined();
         });
       });
-      describe('POST /lesson/remove/time', () => {
+      describe('POST /lesson/time/remove', () => {
         it('should remove time from the Lesson', async () => {
           const input = {
             name: 'Math advanced I',
@@ -1101,7 +1110,7 @@ describe('Schedule lesson management module end to end test', () => {
             .send(input);
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/lesson/remove/time')
+            .post('/lesson/time/remove')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -1110,7 +1119,7 @@ describe('Schedule lesson management module end to end test', () => {
               id: id,
               timesListToRemove: ['15:55'],
             });
-          expect(result.status).toBe(201);
+          expect(result.status).toBe(200);
           expect(result.body.message).toBeDefined();
         });
       });

@@ -10,12 +10,20 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
       : (this._teacherUsers = []);
   }
 
-  async find(id: string): Promise<UserTeacher | undefined> {
+  async find(id: string): Promise<UserTeacher | null> {
     const user = this._teacherUsers.find(user => user.id.value === id);
     if (user) {
       return user;
     } else {
-      return undefined;
+      return null;
+    }
+  }
+  async findByEmail(email: string): Promise<UserTeacher | null> {
+    const user = this._teacherUsers.find(user => user.email === email);
+    if (user) {
+      return user;
+    } else {
+      return null;
     }
   }
   async findAll(
@@ -23,7 +31,7 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
     offSet?: number | undefined
   ): Promise<UserTeacher[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const users = this._teacherUsers.slice(offS, qtd);
 
     return users;

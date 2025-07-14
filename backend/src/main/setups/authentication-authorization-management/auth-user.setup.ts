@@ -5,14 +5,15 @@ import FindAuthUser from '@/modules/authentication-authorization-management/appl
 import LoginAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/login-user.usecase';
 import UpdateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/update-user.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
-import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/user.repository';
 import AuthUserController from '@/modules/authentication-authorization-management/interface/controller/user.controller';
 import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/user.route';
 import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
-import TokenService from '@/modules/authentication-authorization-management/infrastructure/service/token.service';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
+import TokenService from '@/modules/@shared/infraestructure/services/token.service';
+import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 
-export default function initializeAuthUser(express: ExpressHttp): void {
+export default function initializeAuthUser(express: HttpServer): void {
   const authUserRepository = new MemoryAuthUserRepository();
   const authUserService = new AuthUserService();
   const tokenUserService = new TokenService('PxHf3H7');
@@ -40,11 +41,11 @@ export default function initializeAuthUser(express: ExpressHttp): void {
   );
   const tokenService = tokenInstance();
   const allowedRoles: RoleUsers[] = [
-    'master',
-    'administrator',
-    'student',
-    'teacher',
-    'worker',
+    RoleUsersEnum.MASTER,
+    RoleUsersEnum.ADMINISTRATOR,
+    RoleUsersEnum.TEACHER,
+    RoleUsersEnum.STUDENT,
+    RoleUsersEnum.WORKER,
   ];
   const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
   const authUserRoute = new AuthUserRoute(

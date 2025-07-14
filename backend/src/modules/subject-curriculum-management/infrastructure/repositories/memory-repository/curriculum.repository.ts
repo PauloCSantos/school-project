@@ -8,14 +8,14 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     curriculums ? (this._curriculums = curriculums) : (this._curriculums = []);
   }
 
-  async find(id: string): Promise<Curriculum | undefined> {
+  async find(id: string): Promise<Curriculum | null> {
     const curriculum = this._curriculums.find(
       curriculum => curriculum.id.value === id
     );
     if (curriculum) {
       return curriculum;
     } else {
-      return undefined;
+      return null;
     }
   }
   async findAll(
@@ -23,7 +23,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     offSet?: number | undefined
   ): Promise<Curriculum[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const curriculums = this._curriculums.slice(offS, qtd);
 
     return curriculums;

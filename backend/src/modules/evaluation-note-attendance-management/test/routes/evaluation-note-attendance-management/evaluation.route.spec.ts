@@ -1,5 +1,3 @@
-// evaluation.route.spec.ts
-
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
@@ -28,7 +26,14 @@ describe('EvaluationRoute with ExpressAdapter', () => {
     } as unknown as EvaluationController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new EvaluationRoute(evaluationController, http, middleware).routes();
@@ -36,15 +41,21 @@ describe('EvaluationRoute with ExpressAdapter', () => {
 
   describe('success', () => {
     it('should find all evaluations', async () => {
-      const response = await supertest(app)
-        .get('/evaluations')
-        .send({ quantity: 2, offset: 0 });
-
+      const response = await supertest(app).get(
+        '/evaluations?quantity=2&offset=0'
+      );
       expect(response.statusCode).toBe(200);
-      expect(evaluationController.findAll).toHaveBeenCalledWith({
-        quantity: 2,
-        offset: 0,
-      });
+      expect(evaluationController.findAll).toHaveBeenCalledWith(
+        {
+          quantity: '2',
+          offset: '0',
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual([{ id: expect.any(String) }]);
     });
 
@@ -57,7 +68,14 @@ describe('EvaluationRoute with ExpressAdapter', () => {
       };
       const response = await supertest(app).post('/evaluation').send(payload);
       expect(response.statusCode).toBe(201);
-      expect(evaluationController.create).toHaveBeenCalledWith(payload);
+      expect(evaluationController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -65,24 +83,34 @@ describe('EvaluationRoute with ExpressAdapter', () => {
       const id = new Id().value;
       const response = await supertest(app).get(`/evaluation/${id}`);
       expect(response.statusCode).toBe(200);
-      expect(evaluationController.find).toHaveBeenCalledWith({ id });
+      expect(evaluationController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
     it('should update an evaluation', async () => {
       const id = new Id().value;
       const payload = {
+        id,
         value: 10,
       };
-      const response = await supertest(app)
-        .patch(`/evaluation/${id}`)
-        .send(payload);
+      const response = await supertest(app).patch(`/evaluation`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(evaluationController.update).toHaveBeenCalledWith({
-        id,
-        ...payload,
-      });
+      expect(evaluationController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
@@ -91,7 +119,14 @@ describe('EvaluationRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/evaluation/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(evaluationController.delete).toHaveBeenCalledWith({ id });
+      expect(evaluationController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -100,11 +135,13 @@ describe('EvaluationRoute with ExpressAdapter', () => {
 
   describe('failure', () => {
     it('should return 400 for invalid quantity or offset', async () => {
-      const response = await supertest(app).get('/evaluations').send({});
+      const response = await supertest(app).get(
+        '/evaluations?quantity=2&offset="invalid"'
+      );
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Quantity e/ou offset estão incorretos',
+        error: 'Bad Request',
       });
     });
 
@@ -112,17 +149,15 @@ describe('EvaluationRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/evaluation/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app)
-        .patch('/evaluation/invalid-id')
-        .send({});
+      const response = await supertest(app).patch('/evaluation').send({});
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -130,7 +165,7 @@ describe('EvaluationRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/evaluation/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
   });
 });

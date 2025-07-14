@@ -55,7 +55,14 @@ describe('UserMasterRoute with ExpressAdapter', () => {
     } as unknown as UserMasterController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new UserMasterRoute(userMasterController, http, middleware).routes();
@@ -84,7 +91,14 @@ describe('UserMasterRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/user-master').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(userMasterController.create).toHaveBeenCalledWith(payload);
+      expect(userMasterController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -93,13 +107,21 @@ describe('UserMasterRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/user-master/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(userMasterController.find).toHaveBeenCalledWith({ id });
+      expect(userMasterController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
     it('should update a master by ID', async () => {
       const id = new Id().value;
       const payload = {
+        id,
         address: {
           street: 'Updated Street',
           city: 'City A',
@@ -109,15 +131,17 @@ describe('UserMasterRoute with ExpressAdapter', () => {
           state: 'State A',
         },
       };
-      const response = await supertest(app)
-        .patch(`/user-master/${id}`)
-        .send(payload);
+      const response = await supertest(app).patch(`/user-master`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(userMasterController.update).toHaveBeenCalledWith({
-        id,
-        ...payload,
-      });
+      expect(userMasterController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
   });
@@ -127,17 +151,17 @@ describe('UserMasterRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/user-master/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
       const response = await supertest(app)
-        .patch('/user-master/invalid-id')
-        .send({});
+        .patch('/user-master')
+        .send({ id: new Id().value });
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 

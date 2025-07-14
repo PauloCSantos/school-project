@@ -3,14 +3,24 @@ import CreateUserMaster from '@/modules/user-management/application/usecases/mas
 import FindUserMaster from '@/modules/user-management/application/usecases/master/findUserMaster.usecase';
 import UpdateUserMaster from '@/modules/user-management/application/usecases/master/updateUserMaster.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryUserMasterRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/master.repository';
 import { UserMasterController } from '@/modules/user-management/interface/controller/master.controller';
 import { UserMasterRoute } from '@/modules/user-management/interface/route/master.route';
+import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
+import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
 
-export default function initializeUserMaster(express: ExpressHttp): void {
+export default function initializeUserMaster(express: HttpServer): void {
   const userMasterRepository = new MemoryUserMasterRepository();
-  const createUserMasterUsecase = new CreateUserMaster(userMasterRepository);
+  const authUserRepository = new MemoryAuthUserRepository();
+  const emailValidatorService = new EmailAuthValidatorService(
+    authUserRepository
+  );
+  const createUserMasterUsecase = new CreateUserMaster(
+    userMasterRepository,
+    emailValidatorService
+  );
   const findUserMasterUsecase = new FindUserMaster(userMasterRepository);
   const updateUserMasterUsecase = new UpdateUserMaster(userMasterRepository);
   const userMasterController = new UserMasterController(
@@ -19,7 +29,7 @@ export default function initializeUserMaster(express: ExpressHttp): void {
     updateUserMasterUsecase
   );
   const tokenService = tokenInstance();
-  const allowedRoles: RoleUsers[] = ['master'];
+  const allowedRoles: RoleUsers[] = [RoleUsersEnum.MASTER];
   const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
   const userMasterRoute = new UserMasterRoute(
     userMasterController,

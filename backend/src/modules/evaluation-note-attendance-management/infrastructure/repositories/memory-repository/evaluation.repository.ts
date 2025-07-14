@@ -20,16 +20,16 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
   /**
    * Finds an evaluation by its unique identifier.
    * @param id - The unique identifier to search for
-   * @returns Promise resolving to the found Evaluation or undefined if not found
+   * @returns Promise resolving to the found Evaluation or null if not found
    */
-  async find(id: string): Promise<Evaluation | undefined> {
+  async find(id: string): Promise<Evaluation | null> {
     const evaluation = this._evaluation.find(
       evaluation => evaluation.id.value === id
     );
     if (evaluation) {
       return evaluation;
     } else {
-      return undefined;
+      return null;
     }
   }
 
@@ -44,7 +44,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
     offSet?: number | undefined
   ): Promise<Evaluation[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const evaluations = this._evaluation.slice(offS, qtd);
 
     return evaluations;

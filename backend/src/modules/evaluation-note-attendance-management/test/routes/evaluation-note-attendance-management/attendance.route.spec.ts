@@ -1,5 +1,3 @@
-// attendance.route.spec.ts
-
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
@@ -34,7 +32,14 @@ describe('AttendanceRoute with ExpressAdapter', () => {
     } as unknown as AttendanceController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_req, next) => {
+        _req.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new AttendanceRoute(attendanceController, http, middleware).routes();
@@ -42,15 +47,22 @@ describe('AttendanceRoute with ExpressAdapter', () => {
 
   describe('success', () => {
     it('should find all attendances', async () => {
-      const response = await supertest(app)
-        .get('/attendances')
-        .send({ quantity: 2, offset: 0 });
+      const response = await supertest(app).get(
+        '/attendances?quantity=2&offset=0'
+      );
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.findAll).toHaveBeenCalledWith({
-        quantity: 2,
-        offset: 0,
-      });
+      expect(attendanceController.findAll).toHaveBeenCalledWith(
+        {
+          quantity: '2',
+          offset: '0',
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual([{ id: expect.any(String) }]);
     });
 
@@ -58,12 +70,21 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       const payload = {
         date: '2025-05-26',
         lesson: 'Aula 1',
+        hour: '10:00',
+        day: 'Mon',
         studentsPresent: [new Id().value],
       };
       const response = await supertest(app).post('/attendance').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(attendanceController.create).toHaveBeenCalledWith(payload);
+      expect(attendanceController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -72,22 +93,31 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/attendance/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.find).toHaveBeenCalledWith({ id });
+      expect(attendanceController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
     it('should update an attendance', async () => {
       const id = new Id().value;
-      const payload = { lesson: 'Aula 2' };
-      const response = await supertest(app)
-        .patch(`/attendance/${id}`)
-        .send(payload);
+      const payload = { id: id, lesson: 'Aula 2' };
+      const response = await supertest(app).patch(`/attendance`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.update).toHaveBeenCalledWith({
-        id,
-        ...payload,
-      });
+      expect(attendanceController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
@@ -96,7 +126,14 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/attendance/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.delete).toHaveBeenCalledWith({ id });
+      expect(attendanceController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -110,10 +147,17 @@ describe('AttendanceRoute with ExpressAdapter', () => {
         .send({ id, newStudentsList });
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.addStudents).toHaveBeenCalledWith({
-        id,
-        newStudentsList,
-      });
+      expect(attendanceController.addStudents).toHaveBeenCalledWith(
+        {
+          id,
+          newStudentsList,
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -127,10 +171,17 @@ describe('AttendanceRoute with ExpressAdapter', () => {
         .send({ id, studentsListToRemove });
 
       expect(response.statusCode).toBe(200);
-      expect(attendanceController.removeStudents).toHaveBeenCalledWith({
-        id,
-        studentsListToRemove,
-      });
+      expect(attendanceController.removeStudents).toHaveBeenCalledWith(
+        {
+          id,
+          studentsListToRemove,
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -139,11 +190,11 @@ describe('AttendanceRoute with ExpressAdapter', () => {
 
   describe('failure', () => {
     it('should return 400 for invalid quantity or offset', async () => {
-      const response = await supertest(app).get('/attendances').send({});
+      const response = await supertest(app).get('/attendances?offset=a');
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Quantity e/ou offset estão incorretos',
+        error: 'Bad Request',
       });
     });
 
@@ -151,26 +202,23 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/attendance/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid data on create', async () => {
       const response = await supertest(app).post('/attendance').send({});
-
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Todos os campos são obrigatórios',
+        error: 'Bad Request',
       });
     });
 
     it('should return 400 for invalid id/data on update', async () => {
-      const response = await supertest(app)
-        .patch('/attendance/invalid-id')
-        .send({});
+      const response = await supertest(app).patch('/attendance').send({});
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -178,7 +226,7 @@ describe('AttendanceRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/attendance/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid add-students payload', async () => {
@@ -187,7 +235,7 @@ describe('AttendanceRoute with ExpressAdapter', () => {
         .send({});
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Dados inválidos' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid remove-students payload', async () => {
@@ -196,7 +244,7 @@ describe('AttendanceRoute with ExpressAdapter', () => {
         .send({});
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Dados inválidos' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
   });
 });

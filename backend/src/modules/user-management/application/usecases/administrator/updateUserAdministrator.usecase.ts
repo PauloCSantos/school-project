@@ -4,6 +4,13 @@ import {
   UpdateUserAdministratorOutputDto,
 } from '../../dto/administrator-usecase.dto';
 import UserAdministratorGateway from '@/modules/user-management/infrastructure/gateway/administrator.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class UpdateUserAdministrator
   implements
@@ -17,15 +24,29 @@ export default class UpdateUserAdministrator
   constructor(userAdministratorRepository: UserAdministratorGateway) {
     this._userAdministratorRepository = userAdministratorRepository;
   }
-  async execute({
-    id,
-    name,
-    address,
-    email,
-    birthday,
-    graduation,
-    salary,
-  }: UpdateUserAdministratorInputDto): Promise<UpdateUserAdministratorOutputDto> {
+  async execute(
+    {
+      id,
+      name,
+      address,
+      email,
+      birthday,
+      graduation,
+      salary,
+    }: UpdateUserAdministratorInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<UpdateUserAdministratorOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.ADMINISTRATOR,
+        FunctionCalledEnum.UPDATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const userAdm = await this._userAdministratorRepository.find(id);
     if (!userAdm) throw new Error('User not found');
 
@@ -45,7 +66,7 @@ export default class UpdateUserAdministrator
         (userAdm.address.avenue = address.avenue);
       address?.state !== undefined && (userAdm.address.state = address.state);
       email !== undefined && (userAdm.email = email);
-      birthday !== undefined && (userAdm.birthday = birthday);
+      birthday !== undefined && (userAdm.birthday = new Date(birthday));
       graduation !== undefined && (userAdm.graduation = graduation);
       salary?.currency !== undefined &&
         (userAdm.salary.currency = salary.currency);

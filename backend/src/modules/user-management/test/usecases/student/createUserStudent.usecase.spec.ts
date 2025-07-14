@@ -1,19 +1,42 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateUserStudent from '@/modules/user-management/application/usecases/student/createUserStudent.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import UserStudent from '@/modules/user-management/domain/entity/student.entity';
 
-const MockRepository = () => {
-  return {
-    find: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(userStudent => Promise.resolve(userStudent.id.value)),
-    update: jest.fn(),
-    delete: jest.fn(),
-  };
-};
-
 describe('createUserStudent usecase unit test', () => {
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let token: TokenData;
+
+  const MockRepository = () => {
+    return {
+      find: jest.fn(),
+      findByEmail: jest.fn(),
+      findAll: jest.fn(),
+      create: jest.fn(userStudent => Promise.resolve(userStudent.id.value)),
+      update: jest.fn(),
+      delete: jest.fn(),
+    };
+  };
+
+  const MockEmailAuthValidatorService = () => ({
+    validate: jest.fn().mockResolvedValue(true),
+  });
+
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
+    ({
+      verifyPolicies: jest.fn(),
+    }) as jest.Mocked<PoliciesServiceInterface>;
+
+  policieService = MockPolicyService();
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   const input = {
     name: {
       firstName: 'John',
@@ -43,33 +66,51 @@ describe('createUserStudent usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the user already exists', async () => {
       const userStudentRepository = MockRepository();
-      userStudentRepository.find.mockResolvedValue(userStudent);
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
 
-      const usecase = new CreateUserStudent(userStudentRepository);
+      userStudentRepository.findByEmail.mockResolvedValue(userStudent);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      await expect(usecase.execute(input)).rejects.toThrow(
-        'User already exists'
+      const usecase = new CreateUserStudent(
+        userStudentRepository,
+        emailAuthValidatorService
       );
-      expect(userStudentRepository.find).toHaveBeenCalledWith(
+
+      await expect(
+        usecase.execute(input, policieService, token)
+      ).rejects.toThrow('User already exists');
+      expect(userStudentRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
       expect(userStudentRepository.create).not.toHaveBeenCalled();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
+        input.email
+      );
     });
   });
 
   describe('On success', () => {
     it('should create a user student', async () => {
       const userStudentRepository = MockRepository();
-      userStudentRepository.find.mockResolvedValue(undefined);
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
 
-      const usecase = new CreateUserStudent(userStudentRepository);
-      const result = await usecase.execute(input);
+      userStudentRepository.findByEmail.mockResolvedValue(null);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      expect(userStudentRepository.find).toHaveBeenCalledWith(
+      const usecase = new CreateUserStudent(
+        userStudentRepository,
+        emailAuthValidatorService
+      );
+      const result = await usecase.execute(input, policieService, token);
+
+      expect(userStudentRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
       expect(userStudentRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
+        input.email
+      );
     });
   });
 });

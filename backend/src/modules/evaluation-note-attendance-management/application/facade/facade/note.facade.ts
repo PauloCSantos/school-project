@@ -1,3 +1,4 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateNoteInputDto,
   CreateNoteOutputDto,
@@ -16,6 +17,7 @@ import FindAllNote from '../../usecases/note/find-all.usecase';
 import FindNote from '../../usecases/note/find.usecase';
 import UpdateNote from '../../usecases/note/update.usecase';
 import NoteFacadeInterface from '../interface/note.interface';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Properties required to initialize the NoteFacade
@@ -26,6 +28,7 @@ type NoteFacadeProps = {
   readonly findAllNote: FindAllNote;
   readonly findNote: FindNote;
   readonly updateNote: UpdateNote;
+  readonly policiesService: PoliciesServiceInterface;
 };
 
 /**
@@ -40,6 +43,7 @@ export default class NoteFacade implements NoteFacadeInterface {
   private readonly _findAllNote: FindAllNote;
   private readonly _findNote: FindNote;
   private readonly _updateNote: UpdateNote;
+  private readonly _policiesService: PoliciesServiceInterface;
 
   /**
    * Creates a new instance of NoteFacade
@@ -51,6 +55,7 @@ export default class NoteFacade implements NoteFacadeInterface {
     this._findAllNote = input.findAllNote;
     this._findNote = input.findNote;
     this._updateNote = input.updateNote;
+    this._policiesService = input.policiesService;
   }
 
   /**
@@ -58,8 +63,11 @@ export default class NoteFacade implements NoteFacadeInterface {
    * @param input Note creation parameters
    * @returns Information about the created note
    */
-  async create(input: CreateNoteInputDto): Promise<CreateNoteOutputDto> {
-    return await this._createNote.execute(input);
+  async create(
+    input: CreateNoteInputDto,
+    token: TokenData
+  ): Promise<CreateNoteOutputDto> {
+    return await this._createNote.execute(input, this._policiesService, token);
   }
 
   /**
@@ -67,9 +75,16 @@ export default class NoteFacade implements NoteFacadeInterface {
    * @param input Search parameters
    * @returns Note information if found, null otherwise
    */
-  async find(input: FindNoteInputDto): Promise<FindNoteOutputDto | null> {
+  async find(
+    input: FindNoteInputDto,
+    token: TokenData
+  ): Promise<FindNoteOutputDto | null> {
     // Changed from undefined to null for better semantic meaning
-    const result = await this._findNote.execute(input);
+    const result = await this._findNote.execute(
+      input,
+      this._policiesService,
+      token
+    );
     return result || null;
   }
 
@@ -78,8 +93,11 @@ export default class NoteFacade implements NoteFacadeInterface {
    * @param input Search parameters
    * @returns Collection of note information
    */
-  async findAll(input: FindAllNoteInputDto): Promise<FindAllNoteOutputDto> {
-    return await this._findAllNote.execute(input);
+  async findAll(
+    input: FindAllNoteInputDto,
+    token: TokenData
+  ): Promise<FindAllNoteOutputDto> {
+    return await this._findAllNote.execute(input, this._policiesService, token);
   }
 
   /**
@@ -87,8 +105,11 @@ export default class NoteFacade implements NoteFacadeInterface {
    * @param input Note identification
    * @returns Confirmation message
    */
-  async delete(input: DeleteNoteInputDto): Promise<DeleteNoteOutputDto> {
-    return await this._deleteNote.execute(input);
+  async delete(
+    input: DeleteNoteInputDto,
+    token: TokenData
+  ): Promise<DeleteNoteOutputDto> {
+    return await this._deleteNote.execute(input, this._policiesService, token);
   }
 
   /**
@@ -96,7 +117,10 @@ export default class NoteFacade implements NoteFacadeInterface {
    * @param input Note identification and data to update
    * @returns Updated note information
    */
-  async update(input: UpdateNoteInputDto): Promise<UpdateNoteOutputDto> {
-    return await this._updateNote.execute(input);
+  async update(
+    input: UpdateNoteInputDto,
+    token: TokenData
+  ): Promise<UpdateNoteOutputDto> {
+    return await this._updateNote.execute(input, this._policiesService, token);
   }
 }

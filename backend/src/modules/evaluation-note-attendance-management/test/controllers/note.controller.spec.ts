@@ -5,8 +5,12 @@ import FindAllNote from '../../application/usecases/note/find-all.usecase';
 import FindNote from '../../application/usecases/note/find.usecase';
 import UpdateNote from '../../application/usecases/note/update.usecase';
 import NoteController from '../../interface/controller/note.controller';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 describe('NoteController unit test', () => {
+  let policieService: PoliciesServiceInterface;
+  let token: TokenData;
   // Mock the usecases directly
   const mockCreateNote: jest.Mocked<CreateNote> = {
     execute: jest.fn(),
@@ -42,6 +46,15 @@ describe('NoteController unit test', () => {
   // For create, the output should match the expected interface
   const createOutput = { id: id };
 
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
+    verifyPolicies: jest.fn(),
+  });
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -62,12 +75,15 @@ describe('NoteController unit test', () => {
       message: 'Operação concluída com sucesso',
     });
 
+    policieService = MockPolicyService();
+
     controller = new NoteController(
       mockCreateNote,
       mockFindNote,
       mockFindAllNote,
       mockUpdateNote,
-      mockDeleteNote
+      mockDeleteNote,
+      policieService
     );
   });
 
@@ -78,28 +94,40 @@ describe('NoteController unit test', () => {
       note: 10,
     };
 
-    const result = await controller.create(createInput);
+    const result = await controller.create(createInput, token);
 
     expect(mockCreateNote.execute).toHaveBeenCalledTimes(1);
-    expect(mockCreateNote.execute).toHaveBeenCalledWith(createInput);
+    expect(mockCreateNote.execute).toHaveBeenCalledWith(
+      createInput,
+      policieService,
+      token
+    );
     expect(result).toEqual(createOutput);
   });
 
   it('should return a note', async () => {
     const findInput = { id };
-    const result = await controller.find(findInput);
+    const result = await controller.find(findInput, token);
 
     expect(mockFindNote.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindNote.execute).toHaveBeenCalledWith(findInput);
+    expect(mockFindNote.execute).toHaveBeenCalledWith(
+      findInput,
+      policieService,
+      token
+    );
     expect(result).toEqual(noteData);
   });
 
   it('should return all notes', async () => {
     const findAllInput = {};
-    const result = await controller.findAll(findAllInput);
+    const result = await controller.findAll(findAllInput, token);
 
     expect(mockFindAllNote.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindAllNote.execute).toHaveBeenCalledWith(findAllInput);
+    expect(mockFindAllNote.execute).toHaveBeenCalledWith(
+      findAllInput,
+      policieService,
+      token
+    );
     expect(result).toBeDefined();
     expect(result.length).toBe(2);
   });
@@ -109,19 +137,27 @@ describe('NoteController unit test', () => {
       id,
       note: 8,
     };
-    const result = await controller.update(updateInput);
+    const result = await controller.update(updateInput, token);
 
     expect(mockUpdateNote.execute).toHaveBeenCalledTimes(1);
-    expect(mockUpdateNote.execute).toHaveBeenCalledWith(updateInput);
+    expect(mockUpdateNote.execute).toHaveBeenCalledWith(
+      updateInput,
+      policieService,
+      token
+    );
     expect(result).toEqual(noteData);
   });
 
   it('should delete a note', async () => {
     const deleteInput = { id };
-    const result = await controller.delete(deleteInput);
+    const result = await controller.delete(deleteInput, token);
 
     expect(mockDeleteNote.execute).toHaveBeenCalledTimes(1);
-    expect(mockDeleteNote.execute).toHaveBeenCalledWith(deleteInput);
+    expect(mockDeleteNote.execute).toHaveBeenCalledWith(
+      deleteInput,
+      policieService,
+      token
+    );
     expect(result).toEqual({ message: 'Operação concluída com sucesso' });
   });
 });

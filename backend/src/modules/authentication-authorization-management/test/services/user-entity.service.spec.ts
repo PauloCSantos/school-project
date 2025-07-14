@@ -1,4 +1,4 @@
-import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import { AuthUserService } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 
 describe('AuthUserService unit test', () => {
   describe('On success', () => {
@@ -33,7 +33,7 @@ describe('AuthUserService unit test', () => {
       const hash1 = await authUserService.generateHash(password);
       const hash2 = await authUserService.generateHash(password);
 
-      expect(hash1).not.toEqual(hash2); // Salts diferentes geram hashes diferentes
+      expect(hash1).not.toEqual(hash2);
       expect(await authUserService.comparePassword(password, hash1)).toBe(true);
       expect(await authUserService.comparePassword(password, hash2)).toBe(true);
     });

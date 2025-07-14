@@ -8,9 +8,9 @@ export default interface AttendanceGateway {
   /**
    * Finds an attendance record by its unique identifier.
    * @param id - The unique identifier of the attendance record to search for
-   * @returns Promise resolving to the found Attendance or undefined if not found
+   * @returns Promise resolving to the found Attendance or null if not found
    */
-  find(id: string): Promise<Attendance | undefined>;
+  find(id: string): Promise<Attendance | null>;
 
   /**
    * Retrieves a collection of attendance records with pagination support.

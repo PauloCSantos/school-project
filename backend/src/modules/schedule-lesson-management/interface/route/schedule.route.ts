@@ -1,13 +1,10 @@
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import { ScheduleController } from '../controller/schedule.controller';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
-import { validId } from '@/modules/@shared/utils/validations';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import {
   CreateScheduleInputDto,
   FindAllScheduleInputDto,
@@ -17,6 +14,12 @@ import {
   FindScheduleInputDto,
   DeleteScheduleInputDto,
 } from '../../application/dto/schedule-usecase.dto';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
+import {
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Route handler for schedule management endpoint.
@@ -29,173 +32,158 @@ export default class ScheduleRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS_ADD = ['id', 'newLessonsList'];
+    const REQUIRED_FIELDS_REMOVE = ['id', 'lessonsListToRemove'];
+    const REQUIRED_FIELDS = ['student', 'curriculum', 'lessonsList'];
+    const REQUIRED_FIELD = ['id'];
 
-    this.httpGateway.get(
-      '/schedules',
-      this.findAllSchedules.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.get('/schedules', this.findAllSchedules.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.FIND_ALL, REQUIRED_FIELDS_ALL),
+    ]);
+    this.httpGateway.post('/schedule', this.createSchedule.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
+    ]);
+    this.httpGateway.get('/schedule/:id', this.findSchedule.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
+    ]);
+    this.httpGateway.patch('/schedule', this.updateSchedule.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
+    ]);
+    this.httpGateway.delete('/schedule/:id', this.deleteSchedule.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
+    ]);
+    this.httpGateway.post('/schedule/lesson/add', this.addLessons.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.ADD, REQUIRED_FIELDS_ADD),
+    ]);
     this.httpGateway.post(
-      '/schedule',
-      this.createSchedule.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
-    this.httpGateway.get(
-      '/schedule/:id',
-      this.findSchedule.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
-    this.httpGateway.patch(
-      '/schedule/:id',
-      this.updateSchedule.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
-    this.httpGateway.delete(
-      '/schedule/:id',
-      this.deleteSchedule.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
-    this.httpGateway.post(
-      '/schedule/:id/lesson/add',
-      this.addLessons.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
-    this.httpGateway.post(
-      '/schedule/:id/lesson/remove',
+      '/schedule/lesson/remove',
       this.removeLessons.bind(this),
-      errorHandler,
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(
+          FunctionCalledEnum.REMOVE,
+          REQUIRED_FIELDS_REMOVE
+        ),
+      ]
     );
   }
 
   private async findAllSchedules(
-    req: AuthHttpRequest<{}, {}, FindAllScheduleInputDto, {}>
+    req: HttpRequest<{}, FindAllScheduleInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset incorretos' },
-        };
-      }
-      const schedules = await this.scheduleController.findAll({
-        quantity,
-        offset,
-      });
-      return { statusCode: 200, body: schedules };
+      const { quantity, offset } = req.query;
+      const schedules = await this.scheduleController.findAll(
+        {
+          quantity,
+          offset,
+        },
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: schedules };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async createSchedule(
-    req: AuthHttpRequest<{}, {}, CreateScheduleInputDto, {}>
+    req: HttpRequest<{}, {}, CreateScheduleInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação de evento' },
-        };
-      }
-      const schedule = await this.scheduleController.create(input);
-      return { statusCode: 201, body: schedule };
+      const schedule = await this.scheduleController.create(
+        input,
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.CREATED, body: schedule };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async findSchedule(
-    req: AuthHttpRequest<FindScheduleInputDto, {}, {}, {}>
+    req: HttpRequest<FindScheduleInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
+      const response = await this.scheduleController.find(
+        { id },
+        req.tokenData!
+      );
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
       }
-      const response = await this.scheduleController.find({ id });
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateSchedule(
-    req: AuthHttpRequest<FindScheduleInputDto, {}, UpdateScheduleInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateScheduleInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const response = await this.scheduleController.update({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.scheduleController.update(
+        input,
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async deleteSchedule(
-    req: AuthHttpRequest<DeleteScheduleInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteScheduleInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
-      const response = await this.scheduleController.delete({ id });
-      return { statusCode: 200, body: response };
+      const response = await this.scheduleController.delete(
+        { id },
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async addLessons(
-    req: AuthHttpRequest<FindScheduleInputDto, {}, AddLessonsInputDto, {}>
+    req: HttpRequest<{}, {}, AddLessonsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id) || !this.validateAdd(input)) {
-        return { statusCode: 400, body: { error: 'Dados inválidos' } };
-      }
-      const response = await this.scheduleController.addLessons({
-        ...input,
-        id,
-      });
-      return { statusCode: 200, body: response };
+      const response = await this.scheduleController.addLessons(
+        input,
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async removeLessons(
-    req: AuthHttpRequest<FindScheduleInputDto, {}, RemoveLessonsInputDto, {}>
+    req: HttpRequest<{}, {}, RemoveLessonsInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id) || !this.validateRemove(input)) {
-        return { statusCode: 400, body: { error: 'Dados inválidos' } };
-      }
-      const response = await this.scheduleController.removeLessons({
-        ...input,
-        id,
-      });
-      return { statusCode: 200, body: response };
+      const response = await this.scheduleController.removeLessons(
+        input,
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -206,30 +194,5 @@ export default class ScheduleRoute {
       return { statusCode, body: { error: error.message } };
     }
     return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    if (quantity === undefined || offset === undefined) {
-      return true;
-    }
-    return Number.isInteger(quantity) && Number.isInteger(offset);
-  }
-
-  private validateCreate(input: CreateScheduleInputDto): boolean {
-    const { student, curriculum, lessonsList } = input;
-    return Boolean(student && curriculum && lessonsList);
-  }
-
-  private validateAdd(input: AddLessonsInputDto): boolean {
-    return (
-      Array.isArray(input.newLessonsList) && input.newLessonsList.length > 0
-    );
-  }
-
-  private validateRemove(input: RemoveLessonsInputDto): boolean {
-    return (
-      Array.isArray(input.lessonsListToRemove) &&
-      input.lessonsListToRemove.length > 0
-    );
   }
 }

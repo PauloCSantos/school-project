@@ -5,6 +5,13 @@ import {
   CreateScheduleOutputDto,
 } from '../../dto/schedule-usecase.dto';
 import ScheduleGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/schedule.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for schedule operation.
@@ -20,11 +27,21 @@ export default class CreateSchedule
   /**
    * Executes the schedule use case.
    */
-  async execute({
-    curriculum,
-    lessonsList,
-    student,
-  }: CreateScheduleInputDto): Promise<CreateScheduleOutputDto> {
+  async execute(
+    { curriculum, lessonsList, student }: CreateScheduleInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<CreateScheduleOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.SCHEDULE,
+        FunctionCalledEnum.CREATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const schedule = new Schedule({
       curriculum,
       lessonsList,

@@ -1,4 +1,3 @@
-// express.adapter.ts
 import express, { Application, Request, Response } from 'express';
 import {
   HttpServer,
@@ -8,7 +7,7 @@ import {
 } from './http.interface';
 
 /**
- * Adaptador que encapsula o Express e implementa HttpServer.
+ * Adapter that encapsulates Express and implements HttpServer.
  */
 export class ExpressAdapter implements HttpServer {
   private readonly app: Application;
@@ -23,7 +22,7 @@ export class ExpressAdapter implements HttpServer {
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
     this.app.get(path, this.handleRequest(handler, middlewares));
   }
@@ -33,7 +32,7 @@ export class ExpressAdapter implements HttpServer {
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
     this.app.post(path, this.handleRequest(handler, middlewares));
   }
@@ -43,7 +42,7 @@ export class ExpressAdapter implements HttpServer {
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
     this.app.patch(path, this.handleRequest(handler, middlewares));
   }
@@ -53,7 +52,7 @@ export class ExpressAdapter implements HttpServer {
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
     this.app.delete(path, this.handleRequest(handler, middlewares));
   }
@@ -92,14 +91,14 @@ export class ExpressAdapter implements HttpServer {
   }
 
   /**
-   * Disponível para uso em testes com Supertest.
+   * Available for use in tests with Supertest.
    */
   public getNativeServer(): Application {
     return this.app;
   }
 
   /**
-   * Inicia o servidor na porta informada.
+   * Starts the server on the specified port.
    */
   public listen(port: number, cb?: () => void): void {
     this.app.listen(port, cb);

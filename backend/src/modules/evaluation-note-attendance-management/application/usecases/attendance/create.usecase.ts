@@ -5,6 +5,13 @@ import {
 } from '../../dto/attendance-usecase.dto';
 import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for creating a new attendance record.
@@ -35,15 +42,22 @@ export default class CreateAttendance
    * @throws Error if an attendance record with the same id already exists
    * @throws ValidationError if any of the input data fails validation during entity creation
    */
-  async execute({
-    date,
-    day,
-    hour,
-    lesson,
-    studentsPresent,
-  }: CreateAttendanceInputDto): Promise<CreateAttendanceOutputDto> {
+  async execute(
+    { date, day, hour, lesson, studentsPresent }: CreateAttendanceInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<CreateAttendanceOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.ATTENDANCE,
+        FunctionCalledEnum.CREATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
     const attendance = new Attendance({
-      date,
+      date: new Date(date),
       day,
       hour,
       lesson,

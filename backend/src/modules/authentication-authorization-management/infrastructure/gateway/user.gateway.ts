@@ -33,4 +33,6 @@ export default interface AuthUserGateway {
    * @returns Promise resolving to a success message
    */
   delete(email: string): Promise<string>;
+
+  verify(email: string): Promise<boolean>;
 }

@@ -41,6 +41,24 @@ import { UserMasterRoute } from '@/modules/user-management/interface/route/maste
 import { UserStudentRoute } from '@/modules/user-management/interface/route/student.route';
 import { UserTeacherRoute } from '@/modules/user-management/interface/route/teacher.route';
 import { UserWorkerRoute } from '@/modules/user-management/interface/route/worker.route';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
+import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+
+async function createAuthUserInMemory(
+  email: string,
+  repository: any,
+  role = 'master'
+) {
+  await repository.create({
+    id: new Id().value,
+    email,
+    password: 'testPassword123',
+    masterId: new Id().value,
+    role,
+    isHashed: false,
+  });
+}
 
 describe('User management module end to end test', () => {
   let userAdministratorRepository = new MemoryUserAdministratorRepository();
@@ -48,6 +66,8 @@ describe('User management module end to end test', () => {
   let userStudentRepository = new MemoryUserStudentRepository();
   let userTeacherRepository = new MemoryUserTeacherRepository();
   let userWorkerRepository = new MemoryUserWorkerRepository();
+  let authUserRepository = new MemoryAuthUserRepository();
+  let emailValidatorService = new EmailAuthValidatorService(authUserRepository);
   let app: any;
   beforeEach(() => {
     userAdministratorRepository = new MemoryUserAdministratorRepository();
@@ -55,8 +75,11 @@ describe('User management module end to end test', () => {
     userStudentRepository = new MemoryUserStudentRepository();
     userTeacherRepository = new MemoryUserTeacherRepository();
     userWorkerRepository = new MemoryUserWorkerRepository();
+    authUserRepository = new MemoryAuthUserRepository();
+    emailValidatorService = new EmailAuthValidatorService(authUserRepository);
     const createUserAdministratorUsecase = new CreateUserAdministrator(
-      userAdministratorRepository
+      userAdministratorRepository,
+      emailValidatorService
     );
     const findUserAdministratorUsecase = new FindUserAdministrator(
       userAdministratorRepository
@@ -70,12 +93,16 @@ describe('User management module end to end test', () => {
     const deleteUserAdministratorUsecase = new DeleteUserAdministrator(
       userAdministratorRepository
     );
-    const createUserMasterUsecase = new CreateUserMaster(userMasterRepository);
+    const createUserMasterUsecase = new CreateUserMaster(
+      userMasterRepository,
+      emailValidatorService
+    );
     const findUserMasterUsecase = new FindUserMaster(userMasterRepository);
     const updateUserMasterUsecase = new UpdateUserMaster(userMasterRepository);
 
     const createUserStudentUsecase = new CreateUserStudent(
-      userStudentRepository
+      userStudentRepository,
+      emailValidatorService
     );
     const findUserStudentUsecase = new FindUserStudent(userStudentRepository);
     const findAllUserStudentUsecase = new FindAllUserStudent(
@@ -89,7 +116,8 @@ describe('User management module end to end test', () => {
     );
 
     const createUserTeacherUsecase = new CreateUserTeacher(
-      userTeacherRepository
+      userTeacherRepository,
+      emailValidatorService
     );
     const findUserTeacherUsecase = new FindUserTeacher(userTeacherRepository);
     const findAllUserTeacherUsecase = new FindAllUserTeacher(
@@ -102,7 +130,10 @@ describe('User management module end to end test', () => {
       userTeacherRepository
     );
 
-    const createUserWorkerUsecase = new CreateUserWorker(userWorkerRepository);
+    const createUserWorkerUsecase = new CreateUserWorker(
+      userWorkerRepository,
+      emailValidatorService
+    );
     const findUserWorkerUsecase = new FindUserWorker(userWorkerRepository);
     const findAllUserWorkerUsecase = new FindAllUserWorker(
       userWorkerRepository
@@ -110,38 +141,45 @@ describe('User management module end to end test', () => {
     const updateUserWorkerUsecase = new UpdateUserWorker(userWorkerRepository);
     const deleteUserWorkerUsecase = new DeleteUserWorker(userWorkerRepository);
 
+    const policiesService = new PoliciesService();
+
     const userAdministratorController = new UserAdministratorController(
       createUserAdministratorUsecase,
       findUserAdministratorUsecase,
       findAllUserAdministratorUsecase,
       updateUserAdministratorUsecase,
-      deleteUserAdministratorUsecase
+      deleteUserAdministratorUsecase,
+      policiesService
     );
     const userMasterController = new UserMasterController(
       createUserMasterUsecase,
       findUserMasterUsecase,
-      updateUserMasterUsecase
+      updateUserMasterUsecase,
+      policiesService
     );
     const userStudentController = new UserStudentController(
       createUserStudentUsecase,
       findUserStudentUsecase,
       findAllUserStudentUsecase,
       updateUserStudentUsecase,
-      deleteUserStudentUsecase
+      deleteUserStudentUsecase,
+      policiesService
     );
     const userTeacherController = new UserTeacherController(
       createUserTeacherUsecase,
       findUserTeacherUsecase,
       findAllUserTeacherUsecase,
       updateUserTeacherUsecase,
-      deleteUserTeacherUsecase
+      deleteUserTeacherUsecase,
+      policiesService
     );
     const userWorkerController = new UserWorkerController(
       createUserWorkerUsecase,
       findUserWorkerUsecase,
       findAllUserWorkerUsecase,
       updateUserWorkerUsecase,
-      deleteUserWorkerUsecase
+      deleteUserWorkerUsecase,
+      policiesService
     );
     const expressHttp = new ExpressAdapter();
     const tokerService = tokenInstance();
@@ -209,6 +247,7 @@ describe('User management module end to end test', () => {
     describe('On error', () => {
       describe('POST /user-administrator', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
             .set(
@@ -241,6 +280,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-administrator/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-administrator')
             .set(
@@ -277,8 +317,9 @@ describe('User management module end to end test', () => {
           expect(userAdministrator.body.error).toBeDefined();
         });
       });
-      describe('PATCH /user-administrator/:id', () => {
+      describe('PATCH /user-administrator', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
             .set(
@@ -307,12 +348,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-administrator/${id}`)
+            .patch(`/user-administrator`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               address: {
                 zip: '',
                 state: '',
@@ -324,6 +366,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-administrator/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-administrator')
             .set(
@@ -364,6 +407,7 @@ describe('User management module end to end test', () => {
     describe('On success', () => {
       describe('POST /user-administrator', () => {
         it('should create a user', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
             .set(
@@ -390,12 +434,14 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
             });
+
           expect(response.status).toBe(201);
           expect(response.body.id).toBeDefined();
         });
       });
       describe('GET /user-administrator/:id', () => {
         it('should find a user by ID', async () => {
+          await createAuthUserInMemory('teste2@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
             .set(
@@ -419,7 +465,7 @@ describe('User management module end to end test', () => {
                 salary: 5000,
               },
               birthday: '11-12-1995',
-              email: 'teste1@test.com',
+              email: 'teste2@test.com',
               graduation: 'Math',
             });
           const id = response.body.id;
@@ -433,8 +479,10 @@ describe('User management module end to end test', () => {
           expect(userAdministrator.body).toBeDefined();
         });
       });
-      describe('GET /user-administrators/', () => {
+      describe('GET /users-administrator', () => {
         it('should find all users', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
+          await createAuthUserInMemory('teste2@test.com', authUserRepository);
           await supertest(app)
             .post('/user-administrator')
             .set(
@@ -484,11 +532,11 @@ describe('User management module end to end test', () => {
                 salary: 5000,
               },
               birthday: '11-12-1995',
-              email: 'teste1@test.com',
+              email: 'teste2@test.com',
               graduation: 'Spanish',
             });
           const response = await supertest(app)
-            .get('/user-administrators')
+            .get('/users-administrator')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -498,8 +546,9 @@ describe('User management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /user-administrator/:id', () => {
+      describe('PATCH /user-administrator', () => {
         it('should update a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
             .set(
@@ -528,12 +577,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-administrator/${id}`)
+            .patch(`/user-administrator`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               address: {
                 street: 'Street B',
                 city: 'City B',
@@ -542,7 +592,6 @@ describe('User management module end to end test', () => {
                 avenue: 'Avenue B',
                 state: 'State B',
               },
-              birthday: '01/01/2020',
             });
           expect(updatedUser.status).toBe(200);
           expect(updatedUser.body).toBeDefined();
@@ -550,6 +599,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-administrator/:id', () => {
         it('should delete a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
             .set(
@@ -593,8 +643,13 @@ describe('User management module end to end test', () => {
     describe('On error', () => {
       describe('POST /user-master', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
+            .set(
+              'authorization',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -618,8 +673,13 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-master/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-master')
+            .set(
+              'authorization',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -647,10 +707,15 @@ describe('User management module end to end test', () => {
           expect(response.body.error).toBeDefined();
         });
       });
-      describe('PATCH /user-master/:id', () => {
+      describe('PATCH /user-master', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
+            .set(
+              'authorization',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               name: {
                 firstName: 'John',
@@ -670,12 +735,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-master/${id}`)
+            .patch(`/user-master`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               cnpj: '142154654',
             });
           expect(updatedUser.status).toBe(400);
@@ -686,8 +752,13 @@ describe('User management module end to end test', () => {
     describe('On sucess', () => {
       describe('POST /user-master', () => {
         it('should create a user', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
+            .set(
+              'authorization',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: new Id().value,
               name: {
@@ -712,8 +783,13 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-master/:id', () => {
         it('should find a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
+            .set(
+              'authorization',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: new Id().value,
               name: {
@@ -743,10 +819,15 @@ describe('User management module end to end test', () => {
           expect(userMaster.body).toBeDefined();
         });
       });
-      describe('PATCH /user-master/:id', () => {
+      describe('PATCH /user-master', () => {
         it('should update a user by ID', async () => {
+          await createAuthUserInMemory('teste2@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
+            .set(
+              'authorization',
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
+            )
             .send({
               id: new Id().value,
               name: {
@@ -762,19 +843,20 @@ describe('User management module end to end test', () => {
                 state: 'State A',
               },
               birthday: '11-12-1995',
-              email: 'teste1@test.com',
+              email: 'teste2@test.com',
               cnpj: '35.741.901/0001-58',
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-master/${id}`)
+            .patch(`/user-master`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
-              email: 'teste2@test.com',
+              id,
               cnpj: '35.845.901/0001-58',
+              email: 'teste123@test.com',
             });
           expect(updatedUser.status).toBe(200);
           expect(updatedUser.body).toBeDefined();
@@ -786,6 +868,7 @@ describe('User management module end to end test', () => {
     describe('On error', () => {
       describe('POST /user-student', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
             .set(
@@ -815,6 +898,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-student/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-student')
             .set(
@@ -848,8 +932,9 @@ describe('User management module end to end test', () => {
           expect(userStudent.body.error).toBeDefined();
         });
       });
-      describe('PATCH /user-student/:id', () => {
+      describe('PATCH /user-student', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
             .set(
@@ -875,14 +960,14 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-student/${id}`)
+            .patch(`/user-student`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               paymentYear: 0,
-              birthday: '18/02/2024',
             });
           expect(updatedUser.status).toBe(400);
           expect(updatedUser.body.error).toBeDefined();
@@ -890,6 +975,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-student/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-student')
             .set(
@@ -927,6 +1013,7 @@ describe('User management module end to end test', () => {
     describe('On sucess', () => {
       describe('POST /user-student', () => {
         it('should create a user', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
             .set(
@@ -956,6 +1043,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-student/:id', () => {
         it('should find a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
             .set(
@@ -990,8 +1078,10 @@ describe('User management module end to end test', () => {
           expect(userStudent.body).toBeDefined();
         });
       });
-      describe('GET /user-students/', () => {
+      describe('GET /users-student', () => {
         it('should find all users', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
+          await createAuthUserInMemory('teste2@test.com', authUserRepository);
           await supertest(app)
             .post('/user-student')
             .set(
@@ -1035,11 +1125,11 @@ describe('User management module end to end test', () => {
                 state: 'State A',
               },
               birthday: new Date('11-12-1995'),
-              email: 'teste1@test.com',
+              email: 'teste2@test.com',
               paymentYear: 20000,
             });
           const response = await supertest(app)
-            .get('/user-students')
+            .get('/users-student')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -1049,8 +1139,9 @@ describe('User management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /user-student/:id', () => {
+      describe('PATCH /user-student', () => {
         it('should update a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
             .set(
@@ -1076,12 +1167,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-student/${id}`)
+            .patch(`/user-student`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               name: {
                 firstName: 'John',
                 lastName: 'Doe',
@@ -1094,7 +1186,6 @@ describe('User management module end to end test', () => {
                 avenue: 'Avenue A',
                 state: 'State A',
               },
-              birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
@@ -1104,6 +1195,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-student/:id', () => {
         it('should delete a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
             .set(
@@ -1144,6 +1236,7 @@ describe('User management module end to end test', () => {
     describe('On error', () => {
       describe('POST /user-teacher', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1177,6 +1270,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-teacher/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1214,8 +1308,9 @@ describe('User management module end to end test', () => {
           expect(userTeacher.body.error).toBeDefined();
         });
       });
-      describe('PATCH /user-teacher/:id', () => {
+      describe('PATCH /user-teacher', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1245,12 +1340,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-teacher/${id}`)
+            .patch(`/user-teacher`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               academicDegrees: 0,
               birthday: '02/20/2024',
             });
@@ -1260,6 +1356,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-teacher/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1301,6 +1398,7 @@ describe('User management module end to end test', () => {
     describe('On sucess', () => {
       describe('POST /user-teacher', () => {
         it('should create a user', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1334,6 +1432,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-teacher/:id', () => {
         it('should find a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1372,8 +1471,10 @@ describe('User management module end to end test', () => {
           expect(userTeacher.body).toBeDefined();
         });
       });
-      describe('GET /user-teachers/', () => {
+      describe('GET /users-teacher', () => {
         it('should find all users', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
+          await createAuthUserInMemory('teste2@test.com', authUserRepository);
           await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1424,12 +1525,12 @@ describe('User management module end to end test', () => {
                 salary: 5000,
               },
               birthday: new Date('11-12-1995'),
-              email: 'teste1@test.com',
+              email: 'teste2@test.com',
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
           const response = await supertest(app)
-            .get('/user-teachers')
+            .get('/users-teacher')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -1439,8 +1540,9 @@ describe('User management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /user-teacher/:id', () => {
+      describe('PATCH /user-teacher', () => {
         it('should update a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1470,12 +1572,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-teacher/${id}`)
+            .patch(`/user-teacher`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               name: {
                 firstName: 'John',
                 lastName: 'Doe',
@@ -1502,6 +1605,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-teacher/:id', () => {
         it('should delete a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
             .set(
@@ -1546,6 +1650,7 @@ describe('User management module end to end test', () => {
     describe('On error', () => {
       describe('POST /user-worker', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
             .set(
@@ -1577,6 +1682,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-worker/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-worker')
             .set(
@@ -1612,8 +1718,9 @@ describe('User management module end to end test', () => {
           expect(userWorker.body.error).toBeDefined();
         });
       });
-      describe('PATCH /user-worker/:id', () => {
+      describe('PATCH /user-worker', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
             .set(
@@ -1641,13 +1748,14 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-worker/${id}`)
+            .patch(`/user-worker`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
               salary: {
+                id,
                 salary: 'a',
               },
             });
@@ -1657,6 +1765,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-worker/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-worker')
             .set(
@@ -1696,6 +1805,7 @@ describe('User management module end to end test', () => {
     describe('On sucess', () => {
       describe('POST /user-worker', () => {
         it('should create a user', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
             .set(
@@ -1727,6 +1837,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-worker/:id', () => {
         it('should find a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
             .set(
@@ -1763,8 +1874,10 @@ describe('User management module end to end test', () => {
           expect(userWorker.body).toBeDefined();
         });
       });
-      describe('GET /user-workers/', () => {
+      describe('GET /users-worker/', () => {
         it('should find all users', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
+          await createAuthUserInMemory('teste2@test.com', authUserRepository);
           await supertest(app)
             .post('/user-worker')
             .set(
@@ -1813,10 +1926,10 @@ describe('User management module end to end test', () => {
                 salary: 5000,
               },
               birthday: new Date('11-12-1995'),
-              email: 'teste1@test.com',
+              email: 'teste2@test.com',
             });
           const response = await supertest(app)
-            .get('/user-workers')
+            .get('/users-worker')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -1826,8 +1939,9 @@ describe('User management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /user-worker/:id', () => {
+      describe('PATCH /user-worker', () => {
         it('should update a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
             .set(
@@ -1855,12 +1969,13 @@ describe('User management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedUser = await supertest(app)
-            .patch(`/user-worker/${id}`)
+            .patch(`/user-worker`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               name: {
                 firstName: 'John',
                 lastName: 'Doe',
@@ -1885,6 +2000,7 @@ describe('User management module end to end test', () => {
       });
       describe('DELETE /user-worker/:id', () => {
         it('should delete a user by ID', async () => {
+          await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
             .set(

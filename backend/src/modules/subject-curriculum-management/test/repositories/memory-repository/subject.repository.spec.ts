@@ -30,11 +30,11 @@ describe('MemorySubjectRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should received an undefined', async () => {
+    it('should received an null', async () => {
       const subjectId = new Id().value;
       const subjectFound = await repository.find(subjectId);
 
-      expect(subjectFound).toBeUndefined();
+      expect(subjectFound).toBeNull();
     });
     it('should throw an error when the Id is wrong', async () => {
       const subject = new Subject({

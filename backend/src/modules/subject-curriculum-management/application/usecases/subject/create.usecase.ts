@@ -6,6 +6,13 @@ import {
 
 import Subject from '@/modules/subject-curriculum-management/domain/entity/subject.entity';
 import SubjectGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/subject.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class CreateSubject
   implements UseCaseInterface<CreateSubjectInputDto, CreateSubjectOutputDto>
@@ -15,10 +22,21 @@ export default class CreateSubject
   constructor(subjectRepository: SubjectGateway) {
     this._subjectRepository = subjectRepository;
   }
-  async execute({
-    name,
-    description,
-  }: CreateSubjectInputDto): Promise<CreateSubjectOutputDto> {
+  async execute(
+    { name, description }: CreateSubjectInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<CreateSubjectOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.SUBJECT,
+        FunctionCalledEnum.CREATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const subject = new Subject({
       name,
       description,

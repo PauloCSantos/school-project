@@ -12,12 +12,20 @@ export default class MemoryUserAdministratorRepository
       : (this._administratorUsers = []);
   }
 
-  async find(id: string): Promise<UserAdministrator | undefined> {
+  async find(id: string): Promise<UserAdministrator | null> {
     const user = this._administratorUsers.find(user => user.id.value === id);
     if (user) {
       return user;
     } else {
-      return undefined;
+      return null;
+    }
+  }
+  async findByEmail(email: string): Promise<UserAdministrator | null> {
+    const user = this._administratorUsers.find(user => user.email === email);
+    if (user) {
+      return user;
+    } else {
+      return null;
     }
   }
   async findAll(
@@ -25,7 +33,7 @@ export default class MemoryUserAdministratorRepository
     offSet?: number | undefined
   ): Promise<UserAdministrator[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const users = this._administratorUsers.slice(offS, qtd);
 
     return users;

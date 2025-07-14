@@ -7,10 +7,13 @@ import UpdateCurriculum from '../usecases/curriculum/update.usecase';
 import CurriculumFacade from '../facade/facade/curriculum.facade';
 import AddSubjects from '../usecases/curriculum/add-subjects.usecase';
 import MemoryCurriculumRepository from '../../infrastructure/repositories/memory-repository/curriculum.repository';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 export default class CurriculumFacadeFactory {
   static create(): CurriculumFacade {
     const repository = new MemoryCurriculumRepository();
+    const policiesService = new PoliciesService();
+
     const createCurriculum = new CreateCurriculum(repository);
     const deleteCurriculum = new DeleteCurriculum(repository);
     const findAllCurriculum = new FindAllCurriculum(repository);
@@ -26,6 +29,7 @@ export default class CurriculumFacadeFactory {
       updateCurriculum,
       addSubjects,
       removeSubjects,
+      policiesService,
     });
 
     return facade;

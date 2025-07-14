@@ -1,3 +1,4 @@
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   AddStudentsInputDto,
   AddStudentsOutputDto,
@@ -27,14 +28,20 @@ export default interface AttendanceFacadeInterface {
    * @param input Attendance creation parameters
    * @returns Information about the created attendance record
    */
-  create(input: CreateAttendanceInputDto): Promise<CreateAttendanceOutputDto>;
+  create(
+    input: CreateAttendanceInputDto,
+    token: TokenData
+  ): Promise<CreateAttendanceOutputDto>;
 
   /**
    * Finds an attendance record by its identifier
    * @param input Search parameters
    * @returns Attendance information if found, null otherwise
    */
-  find(input: FindAttendanceInputDto): Promise<FindAttendanceOutputDto | null>;
+  find(
+    input: FindAttendanceInputDto,
+    token: TokenData
+  ): Promise<FindAttendanceOutputDto | null>;
 
   /**
    * Retrieves all attendance records matching filter criteria
@@ -42,7 +49,8 @@ export default interface AttendanceFacadeInterface {
    * @returns List of attendance records
    */
   findAll(
-    input: FindAllAttendanceInputDto
+    input: FindAllAttendanceInputDto,
+    token: TokenData
   ): Promise<FindAllAttendanceOutputDto>;
 
   /**
@@ -50,21 +58,30 @@ export default interface AttendanceFacadeInterface {
    * @param input Attendance identification
    * @returns Confirmation message
    */
-  delete(input: DeleteAttendanceInputDto): Promise<DeleteAttendanceOutputDto>;
+  delete(
+    input: DeleteAttendanceInputDto,
+    token: TokenData
+  ): Promise<DeleteAttendanceOutputDto>;
 
   /**
    * Updates an attendance record's information
    * @param input Attendance identification and data to update
    * @returns Updated attendance information
    */
-  update(input: UpdateAttendanceInputDto): Promise<UpdateAttendanceOutputDto>;
+  update(
+    input: UpdateAttendanceInputDto,
+    token: TokenData
+  ): Promise<UpdateAttendanceOutputDto>;
 
   /**
    * Adds students to an attendance record
    * @param input Attendance and student identifications
    * @returns Updated attendance information with added students
    */
-  addStudents(input: AddStudentsInputDto): Promise<AddStudentsOutputDto>;
+  addStudents(
+    input: AddStudentsInputDto,
+    token: TokenData
+  ): Promise<AddStudentsOutputDto>;
 
   /**
    * Removes students from an attendance record
@@ -72,6 +89,7 @@ export default interface AttendanceFacadeInterface {
    * @returns Updated attendance information with removed students
    */
   removeStudents(
-    input: RemoveStudentsInputDto
+    input: RemoveStudentsInputDto,
+    token: TokenData
   ): Promise<RemoveStudentsOutputDto>;
 }

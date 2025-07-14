@@ -2,8 +2,8 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import EventController from '../../interface/controller/calendar.controller';
-import EventRoute from '../../interface/route/calendar.route';
+import EventController from '../../interface/controller/event.controller';
+import EventRoute from '../../interface/route/event.route';
 
 describe('EventRoute with ExpressAdapter', () => {
   let http: ExpressAdapter;
@@ -28,7 +28,14 @@ describe('EventRoute with ExpressAdapter', () => {
     } as unknown as EventController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new EventRoute(eventController, http, middleware).routes();
@@ -36,14 +43,19 @@ describe('EventRoute with ExpressAdapter', () => {
 
   describe('success', () => {
     it('should find all events', async () => {
-      const response = await supertest(app)
-        .get('/events')
-        .send({ quantity: 2, offset: 0 });
+      const response = await supertest(app).get('/events?quantity=2&offset=0');
       expect(response.statusCode).toBe(200);
-      expect(eventController.findAll).toHaveBeenCalledWith({
-        quantity: 2,
-        offset: 0,
-      });
+      expect(eventController.findAll).toHaveBeenCalledWith(
+        {
+          quantity: '2',
+          offset: '0',
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.any(Array));
       expect(response.body.length).toBe(2);
     });
@@ -62,7 +74,14 @@ describe('EventRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/event').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(eventController.create).toHaveBeenCalledWith(payload);
+      expect(eventController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -71,17 +90,31 @@ describe('EventRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/event/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(eventController.find).toHaveBeenCalledWith({ id });
+      expect(eventController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
     it('should update an event by ID', async () => {
       const id = new Id().value;
-      const payload = { description: 'New description' };
-      const response = await supertest(app).patch(`/event/${id}`).send(payload);
+      const payload = { id, name: 'New description' };
+      const response = await supertest(app).patch(`/event`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(eventController.update).toHaveBeenCalledWith({ id, ...payload });
+      expect(eventController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
@@ -90,7 +123,14 @@ describe('EventRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/event/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(eventController.delete).toHaveBeenCalledWith({ id });
+      expect(eventController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -99,11 +139,11 @@ describe('EventRoute with ExpressAdapter', () => {
 
   describe('failure', () => {
     it('should return 400 for invalid quantity or offset', async () => {
-      const response = await supertest(app).get('/events').send({});
+      const response = await supertest(app).get('/events?offset=invalid');
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Quantity e/ou offset estão incorretos',
+        error: 'Bad Request',
       });
     });
 
@@ -111,15 +151,15 @@ describe('EventRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/event/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app).patch('/event/invalid-id').send({});
+      const response = await supertest(app).patch('/event').send({});
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -127,7 +167,7 @@ describe('EventRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/event/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
   });
 });

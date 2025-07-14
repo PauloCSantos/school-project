@@ -1,3 +1,4 @@
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   CreateUserWorkerInputDto,
   CreateUserWorkerOutputDto,
@@ -12,13 +13,24 @@ import {
 } from '../../dto/worker-facade.dto';
 
 export default interface WorkerFacadeInterface {
-  create(input: CreateUserWorkerInputDto): Promise<CreateUserWorkerOutputDto>;
+  create(
+    input: CreateUserWorkerInputDto,
+    token: TokenData
+  ): Promise<CreateUserWorkerOutputDto>;
   find(
-    input: FindUserWorkerInputDto
-  ): Promise<FindUserWorkerOutputDto | undefined>;
+    input: FindUserWorkerInputDto,
+    token: TokenData
+  ): Promise<FindUserWorkerOutputDto | null>;
   findAll(
-    input: FindAllUserWorkerInputDto
+    input: FindAllUserWorkerInputDto,
+    token: TokenData
   ): Promise<FindAllUserWorkerOutputDto>;
-  delete(input: DeleteUserWorkerInputDto): Promise<DeleteUserWorkerOutputDto>;
-  update(input: UpdateUserWorkerInputDto): Promise<UpdateUserWorkerOutputDto>;
+  delete(
+    input: DeleteUserWorkerInputDto,
+    token: TokenData
+  ): Promise<DeleteUserWorkerOutputDto>;
+  update(
+    input: UpdateUserWorkerInputDto,
+    token: TokenData
+  ): Promise<UpdateUserWorkerOutputDto>;
 }

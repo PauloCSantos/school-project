@@ -16,20 +16,24 @@ import {
   UpdateUserTeacherInputDto,
   UpdateUserTeacherOutputDto,
 } from '../../dto/teacher-facade.dto';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 type TeacherFacadeProps = {
-  createUserTeacher: CreateUserTeacher;
-  deleteUserTeacher: DeleteUserTeacher;
-  findAllUserTeacher: FindAllUserTeacher;
-  findUserTeacher: FindUserTeacher;
-  updateUserTeacher: UpdateUserTeacher;
+  readonly createUserTeacher: CreateUserTeacher;
+  readonly deleteUserTeacher: DeleteUserTeacher;
+  readonly findAllUserTeacher: FindAllUserTeacher;
+  readonly findUserTeacher: FindUserTeacher;
+  readonly updateUserTeacher: UpdateUserTeacher;
+  readonly policiesService: PoliciesServiceInterface;
 };
 export default class TeacherFacade implements TeacherFacadeInterface {
-  private _createUserTeacher: CreateUserTeacher;
-  private _deleteUserTeacher: DeleteUserTeacher;
-  private _findAllUserTeacher: FindAllUserTeacher;
-  private _findUserTeacher: FindUserTeacher;
-  private _updateUserTeacher: UpdateUserTeacher;
+  private readonly _createUserTeacher: CreateUserTeacher;
+  private readonly _deleteUserTeacher: DeleteUserTeacher;
+  private readonly _findAllUserTeacher: FindAllUserTeacher;
+  private readonly _findUserTeacher: FindUserTeacher;
+  private readonly _updateUserTeacher: UpdateUserTeacher;
+  private readonly _policiesService: PoliciesServiceInterface;
 
   constructor(input: TeacherFacadeProps) {
     this._createUserTeacher = input.createUserTeacher;
@@ -37,31 +41,57 @@ export default class TeacherFacade implements TeacherFacadeInterface {
     this._findAllUserTeacher = input.findAllUserTeacher;
     this._findUserTeacher = input.findUserTeacher;
     this._updateUserTeacher = input.updateUserTeacher;
+    this._policiesService = input.policiesService;
   }
 
   async create(
-    input: CreateUserTeacherInputDto
+    input: CreateUserTeacherInputDto,
+    token: TokenData
   ): Promise<CreateUserTeacherOutputDto> {
-    return await this._createUserTeacher.execute(input);
+    return await this._createUserTeacher.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async find(
-    input: FindUserTeacherInputDto
-  ): Promise<FindUserTeacherOutputDto | undefined> {
-    return await this._findUserTeacher.execute(input);
+    input: FindUserTeacherInputDto,
+    token: TokenData
+  ): Promise<FindUserTeacherOutputDto | null> {
+    return await this._findUserTeacher.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async findAll(
-    input: FindAllUserTeacherInputDto
+    input: FindAllUserTeacherInputDto,
+    token: TokenData
   ): Promise<FindAllUserTeacherOutputDto> {
-    return await this._findAllUserTeacher.execute(input);
+    return await this._findAllUserTeacher.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async delete(
-    input: DeleteUserTeacherInputDto
+    input: DeleteUserTeacherInputDto,
+    token: TokenData
   ): Promise<DeleteUserTeacherOutputDto> {
-    return await this._deleteUserTeacher.execute(input);
+    return await this._deleteUserTeacher.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async update(
-    input: UpdateUserTeacherInputDto
+    input: UpdateUserTeacherInputDto,
+    token: TokenData
   ): Promise<UpdateUserTeacherOutputDto> {
-    return await this._updateUserTeacher.execute(input);
+    return await this._updateUserTeacher.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 }

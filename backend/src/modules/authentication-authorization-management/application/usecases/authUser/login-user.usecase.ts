@@ -1,12 +1,12 @@
-import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import TokenService from '@/modules/@shared/infraestructure/service/token.service';
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
 import {
   LoginAuthUserInputDto,
   LoginAuthUserOutputDto,
 } from '../../dto/user-usecase.dto';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import TokenServiceInterface from '@/modules/@shared/infraestructure/services/token.service';
 
 /**
  * Use case responsible for user authentication.
@@ -20,10 +20,10 @@ export default class LoginAuthUser
   private readonly _authUserRepository: AuthUserGateway;
 
   /** Domain service containing business rules for the user entity */
-  private readonly _authUserService: AuthUserService;
+  private readonly _authUserService: AuthUserServiceInterface;
 
   /** Service responsible for token generation and validation */
-  private readonly _tokenService: TokenService;
+  private readonly _tokenService: TokenServiceInterface;
 
   /**
    * Constructs a new instance of the LoginAuthUser use case.
@@ -34,8 +34,8 @@ export default class LoginAuthUser
    */
   constructor(
     authUserRepository: AuthUserGateway,
-    authUserService: AuthUserService,
-    tokenService: TokenService
+    authUserService: AuthUserServiceInterface,
+    tokenService: TokenServiceInterface
   ) {
     this._authUserRepository = authUserRepository;
     this._authUserService = authUserService;

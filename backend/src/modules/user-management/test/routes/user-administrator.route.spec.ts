@@ -82,7 +82,14 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
     } as unknown as UserAdministratorController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new UserAdministratorRoute(
@@ -94,7 +101,9 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
 
   describe('success', () => {
     it('should find all administrators', async () => {
-      const response = await supertest(app).get('/users-administrator');
+      const response = await supertest(app).get(
+        '/users-administrator?quantity=2&offset=0'
+      );
 
       expect(response.statusCode).toBe(200);
       expect(userAdministratorController.findAll).toHaveBeenCalled();
@@ -129,7 +138,14 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
         .send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(userAdministratorController.create).toHaveBeenCalledWith(payload);
+      expect(userAdministratorController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -138,13 +154,21 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/user-administrator/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(userAdministratorController.find).toHaveBeenCalledWith({ id });
+      expect(userAdministratorController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
     it('should update an administrator by ID', async () => {
       const id = new Id().value;
       const payload = {
+        id,
         address: {
           street: 'Updated Street',
           city: 'City A',
@@ -155,14 +179,18 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
         },
       };
       const response = await supertest(app)
-        .patch(`/user-administrator/${id}`)
+        .patch(`/user-administrator`)
         .send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(userAdministratorController.update).toHaveBeenCalledWith({
-        id,
-        ...payload,
-      });
+      expect(userAdministratorController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual(expect.objectContaining({ id }));
     });
 
@@ -171,7 +199,14 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/user-administrator/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(userAdministratorController.delete).toHaveBeenCalledWith({ id });
+      expect(userAdministratorController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -185,17 +220,17 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
       );
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
       const response = await supertest(app)
-        .patch('/user-administrator/invalid-id')
+        .patch('/user-administrator')
         .send({});
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -205,7 +240,7 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
       );
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid payload on create', async () => {

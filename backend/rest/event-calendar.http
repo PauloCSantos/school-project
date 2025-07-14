@@ -1,0 +1,151 @@
+#################################################
+## Variables
+#################################################
+
+@baseUrl = http://localhost:3003
+
+@masterEmail = master@teste.com.br
+@adminEmail = admin@teste.com.br
+@teacherEmail = teacher@teste.com.br
+@studentEmail = student@teste.com.br
+@workerEmail = worker@teste.com.br
+
+@masterPassword = MasterPass123
+@adminPassword = AdminPass123
+@teacherPassword = TeacherPass123
+@studentPassword = StudentPass123
+@workerPassword = WorkerPass123
+
+#################################################
+## User Login Flow
+#################################################
+
+### loginMaster
+# @name loginMaster
+# Authenticate as master
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{masterEmail}}",
+  "password": "{{masterPassword}}",
+  "role": "master"
+}
+###
+@masterToken = Bearer {{loginMaster.response.body.token}}
+
+### loginAdmin
+# @name loginAdmin
+# Authenticate as administrator
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "role": "administrator"
+}
+###
+@adminToken = Bearer {{loginAdmin.response.body.token}}
+
+### loginTeacher
+# @name loginTeacher
+# Authenticate as teacher
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{teacherEmail}}",
+  "password": "{{teacherPassword}}",
+  "role": "teacher"
+}
+###
+@teacherToken = Bearer {{loginTeacher.response.body.token}}
+
+### loginStudent
+# @name loginStudent
+# Authenticate as student
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{studentEmail}}",
+  "password": "{{studentPassword}}",
+  "role": "student"
+}
+###
+@studentToken = Bearer {{loginStudent.response.body.token}}
+
+### loginWorker
+# @name loginWorker
+# Authenticate as worker
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{workerEmail}}",
+  "password": "{{workerPassword}}",
+  "role": "worker"
+}
+###
+@workerToken = Bearer {{loginWorker.response.body.token}}
+
+#################################################
+## Event Routes
+#################################################
+
+### createEvent
+# @name createEvent
+# Create a new event
+POST {{baseUrl}}/event
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "creator": "a86df7c1-742d-4573-9bcd-18c842b7116c",
+  "name": "Christmas Party",
+  "date": "2025-12-25T00:00:00.000Z",
+  "hour": "08:00",
+  "day": "mon",
+  "type": "event",
+  "place": "school"
+}
+###
+
+### listEvents
+# @name listEvents
+# List all events
+GET {{baseUrl}}/events
+Content-Type: application/json
+Authorization: {{masterToken}}
+###
+
+@eventId = {{createEvent.response.body.id}}
+
+### getEventById
+# @name getEventById
+# Retrieve an event by ID
+GET {{baseUrl}}/event/{{eventId}}
+Authorization: {{masterToken}}
+###
+
+### updateEvent
+# @name updateEvent
+# Update an existing event
+PATCH {{baseUrl}}/event
+Content-Type: application/json
+Authorization: {{masterToken}}
+
+{
+  "id": "{{eventId}}",
+  "name": "New Year Celebration",
+  "hour": "20:00"
+}
+###
+
+### deleteEvent
+# @name deleteEvent
+# Delete an event
+DELETE {{baseUrl}}/event/{{eventId}}
+Authorization: {{masterToken}}
+###

@@ -1,3 +1,4 @@
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import MemoryNoteRepository from '../../infrastructure/repositories/memory-repository/note.repository';
 import NoteFacade from '../facade/facade/note.facade';
 import CreateNote from '../usecases/note/create.usecase';
@@ -19,6 +20,7 @@ export default class NoteFacadeFactory {
     // Currently using memory repository only
     // Future implementation will use environment variables to determine repository type
     const repository = new MemoryNoteRepository();
+    const policiesService = new PoliciesService();
 
     // Create all required use cases
     const createNote = new CreateNote(repository);
@@ -34,6 +36,7 @@ export default class NoteFacadeFactory {
       findAllNote,
       findNote,
       updateNote,
+      policiesService,
     });
 
     return facade;

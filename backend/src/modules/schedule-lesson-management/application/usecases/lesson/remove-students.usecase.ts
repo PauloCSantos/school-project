@@ -7,6 +7,13 @@ import {
 } from '../../dto/lesson-usecase.dto';
 import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
 import LessonMapper from '../../mapper/lesson-usecase.mapper';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for removing students from a lesson.
@@ -23,10 +30,21 @@ export default class RemoveStudents
   /**
    * Removes specified students from the given lesson.
    */
-  async execute({
-    id,
-    studentsListToRemove,
-  }: RemoveStudentsInputDto): Promise<RemoveStudentsOutputDto> {
+  async execute(
+    { id, studentsListToRemove }: RemoveStudentsInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<RemoveStudentsOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.LESSON,
+        FunctionCalledEnum.REMOVE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const lessonVerification = await this._lessonRepository.find(id);
     if (!lessonVerification) throw new Error('Lesson not found');
     const lessonObj = LessonMapper.toObj(lessonVerification);
@@ -35,18 +53,14 @@ export default class RemoveStudents
       ...newLesson,
       id: new Id(newLesson.id),
     });
-    try {
-      studentsListToRemove.forEach(studentId => {
-        lesson.removeStudent(studentId);
-      });
-      const result = await this._lessonRepository.removeStudents(
-        id,
-        studentsListToRemove
-      );
+    studentsListToRemove.forEach(studentId => {
+      lesson.removeStudent(studentId);
+    });
+    const result = await this._lessonRepository.removeStudents(
+      id,
+      studentsListToRemove
+    );
 
-      return { message: result };
-    } catch (error) {
-      throw error;
-    }
+    return { message: result };
   }
 }

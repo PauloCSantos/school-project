@@ -1,12 +1,9 @@
-import { validId } from '@/modules/@shared/utils/validations';
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { UserTeacherController } from '../controller/teacher.controller';
 import {
   CreateUserTeacherInputDto,
@@ -15,6 +12,12 @@ import {
   UpdateUserTeacherInputDto,
   DeleteUserTeacherInputDto,
 } from '../../application/dto/teacher-usecase.dto';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
+import {
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 export class UserTeacherRoute {
   constructor(
@@ -24,185 +27,137 @@ export class UserTeacherRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS = [
+      'name',
+      'address',
+      'email',
+      'birthday',
+      'salary',
+      'graduation',
+      'academicDegrees',
+    ];
+    const REQUIRED_FIELD = ['id'];
 
     this.httpGateway.get(
       '/users-teacher',
       this.findAllUserTeachers.bind(this),
-      errorHandler,
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(
+          FunctionCalledEnum.FIND_ALL,
+          REQUIRED_FIELDS_ALL
+        ),
+      ]
     );
 
-    this.httpGateway.post(
-      '/user-teacher',
-      this.createUserTeacher.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.post('/user-teacher', this.createUserTeacher.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
+    ]);
 
-    this.httpGateway.get(
-      '/user-teacher/:id',
-      this.findUserTeacher.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.get('/user-teacher/:id', this.findUserTeacher.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
+    ]);
 
-    this.httpGateway.patch(
-      '/user-teacher/:id',
-      this.updateUserTeacher.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.patch('/user-teacher', this.updateUserTeacher.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
+    ]);
 
     this.httpGateway.delete(
       '/user-teacher/:id',
       this.deleteUserTeacher.bind(this),
-      errorHandler,
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
+      ]
     );
   }
 
   private async findAllUserTeachers(
-    req: AuthHttpRequest<{}, {}, FindAllUserTeacherInputDto, {}>
+    req: HttpRequest<{}, FindAllUserTeacherInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset incorretos' },
-        };
-      }
-      const teachers = await this.userTeacherController.findAll({
-        quantity,
-        offset,
-      });
-      return { statusCode: 200, body: teachers };
+      const { quantity, offset } = req.query;
+      const response = await this.userTeacherController.findAll(
+        {
+          quantity,
+          offset,
+        },
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    if (quantity === undefined || offset === undefined) {
-      return true;
-    }
-    return Number.isInteger(quantity) && Number.isInteger(offset);
   }
 
   private async createUserTeacher(
-    req: AuthHttpRequest<{}, {}, CreateUserTeacherInputDto, {}>
+    req: HttpRequest<{}, {}, CreateUserTeacherInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação do professor' },
-        };
-      }
-      const newTeacher = await this.userTeacherController.create(input);
-      return { statusCode: 201, body: newTeacher };
+      const resolve = await this.userTeacherController.create(
+        input,
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.CREATED, body: resolve };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
-  private validateCreate(input: CreateUserTeacherInputDto): boolean {
-    if (
-      !input.name ||
-      typeof input.name.firstName !== 'string' ||
-      typeof input.name.lastName !== 'string' ||
-      !input.address ||
-      typeof input.address.street !== 'string' ||
-      typeof input.address.city !== 'string' ||
-      typeof input.address.zip !== 'string' ||
-      typeof input.address.number !== 'number' ||
-      typeof input.address.avenue !== 'string' ||
-      typeof input.address.state !== 'string' ||
-      !input.email ||
-      typeof input.email !== 'string' ||
-      !input.birthday ||
-      typeof input.birthday !== 'string' ||
-      !input.salary ||
-      typeof input.salary.salary !== 'number' ||
-      !input.graduation ||
-      typeof input.graduation !== 'string' ||
-      !input.academicDegrees ||
-      typeof input.graduation !== 'string'
-    ) {
-      return false;
-    }
-    return true;
-  }
-
   private async findUserTeacher(
-    req: AuthHttpRequest<FindUserTeacherInputDto, {}, {}, {}>
+    req: HttpRequest<FindUserTeacherInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!this.validFind(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
+      const response = await this.userTeacherController.find(
+        { id },
+        req.tokenData!
+      );
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
       }
-      const teacher = await this.userTeacherController.find({ id });
-      return { statusCode: 200, body: teacher };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateUserTeacher(
-    req: AuthHttpRequest<
-      FindUserTeacherInputDto,
-      {},
-      UpdateUserTeacherInputDto,
-      {}
-    >
+    req: HttpRequest<{}, {}, UpdateUserTeacherInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!this.validUpdate(id)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const updatedTeacher = await this.userTeacherController.update({
-        ...input,
-        id,
-      });
-      return { statusCode: 200, body: updatedTeacher };
+      const resolve = await this.userTeacherController.update(
+        input,
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: resolve };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async deleteUserTeacher(
-    req: AuthHttpRequest<DeleteUserTeacherInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteUserTeacherInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!this.validDelete(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
-      const deleted = await this.userTeacherController.delete({ id });
-      return { statusCode: 200, body: deleted };
+      const response = await this.userTeacherController.delete(
+        { id },
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validFind(id: string): boolean {
-    return validId(id);
-  }
-
-  private validUpdate(id: string): boolean {
-    return validId(id);
-  }
-
-  private validDelete(id: string): boolean {
-    return validId(id);
   }
 
   private handleError(error: unknown, statusCode = 400): HttpResponseData {

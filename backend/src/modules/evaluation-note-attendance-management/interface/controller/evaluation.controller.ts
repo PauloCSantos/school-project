@@ -1,3 +1,4 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateEvaluationInputDto,
   CreateEvaluationOutputDto,
@@ -15,6 +16,7 @@ import DeleteEvaluation from '../../application/usecases/evaluation/delete.useca
 import FindAllEvaluation from '../../application/usecases/evaluation/find-all.usecase';
 import FindEvaluation from '../../application/usecases/evaluation/find.usecase';
 import UpdateEvaluation from '../../application/usecases/evaluation/update.usecase';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Controller for evaluation management operations.
@@ -34,7 +36,8 @@ export default class EvaluationController {
     private readonly findEvaluation: FindEvaluation,
     private readonly findAllEvaluation: FindAllEvaluation,
     private readonly updateEvaluation: UpdateEvaluation,
-    private readonly deleteEvaluation: DeleteEvaluation
+    private readonly deleteEvaluation: DeleteEvaluation,
+    private readonly policiesService: PoliciesServiceInterface
   ) {}
 
   /**
@@ -43,21 +46,31 @@ export default class EvaluationController {
    * @returns Promise resolving to the created evaluation data
    */
   async create(
-    input: CreateEvaluationInputDto
+    input: CreateEvaluationInputDto,
+    token: TokenData
   ): Promise<CreateEvaluationOutputDto> {
-    const response = await this.createEvaluation.execute(input);
+    const response = await this.createEvaluation.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
   /**
    * Finds an evaluation by id.
    * @param input - The input containing the id to search for
-   * @returns Promise resolving to the found evaluation data or undefined
+   * @returns Promise resolving to the found evaluation data or null
    */
   async find(
-    input: FindEvaluationInputDto
-  ): Promise<FindEvaluationOutputDto | undefined> {
-    const response = await this.findEvaluation.execute(input);
+    input: FindEvaluationInputDto,
+    token: TokenData
+  ): Promise<FindEvaluationOutputDto | null> {
+    const response = await this.findEvaluation.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -67,9 +80,14 @@ export default class EvaluationController {
    * @returns Promise resolving to the found evaluation records
    */
   async findAll(
-    input: FindAllEvaluationInputDto
+    input: FindAllEvaluationInputDto,
+    token: TokenData
   ): Promise<FindAllEvaluationOutputDto> {
-    const response = await this.findAllEvaluation.execute(input);
+    const response = await this.findAllEvaluation.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -79,9 +97,14 @@ export default class EvaluationController {
    * @returns Promise resolving to the updated evaluation data
    */
   async update(
-    input: UpdateEvaluationInputDto
+    input: UpdateEvaluationInputDto,
+    token: TokenData
   ): Promise<UpdateEvaluationOutputDto> {
-    const response = await this.updateEvaluation.execute(input);
+    const response = await this.updateEvaluation.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -91,9 +114,14 @@ export default class EvaluationController {
    * @returns Promise resolving to the deletion confirmation
    */
   async delete(
-    input: DeleteEvaluationInputDto
+    input: DeleteEvaluationInputDto,
+    token: TokenData
   ): Promise<DeleteEvaluationOutputDto> {
-    const response = await this.deleteEvaluation.execute(input);
+    const response = await this.deleteEvaluation.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 }

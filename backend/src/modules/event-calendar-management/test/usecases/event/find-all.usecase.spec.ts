@@ -1,19 +1,28 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import FindAllEvent from '@/modules/event-calendar-management/application/usecases/event/find-all.usecase';
-import Event from '@/modules/event-calendar-management/domain/entity/calendar.entity';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/calendar.gateway';
-
-const MockRepository = (): jest.Mocked<EventGateway> => {
-  return {
-    find: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-  };
-};
+import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
+import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
 
 describe('findAllEvent usecase unit test', () => {
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let token: TokenData;
+
+  const MockRepository = (): jest.Mocked<EventGateway> => {
+    return {
+      find: jest.fn(),
+      findAll: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    };
+  };
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
+    ({
+      verifyPolicies: jest.fn(),
+    }) as jest.Mocked<PoliciesServiceInterface>;
+
   const event1 = new Event({
     creator: new Id().value,
     name: 'Christmas',
@@ -32,14 +41,22 @@ describe('findAllEvent usecase unit test', () => {
     type: 'event',
     place: 'school',
   });
+  policieService = MockPolicyService();
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
 
   describe('On success', () => {
     it('should find all events', async () => {
       const eventRepository = MockRepository();
       eventRepository.findAll.mockResolvedValue([event1, event2]);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
+
       const usecase = new FindAllEvent(eventRepository);
 
-      const result = await usecase.execute({});
+      const result = await usecase.execute({}, policieService, token);
 
       expect(eventRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(2);
@@ -47,9 +64,11 @@ describe('findAllEvent usecase unit test', () => {
     it('should return an empty array when the repository is empty', async () => {
       const eventRepository = MockRepository();
       eventRepository.findAll.mockResolvedValue([]);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
+
       const usecase = new FindAllEvent(eventRepository);
 
-      const result = await usecase.execute({});
+      const result = await usecase.execute({}, policieService, token);
 
       expect(eventRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(0);

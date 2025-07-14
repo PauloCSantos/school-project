@@ -2,9 +2,16 @@ import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.in
 import {
   UpdateEventInputDto,
   UpdateEventOutputDto,
-} from '../../dto/calendar-usecase.dto';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/calendar.gateway';
-import Event from '@/modules/event-calendar-management/domain/entity/calendar.entity';
+} from '../../dto/event-usecase.dto';
+import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
+import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for updating an event.
@@ -33,16 +40,20 @@ export default class UpdateEvent
    * @returns Output data of the updated event
    * @throws Error if the event with the specified ID does not exist
    */
-  async execute({
-    id,
-    creator,
-    date,
-    day,
-    hour,
-    name,
-    place,
-    type,
-  }: UpdateEventInputDto): Promise<UpdateEventOutputDto> {
+  async execute(
+    { id, creator, date, day, hour, name, place, type }: UpdateEventInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<UpdateEventOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.EVENT,
+        FunctionCalledEnum.CREATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
     const existingEvent = await this._eventRepository.find(id);
 
     if (!existingEvent) {

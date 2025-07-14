@@ -8,12 +8,20 @@ export default class MemoryUserMasterRepository implements UserMasterGateway {
     masterUsers ? (this._masterUsers = masterUsers) : (this._masterUsers = []);
   }
 
-  async find(id: string): Promise<UserMaster | undefined> {
+  async find(id: string): Promise<UserMaster | null> {
     const user = this._masterUsers.find(user => user.id.value === id);
     if (user) {
       return user;
     } else {
-      return undefined;
+      return null;
+    }
+  }
+  async findByEmail(email: string): Promise<UserMaster | null> {
+    const user = this._masterUsers.find(user => user.email === email);
+    if (user) {
+      return user;
+    } else {
+      return null;
     }
   }
   async create(userMaster: UserMaster): Promise<string> {

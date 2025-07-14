@@ -8,9 +8,13 @@ import RemoveStudents from '../../application/usecases/attendance/remove-student
 import UpdateAttendance from '../../application/usecases/attendance/update.usecase';
 import AttendanceController from '../../interface/controller/attendance.controller';
 import { UpdateAttendanceInputDto } from '../../application/dto/attendance-usecase.dto';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 describe('AttendanceController unit test', () => {
-  // Mock the usecases directly
+  let policieService: PoliciesServiceInterface;
+  let token: TokenData;
+
   const mockCreateAttendance: jest.Mocked<CreateAttendance> = {
     execute: jest.fn(),
   } as unknown as jest.Mocked<CreateAttendance>;
@@ -42,7 +46,6 @@ describe('AttendanceController unit test', () => {
   let controller: AttendanceController;
   const id = new Id().value;
 
-  // Define example input/output data with the required 'id' property
   const attendanceData = {
     id: id,
     lesson: '96c6335d-0c22-401e-8ccd-682130b70e1a',
@@ -56,13 +59,20 @@ describe('AttendanceController unit test', () => {
     ],
   };
 
-  // For create, the output should match the expected interface
   const createOutput = { id: id };
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
+    verifyPolicies: jest.fn(),
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Set up mock implementations with the correct output formats
     mockCreateAttendance.execute.mockResolvedValue(createOutput);
     mockFindAttendance.execute.mockResolvedValue(attendanceData);
     mockFindAllAttendance.execute.mockResolvedValue([
@@ -86,6 +96,7 @@ describe('AttendanceController unit test', () => {
     mockRemoveStudents.execute.mockResolvedValue({
       message: '2 values were removed',
     });
+    policieService = MockPolicyService();
 
     controller = new AttendanceController(
       mockCreateAttendance,
@@ -94,7 +105,8 @@ describe('AttendanceController unit test', () => {
       mockUpdateAttendance,
       mockDeleteAttendance,
       mockAddStudents,
-      mockRemoveStudents
+      mockRemoveStudents,
+      policieService
     );
   });
 
@@ -107,29 +119,41 @@ describe('AttendanceController unit test', () => {
       studentsPresent: [new Id().value, new Id().value, new Id().value],
     };
 
-    const result = await controller.create(createInput);
+    const result = await controller.create(createInput, token);
 
     expect(mockCreateAttendance.execute).toHaveBeenCalledTimes(1);
-    expect(mockCreateAttendance.execute).toHaveBeenCalledWith(createInput);
+    expect(mockCreateAttendance.execute).toHaveBeenCalledWith(
+      createInput,
+      policieService,
+      token
+    );
     expect(result).toBeDefined();
     expect(result).toEqual(createOutput);
   });
 
   it('should return a attendance', async () => {
     const findInput = { id };
-    const result = await controller.find(findInput);
+    const result = await controller.find(findInput, token);
 
     expect(mockFindAttendance.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindAttendance.execute).toHaveBeenCalledWith(findInput);
+    expect(mockFindAttendance.execute).toHaveBeenCalledWith(
+      findInput,
+      policieService,
+      token
+    );
     expect(result).toEqual(attendanceData);
   });
 
   it('should return all attendances', async () => {
     const findAllInput = {};
-    const result = await controller.findAll(findAllInput);
+    const result = await controller.findAll(findAllInput, token);
 
     expect(mockFindAllAttendance.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindAllAttendance.execute).toHaveBeenCalledWith(findAllInput);
+    expect(mockFindAllAttendance.execute).toHaveBeenCalledWith(
+      findAllInput,
+      policieService,
+      token
+    );
     expect(result).toBeDefined();
     expect(result.length).toBe(2);
   });
@@ -139,19 +163,27 @@ describe('AttendanceController unit test', () => {
       id,
       hour: '14:00',
     };
-    const result = await controller.update(updateInput);
+    const result = await controller.update(updateInput, token);
 
     expect(mockUpdateAttendance.execute).toHaveBeenCalledTimes(1);
-    expect(mockUpdateAttendance.execute).toHaveBeenCalledWith(updateInput);
+    expect(mockUpdateAttendance.execute).toHaveBeenCalledWith(
+      updateInput,
+      policieService,
+      token
+    );
     expect(result).toEqual(attendanceData);
   });
 
   it('should delete a attendance', async () => {
     const deleteInput = { id };
-    const result = await controller.delete(deleteInput);
+    const result = await controller.delete(deleteInput, token);
 
     expect(mockDeleteAttendance.execute).toHaveBeenCalledTimes(1);
-    expect(mockDeleteAttendance.execute).toHaveBeenCalledWith(deleteInput);
+    expect(mockDeleteAttendance.execute).toHaveBeenCalledWith(
+      deleteInput,
+      policieService,
+      token
+    );
     expect(result).toEqual({ message: 'Operação concluída com sucesso' });
   });
 
@@ -160,10 +192,14 @@ describe('AttendanceController unit test', () => {
       id,
       newStudentsList: [new Id().value],
     };
-    const result = await controller.addStudents(addStudentsInput);
+    const result = await controller.addStudents(addStudentsInput, token);
 
     expect(mockAddStudents.execute).toHaveBeenCalledTimes(1);
-    expect(mockAddStudents.execute).toHaveBeenCalledWith(addStudentsInput);
+    expect(mockAddStudents.execute).toHaveBeenCalledWith(
+      addStudentsInput,
+      policieService,
+      token
+    );
     expect(result).toEqual({ message: '1 value was entered' });
   });
 
@@ -172,11 +208,13 @@ describe('AttendanceController unit test', () => {
       id,
       studentsListToRemove: [new Id().value, new Id().value],
     };
-    const result = await controller.removeStudents(removeStudentsInput);
+    const result = await controller.removeStudents(removeStudentsInput, token);
 
     expect(mockRemoveStudents.execute).toHaveBeenCalledTimes(1);
     expect(mockRemoveStudents.execute).toHaveBeenCalledWith(
-      removeStudentsInput
+      removeStudentsInput,
+      policieService,
+      token
     );
     expect(result).toEqual({ message: '2 values were removed' });
   });

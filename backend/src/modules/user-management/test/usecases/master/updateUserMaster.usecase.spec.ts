@@ -3,16 +3,34 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import UserMaster from '@/modules/user-management/domain/entity/master.entity';
-
-const MockRepository = () => {
-  return {
-    find: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(userMaster => Promise.resolve(userMaster)),
-  };
-};
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 describe('updateUserMaster usecase unit test', () => {
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let token: TokenData;
+
+  const MockRepository = () => {
+    return {
+      find: jest.fn(),
+      findByEmail: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(userMaster => Promise.resolve(userMaster)),
+    };
+  };
+
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
+    ({
+      verifyPolicies: jest.fn(),
+    }) as jest.Mocked<PoliciesServiceInterface>;
+
+  policieService = MockPolicyService();
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   const input = {
     name: {
       firstName: 'John',
@@ -59,13 +77,18 @@ describe('updateUserMaster usecase unit test', () => {
     it('should throw an error if the user does not exist', async () => {
       const userMasterRepository = MockRepository();
       userMasterRepository.find.mockResolvedValue(undefined);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
       const usecase = new UpdateUserMaster(userMasterRepository);
 
       await expect(
-        usecase.execute({
-          id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
-          ...input,
-        })
+        usecase.execute(
+          {
+            id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
+            ...input,
+          },
+          policieService,
+          token
+        )
       ).rejects.toThrow('User not found');
     });
   });
@@ -73,19 +96,24 @@ describe('updateUserMaster usecase unit test', () => {
     it('should update an user administrator', async () => {
       const userMasterRepository = MockRepository();
       userMasterRepository.find.mockResolvedValue(userMaster1);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
       const usecase = new UpdateUserMaster(userMasterRepository);
 
-      const result = await usecase.execute({
-        id: userMaster1.id.value,
-        address: {
-          street: 'Street B',
-          city: 'City B',
-          zip: '111111-111',
-          number: 1,
-          avenue: 'Avenue B',
-          state: 'State B',
+      const result = await usecase.execute(
+        {
+          id: userMaster1.id.value,
+          address: {
+            street: 'Street B',
+            city: 'City B',
+            zip: '111111-111',
+            number: 1,
+            avenue: 'Avenue B',
+            state: 'State B',
+          },
         },
-      });
+        policieService,
+        token
+      );
 
       expect(userMasterRepository.update).toHaveBeenCalled();
       expect(userMasterRepository.find).toHaveBeenCalled();

@@ -1,3 +1,4 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateScheduleInputDto,
   AddLessonsInputDto,
@@ -21,6 +22,7 @@ import FindAllSchedule from '../../application/usecases/schedule/find-all.usecas
 import FindSchedule from '../../application/usecases/schedule/find.usecase';
 import RemoveLessons from '../../application/usecases/schedule/remove-lessons.usecase';
 import UpdateSchedule from '../../application/usecases/schedule/update.usecase';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Controller for schedule management operations.
@@ -44,7 +46,8 @@ export class ScheduleController {
     private readonly updateSchedule: UpdateSchedule,
     private readonly deleteSchedule: DeleteSchedule,
     private readonly addLessonstoSchedule: AddLessons,
-    private readonly removeLessonstoSchedule: RemoveLessons
+    private readonly removeLessonstoSchedule: RemoveLessons,
+    private readonly policiesService: PoliciesServiceInterface
   ) {}
 
   /**
@@ -53,9 +56,14 @@ export class ScheduleController {
    * @returns Promise resolving to the created schedule data
    */
   async create(
-    input: CreateScheduleInputDto
+    input: CreateScheduleInputDto,
+    token: TokenData
   ): Promise<CreateScheduleOutputDto> {
-    const response = await this.createSchedule.execute(input);
+    const response = await this.createSchedule.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -65,9 +73,14 @@ export class ScheduleController {
    * @returns Promise resolving to the found schedule data or null
    */
   async find(
-    input: FindScheduleInputDto
+    input: FindScheduleInputDto,
+    token: TokenData
   ): Promise<FindScheduleOutputDto | null> {
-    const response = await this.findSchedule.execute(input);
+    const response = await this.findSchedule.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -77,9 +90,14 @@ export class ScheduleController {
    * @returns Promise resolving to the list of schedules
    */
   async findAll(
-    input: FindAllScheduleInputDto
+    input: FindAllScheduleInputDto,
+    token: TokenData
   ): Promise<FindAllScheduleOutputDto> {
-    const response = await this.findAllSchedule.execute(input);
+    const response = await this.findAllSchedule.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -89,9 +107,14 @@ export class ScheduleController {
    * @returns Promise resolving to the deletion confirmation
    */
   async delete(
-    input: DeleteScheduleInputDto
+    input: DeleteScheduleInputDto,
+    token: TokenData
   ): Promise<DeleteScheduleOutputDto> {
-    const response = await this.deleteSchedule.execute(input);
+    const response = await this.deleteSchedule.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -101,9 +124,14 @@ export class ScheduleController {
    * @returns Promise resolving to the updated schedule data
    */
   async update(
-    input: UpdateScheduleInputDto
+    input: UpdateScheduleInputDto,
+    token: TokenData
   ): Promise<UpdateScheduleOutputDto> {
-    const response = await this.updateSchedule.execute(input);
+    const response = await this.updateSchedule.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -112,8 +140,15 @@ export class ScheduleController {
    * @param input - The input containing schedule ID and lesson IDs to add
    * @returns Promise resolving to the updated schedule with added lessons
    */
-  async addLessons(input: AddLessonsInputDto): Promise<AddLessonsOutputDto> {
-    const response = await this.addLessonstoSchedule.execute(input);
+  async addLessons(
+    input: AddLessonsInputDto,
+    token: TokenData
+  ): Promise<AddLessonsOutputDto> {
+    const response = await this.addLessonstoSchedule.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -123,9 +158,14 @@ export class ScheduleController {
    * @returns Promise resolving to the updated schedule with removed lessons
    */
   async removeLessons(
-    input: RemoveLessonsInputDto
+    input: RemoveLessonsInputDto,
+    token: TokenData
   ): Promise<RemoveLessonsOutputDto> {
-    const response = await this.removeLessonstoSchedule.execute(input);
+    const response = await this.removeLessonstoSchedule.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 }

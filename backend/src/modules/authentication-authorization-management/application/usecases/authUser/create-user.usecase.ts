@@ -4,8 +4,15 @@ import {
   CreateAuthUserOutputDto,
 } from '../../dto/user-usecase.dto';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
-import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { AuthUserServiceInterface } from '../../service/user-entity.service';
 
 /**
  * Use case responsible for creating a new authenticated user.
@@ -16,11 +23,8 @@ import AuthUser from '@/modules/authentication-authorization-management/domain/e
 export default class CreateAuthUser
   implements UseCaseInterface<CreateAuthUserInputDto, CreateAuthUserOutputDto>
 {
-  /** Repository for persisting and retrieving authenticated users */
   private readonly _authUserRepository: AuthUserGateway;
-
-  /** Domain service containing business rules for the user entity */
-  private readonly _authUserService: AuthUserService;
+  private readonly _authUserService: AuthUserServiceInterface;
 
   /**
    * Constructs a new instance of the CreateAuthUser use case.
@@ -30,7 +34,7 @@ export default class CreateAuthUser
    */
   constructor(
     authUserRepository: AuthUserGateway,
-    authUserService: AuthUserService
+    authUserService: AuthUserServiceInterface
   ) {
     this._authUserRepository = authUserRepository;
     this._authUserService = authUserService;
@@ -44,20 +48,28 @@ export default class CreateAuthUser
    * @throws Error if a user with the same email already exists
    * @throws ValidationError if any of the input data fails validation during entity creation
    */
-  async execute({
-    email,
-    password,
-    role,
-    masterId,
-    isHashed,
-  }: CreateAuthUserInputDto): Promise<CreateAuthUserOutputDto> {
+  async execute(
+    //{ email, password, role, masterId, isHashed }: CreateAuthUserInputDto,
+    { email, password, role, masterId }: CreateAuthUserInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<CreateAuthUserOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.AUTHUSER,
+        FunctionCalledEnum.CREATE,
+        token,
+        { targetRole: role }
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
     const authUser = new AuthUser(
       {
         email,
         password,
         role,
         masterId,
-        isHashed,
       },
       this._authUserService
     );

@@ -1,22 +1,31 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import UpdateEvent from '@/modules/event-calendar-management/application/usecases/event/update.usecase';
-import Event from '@/modules/event-calendar-management/domain/entity/calendar.entity';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/calendar.gateway';
-
-// Crie o mock com tipagem explícita
-const MockRepository = (): jest.Mocked<EventGateway> => {
-  return {
-    find: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(event => Promise.resolve(event)),
-    delete: jest.fn(),
-  } as jest.Mocked<EventGateway>;
-};
+import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
+import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
 
 describe('UpdateEvent usecase unit test', () => {
   let repository: jest.Mocked<EventGateway>;
   let usecase: UpdateEvent;
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let token: TokenData;
+
+  const MockRepository = (): jest.Mocked<EventGateway> => {
+    return {
+      find: jest.fn(),
+      findAll: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(event => Promise.resolve(event)),
+      delete: jest.fn(),
+    } as jest.Mocked<EventGateway>;
+  };
+
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
+    ({
+      verifyPolicies: jest.fn(),
+    }) as jest.Mocked<PoliciesServiceInterface>;
+
   let input: {
     creator: string;
     name: string;
@@ -54,7 +63,13 @@ describe('UpdateEvent usecase unit test', () => {
 
     event = new Event(input);
     repository = MockRepository();
+    policieService = MockPolicyService();
     usecase = new UpdateEvent(repository);
+    token = {
+      email: 'caller@domain.com',
+      role: 'master',
+      masterId: new Id().value,
+    };
   });
 
   afterEach(() => {
@@ -64,13 +79,19 @@ describe('UpdateEvent usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the event does not exist', async () => {
       repository.find.mockResolvedValue(null);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
+
       const notFoundId = '75c791ca-7a40-4217-8b99-2cf22c01d543';
 
       await expect(
-        usecase.execute({
-          ...dataToUpdate,
-          id: notFoundId,
-        })
+        usecase.execute(
+          {
+            ...dataToUpdate,
+            id: notFoundId,
+          },
+          policieService,
+          token
+        )
       ).rejects.toThrow('Event not found');
 
       expect(repository.find).toHaveBeenCalledWith(notFoundId);
@@ -81,11 +102,16 @@ describe('UpdateEvent usecase unit test', () => {
   describe('On success', () => {
     it('should update an event', async () => {
       repository.find.mockResolvedValue(event);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const result = await usecase.execute({
-        id: event.id.value,
-        ...dataToUpdate,
-      });
+      const result = await usecase.execute(
+        {
+          id: event.id.value,
+          ...dataToUpdate,
+        },
+        policieService,
+        token
+      );
 
       expect(repository.find).toHaveBeenCalledWith(event.id.value);
       expect(repository.update).toHaveBeenCalled();
@@ -103,18 +129,24 @@ describe('UpdateEvent usecase unit test', () => {
 
     it('should only update the provided fields', async () => {
       repository.find.mockResolvedValue(event);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
+
       const partialUpdate = { hour: '10:00' as Hour };
 
-      const result = await usecase.execute({
-        id: event.id.value,
-        ...partialUpdate,
-      });
+      const result = await usecase.execute(
+        {
+          id: event.id.value,
+          ...partialUpdate,
+        },
+        policieService,
+        token
+      );
 
       expect(repository.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: expect.objectContaining({ value: event.id.value }),
           hour: partialUpdate.hour,
-          day: input.day, // Esses campos devem permanecer inalterados
+          day: input.day,
           type: input.type,
           place: input.place,
         })

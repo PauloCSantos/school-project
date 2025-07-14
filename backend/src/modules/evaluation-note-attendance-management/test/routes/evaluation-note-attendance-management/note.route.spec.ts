@@ -26,7 +26,14 @@ describe('NoteRoute with ExpressAdapter', () => {
     } as unknown as NoteController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new NoteRoute(noteController, http, middleware).routes();
@@ -34,15 +41,20 @@ describe('NoteRoute with ExpressAdapter', () => {
 
   describe('success', () => {
     it('should find all notes', async () => {
-      const response = await supertest(app)
-        .get('/notes')
-        .send({ quantity: 2, offset: 0 });
+      const response = await supertest(app).get('/notes?quantity=2&offset=0');
 
       expect(response.statusCode).toBe(200);
-      expect(noteController.findAll).toHaveBeenCalledWith({
-        quantity: 2,
-        offset: 0,
-      });
+      expect(noteController.findAll).toHaveBeenCalledWith(
+        {
+          quantity: '2',
+          offset: '0',
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual([{ id: expect.any(String) }]);
     });
 
@@ -55,7 +67,14 @@ describe('NoteRoute with ExpressAdapter', () => {
       const response = await supertest(app).post('/note').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(noteController.create).toHaveBeenCalledWith(payload);
+      expect(noteController.create).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id: expect.any(String) });
     });
 
@@ -64,19 +83,34 @@ describe('NoteRoute with ExpressAdapter', () => {
       const response = await supertest(app).get(`/note/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(noteController.find).toHaveBeenCalledWith({ id });
+      expect(noteController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
     it('should update a note', async () => {
       const id = new Id().value;
       const payload = {
-        /* campos para update */
+        id,
+        evaluation: new Id().value,
       };
-      const response = await supertest(app).patch(`/note/${id}`).send(payload);
+      const response = await supertest(app).patch(`/note`).send(payload);
 
       expect(response.statusCode).toBe(200);
-      expect(noteController.update).toHaveBeenCalledWith({ id, ...payload });
+      expect(noteController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({ id });
     });
 
@@ -85,7 +119,14 @@ describe('NoteRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete(`/note/${id}`);
 
       expect(response.statusCode).toBe(200);
-      expect(noteController.delete).toHaveBeenCalledWith({ id });
+      expect(noteController.delete).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -94,11 +135,11 @@ describe('NoteRoute with ExpressAdapter', () => {
 
   describe('failure', () => {
     it('should return 400 for invalid quantity or offset', async () => {
-      const response = await supertest(app).get('/notes').send({});
+      const response = await supertest(app).get('/notes?offset=invalid');
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Quantity e/ou offset estão incorretos',
+        error: 'Bad Request',
       });
     });
 
@@ -106,15 +147,15 @@ describe('NoteRoute with ExpressAdapter', () => {
       const response = await supertest(app).get('/note/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app).patch('/note/invalid-id').send({});
+      const response = await supertest(app).patch('/note').send({});
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
@@ -122,7 +163,7 @@ describe('NoteRoute with ExpressAdapter', () => {
       const response = await supertest(app).delete('/note/invalid-id');
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
   });
 });

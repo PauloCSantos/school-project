@@ -1,7 +1,5 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryNoteRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/note.repository';
 import CreateNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/create.usecase';
 import FindNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/find.usecase';
@@ -9,9 +7,11 @@ import FindAllNote from '@/modules/evaluation-note-attendance-management/applica
 import UpdateNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/update.usecase';
 import DeleteNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/delete.usecase';
 import NoteController from '@/modules/evaluation-note-attendance-management/interface/controller/note.controller';
-import { NoteRoute } from '@/modules/evaluation-note-attendance-management/interface/route/note.route';
+import NoteRoute from '@/modules/evaluation-note-attendance-management/interface/route/note.route';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
+import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 
-export default function initializeNote(express: ExpressHttp): void {
+export default function initializeNote(express: HttpServer): void {
   const noteRepository = new MemoryNoteRepository();
   const createNoteUsecase = new CreateNote(noteRepository);
   const findNoteUsecase = new FindNote(noteRepository);
@@ -27,11 +27,10 @@ export default function initializeNote(express: ExpressHttp): void {
   );
   const tokenService = tokenInstance();
   const allowedRoles: RoleUsers[] = [
-    'master',
-    'administrator',
-    'student',
-    'teacher',
-    'worker',
+    RoleUsersEnum.MASTER,
+    RoleUsersEnum.ADMINISTRATOR,
+    RoleUsersEnum.TEACHER,
+    RoleUsersEnum.STUDENT,
   ];
   const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
   const noteRoute = new NoteRoute(noteController, express, authUserMiddleware);

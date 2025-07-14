@@ -4,6 +4,13 @@ import {
   FindEvaluationOutputDto,
 } from '../../dto/evaluation-usecase.dto';
 import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for finding an evaluation record by id.
@@ -12,10 +19,7 @@ import EvaluationGateway from '@/modules/evaluation-note-attendance-management/i
  */
 export default class FindEvaluation
   implements
-    UseCaseInterface<
-      FindEvaluationInputDto,
-      FindEvaluationOutputDto | undefined
-    >
+    UseCaseInterface<FindEvaluationInputDto, FindEvaluationOutputDto | null>
 {
   /** Repository for persisting and retrieving evaluation records */
   private readonly _evaluationRepository: EvaluationGateway;
@@ -33,11 +37,23 @@ export default class FindEvaluation
    * Executes the search for an evaluation record by id.
    *
    * @param input - Input data containing the id to search for
-   * @returns Evaluation data if found, undefined otherwise
+   * @returns Evaluation data if found, null otherwise
    */
-  async execute({
-    id,
-  }: FindEvaluationInputDto): Promise<FindEvaluationOutputDto | undefined> {
+  async execute(
+    { id }: FindEvaluationInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindEvaluationOutputDto | null> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.EVALUATION,
+        FunctionCalledEnum.FIND,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const response = await this._evaluationRepository.find(id);
 
     if (response) {
@@ -50,6 +66,6 @@ export default class FindEvaluation
       };
     }
 
-    return undefined;
+    return null;
   }
 }

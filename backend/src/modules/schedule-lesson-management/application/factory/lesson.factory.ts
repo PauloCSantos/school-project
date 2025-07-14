@@ -1,3 +1,4 @@
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import MemoryLessonRepository from '../../infrastructure/repositories/memory-repository/lesson.repository';
 import LessonFacade from '../facade/facade/lesson.facade';
 import AddDay from '../usecases/lesson/add-day.usecase';
@@ -24,6 +25,7 @@ export default class LessonFacadeFactory {
   static create(): LessonFacade {
     // Currently using memory repository
     const repository = new MemoryLessonRepository();
+    const policiesService = new PoliciesService();
 
     // Create all required use cases
     const createLesson = new CreateLesson(repository);
@@ -51,6 +53,7 @@ export default class LessonFacadeFactory {
       removeDay,
       addTime,
       removeTime,
+      policiesService,
     });
 
     return facade;

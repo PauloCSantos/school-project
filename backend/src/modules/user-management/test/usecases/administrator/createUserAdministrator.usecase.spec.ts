@@ -1,22 +1,45 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateUserAdministrator from '@/modules/user-management/application/usecases/administrator/createUserAdministrator.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserAdministrator from '@/modules/user-management/domain/entity/administrator.entity';
 
-const MockRepository = () => {
-  return {
-    find: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(userAdministrator =>
-      Promise.resolve(userAdministrator.id.value)
-    ),
-    update: jest.fn(),
-    delete: jest.fn(),
-  };
-};
-
 describe('createUserAdministrator usecase unit test', () => {
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let token: TokenData;
+
+  const MockRepository = () => {
+    return {
+      find: jest.fn(),
+      findByEmail: jest.fn(),
+      findAll: jest.fn(),
+      create: jest.fn(userAdministrator =>
+        Promise.resolve(userAdministrator.id.value)
+      ),
+      update: jest.fn(),
+      delete: jest.fn(),
+    };
+  };
+
+  const MockEmailAuthValidatorService = () => ({
+    validate: jest.fn().mockResolvedValue(true),
+  });
+
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
+    ({
+      verifyPolicies: jest.fn(),
+    }) as jest.Mocked<PoliciesServiceInterface>;
+
+  policieService = MockPolicyService();
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   const input = {
     name: {
       firstName: 'John',
@@ -50,33 +73,53 @@ describe('createUserAdministrator usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the user already exists', async () => {
       const userAdministratorRepository = MockRepository();
-      userAdministratorRepository.find.mockResolvedValue(userAdministrator);
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
 
-      const usecase = new CreateUserAdministrator(userAdministratorRepository);
-
-      await expect(usecase.execute(input)).rejects.toThrow(
-        'User already exists'
+      userAdministratorRepository.findByEmail.mockResolvedValue(
+        userAdministrator
       );
-      expect(userAdministratorRepository.find).toHaveBeenCalledWith(
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
+
+      const usecase = new CreateUserAdministrator(
+        userAdministratorRepository,
+        emailAuthValidatorService
+      );
+
+      await expect(
+        usecase.execute(input, policieService, token)
+      ).rejects.toThrow('User already exists');
+      expect(userAdministratorRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
       expect(userAdministratorRepository.create).not.toHaveBeenCalled();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
+        input.email
+      );
     });
   });
 
   describe('On success', () => {
     it('should create a user administrator', async () => {
       const userAdministratorRepository = MockRepository();
-      userAdministratorRepository.find.mockResolvedValue(undefined);
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
 
-      const usecase = new CreateUserAdministrator(userAdministratorRepository);
-      const result = await usecase.execute(input);
+      userAdministratorRepository.findByEmail.mockResolvedValue(null);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      expect(userAdministratorRepository.find).toHaveBeenCalledWith(
+      const usecase = new CreateUserAdministrator(
+        userAdministratorRepository,
+        emailAuthValidatorService
+      );
+      const result = await usecase.execute(input, policieService, token);
+
+      expect(userAdministratorRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
       expect(userAdministratorRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
+        input.email
+      );
     });
   });
 });

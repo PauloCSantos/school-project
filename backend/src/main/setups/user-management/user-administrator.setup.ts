@@ -5,17 +5,23 @@ import FindAllUserAdministrator from '@/modules/user-management/application/usec
 import FindUserAdministrator from '@/modules/user-management/application/usecases/administrator/findUserAdministrator.usecase';
 import UpdateUserAdministrator from '@/modules/user-management/application/usecases/administrator/updateUserAdministrator.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryUserAdministratorRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/administrator.repository';
 import { UserAdministratorController } from '@/modules/user-management/interface/controller/administrator.controller';
 import { UserAdministratorRoute } from '@/modules/user-management/interface/route/administrator.route';
+import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
+import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 
-export default function initializeUserAdministrator(
-  express: ExpressHttp
-): void {
+export default function initializeUserAdministrator(express: HttpServer): void {
   const userAdministratorRepository = new MemoryUserAdministratorRepository();
+  const authUserRepository = new MemoryAuthUserRepository();
+  const emailValidatorService = new EmailAuthValidatorService(
+    authUserRepository
+  );
   const createUserAdministratorUsecase = new CreateUserAdministrator(
-    userAdministratorRepository
+    userAdministratorRepository,
+    emailValidatorService
   );
   const findUserAdministratorUsecase = new FindUserAdministrator(
     userAdministratorRepository
@@ -37,7 +43,10 @@ export default function initializeUserAdministrator(
     deleteUserAdministratorUsecase
   );
   const tokenService = tokenInstance();
-  const allowedRoles: RoleUsers[] = ['master', 'administrator'];
+  const allowedRoles: RoleUsers[] = [
+    RoleUsersEnum.MASTER,
+    RoleUsersEnum.ADMINISTRATOR,
+  ];
   const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
   const userAdministratorRoute = new UserAdministratorRoute(
     userAdministratorController,

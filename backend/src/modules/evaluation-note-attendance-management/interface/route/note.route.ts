@@ -1,170 +1,130 @@
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
+  HttpMiddleware,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import NoteController from '../controller/note.controller';
-import { validId } from '@/modules/@shared/utils/validations';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
-import { AuthErrorHandlerMiddleware } from '@/modules/@shared/application/middleware/authUser.middleware';
+
 import {
   CreateNoteInputDto,
   UpdateNoteInputDto,
   FindNoteInputDto,
   FindAllNoteInputDto,
+  DeleteNoteInputDto,
 } from '../../application/dto/note-usecase.dto';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
+import {
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class NoteRoute {
   constructor(
     private readonly noteController: NoteController,
     private readonly httpGateway: HttpServer,
-    private readonly authMiddleware: AuthUserMiddleware
+    private readonly authMiddleware: HttpMiddleware
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS = ['evaluation', 'student', 'note'];
+    const REQUIRED_FIELD = ['id'];
 
-    this.httpGateway.get(
-      '/notes',
-      this.findAllNotes.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.get('/notes', this.findAllNotes.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.FIND_ALL, REQUIRED_FIELDS_ALL),
+    ]);
 
-    this.httpGateway.post(
-      '/note',
-      this.createNote.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.post('/note', this.createNote.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
+    ]);
 
-    this.httpGateway.get(
-      '/note/:id',
-      this.findNote.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.get('/note/:id', this.findNote.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
+    ]);
 
-    this.httpGateway.patch(
-      '/note/:id',
-      this.updateNote.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.patch('/note', this.updateNote.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
+    ]);
 
-    this.httpGateway.delete(
-      '/note/:id',
-      this.deleteNote.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.delete('/note/:id', this.deleteNote.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
+    ]);
   }
 
   private async findAllNotes(
-    req: AuthHttpRequest<{}, {}, FindAllNoteInputDto, {}>
+    req: HttpRequest<{}, FindAllNoteInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset estão incorretos' },
-        };
-      }
-      const response = await this.noteController.findAll({ quantity, offset });
-      return { statusCode: 200, body: response };
+      const { quantity, offset } = req.query;
+      const response = await this.noteController.findAll(
+        { quantity, offset },
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async createNote(
-    req: AuthHttpRequest<{}, {}, CreateNoteInputDto, {}>
+    req: HttpRequest<{}, {}, CreateNoteInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação de nota' },
-        };
-      }
-      const response = await this.noteController.create(input);
-      return { statusCode: 201, body: response };
+      const response = await this.noteController.create(input, req.tokenData!);
+      return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async findNote(
-    req: AuthHttpRequest<FindNoteInputDto, {}, {}, {}>
+    req: HttpRequest<FindNoteInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
+      const response = await this.noteController.find({ id }, req.tokenData!);
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
       }
-      const response = await this.noteController.find({ id });
-      return { statusCode: 200, body: response };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error, 404);
     }
   }
 
   private async updateNote(
-    req: AuthHttpRequest<FindNoteInputDto, {}, UpdateNoteInputDto, {}>
+    req: HttpRequest<{}, {}, UpdateNoteInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!validId(id)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const response = await this.noteController.update({ ...input, id });
-      return { statusCode: 200, body: response };
+      const response = await this.noteController.update(input, req.tokenData!);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async deleteNote(
-    req: AuthHttpRequest<FindNoteInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteNoteInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!validId(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
-      const response = await this.noteController.delete({ id });
-      return { statusCode: 200, body: response };
+      const response = await this.noteController.delete({ id }, req.tokenData!);
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    return (
-      quantity !== undefined &&
-      offset !== undefined &&
-      !isNaN(quantity) &&
-      !isNaN(offset)
-    );
-  }
-
-  private validateCreate(input: CreateNoteInputDto): boolean {
-    if (
-      !input.evaluation ||
-      !input.student ||
-      typeof input.note !== 'number' ||
-      isNaN(input.note)
-    ) {
-      return false;
-    }
-    return true;
   }
 
   private handleError(error: unknown, statusCode = 400): HttpResponseData {

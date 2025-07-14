@@ -12,8 +12,13 @@ import UpdateLesson from '../../application/usecases/lesson/update.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import AddDay from '../../application/usecases/lesson/add-day.usecase';
 import { LessonController } from '../../interface/controller/lesson.controller';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 describe('LessonController unit test', () => {
+  let policieService: PoliciesServiceInterface;
+  let token: TokenData;
+
   const mockCreateLesson = jest.fn(() => {
     return {
       execute: jest.fn().mockResolvedValue(new Id().value),
@@ -121,6 +126,14 @@ describe('LessonController unit test', () => {
         .mockResolvedValue({ message: '2 values were removed' }),
     } as unknown as RemoveTime;
   });
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
+    verifyPolicies: jest.fn(),
+  });
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
 
   const createLesson = mockCreateLesson();
   const deleteLesson = mockDeleteLesson();
@@ -133,6 +146,7 @@ describe('LessonController unit test', () => {
   const removeDay = mockRemoveDay();
   const addTime = mockAddTime();
   const removeTime = mockRemoveTime();
+  policieService = MockPolicyService();
 
   const controller = new LessonController(
     createLesson,
@@ -145,106 +159,134 @@ describe('LessonController unit test', () => {
     addDay,
     removeDay,
     addTime,
-    removeTime
+    removeTime,
+    policieService
   );
 
   it('should return a id for the new lesson created', async () => {
-    const result = await controller.create({
-      name: 'Math advanced I',
-      duration: 60,
-      teacher: new Id().value,
-      studentsList: [new Id().value, new Id().value, new Id().value],
-      subject: new Id().value,
-      days: ['mon', 'fri'],
-      times: ['15:55', '19:00'],
-      semester: 2,
-    });
+    const result = await controller.create(
+      {
+        name: 'Math advanced I',
+        duration: 60,
+        teacher: new Id().value,
+        studentsList: [new Id().value, new Id().value, new Id().value],
+        subject: new Id().value,
+        days: ['mon', 'fri'],
+        times: ['15:55', '19:00'],
+        semester: 2,
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(createLesson.execute).toHaveBeenCalled();
   });
   it('should return a lesson', async () => {
-    const result = await controller.find({ id: new Id().value });
+    const result = await controller.find({ id: new Id().value }, token);
 
     expect(result).toBeDefined();
     expect(findLesson.execute).toHaveBeenCalled();
   });
   it('should return all lessons', async () => {
-    const result = await controller.findAll({});
+    const result = await controller.findAll({}, token);
 
     expect(result).toBeDefined();
     expect(result.length).toBe(2);
     expect(findAllLesson.execute).toHaveBeenCalled();
   });
   it('should update a lesson', async () => {
-    const result = await controller.update({
-      id: new Id().value,
-      semester: 1,
-    });
+    const result = await controller.update(
+      {
+        id: new Id().value,
+        semester: 1,
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(updateLesson.execute).toHaveBeenCalled();
   });
   it('should delete a lesson', async () => {
-    const result = await controller.delete({
-      id: new Id().value,
-    });
+    const result = await controller.delete(
+      {
+        id: new Id().value,
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(deleteLesson.execute).toHaveBeenCalled();
   });
   it('should add students to the curriculum', async () => {
-    const result = await controller.addStudents({
-      id: new Id().value,
-      newStudentsList: [new Id().value],
-    });
+    const result = await controller.addStudents(
+      {
+        id: new Id().value,
+        newStudentsList: [new Id().value],
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(addStudents.execute).toHaveBeenCalled();
   });
   it('should remove students from the curriculum', async () => {
-    const result = await controller.removeStudents({
-      id: new Id().value,
-      studentsListToRemove: [new Id().value, new Id().value],
-    });
+    const result = await controller.removeStudents(
+      {
+        id: new Id().value,
+        studentsListToRemove: [new Id().value, new Id().value],
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(removeStudents.execute).toHaveBeenCalled();
   });
 
   it('should add day to the curriculum', async () => {
-    const result = await controller.addDay({
-      id: new Id().value,
-      newDaysList: ['wed'],
-    });
+    const result = await controller.addDay(
+      {
+        id: new Id().value,
+        newDaysList: ['wed'],
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(addDay.execute).toHaveBeenCalled();
   });
   it('should remove day from the curriculum', async () => {
-    const result = await controller.removeDay({
-      id: new Id().value,
-      daysListToRemove: ['mon', 'fri'],
-    });
+    const result = await controller.removeDay(
+      {
+        id: new Id().value,
+        daysListToRemove: ['mon', 'fri'],
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(removeDay.execute).toHaveBeenCalled();
   });
 
   it('should add time to the curriculum', async () => {
-    const result = await controller.addTime({
-      id: new Id().value,
-      newTimesList: ['20:00'],
-    });
+    const result = await controller.addTime(
+      {
+        id: new Id().value,
+        newTimesList: ['20:00'],
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(addTime.execute).toHaveBeenCalled();
   });
   it('should remove time from the curriculum', async () => {
-    const result = await controller.removeTime({
-      id: new Id().value,
-      timesListToRemove: ['15:55', '19:00'],
-    });
+    const result = await controller.removeTime(
+      {
+        id: new Id().value,
+        timesListToRemove: ['15:55', '19:00'],
+      },
+      token
+    );
 
     expect(result).toBeDefined();
     expect(removeTime.execute).toHaveBeenCalled();

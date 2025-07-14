@@ -1,3 +1,4 @@
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   CreateAttendanceInputDto,
   AddStudentsInputDto,
@@ -21,6 +22,7 @@ import FindAllAttendance from '../../application/usecases/attendance/find-all.us
 import FindAttendance from '../../application/usecases/attendance/find.usecase';
 import RemoveStudents from '../../application/usecases/attendance/remove-students.usecase';
 import UpdateAttendance from '../../application/usecases/attendance/update.usecase';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 
 /**
  * Controller for attendance management operations.
@@ -44,7 +46,8 @@ export default class AttendanceController {
     private readonly updateAttendance: UpdateAttendance,
     private readonly deleteAttendance: DeleteAttendance,
     private readonly addStudentsToAttendance: AddStudents,
-    private readonly removeStudentsFromAttendance: RemoveStudents
+    private readonly removeStudentsFromAttendance: RemoveStudents,
+    private readonly policiesService: PoliciesServiceInterface
   ) {}
 
   /**
@@ -53,21 +56,31 @@ export default class AttendanceController {
    * @returns Promise resolving to the created attendance data
    */
   async create(
-    input: CreateAttendanceInputDto
+    input: CreateAttendanceInputDto,
+    token: TokenData
   ): Promise<CreateAttendanceOutputDto> {
-    const response = await this.createAttendance.execute(input);
+    const response = await this.createAttendance.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
   /**
    * Finds an attendance record by id.
    * @param input - The input containing the id to search for
-   * @returns Promise resolving to the found attendance data or undefined
+   * @returns Promise resolving to the found attendance data or null
    */
   async find(
-    input: FindAttendanceInputDto
-  ): Promise<FindAttendanceOutputDto | undefined> {
-    const response = await this.findAttendance.execute(input);
+    input: FindAttendanceInputDto,
+    token: TokenData
+  ): Promise<FindAttendanceOutputDto | null> {
+    const response = await this.findAttendance.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -77,9 +90,14 @@ export default class AttendanceController {
    * @returns Promise resolving to the found attendance records
    */
   async findAll(
-    input: FindAllAttendanceInputDto
+    input: FindAllAttendanceInputDto,
+    token: TokenData
   ): Promise<FindAllAttendanceOutputDto> {
-    const response = await this.findAllAttendance.execute(input);
+    const response = await this.findAllAttendance.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -89,9 +107,14 @@ export default class AttendanceController {
    * @returns Promise resolving to the updated attendance data
    */
   async update(
-    input: UpdateAttendanceInputDto
+    input: UpdateAttendanceInputDto,
+    token: TokenData
   ): Promise<UpdateAttendanceOutputDto> {
-    const response = await this.updateAttendance.execute(input);
+    const response = await this.updateAttendance.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -101,9 +124,14 @@ export default class AttendanceController {
    * @returns Promise resolving to the deletion confirmation
    */
   async delete(
-    input: DeleteAttendanceInputDto
+    input: DeleteAttendanceInputDto,
+    token: TokenData
   ): Promise<DeleteAttendanceOutputDto> {
-    const response = await this.deleteAttendance.execute(input);
+    const response = await this.deleteAttendance.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -112,8 +140,15 @@ export default class AttendanceController {
    * @param input - The input containing the attendance record id and student ids to add
    * @returns Promise resolving to the updated attendance with added students
    */
-  async addStudents(input: AddStudentsInputDto): Promise<AddStudentsOutputDto> {
-    const response = await this.addStudentsToAttendance.execute(input);
+  async addStudents(
+    input: AddStudentsInputDto,
+    token: TokenData
+  ): Promise<AddStudentsOutputDto> {
+    const response = await this.addStudentsToAttendance.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 
@@ -123,9 +158,14 @@ export default class AttendanceController {
    * @returns Promise resolving to the updated attendance with removed students
    */
   async removeStudents(
-    input: RemoveStudentsInputDto
+    input: RemoveStudentsInputDto,
+    token: TokenData
   ): Promise<RemoveStudentsOutputDto> {
-    const response = await this.removeStudentsFromAttendance.execute(input);
+    const response = await this.removeStudentsFromAttendance.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 }

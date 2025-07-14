@@ -4,22 +4,38 @@ import {
   FindUserStudentOutputDto,
 } from '../../dto/student-usecase.dto';
 import UserStudentGateway from '@/modules/user-management/infrastructure/gateway/student.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class FindUserStudent
   implements
-    UseCaseInterface<
-      FindUserStudentInputDto,
-      FindUserStudentOutputDto | undefined
-    >
+    UseCaseInterface<FindUserStudentInputDto, FindUserStudentOutputDto | null>
 {
   private _userStudentRepository: UserStudentGateway;
 
   constructor(userStudentRepository: UserStudentGateway) {
     this._userStudentRepository = userStudentRepository;
   }
-  async execute({
-    id,
-  }: FindUserStudentInputDto): Promise<FindUserStudentOutputDto | undefined> {
+  async execute(
+    { id }: FindUserStudentInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindUserStudentOutputDto | null> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.STUDENT,
+        FunctionCalledEnum.FIND,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const response = await this._userStudentRepository.find(id);
     if (response) {
       return {

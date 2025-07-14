@@ -1,12 +1,12 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import AuthUserService from '../../application/service/user-entity.service';
 import {
   isNotEmpty,
   validEmail,
   validId,
   validRole,
 } from '@/modules/@shared/utils/validations';
-import { RoleUsers } from '@/modules/@shared/type/enum';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
+import { AuthUserServiceInterface } from '../../application/service/user-entity.service';
 
 /**
  * Properties required to create an authenticated user
@@ -30,7 +30,7 @@ export default class AuthUser {
   private _masterId: string;
   private _role: RoleUsers;
   private _isHashed: boolean;
-  private readonly _authService: AuthUserService;
+  private readonly _authService: AuthUserServiceInterface;
 
   /**
    * Creates a new authenticated user
@@ -39,8 +39,8 @@ export default class AuthUser {
    * @param authService - Service for password hashing and verification
    * @throws Error if any required field is missing or invalid
    */
-  constructor(input: AuthUserProps, authService: AuthUserService) {
-    this.validateConstructorParams(input, authService);
+  constructor(input: AuthUserProps, authService: AuthUserServiceInterface) {
+    this.validateConstructorParams(input);
 
     this._authService = authService;
     this._email = input.email;
@@ -54,11 +54,7 @@ export default class AuthUser {
   /**
    * Validates all parameters provided to the constructor
    */
-  private validateConstructorParams(
-    input: AuthUserProps,
-    authService: AuthUserService
-  ): void {
-    // Check if required fields are present
+  private validateConstructorParams(input: AuthUserProps): void {
     if (
       input.email === undefined ||
       input.password === undefined ||
@@ -67,12 +63,6 @@ export default class AuthUser {
       throw new Error('All fields are mandatory');
     }
 
-    // Validate service type
-    if (!(authService instanceof AuthUserService)) {
-      throw new Error('authservice type is incorrect');
-    }
-
-    // Validate field values
     if (!this.validateEmail(input.email)) {
       throw new Error('Field email is not valid');
     }
@@ -85,17 +75,14 @@ export default class AuthUser {
       throw new Error('Field role is not valid');
     }
 
-    // Validate masterId if provided
     if (input.masterId && !validId(input.masterId)) {
       throw new Error('Field masterId is not valid');
     }
 
-    // Check masterId requirement for non-master roles
     if (input.role !== 'master' && input.masterId === undefined) {
       throw new Error('The masterId field is mandatory for regular users');
     }
 
-    // Validate isHashed if provided
     if (input.isHashed !== undefined && typeof input.isHashed !== 'boolean') {
       throw new Error('The field isHashed must be a boolean');
     }

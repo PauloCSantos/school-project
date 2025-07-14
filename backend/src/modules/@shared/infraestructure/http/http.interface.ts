@@ -1,8 +1,11 @@
+import { TokenData } from '../../type/sharedTypes';
+
 export interface HttpRequest<P = any, Q = any, B = any, H = any> {
   params: P;
   query: Q;
   body: B;
   headers: H;
+  tokenData?: TokenData;
 }
 
 export interface HttpResponseData {
@@ -22,7 +25,7 @@ export interface HttpController<P = any, Q = any, B = any, H = any> {
 }
 
 /**
- * Abstração de servidor HTTP para registrar rotas e middlewares.
+ * HTTP server abstraction for registering routes and middlewares.
  */
 export interface HttpServer {
   get(
@@ -30,27 +33,27 @@ export interface HttpServer {
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void;
   post(
     path: string,
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void;
   patch(
     path: string,
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void;
   delete(
     path: string,
     handler: (
       req: HttpRequest<any, any, any, any>
     ) => Promise<HttpResponseData>,
-    ...middlewares: HttpMiddleware<any, any, any, any>[]
+    middlewares: HttpMiddleware<any, any, any, any>[]
   ): void;
 }

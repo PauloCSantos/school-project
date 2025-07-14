@@ -1,5 +1,5 @@
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import AuthUserGateway from '../gateway/user.gateway';
+import AuthUserGateway from '../../gateway/user.gateway';
 
 /**
  * In-memory implementation of AuthUserGateway.
@@ -77,5 +77,9 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
     } else {
       throw new Error('AuthUser not found');
     }
+  }
+
+  async verify(email: string): Promise<boolean> {
+    return this._authUser.some(authUser => authUser.email === email);
   }
 }

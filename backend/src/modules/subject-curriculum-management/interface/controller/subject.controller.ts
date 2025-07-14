@@ -1,3 +1,4 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateSubjectInputDto,
   CreateSubjectOutputDto,
@@ -15,6 +16,7 @@ import DeleteSubject from '../../application/usecases/subject/delete.usecase';
 import FindAllSubject from '../../application/usecases/subject/find-all.usecase';
 import FindSubject from '../../application/usecases/subject/find.usecase';
 import UpdateSubject from '../../application/usecases/subject/update.usecase';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 export class SubjectController {
   constructor(
@@ -22,31 +24,63 @@ export class SubjectController {
     private readonly findSubject: FindSubject,
     private readonly findAllSubject: FindAllSubject,
     private readonly updateSubject: UpdateSubject,
-    private readonly deleteSubject: DeleteSubject
+    private readonly deleteSubject: DeleteSubject,
+    private readonly policiesService: PoliciesServiceInterface
   ) {}
 
-  async create(input: CreateSubjectInputDto): Promise<CreateSubjectOutputDto> {
-    const response = await this.createSubject.execute(input);
+  async create(
+    input: CreateSubjectInputDto,
+    token: TokenData
+  ): Promise<CreateSubjectOutputDto> {
+    const response = await this.createSubject.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
   async find(
-    input: FindSubjectInputDto
-  ): Promise<FindSubjectOutputDto | undefined> {
-    const response = await this.findSubject.execute(input);
+    input: FindSubjectInputDto,
+    token: TokenData
+  ): Promise<FindSubjectOutputDto | null> {
+    const response = await this.findSubject.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
   async findAll(
-    input: FindAllSubjectInputDto
+    input: FindAllSubjectInputDto,
+    token: TokenData
   ): Promise<FindAllSubjectOutputDto> {
-    const response = await this.findAllSubject.execute(input);
+    const response = await this.findAllSubject.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
-  async delete(input: DeleteSubjectInputDto): Promise<DeleteSubjectOutputDto> {
-    const response = await this.deleteSubject.execute(input);
+  async delete(
+    input: DeleteSubjectInputDto,
+    token: TokenData
+  ): Promise<DeleteSubjectOutputDto> {
+    const response = await this.deleteSubject.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
-  async update(input: UpdateSubjectInputDto): Promise<UpdateSubjectOutputDto> {
-    const response = await this.updateSubject.execute(input);
+  async update(
+    input: UpdateSubjectInputDto,
+    token: TokenData
+  ): Promise<UpdateSubjectOutputDto> {
+    const response = await this.updateSubject.execute(
+      input,
+      this.policiesService,
+      token
+    );
     return response;
   }
 }

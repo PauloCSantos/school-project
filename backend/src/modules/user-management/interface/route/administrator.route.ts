@@ -1,12 +1,9 @@
-import { validId } from '@/modules/@shared/utils/validations';
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { UserAdministratorController } from '../controller/administrator.controller';
 import {
   CreateUserAdministratorInputDto,
@@ -15,6 +12,12 @@ import {
   UpdateUserAdministratorInputDto,
   DeleteUserAdministratorInputDto,
 } from '../../application/dto/administrator-usecase.dto';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
+import {
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 export class UserAdministratorRoute {
   constructor(
@@ -24,191 +27,146 @@ export class UserAdministratorRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS = [
+      'name',
+      'address',
+      'email',
+      'birthday',
+      'salary',
+      'graduation',
+    ];
+    const REQUIRED_FIELD = ['id'];
 
     this.httpGateway.get(
       '/users-administrator',
       this.findAllUserAdministrators.bind(this),
-      errorHandler,
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(
+          FunctionCalledEnum.FIND_ALL,
+          REQUIRED_FIELDS_ALL
+        ),
+      ]
     );
 
     this.httpGateway.post(
       '/user-administrator',
       this.createUserAdministrator.bind(this),
-      errorHandler,
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
+      ]
     );
 
     this.httpGateway.get(
       '/user-administrator/:id',
       this.findUserAdministrator.bind(this),
-      errorHandler,
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
+      ]
     );
 
     this.httpGateway.patch(
-      '/user-administrator/:id',
+      '/user-administrator',
       this.updateUserAdministrator.bind(this),
-      errorHandler,
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
+      ]
     );
 
     this.httpGateway.delete(
       '/user-administrator/:id',
       this.deleteUserAdministrator.bind(this),
-      errorHandler,
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
+      ]
     );
   }
 
   private async findAllUserAdministrators(
-    req: AuthHttpRequest<{}, {}, FindAllUserAdministratorInputDto, {}>
+    req: HttpRequest<{}, FindAllUserAdministratorInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset incorretos' },
-        };
-      }
-      const administrators = await this.userAdministratorController.findAll({
-        quantity,
-        offset,
-      });
-      return { statusCode: 200, body: administrators };
+      const { quantity, offset } = req.query;
+      const response = await this.userAdministratorController.findAll(
+        {
+          quantity,
+          offset,
+        },
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async findUserAdministrator(
-    req: AuthHttpRequest<FindUserAdministratorInputDto, {}, {}, {}>
+    req: HttpRequest<FindUserAdministratorInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!this.validFind(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
+      const response = await this.userAdministratorController.find(
+        { id },
+        req.tokenData!
+      );
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
       }
-      const administrator = await this.userAdministratorController.find({ id });
-      return { statusCode: 200, body: administrator };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async createUserAdministrator(
-    req: AuthHttpRequest<{}, {}, CreateUserAdministratorInputDto, {}>
+    req: HttpRequest<{}, {}, CreateUserAdministratorInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação do administrador' },
-        };
-      }
-      const newAdministrator =
-        await this.userAdministratorController.create(input);
-      return { statusCode: 201, body: newAdministrator };
+      const response = await this.userAdministratorController.create(
+        input,
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateUserAdministrator(
-    req: AuthHttpRequest<
-      FindUserAdministratorInputDto,
-      {},
-      UpdateUserAdministratorInputDto,
-      {}
-    >
+    req: HttpRequest<{}, {}, UpdateUserAdministratorInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!this.validUpdate(id, input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
       const updatedAdministrator =
-        await this.userAdministratorController.update({ ...input, id });
-      return { statusCode: 200, body: updatedAdministrator };
+        await this.userAdministratorController.update(input, req.tokenData!);
+      return { statusCode: StatusCodeEnum.OK, body: updatedAdministrator };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async deleteUserAdministrator(
-    req: AuthHttpRequest<
-      FindUserAdministratorInputDto,
-      {},
-      DeleteUserAdministratorInputDto,
-      {}
-    >
+    req: HttpRequest<DeleteUserAdministratorInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!this.validDelete(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
-      const deleted = await this.userAdministratorController.delete({ id });
-      return { statusCode: 200, body: deleted };
+      const response = await this.userAdministratorController.delete(
+        { id },
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    if (quantity === undefined || offset === undefined) {
-      return true;
-    }
-    return Number.isInteger(quantity) && Number.isInteger(offset);
-  }
-
-  private validateCreate(input: CreateUserAdministratorInputDto): boolean {
-    if (
-      !input.name ||
-      typeof input.name.firstName !== 'string' ||
-      typeof input.name.lastName !== 'string' ||
-      !input.address ||
-      typeof input.address.street !== 'string' ||
-      typeof input.address.city !== 'string' ||
-      typeof input.address.zip !== 'string' ||
-      typeof input.address.number !== 'number' ||
-      typeof input.address.avenue !== 'string' ||
-      typeof input.address.state !== 'string' ||
-      !input.email ||
-      typeof input.email !== 'string' ||
-      !input.birthday ||
-      typeof input.birthday !== 'string' ||
-      !input.salary ||
-      typeof input.salary.salary !== 'number' ||
-      !input.graduation ||
-      typeof input.graduation !== 'string'
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  private validFind(id: string): boolean {
-    return validId(id);
-  }
-
-  private validUpdate(
-    id: string,
-    input: UpdateUserAdministratorInputDto
-  ): boolean {
-    if (!validId(id)) return false;
-    return Object.values(input).some(value => value !== undefined);
-  }
-
-  private validDelete(id: string): boolean {
-    return validId(id);
   }
 
   private handleError(error: unknown, statusCode = 400): HttpResponseData {

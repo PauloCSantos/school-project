@@ -5,14 +5,15 @@ import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.a
 
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
-import MemoryEventRepository from '@/modules/event-calendar-management/infrastructure/repositories/memory-repository/calendar.repository';
+import MemoryEventRepository from '@/modules/event-calendar-management/infrastructure/repositories/memory-repository/event.repository';
 import CreateEvent from '@/modules/event-calendar-management/application/usecases/event/create.usecase';
 import FindEvent from '@/modules/event-calendar-management/application/usecases/event/find.usecase';
 import FindAllEvent from '@/modules/event-calendar-management/application/usecases/event/find-all.usecase';
 import UpdateEvent from '@/modules/event-calendar-management/application/usecases/event/update.usecase';
 import DeleteEvent from '@/modules/event-calendar-management/application/usecases/event/delete.usecase';
-import EventController from '@/modules/event-calendar-management/interface/controller/calendar.controller';
-import EventRoute from '@/modules/event-calendar-management/interface/route/calendar.route';
+import EventController from '@/modules/event-calendar-management/interface/controller/event.controller';
+import EventRoute from '@/modules/event-calendar-management/interface/route/event.route';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 describe('Event calendar management module end to end test', () => {
   let eventRepository = new MemoryEventRepository();
@@ -27,12 +28,15 @@ describe('Event calendar management module end to end test', () => {
     const updateEventUsecase = new UpdateEvent(eventRepository);
     const deleteEventUsecase = new DeleteEvent(eventRepository);
 
+    const policiesService = new PoliciesService();
+
     const eventController = new EventController(
       createEventUsecase,
       findEventUsecase,
       findAllEventUsecase,
       updateEventUsecase,
-      deleteEventUsecase
+      deleteEventUsecase,
+      policiesService
     );
 
     const expressHttp = new ExpressAdapter();
@@ -104,7 +108,7 @@ describe('Event calendar management module end to end test', () => {
           expect(event.body.error).toBeDefined();
         });
       });
-      describe('PATCH /event/:id', () => {
+      describe('PATCH /event', () => {
         it('should throw an error when the data to update a event is wrong', async () => {
           const response = await supertest(app)
             .post('/event')
@@ -123,15 +127,16 @@ describe('Event calendar management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedEvent = await supertest(app)
-            .patch(`/event/${id}`)
+            .patch(`/event`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               name: 'Ch',
             });
-          expect(updatedEvent.status).toBe(404);
+          expect(updatedEvent.status).toBe(400);
           expect(updatedEvent.body.error).toBeDefined();
         });
       });
@@ -181,6 +186,7 @@ describe('Event calendar management module end to end test', () => {
               type: 'event',
               place: 'school',
             });
+
           expect(response.status).toBe(201);
           expect(response.body.id).toBeDefined();
         });
@@ -213,7 +219,7 @@ describe('Event calendar management module end to end test', () => {
           expect(event.body).toBeDefined();
         });
       });
-      describe('GET /events/', () => {
+      describe('GET /events', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/event')
@@ -256,7 +262,7 @@ describe('Event calendar management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /event/:id', () => {
+      describe('PATCH /event', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/event')
@@ -275,12 +281,13 @@ describe('Event calendar management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedEvent = await supertest(app)
-            .patch(`/event/${id}`)
+            .patch(`/event`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               creator: new Id().value,
             });
           expect(updatedEvent.status).toBe(200);

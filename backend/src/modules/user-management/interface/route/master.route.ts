@@ -1,18 +1,21 @@
-import { validId } from '@/modules/@shared/utils/validations';
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { UserMasterController } from '../controller/master.controller';
 import {
   CreateUserMasterInputDto,
   FindUserMasterInputDto,
   UpdateUserMasterInputDto,
 } from '../../application/dto/master-usecase.dto';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
+import {
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 export class UserMasterRoute {
   constructor(
@@ -22,113 +25,75 @@ export class UserMasterRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
+    const REQUIRED_FIELDS = ['name', 'address', 'email', 'birthday', 'cnpj'];
+    const REQUIRED_FIELD = ['id'];
 
-    this.httpGateway.post(
-      '/user-master',
-      this.createUserMaster.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.post('/user-master', this.createUserMaster.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
+    ]);
 
-    this.httpGateway.get(
-      '/user-master/:id',
-      this.findUserMaster.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.get('/user-master/:id', this.findUserMaster.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
+    ]);
 
-    this.httpGateway.patch(
-      '/user-master/:id',
-      this.updateUserMaster.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.patch('/user-master', this.updateUserMaster.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
+    ]);
   }
 
   private async createUserMaster(
-    req: AuthHttpRequest<{}, {}, CreateUserMasterInputDto, {}>
+    req: HttpRequest<{}, {}, CreateUserMasterInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Dados inválidos para criação do master' },
-        };
-      }
-      const newMaster = await this.userMasterController.create(input);
-      return { statusCode: 201, body: newMaster };
+      const reponse = await this.userMasterController.create(
+        input,
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.CREATED, body: reponse };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async findUserMaster(
-    req: AuthHttpRequest<FindUserMasterInputDto, {}, {}, {}>
+    req: HttpRequest<FindUserMasterInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!this.validFind(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
+      const response = await this.userMasterController.find(
+        { id },
+        req.tokenData!
+      );
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
       }
-      const master = await this.userMasterController.find({ id });
-      return { statusCode: 200, body: master };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateUserMaster(
-    req: AuthHttpRequest<
-      FindUserMasterInputDto,
-      {},
-      UpdateUserMasterInputDto,
-      {}
-    >
+    req: HttpRequest<{}, {}, UpdateUserMasterInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!this.validUpdate(id, input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const updatedMaster = await this.userMasterController.update({
-        ...input,
-        id,
-      });
-      return { statusCode: 200, body: updatedMaster };
+      const response = await this.userMasterController.update(
+        input,
+        req.tokenData!
+      );
+
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validateCreate(input: CreateUserMasterInputDto): boolean {
-    return (
-      input.name.firstName !== undefined &&
-      input.name.lastName !== undefined &&
-      input.address.street !== undefined &&
-      input.address.city !== undefined &&
-      input.address.zip !== undefined &&
-      input.address.number !== undefined &&
-      input.address.avenue !== undefined &&
-      input.address.state !== undefined &&
-      input.email !== undefined &&
-      input.birthday !== undefined &&
-      input.cnpj !== undefined
-    );
-  }
-
-  private validFind(id: string): boolean {
-    return validId(id);
-  }
-
-  private validUpdate(id: string, input: UpdateUserMasterInputDto): boolean {
-    if (!validId(id)) return false;
-    return Object.values(input).some(value => value !== undefined);
   }
 
   private handleError(error: unknown, statusCode = 400): HttpResponseData {

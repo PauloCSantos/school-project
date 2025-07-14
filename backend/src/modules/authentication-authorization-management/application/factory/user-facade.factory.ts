@@ -1,12 +1,13 @@
-import MemoryAuthUserRepository from '../../infrastructure/repositories/user.repository';
+import MemoryAuthUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
 import AuthUserFacade from '../facade/facade/user.facade';
 import CreateAuthUser from '../usecases/authUser/create-user.usecase';
 import DeleteAuthUser from '../usecases/authUser/delete-user.usecase';
 import FindAuthUser from '../usecases/authUser/find-user.usecase';
 import UpdateAuthUser from '../usecases/authUser/update-user.usecase';
 import LoginAuthUser from '../usecases/authUser/login-user.usecase';
-import AuthUserService from '../service/user-entity.service';
-import TokenService from '../../../@shared/infraestructure/service/token.service';
+import { AuthUserService } from '../service/user-entity.service';
+import TokenService from '../../../@shared/infraestructure/services/token.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 /**
  * Factory responsible for creating AuthUserFacade instances
@@ -18,13 +19,11 @@ export default class AuthUserFacadeFactory {
    * @returns Fully configured AuthUserFacade instance
    */
   static create(): AuthUserFacade {
-    // Currently using memory repository only
-    // Future implementation will use environment variables to determine repository type
     const repository = new MemoryAuthUserRepository();
     const authUserService = new AuthUserService();
     const tokenService = new TokenService('PxHf3H7');
+    const policiesService = new PoliciesService();
 
-    // Create all required use cases
     const createAuthUser = new CreateAuthUser(repository, authUserService);
     const deleteAuthUser = new DeleteAuthUser(repository);
     const findAuthUser = new FindAuthUser(repository);
@@ -35,13 +34,13 @@ export default class AuthUserFacadeFactory {
       tokenService
     );
 
-    // Instantiate and return the facade with all required use cases
     const facade = new AuthUserFacade({
       createAuthUser,
       deleteAuthUser,
       findAuthUser,
       updateAuthUser,
       loginAuthUser,
+      policiesService,
     });
 
     return facade;

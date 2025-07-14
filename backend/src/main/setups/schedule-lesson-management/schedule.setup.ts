@@ -1,6 +1,5 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryScheduleRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/schedule.repository';
 import CreateSchedule from '@/modules/schedule-lesson-management/application/usecases/schedule/create.usecase';
 import FindSchedule from '@/modules/schedule-lesson-management/application/usecases/schedule/find.usecase';
@@ -10,9 +9,11 @@ import DeleteSchedule from '@/modules/schedule-lesson-management/application/use
 import AddLessons from '@/modules/schedule-lesson-management/application/usecases/schedule/add-lessons.usecase';
 import RemoveLessons from '@/modules/schedule-lesson-management/application/usecases/schedule/remove-lessons.usecase';
 import { ScheduleController } from '@/modules/schedule-lesson-management/interface/controller/schedule.controller';
-import { ScheduleRoute } from '@/modules/schedule-lesson-management/interface/route/schedule.route';
+import ScheduleRoute from '@/modules/schedule-lesson-management/interface/route/schedule.route';
+import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 
-export default function initializeSchedule(express: ExpressHttp): void {
+export default function initializeSchedule(express: HttpServer): void {
   const scheduleRepository = new MemoryScheduleRepository();
   const createScheduleUsecase = new CreateSchedule(scheduleRepository);
   const findScheduleUsecase = new FindSchedule(scheduleRepository);
@@ -31,7 +32,12 @@ export default function initializeSchedule(express: ExpressHttp): void {
     removeLessons
   );
   const tokenService = tokenInstance();
-  const allowedRoles: RoleUsers[] = ['master', 'administrator'];
+  const allowedRoles: RoleUsers[] = [
+    RoleUsersEnum.MASTER,
+    RoleUsersEnum.ADMINISTRATOR,
+    RoleUsersEnum.TEACHER,
+    RoleUsersEnum.STUDENT,
+  ];
   const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
   const scheduleRoute = new ScheduleRoute(
     scheduleController,

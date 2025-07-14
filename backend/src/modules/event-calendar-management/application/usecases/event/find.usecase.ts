@@ -2,8 +2,15 @@ import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.in
 import {
   FindEventInputDto,
   FindEventOutputDto,
-} from '../../dto/calendar-usecase.dto';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/calendar.gateway';
+} from '../../dto/event-usecase.dto';
+import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for finding an event by ID.
@@ -31,7 +38,21 @@ export default class FindEvent
    * @param input - Input data containing the ID to search for
    * @returns Event data if found, undefined otherwise
    */
-  async execute({ id }: FindEventInputDto): Promise<FindEventOutputDto | null> {
+  async execute(
+    { id }: FindEventInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindEventOutputDto | null> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.EVENT,
+        FunctionCalledEnum.FIND,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const response = await this._eventRepository.find(id);
 
     if (response) {

@@ -36,11 +36,11 @@ describe('MemoryNoteRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should return undefined if note not found', async () => {
+    it('should return null if note not found', async () => {
       const noteId = new Id().value;
       const noteFound = await repository.find(noteId);
 
-      expect(noteFound).toBeUndefined();
+      expect(noteFound).toBeNull();
     });
 
     it('should throw an error when trying to update a non-existent note', async () => {
@@ -133,7 +133,7 @@ describe('MemoryNoteRepository unit test', () => {
 
       // Verify note was removed from repository
       const deletedNote = await repository.find(note1.id.value);
-      expect(deletedNote).toBeUndefined();
+      expect(deletedNote).toBeNull();
 
       // Verify repository state
       const allNotes = await repository.findAll();

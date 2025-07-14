@@ -1,0 +1,217 @@
+#################################################
+## Variables
+#################################################
+
+@baseUrl = http://localhost:3003
+
+@masterEmail = master@teste.com.br
+@adminEmail = admin@teste.com.br
+@teacherEmail = teacher@teste.com.br
+@studentEmail = student@teste.com.br
+@workerEmail = worker@teste.com.br
+
+@masterPassword = MasterPass123
+@adminPassword = AdminPass123
+@teacherPassword = TeacherPass123
+@studentPassword = StudentPass123
+@workerPassword = WorkerPass123
+
+#################################################
+## 1. User Creation Flow (register)
+#################################################
+
+### createMaster
+# @name createMaster
+# Create the master user
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "email": "{{masterEmail}}",
+  "password": "{{masterPassword}}",
+  "role": "master"
+}
+###
+@masterId = {{createMaster.response.body.masterId}}
+
+### createAdmin
+# @name createAdmin
+# Create the administrator user
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "role": "administrator",
+  "masterId": "{{masterId}}"
+}
+
+### createTeacher
+# @name createTeacher
+# Create the teacher user
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "email": "{{teacherEmail}}",
+  "password": "{{teacherPassword}}",
+  "role": "teacher",
+  "masterId": "{{masterId}}"
+}
+
+### createStudent
+# @name createStudent
+# Create the student user
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "email": "{{studentEmail}}",
+  "password": "{{studentPassword}}",
+  "role": "student",
+  "masterId": "{{masterId}}"
+}
+
+### createWorker
+# @name createWorker
+# Create the worker user
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "email": "{{workerEmail}}",
+  "password": "{{workerPassword}}",
+  "role": "worker",
+  "masterId": "{{masterId}}"
+}
+
+#################################################
+## 2. Login Flow for All Users
+#################################################
+
+### loginMaster
+# @name loginMaster
+# Authenticate as master
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{masterEmail}}",
+  "password": "{{masterPassword}}",
+  "role": "master"
+}
+###
+@masterToken = Bearer {{loginMaster.response.body.token}}
+
+### loginAdmin
+# @name loginAdmin
+# Authenticate as administrator
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "role": "administrator"
+}
+###
+@adminToken = Bearer {{loginAdmin.response.body.token}}
+
+### loginTeacher
+# @name loginTeacher
+# Authenticate as teacher
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{teacherEmail}}",
+  "password": "{{teacherPassword}}",
+  "role": "teacher"
+}
+###
+@teacherToken = Bearer {{loginTeacher.response.body.token}}
+
+### loginStudent
+# @name loginStudent
+# Authenticate as student
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{studentEmail}}",
+  "password": "{{studentPassword}}",
+  "role": "student"
+}
+###
+@studentToken = Bearer {{loginStudent.response.body.token}}
+
+### loginWorker
+# @name loginWorker
+# Authenticate as worker
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{workerEmail}}",
+  "password": "{{workerPassword}}",
+  "role": "worker"
+}
+###
+@workerToken = Bearer {{loginWorker.response.body.token}}
+
+#################################################
+## 3. Update Flow (PATCH /authUser)
+#################################################
+
+### updateUserPassword
+# @name updateUserPassword
+# Administrator updates own password
+PATCH {{baseUrl}}/authUser
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "email": "{{adminEmail}}",
+  "authUserDataToUpdate": {
+    "password": "AdminPass1234"
+  }
+}
+
+### updateUserRole
+# @name updateUserRole
+# Administrator changes own role to teacher
+PATCH {{baseUrl}}/authUser
+Content-Type: application/json
+Authorization: {{adminToken}}
+
+{
+  "email": "{{adminEmail}}",
+  "authUserDataToUpdate": {
+    "role": "teacher"
+  }
+}
+
+### updateUserEmail
+# @name updateUserEmail
+# Student updates worker's email
+PATCH {{baseUrl}}/authUser
+Content-Type: application/json
+Authorization: {{studentToken}}
+
+{
+  "email": "{{workerEmail}}",
+  "authUserDataToUpdate": {
+    "email": "worker_updated@teste.com.br"
+  }
+}
+
+#################################################
+## 4. Deletion Flow (DELETE)
+#################################################
+
+### deleteUser
+# @name deleteUser
+# Administrator deletes the teacher user
+DELETE {{baseUrl}}/authUser/{{teacherEmail}}
+Authorization: {{adminToken}}

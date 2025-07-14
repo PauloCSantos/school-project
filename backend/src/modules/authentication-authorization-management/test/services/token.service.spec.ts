@@ -1,7 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
-import TokenService from '@/modules/@shared/infraestructure/service/token.service';
+import { AuthUserService } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import TokenService from '@/modules/@shared/infraestructure/services/token.service';
 
 describe('TokenService unit test', () => {
   const secretKey = 'PxHf3H7';

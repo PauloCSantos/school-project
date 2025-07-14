@@ -1,20 +1,39 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import FindAllUserTeacher from '@/modules/user-management/application/usecases/teacher/findAllUserTeacher.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserTeacher from '@/modules/user-management/domain/entity/teacher.entity';
 
-const MockRepository = () => {
-  return {
-    find: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-  };
-};
-
 describe('findAllUserTeacher usecase unit test', () => {
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let token: TokenData;
+
+  const MockRepository = () => {
+    return {
+      find: jest.fn(),
+      findByEmail: jest.fn(),
+      findAll: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    };
+  };
+
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
+    ({
+      verifyPolicies: jest.fn(),
+    }) as jest.Mocked<PoliciesServiceInterface>;
+
+  policieService = MockPolicyService();
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   const userTeacher1 = new UserTeacher({
     name: new Name({
       firstName: 'John',
@@ -62,9 +81,10 @@ describe('findAllUserTeacher usecase unit test', () => {
         userTeacher1,
         userTeacher2,
       ]);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
       const usecase = new FindAllUserTeacher(userTeacherRepository);
 
-      const result = await usecase.execute({});
+      const result = await usecase.execute({}, policieService, token);
 
       expect(userTeacherRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(2);
@@ -72,9 +92,10 @@ describe('findAllUserTeacher usecase unit test', () => {
     it('should return an empty array when the repository is empty', async () => {
       const userTeacherRepository = MockRepository();
       userTeacherRepository.findAll.mockResolvedValue([]);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
       const usecase = new FindAllUserTeacher(userTeacherRepository);
 
-      const result = await usecase.execute({});
+      const result = await usecase.execute({}, policieService, token);
 
       expect(userTeacherRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(0);

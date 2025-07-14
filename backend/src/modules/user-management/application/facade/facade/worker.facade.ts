@@ -16,20 +16,24 @@ import {
   UpdateUserWorkerInputDto,
   UpdateUserWorkerOutputDto,
 } from '../../dto/worker-facade.dto';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 type WorkerFacadeProps = {
-  createUserWorker: CreateUserWorker;
-  deleteUserWorker: DeleteUserWorker;
-  findAllUserWorker: FindAllUserWorker;
-  findUserWorker: FindUserWorker;
-  updateUserWorker: UpdateUserWorker;
+  readonly createUserWorker: CreateUserWorker;
+  readonly deleteUserWorker: DeleteUserWorker;
+  readonly findAllUserWorker: FindAllUserWorker;
+  readonly findUserWorker: FindUserWorker;
+  readonly updateUserWorker: UpdateUserWorker;
+  readonly policiesService: PoliciesServiceInterface;
 };
 export default class WorkerFacade implements WorkerFacadeInterface {
-  private _createUserWorker: CreateUserWorker;
-  private _deleteUserWorker: DeleteUserWorker;
-  private _findAllUserWorker: FindAllUserWorker;
-  private _findUserWorker: FindUserWorker;
-  private _updateUserWorker: UpdateUserWorker;
+  private readonly _createUserWorker: CreateUserWorker;
+  private readonly _deleteUserWorker: DeleteUserWorker;
+  private readonly _findAllUserWorker: FindAllUserWorker;
+  private readonly _findUserWorker: FindUserWorker;
+  private readonly _updateUserWorker: UpdateUserWorker;
+  private readonly _policiesService: PoliciesServiceInterface;
 
   constructor(input: WorkerFacadeProps) {
     this._createUserWorker = input.createUserWorker;
@@ -37,31 +41,57 @@ export default class WorkerFacade implements WorkerFacadeInterface {
     this._findAllUserWorker = input.findAllUserWorker;
     this._findUserWorker = input.findUserWorker;
     this._updateUserWorker = input.updateUserWorker;
+    this._policiesService = input.policiesService;
   }
 
   async create(
-    input: CreateUserWorkerInputDto
+    input: CreateUserWorkerInputDto,
+    token: TokenData
   ): Promise<CreateUserWorkerOutputDto> {
-    return await this._createUserWorker.execute(input);
+    return await this._createUserWorker.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async find(
-    input: FindUserWorkerInputDto
-  ): Promise<FindUserWorkerOutputDto | undefined> {
-    return await this._findUserWorker.execute(input);
+    input: FindUserWorkerInputDto,
+    token: TokenData
+  ): Promise<FindUserWorkerOutputDto | null> {
+    return await this._findUserWorker.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async findAll(
-    input: FindAllUserWorkerInputDto
+    input: FindAllUserWorkerInputDto,
+    token: TokenData
   ): Promise<FindAllUserWorkerOutputDto> {
-    return await this._findAllUserWorker.execute(input);
+    return await this._findAllUserWorker.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async delete(
-    input: DeleteUserWorkerInputDto
+    input: DeleteUserWorkerInputDto,
+    token: TokenData
   ): Promise<DeleteUserWorkerOutputDto> {
-    return await this._deleteUserWorker.execute(input);
+    return await this._deleteUserWorker.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
   async update(
-    input: UpdateUserWorkerInputDto
+    input: UpdateUserWorkerInputDto,
+    token: TokenData
   ): Promise<UpdateUserWorkerOutputDto> {
-    return await this._updateUserWorker.execute(input);
+    return await this._updateUserWorker.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 }

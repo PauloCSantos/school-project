@@ -6,13 +6,15 @@ import LoginAuthUser from '@/modules/authentication-authorization-management/app
 import UpdateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/update-user.usecase';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
-import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/user.repository';
 import AuthUserController from '@/modules/authentication-authorization-management/interface/controller/user.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/user.route';
-import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
-import TokenService from '@/modules/authentication-authorization-management/infrastructure/service/token.service';
+import { AuthUserService } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
+import TokenService from '@/modules/@shared/infraestructure/services/token.service';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 describe('Authentication authorization management module end to end test', () => {
   let authUserRepository = new MemoryAuthUserRepository();
@@ -39,12 +41,15 @@ describe('Authentication authorization management module end to end test', () =>
       tokenService
     );
 
+    const policiesService = new PoliciesService();
+
     const authUserController = new AuthUserController(
       createAuthUserUsecase,
       findAuthUserUsecase,
       updateAuthUserUsecase,
       deleteAuthUserUsecase,
-      loginAuthUserUsecase
+      loginAuthUserUsecase,
+      policiesService
     );
 
     const expressHttp = new ExpressAdapter();
@@ -110,7 +115,7 @@ describe('Authentication authorization management module end to end test', () =>
           expect(authUser.body.error).toBeDefined();
         });
       });
-      describe('PATCH /authUser/:email', () => {
+      describe('PATCH /authUser', () => {
         it('should throw an error when the data to update a authUser is wrong', async () => {
           const response = await supertest(app)
             .post('/register')
@@ -127,18 +132,18 @@ describe('Authentication authorization management module end to end test', () =>
             });
           const email = response.body.email;
           const updatedAuthUser = await supertest(app)
-            .patch(`/authUser/${email}`)
+            .patch(`/authUser`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
-              email: 'teste@teste.com.br',
+              email,
               authUserDataToUpdate: {
                 password: '',
               },
             });
-          expect(updatedAuthUser.status).toBe(404);
+          expect(updatedAuthUser.status).toBe(400);
           expect(updatedAuthUser.body.error).toBeDefined();
         });
       });
@@ -262,13 +267,13 @@ describe('Authentication authorization management module end to end test', () =>
             });
           const email = response.body.email;
           const updatedAuthUser = await supertest(app)
-            .patch(`/authUser/${email}`)
+            .patch(`/authUser`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
-              email: 'teste@teste.com.br',
+              email: email,
               authUserDataToUpdate: {
                 password: 'as5d4v67',
               },

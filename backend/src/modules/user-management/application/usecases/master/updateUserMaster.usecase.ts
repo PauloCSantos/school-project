@@ -4,6 +4,13 @@ import {
   UpdateUserMasterOutputDto,
 } from '../../dto/master-usecase.dto';
 import UserMasterGateway from '@/modules/user-management/infrastructure/gateway/master.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class UpdateUserMaster
   implements
@@ -14,14 +21,21 @@ export default class UpdateUserMaster
   constructor(userMasterRepository: UserMasterGateway) {
     this._userMasterRepository = userMasterRepository;
   }
-  async execute({
-    id,
-    name,
-    address,
-    email,
-    birthday,
-    cnpj,
-  }: UpdateUserMasterInputDto): Promise<UpdateUserMasterOutputDto> {
+  async execute(
+    { id, name, address, email, birthday, cnpj }: UpdateUserMasterInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<UpdateUserMasterOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.MASTER,
+        FunctionCalledEnum.UPDATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const userMaster = await this._userMasterRepository.find(id);
     if (!userMaster) throw new Error('User not found');
 
@@ -43,7 +57,7 @@ export default class UpdateUserMaster
       address?.state !== undefined &&
         (userMaster.address.state = address.state);
       email !== undefined && (userMaster.email = email);
-      birthday !== undefined && (userMaster.birthday = birthday);
+      birthday !== undefined && (userMaster.birthday = new Date(birthday));
       cnpj !== undefined && (userMaster.cnpj = cnpj);
 
       const result = await this._userMasterRepository.update(userMaster);

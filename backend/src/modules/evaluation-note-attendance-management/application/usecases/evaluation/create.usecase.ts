@@ -5,6 +5,13 @@ import {
   CreateEvaluationOutputDto,
 } from '../../dto/evaluation-usecase.dto';
 import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for creating a new evaluation record.
@@ -35,33 +42,38 @@ export default class CreateEvaluation
    * @throws Error if an evaluation record with the same id already exists
    * @throws ValidationError if any of the input data fails validation during entity creation
    */
-  async execute({
-    lesson,
-    teacher,
-    type,
-    value,
-  }: CreateEvaluationInputDto): Promise<CreateEvaluationOutputDto> {
-    try {
-      const evaluation = new Evaluation({
-        lesson,
-        teacher,
-        type,
-        value,
-      });
-
-      const evaluationVerification = await this._evaluationRepository.find(
-        evaluation.id.value
-      );
-
-      if (evaluationVerification) {
-        throw new Error('Evaluation already exists');
-      }
-
-      const result = await this._evaluationRepository.create(evaluation);
-
-      return { id: result };
-    } catch (error) {
-      throw error;
+  async execute(
+    { lesson, teacher, type, value }: CreateEvaluationInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<CreateEvaluationOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.EVALUATION,
+        FunctionCalledEnum.CREATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
     }
+
+    const evaluation = new Evaluation({
+      lesson,
+      teacher,
+      type,
+      value,
+    });
+
+    const evaluationVerification = await this._evaluationRepository.find(
+      evaluation.id.value
+    );
+
+    if (evaluationVerification) {
+      throw new Error('Evaluation already exists');
+    }
+
+    const result = await this._evaluationRepository.create(evaluation);
+
+    return { id: result };
   }
 }

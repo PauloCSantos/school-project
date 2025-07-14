@@ -1,3 +1,4 @@
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import MemoryEvaluationRepository from '../../infrastructure/repositories/memory-repository/evaluation.repository';
 import EvaluationFacade from '../facade/facade/evaluation.facade';
 import CreateEvaluation from '../usecases/evaluation/create.usecase';
@@ -19,6 +20,7 @@ export default class EvaluationFacadeFactory {
     // Currently using memory repository only
     // Future implementation will use environment variables to determine repository type
     const repository = new MemoryEvaluationRepository();
+    const policiesService = new PoliciesService();
 
     // Create all required use cases
     const createEvaluation = new CreateEvaluation(repository);
@@ -34,6 +36,7 @@ export default class EvaluationFacadeFactory {
       findAllEvaluation,
       findEvaluation,
       updateEvaluation,
+      policiesService,
     });
 
     return facade;

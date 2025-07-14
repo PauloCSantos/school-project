@@ -42,7 +42,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     offSet?: number | undefined
   ): Promise<Lesson[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const lessons = this._lessons.slice(offS, qtd);
 
     return lessons;

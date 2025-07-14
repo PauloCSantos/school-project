@@ -1,3 +1,4 @@
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import MemoryScheduleRepository from '../../infrastructure/repositories/memory-repository/schedule.repository';
 import ScheduleFacade from '../facade/facade/schedule.facade';
 import AddLessons from '../usecases/schedule/add-lessons.usecase';
@@ -20,6 +21,7 @@ export default class ScheduleFacadeFactory {
   static create(): ScheduleFacade {
     // Currently using memory repository
     const repository = new MemoryScheduleRepository();
+    const policiesService = new PoliciesService();
 
     // Create all required use cases
     const createSchedule = new CreateSchedule(repository);
@@ -39,6 +41,7 @@ export default class ScheduleFacadeFactory {
       updateSchedule,
       addLessons,
       removeLessons,
+      policiesService,
     });
 
     return facade;

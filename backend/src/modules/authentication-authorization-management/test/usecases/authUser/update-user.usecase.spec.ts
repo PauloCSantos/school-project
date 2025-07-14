@@ -1,121 +1,166 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import UpdateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/update-user.usecase';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import AuthUserService from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  RoleUsersEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
+import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 
-const MockRepository = (): jest.Mocked<AuthUserGateway> => {
-  return {
-    find: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn((authUser, _) => Promise.resolve(authUser)),
-    delete: jest.fn(),
-  } as jest.Mocked<AuthUserGateway>;
-};
-
-class MockAuthUserService extends AuthUserService {
-  async generateHash(): Promise<string> {
-    return 'hashed_password';
-  }
-
-  async comparePassword(): Promise<boolean> {
-    return true;
-  }
-}
-
-describe('UpdateAuthUser usecase unit test', () => {
+describe('UpdateAuthUser Use Case', () => {
   let repository: jest.Mocked<AuthUserGateway>;
-  let authUserService: MockAuthUserService;
+  let authUserService: jest.Mocked<AuthUserServiceInterface>;
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
   let usecase: UpdateAuthUser;
-  let input: {
-    email: string;
-    password: string;
-    masterId: string;
-    role: RoleUsers;
-    isHashed: boolean;
-  };
-  let dataToUpdate: {
-    password: string;
+  let token: TokenData;
+  let existingUser: AuthUser;
+  let partialUpdate: {
     email: string;
   };
-  let authUser: AuthUser;
-  let generateHashSpy: jest.SpyInstance;
+  let targetEmail: string;
 
-  beforeEach(async () => {
-    input = {
-      email: 'teste@teste.com.br',
-      password: 'XpA2Jjd4',
-      masterId: new Id().value,
-      role: 'master' as RoleUsers,
-      isHashed: false,
+  const MockRepository = (): jest.Mocked<AuthUserGateway> => ({
+    find: jest.fn(),
+    update: jest.fn(),
+    create: jest.fn(),
+    delete: jest.fn(),
+    verify: jest.fn(),
+  });
+
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
+    verifyPolicies: jest.fn(),
+  });
+
+  const MockAuthUserService = (): jest.Mocked<AuthUserServiceInterface> => {
+    return {
+      generateHash: jest.fn<Promise<string>, [string]>(
+        async password => `hashed_${password}`
+      ),
+      comparePassword: jest.fn<Promise<boolean>, [string, string]>(
+        async (plain, hash) => `hashed_${plain}` === hash
+      ),
     };
+  };
 
-    dataToUpdate = {
-      password: 'XdQd2Jjd4',
-      email: 'newemail@teste.com.br',
-    };
-
-    authUserService = new MockAuthUserService();
-    authUser = new AuthUser(input, authUserService);
-    await authUser.hashPassword();
-
+  beforeEach(() => {
     repository = MockRepository();
-    generateHashSpy = jest.spyOn(authUserService, 'generateHash');
-
+    authUserService = MockAuthUserService();
+    policieService = MockPolicyService();
     usecase = new UpdateAuthUser(repository, authUserService);
+
+    targetEmail = 'olduser@example.com';
+    partialUpdate = {
+      email: 'newuser@example.com',
+    };
+
+    const id = new Id().value;
+    token = {
+      masterId: id,
+      role: RoleUsersEnum.ADMINISTRATOR,
+      email: 'admin@example.com',
+    };
+
+    existingUser = new AuthUser(
+      {
+        email: targetEmail,
+        password: 'hashed_password',
+        masterId: id,
+        isHashed: true,
+        role: RoleUsersEnum.STUDENT,
+      },
+      authUserService
+    );
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should throw an error if the authUser does not exist', async () => {
-    repository.find.mockResolvedValue(null);
+  it('should throw ACCESS_DENIED when policies are not permitted', async () => {
+    policieService.verifyPolicies.mockResolvedValueOnce(false);
 
     await expect(
-      usecase.execute({
-        authUserDataToUpdate: { ...dataToUpdate },
-        email: 'emailnotfound@test.com',
-      })
+      usecase.execute(
+        { email: existingUser.email, authUserDataToUpdate: partialUpdate },
+        policieService,
+        token
+      )
+    ).rejects.toThrow('User does not have access permission');
+
+    expect(policieService.verifyPolicies).toHaveBeenCalledWith(
+      ModulesNameEnum.AUTHUSER,
+      FunctionCalledEnum.UPDATE,
+      token,
+      { targetEmail }
+    );
+    expect(repository.find).not.toHaveBeenCalled();
+  });
+
+  it('should throw ENTITY_NOT_FOUND when the authUser does not exist', async () => {
+    policieService.verifyPolicies.mockResolvedValueOnce(true);
+    repository.find.mockResolvedValueOnce(null);
+
+    await expect(
+      usecase.execute(
+        { email: existingUser.email, authUserDataToUpdate: partialUpdate },
+        policieService,
+        token
+      )
     ).rejects.toThrow('AuthUser not found');
 
-    expect(repository.find).toHaveBeenCalledWith('emailnotfound@test.com');
+    expect(repository.find).toHaveBeenCalledWith(targetEmail);
     expect(repository.update).not.toHaveBeenCalled();
   });
 
   it('should update an authUser successfully', async () => {
-    repository.find.mockResolvedValue(authUser);
+    policieService.verifyPolicies.mockResolvedValueOnce(true);
+    repository.find.mockResolvedValueOnce(existingUser);
+    repository.update.mockResolvedValueOnce({
+      email: partialUpdate.email,
+      role: existingUser.role,
+    } as any);
 
-    const result = await usecase.execute({
-      authUserDataToUpdate: { ...dataToUpdate },
-      email: input.email,
-    });
+    const result = await usecase.execute(
+      { email: existingUser.email, authUserDataToUpdate: partialUpdate },
+      policieService,
+      token
+    );
 
-    expect(repository.find).toHaveBeenCalledWith(input.email);
-    expect(repository.update).toHaveBeenCalled();
-    expect(generateHashSpy).toHaveBeenCalled();
-    expect(result).toStrictEqual({
-      email: dataToUpdate.email,
-      role: input.role,
-    });
-  });
-
-  it('should only update the provided fields', async () => {
-    repository.find.mockResolvedValue(authUser);
-    const partialUpdate = { email: 'newemail@teste.com.br' };
-
-    await usecase.execute({
-      authUserDataToUpdate: partialUpdate,
-      email: input.email,
-    });
-
+    expect(policieService.verifyPolicies).toHaveBeenCalledWith(
+      ModulesNameEnum.AUTHUSER,
+      FunctionCalledEnum.UPDATE,
+      token,
+      { targetEmail }
+    );
+    expect(repository.find).toHaveBeenCalledWith(targetEmail);
     expect(repository.update).toHaveBeenCalledWith(
       expect.objectContaining({
         _email: partialUpdate.email,
-        _masterId: input.masterId,
-        _role: input.role,
       }),
-      input.email
+      targetEmail
     );
+    expect(result).toEqual({
+      email: partialUpdate.email,
+      role: existingUser.role,
+    });
+  });
+
+  it('should propagate update errors and not swallow them', async () => {
+    policieService.verifyPolicies.mockResolvedValueOnce(true);
+    repository.find.mockResolvedValueOnce(existingUser);
+    repository.update.mockRejectedValueOnce(new Error('Update failure'));
+
+    await expect(
+      usecase.execute(
+        { email: existingUser.email, authUserDataToUpdate: partialUpdate },
+        policieService,
+        token
+      )
+    ).rejects.toThrow('Update failure');
+    expect(repository.update).toHaveBeenCalled();
   });
 });

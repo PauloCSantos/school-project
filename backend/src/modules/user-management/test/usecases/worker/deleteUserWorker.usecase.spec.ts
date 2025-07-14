@@ -1,20 +1,39 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import DeleteUserWorker from '@/modules/user-management/application/usecases/worker/deleteUserWorker.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
 
-const MockRepository = () => {
-  return {
-    find: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(() => Promise.resolve('Operação concluída com sucesso')),
-  };
-};
-
 describe('deleteUserWorker usecase unit test', () => {
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let token: TokenData;
+
+  const MockRepository = () => {
+    return {
+      find: jest.fn(),
+      findByEmail: jest.fn(),
+      findAll: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(() => Promise.resolve('Operação concluída com sucesso')),
+    };
+  };
+
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
+    ({
+      verifyPolicies: jest.fn(),
+    }) as jest.Mocked<PoliciesServiceInterface>;
+
+  policieService = MockPolicyService();
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   const input = {
     name: {
       firstName: 'John',
@@ -47,11 +66,16 @@ describe('deleteUserWorker usecase unit test', () => {
     it('should return an error if the user does not exist', async () => {
       const userWorkerRepository = MockRepository();
       userWorkerRepository.find.mockResolvedValue(undefined);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       const usecase = new DeleteUserWorker(userWorkerRepository);
 
       await expect(
-        usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' })
+        usecase.execute(
+          { id: '75c791ca-7a40-4217-8b99-2cf22c01d543' },
+          policieService,
+          token
+        )
       ).rejects.toThrow('User not found');
     });
   });
@@ -59,10 +83,15 @@ describe('deleteUserWorker usecase unit test', () => {
     it('should delete a user worker', async () => {
       const userWorkerRepository = MockRepository();
       userWorkerRepository.find.mockResolvedValue(userWorker);
+      policieService.verifyPolicies.mockResolvedValueOnce(true);
       const usecase = new DeleteUserWorker(userWorkerRepository);
-      const result = await usecase.execute({
-        id: userWorker.id.value,
-      });
+      const result = await usecase.execute(
+        {
+          id: userWorker.id.value,
+        },
+        policieService,
+        token
+      );
 
       expect(userWorkerRepository.delete).toHaveBeenCalled();
       expect(result).toBeDefined();

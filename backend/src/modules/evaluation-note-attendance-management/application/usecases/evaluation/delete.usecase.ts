@@ -4,6 +4,13 @@ import {
   DeleteEvaluationOutputDto,
 } from '../../dto/evaluation-usecase.dto';
 import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Use case responsible for deleting an evaluation record.
@@ -33,9 +40,20 @@ export default class DeleteEvaluation
    * @returns Output data with the result message
    * @throws Error if the evaluation record with the specified id does not exist
    */
-  async execute({
-    id,
-  }: DeleteEvaluationInputDto): Promise<DeleteEvaluationOutputDto> {
+  async execute(
+    { id }: DeleteEvaluationInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<DeleteEvaluationOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.EVALUATION,
+        FunctionCalledEnum.DELETE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
     const evaluationVerification = await this._evaluationRepository.find(id);
 
     if (!evaluationVerification) {

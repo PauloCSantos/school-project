@@ -1,3 +1,4 @@
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   CreateUserMasterInputDto,
   CreateUserMasterOutputDto,
@@ -8,9 +9,16 @@ import {
 } from '../../dto/master-facade.dto';
 
 export default interface MasterFacadeInterface {
-  create(input: CreateUserMasterInputDto): Promise<CreateUserMasterOutputDto>;
+  create(
+    input: CreateUserMasterInputDto,
+    token: TokenData
+  ): Promise<CreateUserMasterOutputDto>;
   find(
-    input: FindUserMasterInputDto
-  ): Promise<FindUserMasterOutputDto | undefined>;
-  update(input: UpdateUserMasterInputDto): Promise<UpdateUserMasterOutputDto>;
+    input: FindUserMasterInputDto,
+    token: TokenData
+  ): Promise<FindUserMasterOutputDto | null>;
+  update(
+    input: UpdateUserMasterInputDto,
+    token: TokenData
+  ): Promise<UpdateUserMasterOutputDto>;
 }

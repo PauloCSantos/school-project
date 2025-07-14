@@ -8,6 +8,14 @@ import {
 import UserMasterGateway from '@/modules/user-management/infrastructure/gateway/master.gateway';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
+import { EmailAuthValidator } from '../../services/email-auth-validator.service';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class CreateUserMaster
   implements
@@ -15,28 +23,42 @@ export default class CreateUserMaster
 {
   private _userMasterRepository: UserMasterGateway;
 
-  constructor(userMasterRepository: UserMasterGateway) {
+  constructor(
+    userMasterRepository: UserMasterGateway,
+    readonly emailValidatorService: EmailAuthValidator
+  ) {
     this._userMasterRepository = userMasterRepository;
   }
-  async execute({
-    id,
-    name,
-    address,
-    email,
-    birthday,
-    cnpj,
-  }: CreateUserMasterInputDto): Promise<CreateUserMasterOutputDto> {
+  async execute(
+    { id, name, address, email, birthday, cnpj }: CreateUserMasterInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<CreateUserMasterOutputDto> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.MASTER,
+        FunctionCalledEnum.CREATE,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
+    if (!(await this.emailValidatorService.validate(email))) {
+      throw new Error('You must register this email before creating the user.');
+    }
+
     const userMaster = new UserMaster({
       id: new Id(id),
       name: new Name(name),
       address: new Address(address),
       email,
-      birthday,
+      birthday: new Date(birthday),
       cnpj,
     });
 
-    const userVerification = await this._userMasterRepository.find(
-      userMaster.id.value
+    const userVerification = await this._userMasterRepository.findByEmail(
+      userMaster.email
     );
     if (userVerification) throw new Error('User already exists');
 

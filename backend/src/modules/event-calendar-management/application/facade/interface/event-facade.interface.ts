@@ -1,3 +1,4 @@
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   CreateEventInputDto,
   CreateEventOutputDto,
@@ -9,7 +10,7 @@ import {
   FindEventOutputDto,
   UpdateEventInputDto,
   UpdateEventOutputDto,
-} from '../../dto/calendar-facade.dto';
+} from '../../dto/event-facade.dto';
 
 /**
  * Interface for calendar event operations
@@ -22,33 +23,48 @@ export default interface EventFacadeInterface {
    * @param input Event creation parameters
    * @returns Information about the created event
    */
-  create(input: CreateEventInputDto): Promise<CreateEventOutputDto>;
+  create(
+    input: CreateEventInputDto,
+    token: TokenData
+  ): Promise<CreateEventOutputDto>;
 
   /**
    * Finds a calendar event by id
    * @param input Search parameters
    * @returns Event information if found, null otherwise
    */
-  find(input: FindEventInputDto): Promise<FindEventOutputDto | null>;
+  find(
+    input: FindEventInputDto,
+    token: TokenData
+  ): Promise<FindEventOutputDto | null>;
 
   /**
    * Retrieves all calendar events based on search criteria
    * @param input Search parameters
    * @returns List of events matching the criteria
    */
-  findAll(input: FindAllEventInputDto): Promise<FindAllEventOutputDto>;
+  findAll(
+    input: FindAllEventInputDto,
+    token: TokenData
+  ): Promise<FindAllEventOutputDto>;
 
   /**
    * Deletes a calendar event
    * @param input Event identification
    * @returns Confirmation message
    */
-  delete(input: DeleteEventInputDto): Promise<DeleteEventOutputDto>;
+  delete(
+    input: DeleteEventInputDto,
+    token: TokenData
+  ): Promise<DeleteEventOutputDto>;
 
   /**
    * Updates a calendar event's information
    * @param input Event identification and data to update
    * @returns Updated event information
    */
-  update(input: UpdateEventInputDto): Promise<UpdateEventOutputDto>;
+  update(
+    input: UpdateEventInputDto,
+    token: TokenData
+  ): Promise<UpdateEventOutputDto>;
 }

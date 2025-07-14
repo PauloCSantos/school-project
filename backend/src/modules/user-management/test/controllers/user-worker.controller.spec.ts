@@ -1,3 +1,4 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import CreateUserWorker from '../../application/usecases/worker/createUserWorker.usecase';
 import DeleteUserWorker from '../../application/usecases/worker/deleteUserWorker.usecase';
 import FindAllUserWorker from '../../application/usecases/worker/findAllUserWorker.usecase';
@@ -5,8 +6,12 @@ import FindUserWorker from '../../application/usecases/worker/findUserWorker.use
 import UpdateUserWorker from '../../application/usecases/worker/updateUserWorker.usecase';
 import { UserWorkerController } from '../../interface/controller/worker.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 describe('UserWorkerController unit test', () => {
+  let policieService: PoliciesServiceInterface;
+  let token: TokenData;
+
   const mockCreateUserWorker = jest.fn(() => {
     return {
       execute: jest.fn().mockResolvedValue(new Id().value),
@@ -90,68 +95,88 @@ describe('UserWorkerController unit test', () => {
     } as unknown as DeleteUserWorker;
   });
 
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
+    verifyPolicies: jest.fn(),
+  });
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   const createUserWorker = mockCreateUserWorker();
   const deleteUserWorker = mockDeleteUserWorker();
   const findAllUserWorker = mockFindAllUserWorker();
   const findUserWorker = mockFindUserWorker();
   const updateUserWorker = mockUpdateUserWorker();
+  policieService = MockPolicyService();
 
   const controller = new UserWorkerController(
     createUserWorker,
     findUserWorker,
     findAllUserWorker,
     updateUserWorker,
-    deleteUserWorker
+    deleteUserWorker,
+    policieService
   );
 
   it('should return a id for the new user created', async () => {
-    const result = await controller.create({
-      name: {
-        firstName: 'John',
-        lastName: 'Doe',
+    const result = await controller.create(
+      {
+        name: {
+          firstName: 'John',
+          lastName: 'Doe',
+        },
+        address: {
+          street: 'Street A',
+          city: 'City A',
+          zip: '111111-111',
+          number: 1,
+          avenue: 'Avenue A',
+          state: 'State A',
+        },
+        salary: {
+          salary: 5000,
+        },
+        birthday: new Date('11-12-1995'),
+        email: 'teste1@test.com',
       },
-      address: {
-        street: 'Street A',
-        city: 'City A',
-        zip: '111111-111',
-        number: 1,
-        avenue: 'Avenue A',
-        state: 'State A',
-      },
-      salary: {
-        salary: 5000,
-      },
-      birthday: new Date('11-12-1995'),
-      email: 'teste1@test.com',
-    });
+      token
+    );
 
     expect(result).toBeDefined();
   });
   it('should return a user', async () => {
-    const result = await controller.find({ id: new Id().value });
+    const result = await controller.find({ id: new Id().value }, token);
 
     expect(result).toBeDefined();
   });
   it('should return all users', async () => {
-    const result = await controller.findAll({});
+    const result = await controller.findAll({}, token);
 
     expect(result).toBeDefined();
     expect(result.length).toBe(2);
   });
   it('should update an user', async () => {
-    const result = await controller.update({
-      id: new Id().value,
-      salary: {
-        salary: 500,
+    const result = await controller.update(
+      {
+        id: new Id().value,
+        salary: {
+          salary: 500,
+        },
       },
-    });
+      token
+    );
 
     expect(result).toBeDefined();
   });
   it('should delete an users', async () => {
-    const result = await controller.delete({
-      id: new Id().value,
-    });
+    const result = await controller.delete(
+      {
+        id: new Id().value,
+      },
+      token
+    );
 
     expect(result).toBeDefined();
   });

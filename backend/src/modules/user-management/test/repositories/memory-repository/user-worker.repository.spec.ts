@@ -77,11 +77,11 @@ describe('MemoryUserWorkerRepository unit test', () => {
   });
 
   describe('On fail', () => {
-    it('should received an undefined', async () => {
+    it('should received an null', async () => {
       const userId = new Id().value;
       const userWorkerFound = await repository.find(userId);
 
-      expect(userWorkerFound).toBeUndefined();
+      expect(userWorkerFound).toBeNull();
     });
     it('should throw an error when the Id is wrong', async () => {
       const userWorker = new UserWorker({

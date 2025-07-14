@@ -21,6 +21,7 @@ import { SubjectController } from '@/modules/subject-curriculum-management/inter
 import { CurriculumController } from '@/modules/subject-curriculum-management/interface/controller/curriculum.controller';
 import { SubjectRoute } from '@/modules/subject-curriculum-management/interface/route/subject.route';
 import { CurriculumRoute } from '@/modules/subject-curriculum-management/interface/route/curriculum.route';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 describe('Subject curriculum management module end to end test', () => {
   let subjectRepository = new MemorySubjectRepository();
@@ -46,12 +47,15 @@ describe('Subject curriculum management module end to end test', () => {
     const addSubjects = new AddSubjects(curriculumRepository);
     const removeSubjects = new RemoveSubjects(curriculumRepository);
 
+    const policiesService = new PoliciesService();
+
     const subjectController = new SubjectController(
       createSubjectUsecase,
       findSubjectUsecase,
       findAllSubjectUsecase,
       updateSubjectUsecase,
-      deleteSubjectUsecase
+      deleteSubjectUsecase,
+      policiesService
     );
     const curriculumController = new CurriculumController(
       createCurriculumUsecase,
@@ -60,7 +64,8 @@ describe('Subject curriculum management module end to end test', () => {
       updateCurriculumUsecase,
       deleteCurriculumUsecase,
       addSubjects,
-      removeSubjects
+      removeSubjects,
+      policiesService
     );
 
     const expressHttp = new ExpressAdapter();
@@ -131,7 +136,7 @@ describe('Subject curriculum management module end to end test', () => {
           expect(subject.body.error).toBeDefined();
         });
       });
-      describe('PATCH /subject/:id', () => {
+      describe('PATCH /subject', () => {
         it('should throw an error when the data to update a subject is wrong', async () => {
           const response = await supertest(app)
             .post('/subject')
@@ -145,12 +150,13 @@ describe('Subject curriculum management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedSubject = await supertest(app)
-            .patch(`/subject/${id}`)
+            .patch(`/subject`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               description: '',
             });
           expect(updatedSubject.status).toBe(400);
@@ -220,7 +226,7 @@ describe('Subject curriculum management module end to end test', () => {
           expect(subject.body).toBeDefined();
         });
       });
-      describe('GET /subjects/', () => {
+      describe('GET /subjects', () => {
         it('should find all users', async () => {
           await supertest(app)
             .post('/subject')
@@ -253,7 +259,7 @@ describe('Subject curriculum management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /subject/:id', () => {
+      describe('PATCH /subject', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/subject')
@@ -267,13 +273,14 @@ describe('Subject curriculum management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedSubject = await supertest(app)
-            .patch(`/subject/${id}`)
+            .patch(`/subject`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
-              description: ' New describe',
+              id,
+              description: 'New describe',
             });
           expect(updatedSubject.status).toBe(200);
           expect(updatedSubject.body).toBeDefined();
@@ -346,7 +353,7 @@ describe('Subject curriculum management module end to end test', () => {
           expect(curriculum.body.error).toBeDefined();
         });
       });
-      describe('PATCH /curriculum/:id', () => {
+      describe('PATCH /curriculum', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const response = await supertest(app)
             .post('/curriculum')
@@ -361,12 +368,13 @@ describe('Subject curriculum management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedCurriculum = await supertest(app)
-            .patch(`/curriculum/${id}`)
+            .patch(`/curriculum`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               name: 'Ma',
               yearsToComplete: -2,
             });
@@ -397,7 +405,7 @@ describe('Subject curriculum management module end to end test', () => {
           expect(result.body.error).toBeDefined();
         });
       });
-      describe('POST /curriculum/add', () => {
+      describe('POST /curriculum/subject/add', () => {
         it('should throw an error when the subject`ID is incorrect', async () => {
           const response = await supertest(app)
             .post('/curriculum')
@@ -412,7 +420,7 @@ describe('Subject curriculum management module end to end test', () => {
             });
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/curriculum/add')
+            .post('/curriculum/subject/add')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -425,7 +433,7 @@ describe('Subject curriculum management module end to end test', () => {
           expect(result.body.error).toBeDefined();
         });
       });
-      describe('POST /curriculum/remove', () => {
+      describe('POST /curriculum/subject/remove', () => {
         it('should throw an error when the ID is incorrect', async () => {
           const input = {
             name: 'Math',
@@ -440,7 +448,7 @@ describe('Subject curriculum management module end to end test', () => {
             )
             .send(input);
           const result = await supertest(app)
-            .post('/curriculum/remove')
+            .post('/curriculum/subject/remove')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -531,7 +539,7 @@ describe('Subject curriculum management module end to end test', () => {
           expect(response.body.length).toBe(2);
         });
       });
-      describe('PATCH /curriculum/:id', () => {
+      describe('PATCH /curriculum', () => {
         it('should update a user by ID', async () => {
           const response = await supertest(app)
             .post('/curriculum')
@@ -546,12 +554,13 @@ describe('Subject curriculum management module end to end test', () => {
             });
           const id = response.body.id;
           const updatedCurriculum = await supertest(app)
-            .patch(`/curriculum/${id}`)
+            .patch(`/curriculum`)
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
             )
             .send({
+              id,
               name: 'Math II',
               yearsToComplete: 8,
             });
@@ -583,7 +592,7 @@ describe('Subject curriculum management module end to end test', () => {
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
       });
-      describe('POST /curriculum/add', () => {
+      describe('POST /curriculum/subject/add', () => {
         it('should add subjects to the curriculum', async () => {
           const response = await supertest(app)
             .post('/curriculum')
@@ -598,7 +607,7 @@ describe('Subject curriculum management module end to end test', () => {
             });
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/curriculum/add')
+            .post('/curriculum/subject/add')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -607,11 +616,11 @@ describe('Subject curriculum management module end to end test', () => {
               id: id,
               newSubjectsList: [new Id().value],
             });
-          expect(result.status).toBe(201);
+          expect(result.status).toBe(200);
           expect(result.body).toBeDefined();
         });
       });
-      describe('POST /curriculum/remove', () => {
+      describe('POST /curriculum/subject/remove', () => {
         it('should remove subjects from the curriculum', async () => {
           const input = {
             name: 'Math',
@@ -627,7 +636,7 @@ describe('Subject curriculum management module end to end test', () => {
             .send(input);
           const id = response.body.id;
           const result = await supertest(app)
-            .post('/curriculum/remove')
+            .post('/curriculum/subject/remove')
             .set(
               'authorization',
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
@@ -636,7 +645,7 @@ describe('Subject curriculum management module end to end test', () => {
               id: id,
               subjectsListToRemove: input.subjectsList,
             });
-          expect(result.status).toBe(201);
+          expect(result.status).toBe(200);
           expect(result.body).toBeDefined();
         });
       });

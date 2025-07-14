@@ -4,22 +4,38 @@ import {
   FindUserWorkerOutputDto,
 } from '../../dto/worker-usecase.dto';
 import UserWorkerGateway from '@/modules/user-management/infrastructure/gateway/worker.gateway';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import {
+  ErrorMessage,
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  TokenData,
+} from '@/modules/@shared/type/sharedTypes';
 
 export default class FindUserWorker
   implements
-    UseCaseInterface<
-      FindUserWorkerInputDto,
-      FindUserWorkerOutputDto | undefined
-    >
+    UseCaseInterface<FindUserWorkerInputDto, FindUserWorkerOutputDto | null>
 {
   private _userWorkerRepository: UserWorkerGateway;
 
   constructor(userWorkerRepository: UserWorkerGateway) {
     this._userWorkerRepository = userWorkerRepository;
   }
-  async execute({
-    id,
-  }: FindUserWorkerInputDto): Promise<FindUserWorkerOutputDto | undefined> {
+  async execute(
+    { id }: FindUserWorkerInputDto,
+    policiesService: PoliciesServiceInterface,
+    token?: TokenData
+  ): Promise<FindUserWorkerOutputDto | null> {
+    if (
+      !(await policiesService.verifyPolicies(
+        ModulesNameEnum.WORKER,
+        FunctionCalledEnum.FIND,
+        token
+      ))
+    ) {
+      throw new Error(ErrorMessage.ACCESS_DENIED);
+    }
+
     const response = await this._userWorkerRepository.find(id);
     if (response) {
       return {

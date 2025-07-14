@@ -10,13 +10,15 @@ import {
   FindAllEventOutputDto,
   UpdateEventInputDto,
   UpdateEventOutputDto,
-} from '../../application/dto/calendar-usecase.dto';
+} from '../../application/dto/event-usecase.dto';
 import CreateEvent from '../../application/usecases/event/create.usecase';
 import FindEvent from '../../application/usecases/event/find.usecase';
 import FindAllEvent from '../../application/usecases/event/find-all.usecase';
 import UpdateEvent from '../../application/usecases/event/update.usecase';
 import DeleteEvent from '../../application/usecases/event/delete.usecase';
-import EventController from '../../interface/controller/calendar.controller';
+import EventController from '../../interface/controller/event.controller';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 const mockCreateEvent: jest.Mocked<CreateEvent> = {
   execute: jest.fn(),
@@ -40,6 +42,8 @@ const mockDeleteEvent: jest.Mocked<DeleteEvent> = {
 
 describe('EventController unit test', () => {
   let controller: EventController;
+  let policieService: PoliciesServiceInterface;
+  let token: TokenData;
 
   const id = new Id().value;
   const creator = 'dfcd1710-de67-45f4-9ba1-6a07cc66609f';
@@ -111,6 +115,15 @@ describe('EventController unit test', () => {
     message: 'Operação concluída com sucesso',
   };
 
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
+    verifyPolicies: jest.fn(),
+  });
+  token = {
+    email: 'caller@domain.com',
+    role: 'master',
+    masterId: new Id().value,
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -119,54 +132,76 @@ describe('EventController unit test', () => {
     mockFindAllEvent.execute.mockResolvedValue(findAllOutput);
     mockUpdateEvent.execute.mockResolvedValue(updateOutput);
     mockDeleteEvent.execute.mockResolvedValue(deleteOutput);
+    policieService = MockPolicyService();
 
     controller = new EventController(
       mockCreateEvent,
       mockFindEvent,
       mockFindAllEvent,
       mockUpdateEvent,
-      mockDeleteEvent
+      mockDeleteEvent,
+      policieService
     );
   });
 
   it('should call create use case with correct input and return its output', async () => {
-    const result = await controller.create(createInput);
+    const result = await controller.create(createInput, token);
 
     expect(mockCreateEvent.execute).toHaveBeenCalledTimes(1);
-    expect(mockCreateEvent.execute).toHaveBeenCalledWith(createInput);
+    expect(mockCreateEvent.execute).toHaveBeenCalledWith(
+      createInput,
+      policieService,
+      token
+    );
     expect(result).toEqual(createOutput);
   });
 
   it('should call find use case with correct input and return its output', async () => {
-    const result = await controller.find(findInput);
+    const result = await controller.find(findInput, token);
 
     expect(mockFindEvent.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindEvent.execute).toHaveBeenCalledWith(findInput);
+    expect(mockFindEvent.execute).toHaveBeenCalledWith(
+      findInput,
+      policieService,
+      token
+    );
     expect(result).toEqual(findOutput);
   });
 
   it('should call findAll use case with correct input and return its output', async () => {
-    const result = await controller.findAll(findAllInput);
+    const result = await controller.findAll(findAllInput, token);
 
     expect(mockFindAllEvent.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindAllEvent.execute).toHaveBeenCalledWith(findAllInput);
+    expect(mockFindAllEvent.execute).toHaveBeenCalledWith(
+      findAllInput,
+      policieService,
+      token
+    );
     expect(result).toEqual(findAllOutput);
     expect(result.length).toBe(2);
   });
 
   it('should call update use case with correct input and return its output', async () => {
-    const result = await controller.update(updateInput);
+    const result = await controller.update(updateInput, token);
 
     expect(mockUpdateEvent.execute).toHaveBeenCalledTimes(1);
-    expect(mockUpdateEvent.execute).toHaveBeenCalledWith(updateInput);
+    expect(mockUpdateEvent.execute).toHaveBeenCalledWith(
+      updateInput,
+      policieService,
+      token
+    );
     expect(result).toEqual(updateOutput);
   });
 
   it('should call delete use case with correct input and return its output', async () => {
-    const result = await controller.delete(deleteInput);
+    const result = await controller.delete(deleteInput, token);
 
     expect(mockDeleteEvent.execute).toHaveBeenCalledTimes(1);
-    expect(mockDeleteEvent.execute).toHaveBeenCalledWith(deleteInput);
+    expect(mockDeleteEvent.execute).toHaveBeenCalledWith(
+      deleteInput,
+      policieService,
+      token
+    );
     expect(result).toEqual(deleteOutput);
   });
 });

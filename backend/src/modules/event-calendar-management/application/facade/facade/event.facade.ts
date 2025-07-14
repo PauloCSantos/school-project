@@ -1,3 +1,4 @@
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateEventInputDto,
   CreateEventOutputDto,
@@ -9,13 +10,14 @@ import {
   FindEventOutputDto,
   UpdateEventInputDto,
   UpdateEventOutputDto,
-} from '../../dto/calendar-facade.dto';
+} from '../../dto/event-facade.dto';
 import CreateEvent from '../../usecases/event/create.usecase';
 import DeleteEvent from '../../usecases/event/delete.usecase';
 import FindAllEvent from '../../usecases/event/find-all.usecase';
 import FindEvent from '../../usecases/event/find.usecase';
 import UpdateEvent from '../../usecases/event/update.usecase';
-import EventFacadeInterface from '../interface/calendar-facade.interface';
+import EventFacadeInterface from '../interface/event-facade.interface';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
  * Properties required to initialize the EventFacade
@@ -26,6 +28,7 @@ type EventFacadeProps = {
   readonly findAllEvent: FindAllEvent;
   readonly findEvent: FindEvent;
   readonly updateEvent: UpdateEvent;
+  readonly policiesService: PoliciesServiceInterface;
 };
 
 /**
@@ -40,6 +43,7 @@ export default class EventFacade implements EventFacadeInterface {
   private readonly _findAllEvent: FindAllEvent;
   private readonly _findEvent: FindEvent;
   private readonly _updateEvent: UpdateEvent;
+  private readonly _policiesService: PoliciesServiceInterface;
 
   /**
    * Creates a new instance of EventFacade
@@ -51,6 +55,7 @@ export default class EventFacade implements EventFacadeInterface {
     this._findAllEvent = input.findAllEvent;
     this._findEvent = input.findEvent;
     this._updateEvent = input.updateEvent;
+    this._policiesService = input.policiesService;
   }
 
   /**
@@ -59,9 +64,10 @@ export default class EventFacade implements EventFacadeInterface {
    * @returns Information about the created event
    */
   public async create(
-    input: CreateEventInputDto
+    input: CreateEventInputDto,
+    token: TokenData
   ): Promise<CreateEventOutputDto> {
-    return await this._createEvent.execute(input);
+    return await this._createEvent.execute(input, this._policiesService, token);
   }
 
   /**
@@ -70,9 +76,14 @@ export default class EventFacade implements EventFacadeInterface {
    * @returns Event information if found, null otherwise
    */
   public async find(
-    input: FindEventInputDto
+    input: FindEventInputDto,
+    token: TokenData
   ): Promise<FindEventOutputDto | null> {
-    const result = await this._findEvent.execute(input);
+    const result = await this._findEvent.execute(
+      input,
+      this._policiesService,
+      token
+    );
     return result || null;
   }
 
@@ -82,9 +93,14 @@ export default class EventFacade implements EventFacadeInterface {
    * @returns List of events matching the criteria
    */
   public async findAll(
-    input: FindAllEventInputDto
+    input: FindAllEventInputDto,
+    token: TokenData
   ): Promise<FindAllEventOutputDto> {
-    return await this._findAllEvent.execute(input);
+    return await this._findAllEvent.execute(
+      input,
+      this._policiesService,
+      token
+    );
   }
 
   /**
@@ -93,9 +109,10 @@ export default class EventFacade implements EventFacadeInterface {
    * @returns Confirmation message
    */
   public async delete(
-    input: DeleteEventInputDto
+    input: DeleteEventInputDto,
+    token: TokenData
   ): Promise<DeleteEventOutputDto> {
-    return await this._deleteEvent.execute(input);
+    return await this._deleteEvent.execute(input, this._policiesService, token);
   }
 
   /**
@@ -104,8 +121,9 @@ export default class EventFacade implements EventFacadeInterface {
    * @returns Updated event information
    */
   public async update(
-    input: UpdateEventInputDto
+    input: UpdateEventInputDto,
+    token: TokenData
   ): Promise<UpdateEventOutputDto> {
-    return await this._updateEvent.execute(input);
+    return await this._updateEvent.execute(input, this._policiesService, token);
   }
 }

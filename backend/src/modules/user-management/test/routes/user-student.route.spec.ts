@@ -48,7 +48,14 @@ describe('UserStudentRoute with ExpressAdapter', () => {
     } as unknown as UserStudentController;
 
     middleware = {
-      handle: jest.fn((_req, next) => next()),
+      handle: jest.fn((_request, next) => {
+        _request.tokenData = {
+          email: 'user@example.com',
+          role: 'administrator',
+          masterId: 'validId',
+        };
+        return next();
+      }),
     } as unknown as AuthUserMiddleware;
 
     new UserStudentRoute(userStudentController, http, middleware).routes();
@@ -97,14 +104,21 @@ describe('UserStudentRoute with ExpressAdapter', () => {
 
     it('should update an existing student', async () => {
       const response = await supertest(app)
-        .patch(`/user-student/${mockStudentData.id}`)
-        .send({ paymentYear: 51000 });
+        .patch(`/user-student`)
+        .send({ id: mockStudentData.id, paymentYear: 51000 });
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual({ ...mockStudentData, paymentYear: 51000 });
-      expect(userStudentController.update).toHaveBeenCalledWith({
-        id: mockStudentData.id,
-        paymentYear: 51000,
-      });
+      expect(userStudentController.update).toHaveBeenCalledWith(
+        {
+          id: mockStudentData.id,
+          paymentYear: 51000,
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
     });
 
     it('should delete a student by ID', async () => {
@@ -112,9 +126,16 @@ describe('UserStudentRoute with ExpressAdapter', () => {
         `/user-student/${mockStudentData.id}`
       );
       expect(response.statusCode).toBe(200);
-      expect(userStudentController.delete).toHaveBeenCalledWith({
-        id: mockStudentData.id,
-      });
+      expect(userStudentController.delete).toHaveBeenCalledWith(
+        {
+          id: mockStudentData.id,
+        },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
       expect(response.body).toEqual({
         message: 'Operação concluída com sucesso',
       });
@@ -125,7 +146,7 @@ describe('UserStudentRoute with ExpressAdapter', () => {
     it('should return 400 for invalid id on find', async () => {
       const response = await supertest(app).get('/user-student/invalid-id');
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
 
     it('should return 400 for invalid payload on create', async () => {
@@ -135,19 +156,17 @@ describe('UserStudentRoute with ExpressAdapter', () => {
     });
 
     it('should return 400 for invalid id or data on update', async () => {
-      const response = await supertest(app)
-        .patch('/user-student/invalid-id')
-        .send({});
+      const response = await supertest(app).patch('/user-student').send({});
       expect(response.statusCode).toBe(400);
       expect(response.body).toEqual({
-        error: 'Id e/ou dados para atualização inválidos',
+        error: 'Bad Request',
       });
     });
 
     it('should return 400 for invalid id on delete', async () => {
       const response = await supertest(app).delete('/user-student/invalid-id');
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Id inválido' });
+      expect(response.body).toEqual({ error: 'Bad Request' });
     });
   });
 });

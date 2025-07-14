@@ -1,12 +1,9 @@
-import { validId } from '@/modules/@shared/utils/validations';
 import {
   HttpServer,
   HttpResponseData,
+  HttpRequest,
 } from '@/modules/@shared/infraestructure/http/http.interface';
-import AuthUserMiddleware, {
-  AuthHttpRequest,
-  AuthErrorHandlerMiddleware,
-} from '@/modules/@shared/application/middleware/authUser.middleware';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { UserStudentController } from '../controller/student.controller';
 import {
   CreateUserStudentInputDto,
@@ -15,6 +12,12 @@ import {
   UpdateUserStudentInputDto,
   DeleteUserStudentInputDto,
 } from '../../application/dto/student-usecase.dto';
+import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
+import {
+  FunctionCalledEnum,
+  StatusCodeEnum,
+  StatusMessageEnum,
+} from '@/modules/@shared/type/sharedTypes';
 
 export class UserStudentRoute {
   constructor(
@@ -24,180 +27,135 @@ export class UserStudentRoute {
   ) {}
 
   public routes(): void {
-    const errorHandler = new AuthErrorHandlerMiddleware();
+    const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
+    const REQUIRED_FIELDS = [
+      'name',
+      'address',
+      'email',
+      'birthday',
+      'paymentYear',
+    ];
+    const REQUIRED_FIELD = ['id'];
 
     this.httpGateway.get(
       '/users-student',
       this.findAllUserStudents.bind(this),
-      errorHandler,
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(
+          FunctionCalledEnum.FIND_ALL,
+          REQUIRED_FIELDS_ALL
+        ),
+      ]
     );
 
-    this.httpGateway.post(
-      '/user-student',
-      this.createUserStudent.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.post('/user-student', this.createUserStudent.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
+    ]);
 
-    this.httpGateway.get(
-      '/user-student/:id',
-      this.findUserStudent.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.get('/user-student/:id', this.findUserStudent.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.FIND, REQUIRED_FIELD),
+    ]);
 
-    this.httpGateway.patch(
-      '/user-student/:id',
-      this.updateUserStudent.bind(this),
-      errorHandler,
-      this.authMiddleware
-    );
+    this.httpGateway.patch('/user-student', this.updateUserStudent.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
+    ]);
 
     this.httpGateway.delete(
       '/user-student/:id',
       this.deleteUserStudent.bind(this),
-      errorHandler,
-      this.authMiddleware
+      [
+        this.authMiddleware,
+        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
+      ]
     );
   }
 
   private async findAllUserStudents(
-    req: AuthHttpRequest<{}, {}, FindAllUserStudentInputDto, {}>
+    req: HttpRequest<{}, FindAllUserStudentInputDto, {}, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { quantity, offset } = req.body;
-      if (!this.validateFindAll(quantity, offset)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Quantity e/ou offset incorretos' },
-        };
-      }
-      const students = await this.userStudentController.findAll({
-        quantity,
-        offset,
-      });
-      return { statusCode: 200, body: students };
+      const { quantity, offset } = req.query;
+      const response = await this.userStudentController.findAll(
+        {
+          quantity,
+          offset,
+        },
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async findUserStudent(
-    req: AuthHttpRequest<FindUserStudentInputDto, {}, {}, {}>
+    req: HttpRequest<FindUserStudentInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!this.validFind(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
+      const response = await this.userStudentController.find(
+        { id },
+        req.tokenData!
+      );
+      if (!response) {
+        return {
+          statusCode: StatusCodeEnum.NOT_FOUND,
+          body: { error: StatusMessageEnum.NOT_FOUND },
+        };
       }
-      const student = await this.userStudentController.find({ id });
-      return { statusCode: 200, body: student };
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async createUserStudent(
-    req: AuthHttpRequest<{}, {}, CreateUserStudentInputDto, {}>
+    req: HttpRequest<{}, {}, CreateUserStudentInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      if (!this.validateCreate(input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const newStudent = await this.userStudentController.create(input);
-      return { statusCode: 201, body: newStudent };
+      const response = await this.userStudentController.create(
+        input,
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async updateUserStudent(
-    req: AuthHttpRequest<
-      FindUserStudentInputDto,
-      {},
-      UpdateUserStudentInputDto,
-      {}
-    >
+    req: HttpRequest<{}, {}, UpdateUserStudentInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { id } = req.params;
       const input = req.body;
-      if (!this.validUpdate(id, input)) {
-        return {
-          statusCode: 400,
-          body: { error: 'Id e/ou dados para atualização inválidos' },
-        };
-      }
-      const updatedStudent = await this.userStudentController.update({
-        ...input,
-        id,
-      });
-      return { statusCode: 200, body: updatedStudent };
+      const response = await this.userStudentController.update(
+        input,
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
   private async deleteUserStudent(
-    req: AuthHttpRequest<DeleteUserStudentInputDto, {}, {}, {}>
+    req: HttpRequest<DeleteUserStudentInputDto, {}, {}, {}>
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      if (!this.validDelete(id)) {
-        return { statusCode: 400, body: { error: 'Id inválido' } };
-      }
-      const deleted = await this.userStudentController.delete({ id });
-      return { statusCode: 200, body: deleted };
+      const response = await this.userStudentController.delete(
+        { id },
+        req.tokenData!
+      );
+      return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
-  }
-
-  private validateFindAll(quantity?: number, offset?: number): boolean {
-    if (quantity === undefined || offset === undefined) {
-      return true;
-    }
-    return Number.isInteger(quantity) && Number.isInteger(offset);
-  }
-
-  private validateCreate(input: CreateUserStudentInputDto): boolean {
-    if (
-      !input.name ||
-      typeof input.name.firstName !== 'string' ||
-      typeof input.name.lastName !== 'string' ||
-      !input.address ||
-      typeof input.address.street !== 'string' ||
-      typeof input.address.city !== 'string' ||
-      typeof input.address.zip !== 'string' ||
-      typeof input.address.number !== 'number' ||
-      typeof input.address.avenue !== 'string' ||
-      typeof input.address.state !== 'string' ||
-      !input.email ||
-      typeof input.email !== 'string' ||
-      !input.birthday ||
-      typeof input.birthday !== 'string'
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  private validFind(id: string): boolean {
-    return validId(id);
-  }
-
-  private validUpdate(id: string, input: UpdateUserStudentInputDto): boolean {
-    if (!validId(id)) return false;
-    return Object.values(input).some(value => value !== undefined);
-  }
-
-  private validDelete(id: string): boolean {
-    return validId(id);
   }
 
   private handleError(error: unknown, statusCode = 400): HttpResponseData {

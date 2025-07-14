@@ -1,6 +1,5 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import MemoryEvaluationRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/evaluation.repository';
 import CreateEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/create.usecase';
 import FindEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/find.usecase';
@@ -8,9 +7,11 @@ import FindAllEvaluation from '@/modules/evaluation-note-attendance-management/a
 import UpdateEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/update.usecase';
 import DeleteEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/delete.usecase';
 import EvaluationController from '@/modules/evaluation-note-attendance-management/interface/controller/evaluation.controller';
-import { EvaluationRoute } from '@/modules/evaluation-note-attendance-management/interface/route/evaluation.route';
+import EvaluationRoute from '@/modules/evaluation-note-attendance-management/interface/route/evaluation.route';
+import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
+import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
 
-export default function initializeEvaluation(express: ExpressHttp): void {
+export default function initializeEvaluation(express: HttpServer): void {
   const evaluationRepository = new MemoryEvaluationRepository();
   const createEvaluationUsecase = new CreateEvaluation(evaluationRepository);
   const findEvaluationUsecase = new FindEvaluation(evaluationRepository);
@@ -26,10 +27,10 @@ export default function initializeEvaluation(express: ExpressHttp): void {
   );
   const tokenService = tokenInstance();
   const allowedRoles: RoleUsers[] = [
-    'master',
-    'administrator',
-    'student',
-    'teacher',
+    RoleUsersEnum.MASTER,
+    RoleUsersEnum.ADMINISTRATOR,
+    RoleUsersEnum.TEACHER,
+    RoleUsersEnum.STUDENT,
   ];
   const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
   const evaluationRoute = new EvaluationRoute(

@@ -20,14 +20,14 @@ export default class MemoryNoteRepository implements NoteGateway {
   /**
    * Finds a note by its unique identifier.
    * @param id - The unique identifier to search for
-   * @returns Promise resolving to the found Note or undefined if not found
+   * @returns Promise resolving to the found Note or null if not found
    */
-  async find(id: string): Promise<Note | undefined> {
+  async find(id: string): Promise<Note | null> {
     const note = this._note.find(note => note.id.value === id);
     if (note) {
       return note;
     } else {
-      return undefined;
+      return null;
     }
   }
 
@@ -42,7 +42,7 @@ export default class MemoryNoteRepository implements NoteGateway {
     offSet?: number | undefined
   ): Promise<Note[]> {
     const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity + offS : 10;
+    const qtd = quantity ? quantity : 10;
     const notes = this._note.slice(offS, qtd);
 
     return notes;
