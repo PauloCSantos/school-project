@@ -1,5 +1,5 @@
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import AuthUserGateway from '../../gateway/user.gateway';
+import AuthUserGateway from '../../../application/gateway/user.gateway';
 
 /**
  * In-memory implementation of AuthUserGateway.
