@@ -1,4 +1,4 @@
-import UserWorkerGateway from '../../gateway/worker.gateway';
+import UserWorkerGateway from '../../../application/gateway/worker.gateway';
 import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
 
 export default class MemoryUserWorkerRepository implements UserWorkerGateway {

@@ -4,7 +4,7 @@ import {
   CreateUserStudentInputDto,
   CreateUserStudentOutputDto,
 } from '../../dto/student-usecase.dto';
-import UserStudentGateway from '@/modules/user-management/infrastructure/gateway/student.gateway';
+import UserStudentGateway from '@/modules/user-management/application/gateway/student.gateway';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import { EmailAuthValidator } from '../../services/email-auth-validator.service';

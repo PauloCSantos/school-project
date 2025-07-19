@@ -6,7 +6,7 @@ import {
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
-import UserAdministratorGateway from '@/modules/user-management/infrastructure/gateway/administrator.gateway';
+import UserAdministratorGateway from '@/modules/user-management/application/gateway/administrator.gateway';
 import UserAdministrator from '@/modules/user-management/domain/entity/administrator.entity';
 import { EmailAuthValidator } from '../../services/email-auth-validator.service';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';

@@ -3,7 +3,7 @@ import {
   FindAllUserAdministratorInputDto,
   FindAllUserAdministratorOutputDto,
 } from '../../dto/administrator-usecase.dto';
-import UserAdministratorGateway from '@/modules/user-management/infrastructure/gateway/administrator.gateway';
+import UserAdministratorGateway from '@/modules/user-management/application/gateway/administrator.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   ErrorMessage,

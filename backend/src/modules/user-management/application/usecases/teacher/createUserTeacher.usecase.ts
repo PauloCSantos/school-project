@@ -4,7 +4,7 @@ import {
   CreateUserTeacherInputDto,
   CreateUserTeacherOutputDto,
 } from '../../dto/teacher-usecase.dto';
-import UserTeacherGateway from '@/modules/user-management/infrastructure/gateway/teacher.gateway';
+import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';

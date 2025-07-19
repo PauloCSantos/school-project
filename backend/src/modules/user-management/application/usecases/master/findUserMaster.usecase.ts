@@ -3,7 +3,7 @@ import {
   FindUserMasterInputDto,
   FindUserMasterOutputDto,
 } from '../../dto/master-usecase.dto';
-import UserMasterGateway from '@/modules/user-management/infrastructure/gateway/master.gateway';
+import UserMasterGateway from '@/modules/user-management/application/gateway/master.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   ErrorMessage,

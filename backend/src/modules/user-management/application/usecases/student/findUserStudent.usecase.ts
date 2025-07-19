@@ -3,7 +3,7 @@ import {
   FindUserStudentInputDto,
   FindUserStudentOutputDto,
 } from '../../dto/student-usecase.dto';
-import UserStudentGateway from '@/modules/user-management/infrastructure/gateway/student.gateway';
+import UserStudentGateway from '@/modules/user-management/application/gateway/student.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   ErrorMessage,

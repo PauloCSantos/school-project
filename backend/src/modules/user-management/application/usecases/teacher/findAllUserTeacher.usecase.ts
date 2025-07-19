@@ -3,7 +3,7 @@ import {
   FindAllUserTeacherInputDto,
   FindAllUserTeacherOutputDto,
 } from '../../dto/teacher-usecase.dto';
-import UserTeacherGateway from '@/modules/user-management/infrastructure/gateway/teacher.gateway';
+import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   ErrorMessage,

@@ -1,4 +1,4 @@
-import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
 import { EmailAuthValidatorService } from '../../application/services/email-auth-validator.service';
 
 describe('EmailAuthValidatorService', () => {

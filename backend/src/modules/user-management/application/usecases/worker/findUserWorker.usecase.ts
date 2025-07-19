@@ -3,7 +3,7 @@ import {
   FindUserWorkerInputDto,
   FindUserWorkerOutputDto,
 } from '../../dto/worker-usecase.dto';
-import UserWorkerGateway from '@/modules/user-management/infrastructure/gateway/worker.gateway';
+import UserWorkerGateway from '@/modules/user-management/application/gateway/worker.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   ErrorMessage,

@@ -4,7 +4,7 @@ import {
   CreateUserWorkerInputDto,
   CreateUserWorkerOutputDto,
 } from '../../dto/worker-usecase.dto';
-import UserWorkerGateway from '@/modules/user-management/infrastructure/gateway/worker.gateway';
+import UserWorkerGateway from '@/modules/user-management/application/gateway/worker.gateway';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
