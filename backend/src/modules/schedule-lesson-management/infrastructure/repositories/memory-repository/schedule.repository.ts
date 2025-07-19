@@ -1,5 +1,5 @@
 import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
-import ScheduleGateway from '../../gateway/schedule.gateway';
+import ScheduleGateway from '../../../application/gateway/schedule.gateway';
 
 /**
  * In-memory implementation of ScheduleGateway.
