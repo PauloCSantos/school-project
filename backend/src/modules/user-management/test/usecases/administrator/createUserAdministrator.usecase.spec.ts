@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateUserAdministrator from '@/modules/user-management/application/usecases/administrator/createUserAdministrator.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
@@ -36,7 +37,7 @@ describe('createUserAdministrator usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -78,16 +79,16 @@ describe('createUserAdministrator usecase unit test', () => {
       userAdministratorRepository.findByEmail.mockResolvedValue(
         userAdministrator
       );
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       const usecase = new CreateUserAdministrator(
         userAdministratorRepository,
-        emailAuthValidatorService
+        emailAuthValidatorService,
+        policieService
       );
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('User already exists');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'User already exists'
+      );
       expect(userAdministratorRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
@@ -104,13 +105,13 @@ describe('createUserAdministrator usecase unit test', () => {
       const emailAuthValidatorService = MockEmailAuthValidatorService();
 
       userAdministratorRepository.findByEmail.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       const usecase = new CreateUserAdministrator(
         userAdministratorRepository,
-        emailAuthValidatorService
+        emailAuthValidatorService,
+        policieService
       );
-      const result = await usecase.execute(input, policieService, token);
+      const result = await usecase.execute(input, token);
 
       expect(userAdministratorRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)

@@ -3,7 +3,8 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/create.usecase';
 import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
-import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
+import EvaluationGateway from '@/modules/evaluation-note-attendance-management/application/gateway/evaluation.gateway';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('createEvaluation usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -27,7 +28,7 @@ describe('createEvaluation usecase unit test', () => {
 
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -44,13 +45,15 @@ describe('createEvaluation usecase unit test', () => {
     it('should throw an error if the evaluation already exists', async () => {
       const evaluationRepository = MockRepository();
       evaluationRepository.find.mockResolvedValue(evaluation);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new CreateEvaluation(evaluationRepository);
+      const usecase = new CreateEvaluation(
+        evaluationRepository,
+        policieService
+      );
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Evaluation already exists');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Evaluation already exists'
+      );
       expect(evaluationRepository.find).toHaveBeenCalledWith(
         expect.any(String)
       );
@@ -62,10 +65,12 @@ describe('createEvaluation usecase unit test', () => {
     it('should create an evaluation', async () => {
       const evaluationRepository = MockRepository();
       evaluationRepository.find.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new CreateEvaluation(evaluationRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new CreateEvaluation(
+        evaluationRepository,
+        policieService
+      );
+      const result = await usecase.execute(input, token);
 
       expect(evaluationRepository.find).toHaveBeenCalledWith(
         expect.any(String)

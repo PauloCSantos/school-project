@@ -1,13 +1,9 @@
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsers, TokenData } from '@/modules/@shared/type/sharedTypes';
 
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import MemoryWorkerRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/worker.repository';
 
-import {
-  AuthUserService,
-  AuthUserServiceInterface,
-} from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
 import CreateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/create-user.usecase';
 import DeleteAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/delete-user.usecase';
 import FindAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/find-user.usecase';
@@ -22,18 +18,30 @@ import FindUserWorker from '@/modules/user-management/application/usecases/worke
 import UpdateUserWorker from '@/modules/user-management/application/usecases/worker/updateUserWorker.usecase';
 import WorkerFacade from '@/modules/user-management/application/facade/facade/worker.facade';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
-import TokenService from '@/modules/@shared/infraestructure/services/token.service';
-import TokenServiceInterface from '@/modules/@shared/infraestructure/services/token.service';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import TokenServiceInterface from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
 import {
   PoliciesService,
   PoliciesServiceInterface,
 } from '@/modules/@shared/application/services/policies.service';
+import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
+import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
+import UserWorkerGateway from '@/modules/user-management/application/gateway/worker.gateway';
+import TenantGateway from '@/modules/authentication-authorization-management/application/gateway/tenant.gateway';
+import {
+  TenantService,
+  TenantServiceInterface,
+} from '@/modules/authentication-authorization-management/domain/service/tenant.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
+import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.gateway';
 
 describe('User Worker facade integration test', () => {
-  let authUserRepository: MemoryAuthUserRepository;
-  let workerRepository: MemoryWorkerRepository;
+  let authUserRepository: AuthUserGateway;
+  let tenantRepository: TenantGateway;
+  let workerRepository: UserWorkerGateway;
   let emailAuthValidator: EmailAuthValidatorService;
   let authUserService: AuthUserServiceInterface;
+  let tenantService: TenantServiceInterface;
   let tokenService: TokenServiceInterface;
   let createAuthUser: CreateAuthUser;
   let deleteAuthUser: DeleteAuthUser;
@@ -111,7 +119,7 @@ describe('User Worker facade integration test', () => {
   const token: TokenData = {
     email: 'teste@teste.com.br',
     masterId: 'validID',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
   };
 
   async function createAuthUserFor(email: string) {
@@ -119,30 +127,45 @@ describe('User Worker facade integration test', () => {
       {
         email,
         password: 'XpA2Jjd4',
-        masterId: new Id().value,
         role: 'master' as RoleUsers,
+        cnpj: '12345678000195',
       },
       token
     );
   }
 
   beforeEach(() => {
-    // Always use fresh instances for each test for isolation
     authUserRepository = new MemoryAuthUserRepository();
+    tenantRepository = new MemoryTenantRepository();
     workerRepository = new MemoryWorkerRepository();
-    emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
 
+    emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
     authUserService = new AuthUserService();
+    tenantService = new TenantService(tenantRepository);
     tokenService = new TokenService('PxHf3H7');
 
-    createAuthUser = new CreateAuthUser(authUserRepository, authUserService);
-    deleteAuthUser = new DeleteAuthUser(authUserRepository);
-    findAuthUser = new FindAuthUser(authUserRepository);
-    updateAuthUser = new UpdateAuthUser(authUserRepository, authUserService);
+    policiesService = new PoliciesService();
+    createAuthUser = new CreateAuthUser(
+      authUserRepository,
+      tenantRepository,
+      authUserService,
+      tenantService,
+      policiesService
+    );
+    deleteAuthUser = new DeleteAuthUser(authUserRepository, policiesService);
+    findAuthUser = new FindAuthUser(authUserRepository, policiesService);
+    updateAuthUser = new UpdateAuthUser(
+      authUserRepository,
+      tenantRepository,
+      authUserService,
+      tenantService,
+      policiesService
+    );
     loginAuthUser = new LoginAuthUser(
       authUserRepository,
       authUserService,
-      tokenService
+      tokenService,
+      tenantService
     );
 
     policiesService = new PoliciesService();
@@ -153,17 +176,20 @@ describe('User Worker facade integration test', () => {
       updateAuthUser,
       deleteAuthUser,
       loginAuthUser,
-      policiesService,
     });
 
     createUserWorker = new CreateUserWorker(
       workerRepository,
-      emailAuthValidator
+      emailAuthValidator,
+      policiesService
     );
-    deleteUserWorker = new DeleteUserWorker(workerRepository);
-    findAllUserWorker = new FindAllUserWorker(workerRepository);
-    findUserWorker = new FindUserWorker(workerRepository);
-    updateUserWorker = new UpdateUserWorker(workerRepository);
+    deleteUserWorker = new DeleteUserWorker(workerRepository, policiesService);
+    findAllUserWorker = new FindAllUserWorker(
+      workerRepository,
+      policiesService
+    );
+    findUserWorker = new FindUserWorker(workerRepository, policiesService);
+    updateUserWorker = new UpdateUserWorker(workerRepository, policiesService);
 
     facadeWorker = new WorkerFacade({
       createUserWorker,
@@ -171,7 +197,6 @@ describe('User Worker facade integration test', () => {
       findAllUserWorker,
       findUserWorker,
       updateUserWorker,
-      policiesService,
     });
   });
 

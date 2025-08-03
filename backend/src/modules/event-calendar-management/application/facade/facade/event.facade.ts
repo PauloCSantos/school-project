@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateEventInputDto,
   CreateEventOutputDto,
@@ -28,7 +27,6 @@ type EventFacadeProps = {
   readonly findAllEvent: FindAllEvent;
   readonly findEvent: FindEvent;
   readonly updateEvent: UpdateEvent;
-  readonly policiesService: PoliciesServiceInterface;
 };
 
 /**
@@ -43,7 +41,6 @@ export default class EventFacade implements EventFacadeInterface {
   private readonly _findAllEvent: FindAllEvent;
   private readonly _findEvent: FindEvent;
   private readonly _updateEvent: UpdateEvent;
-  private readonly _policiesService: PoliciesServiceInterface;
 
   /**
    * Creates a new instance of EventFacade
@@ -55,7 +52,6 @@ export default class EventFacade implements EventFacadeInterface {
     this._findAllEvent = input.findAllEvent;
     this._findEvent = input.findEvent;
     this._updateEvent = input.updateEvent;
-    this._policiesService = input.policiesService;
   }
 
   /**
@@ -67,7 +63,7 @@ export default class EventFacade implements EventFacadeInterface {
     input: CreateEventInputDto,
     token: TokenData
   ): Promise<CreateEventOutputDto> {
-    return await this._createEvent.execute(input, this._policiesService, token);
+    return await this._createEvent.execute(input, token);
   }
 
   /**
@@ -79,11 +75,7 @@ export default class EventFacade implements EventFacadeInterface {
     input: FindEventInputDto,
     token: TokenData
   ): Promise<FindEventOutputDto | null> {
-    const result = await this._findEvent.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    const result = await this._findEvent.execute(input, token);
     return result || null;
   }
 
@@ -96,11 +88,7 @@ export default class EventFacade implements EventFacadeInterface {
     input: FindAllEventInputDto,
     token: TokenData
   ): Promise<FindAllEventOutputDto> {
-    return await this._findAllEvent.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._findAllEvent.execute(input, token);
   }
 
   /**
@@ -112,7 +100,7 @@ export default class EventFacade implements EventFacadeInterface {
     input: DeleteEventInputDto,
     token: TokenData
   ): Promise<DeleteEventOutputDto> {
-    return await this._deleteEvent.execute(input, this._policiesService, token);
+    return await this._deleteEvent.execute(input, token);
   }
 
   /**
@@ -124,6 +112,6 @@ export default class EventFacade implements EventFacadeInterface {
     input: UpdateEventInputDto,
     token: TokenData
   ): Promise<UpdateEventOutputDto> {
-    return await this._updateEvent.execute(input, this._policiesService, token);
+    return await this._updateEvent.execute(input, token);
   }
 }

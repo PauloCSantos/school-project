@@ -12,11 +12,10 @@ import UpdateLesson from '../../application/usecases/lesson/update.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import AddDay from '../../application/usecases/lesson/add-day.usecase';
 import { LessonController } from '../../interface/controller/lesson.controller';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('LessonController unit test', () => {
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
 
   const mockCreateLesson = jest.fn(() => {
@@ -126,12 +125,9 @@ describe('LessonController unit test', () => {
         .mockResolvedValue({ message: '2 values were removed' }),
     } as unknown as RemoveTime;
   });
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -146,7 +142,6 @@ describe('LessonController unit test', () => {
   const removeDay = mockRemoveDay();
   const addTime = mockAddTime();
   const removeTime = mockRemoveTime();
-  policieService = MockPolicyService();
 
   const controller = new LessonController(
     createLesson,
@@ -159,8 +154,7 @@ describe('LessonController unit test', () => {
     addDay,
     removeDay,
     addTime,
-    removeTime,
-    policieService
+    removeTime
   );
 
   it('should return a id for the new lesson created', async () => {

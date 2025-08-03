@@ -16,7 +16,6 @@ import {
   UpdateSubjectInputDto,
   UpdateSubjectOutputDto,
 } from '../../dto/subject-facade.dto';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 type SubjectFacadeProps = {
@@ -25,7 +24,6 @@ type SubjectFacadeProps = {
   readonly findAllSubject: FindAllSubject;
   readonly findSubject: FindSubject;
   readonly updateSubject: UpdateSubject;
-  readonly policiesService: PoliciesServiceInterface;
 };
 export default class SubjectFacade implements SubjectFacadeInterface {
   private readonly _createSubject: CreateSubject;
@@ -33,7 +31,6 @@ export default class SubjectFacade implements SubjectFacadeInterface {
   private readonly _findAllSubject: FindAllSubject;
   private readonly _findSubject: FindSubject;
   private readonly _updateSubject: UpdateSubject;
-  private readonly _policiesService: PoliciesServiceInterface;
 
   constructor(input: SubjectFacadeProps) {
     this._createSubject = input.createSubject;
@@ -41,53 +38,36 @@ export default class SubjectFacade implements SubjectFacadeInterface {
     this._findAllSubject = input.findAllSubject;
     this._findSubject = input.findSubject;
     this._updateSubject = input.updateSubject;
-    this._policiesService = input.policiesService;
   }
 
   async create(
     input: CreateSubjectInputDto,
     token: TokenData
   ): Promise<CreateSubjectOutputDto> {
-    return await this._createSubject.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._createSubject.execute(input, token);
   }
   async find(
     input: FindSubjectInputDto,
     token: TokenData
   ): Promise<FindSubjectOutputDto | null> {
-    return await this._findSubject.execute(input, this._policiesService, token);
+    return await this._findSubject.execute(input, token);
   }
   async findAll(
     input: FindAllSubjectInputDto,
     token: TokenData
   ): Promise<FindAllSubjectOutputDto> {
-    return await this._findAllSubject.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._findAllSubject.execute(input, token);
   }
   async delete(
     input: DeleteSubjectInputDto,
     token: TokenData
   ): Promise<DeleteSubjectOutputDto> {
-    return await this._deleteSubject.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._deleteSubject.execute(input, token);
   }
   async update(
     input: UpdateSubjectInputDto,
     token: TokenData
   ): Promise<UpdateSubjectOutputDto> {
-    return await this._updateSubject.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._updateSubject.execute(input, token);
   }
 }

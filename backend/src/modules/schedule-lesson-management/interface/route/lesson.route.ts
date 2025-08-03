@@ -23,7 +23,7 @@ import {
   FunctionCalledEnum,
   StatusCodeEnum,
   StatusMessageEnum,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Route handler for lesson management endpoints.

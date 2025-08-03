@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import FindAllUserWorker from '@/modules/user-management/application/usecases/worker/findAllUserWorker.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
@@ -30,7 +31,7 @@ describe('findAllUserWorker usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -77,10 +78,12 @@ describe('findAllUserWorker usecase unit test', () => {
         userWorker1,
         userWorker2,
       ]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new FindAllUserWorker(userWorkerRepository);
+      const usecase = new FindAllUserWorker(
+        userWorkerRepository,
+        policieService
+      );
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(userWorkerRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(2);
@@ -88,10 +91,12 @@ describe('findAllUserWorker usecase unit test', () => {
     it('should return an empty array when the repository is empty', async () => {
       const userWorkerRepository = MockRepository();
       userWorkerRepository.findAll.mockResolvedValue([]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new FindAllUserWorker(userWorkerRepository);
+      const usecase = new FindAllUserWorker(
+        userWorkerRepository,
+        policieService
+      );
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(userWorkerRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(0);

@@ -3,14 +3,13 @@ import {
   DeleteEventInputDto,
   DeleteEventOutputDto,
 } from '../../dto/event-usecase.dto';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
+import EventGateway from '@/modules/event-calendar-management/application/gateway/event.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for deleting a calendar event.
@@ -28,7 +27,10 @@ export default class DeleteEvent
    *
    * @param eventRepository - Gateway implementation for event data persistence
    */
-  constructor(eventRepository: EventGateway) {
+  constructor(
+    eventRepository: EventGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._eventRepository = eventRepository;
   }
 
@@ -41,18 +43,13 @@ export default class DeleteEvent
    */
   async execute(
     { id }: DeleteEventInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<DeleteEventOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.EVENT,
-        FunctionCalledEnum.DELETE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.EVENT,
+      FunctionCalledEnum.DELETE,
+      token
+    );
 
     const existingEvent = await this._eventRepository.find(id);
     if (!existingEvent) throw new Error('Event not found');

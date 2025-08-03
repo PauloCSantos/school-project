@@ -24,13 +24,13 @@ export default class ScheduleFacadeFactory {
     const policiesService = new PoliciesService();
 
     // Create all required use cases
-    const createSchedule = new CreateSchedule(repository);
-    const deleteSchedule = new DeleteSchedule(repository);
-    const findAllSchedule = new FindAllSchedule(repository);
-    const findSchedule = new FindSchedule(repository);
-    const updateSchedule = new UpdateSchedule(repository);
-    const addLessons = new AddLessons(repository);
-    const removeLessons = new RemoveLessons(repository);
+    const createSchedule = new CreateSchedule(repository, policiesService);
+    const deleteSchedule = new DeleteSchedule(repository, policiesService);
+    const findAllSchedule = new FindAllSchedule(repository, policiesService);
+    const findSchedule = new FindSchedule(repository, policiesService);
+    const updateSchedule = new UpdateSchedule(repository, policiesService);
+    const addLessons = new AddLessons(repository, policiesService);
+    const removeLessons = new RemoveLessons(repository, policiesService);
 
     // Instantiate and return the facade with all required use cases
     const facade = new ScheduleFacade({
@@ -41,7 +41,6 @@ export default class ScheduleFacadeFactory {
       updateSchedule,
       addLessons,
       removeLessons,
-      policiesService,
     });
 
     return facade;

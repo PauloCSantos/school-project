@@ -3,6 +3,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('createCurriculum usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -28,7 +29,7 @@ describe('createCurriculum usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -48,13 +49,15 @@ describe('createCurriculum usecase unit test', () => {
     it('should throw an error if the curriculum already exists', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(curriculum);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new CreateCurriculum(curriculumRepository);
+      const usecase = new CreateCurriculum(
+        curriculumRepository,
+        policieService
+      );
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Curriculum already exists');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Curriculum already exists'
+      );
       expect(curriculumRepository.find).toHaveBeenCalledWith(
         expect.any(String)
       );
@@ -66,10 +69,12 @@ describe('createCurriculum usecase unit test', () => {
     it('should create a curriculum', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new CreateCurriculum(curriculumRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new CreateCurriculum(
+        curriculumRepository,
+        policieService
+      );
+      const result = await usecase.execute(input, token);
 
       expect(curriculumRepository.find).toHaveBeenCalledWith(
         expect.any(String)

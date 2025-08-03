@@ -3,14 +3,13 @@ import {
   DeleteAttendanceInputDto,
   DeleteAttendanceOutputDto,
 } from '../../dto/attendance-usecase.dto';
-import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
+import AttendanceGateway from '@/modules/evaluation-note-attendance-management/application/gateway/attendance.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for deleting an attendance record.
@@ -29,7 +28,10 @@ export default class DeleteAttendance
    *
    * @param attendanceRepository - Gateway implementation for data persistence
    */
-  constructor(attendanceRepository: AttendanceGateway) {
+  constructor(
+    attendanceRepository: AttendanceGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._attendanceRepository = attendanceRepository;
   }
 
@@ -42,18 +44,13 @@ export default class DeleteAttendance
    */
   async execute(
     { id }: DeleteAttendanceInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<DeleteAttendanceOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.ATTENDANCE,
-        FunctionCalledEnum.DELETE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.ATTENDANCE,
+      FunctionCalledEnum.DELETE,
+      token
+    );
 
     const attendanceVerification = await this._attendanceRepository.find(id);
 

@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateUserStudentInputDto,
   CreateUserStudentOutputDto,
@@ -24,63 +23,42 @@ export class UserStudentController {
     private readonly findUserStudent: FindUserStudent,
     private readonly findAllUserStudent: FindAllUserStudent,
     private readonly updateUserStudent: UpdateUserStudent,
-    private readonly deleteUserStudent: DeleteUserStudent,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly deleteUserStudent: DeleteUserStudent
   ) {}
 
   async create(
     input: CreateUserStudentInputDto,
     token: TokenData
   ): Promise<CreateUserStudentOutputDto> {
-    const response = await this.createUserStudent.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createUserStudent.execute(input, token);
     return response;
   }
   async find(
     input: FindUserStudentInputDto,
     token: TokenData
   ): Promise<FindUserStudentOutputDto | null> {
-    const response = await this.findUserStudent.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findUserStudent.execute(input, token);
     return response;
   }
   async findAll(
     input: FindAllUserStudentInputDto,
     token: TokenData
   ): Promise<FindAllUserStudentOutputDto> {
-    const response = await this.findAllUserStudent.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAllUserStudent.execute(input, token);
     return response;
   }
   async delete(
     input: DeleteUserStudentInputDto,
     token: TokenData
   ): Promise<DeleteUserStudentOutputDto> {
-    const response = await this.deleteUserStudent.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.deleteUserStudent.execute(input, token);
     return response;
   }
   async update(
     input: UpdateUserStudentInputDto,
     token: TokenData
   ): Promise<UpdateUserStudentOutputDto> {
-    const response = await this.updateUserStudent.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateUserStudent.execute(input, token);
     return response;
   }
 }

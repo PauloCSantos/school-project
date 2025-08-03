@@ -2,15 +2,14 @@ import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.en
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
 import { AddDayInputDto, AddDayOutputDto } from '../../dto/lesson-usecase.dto';
-import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
+import LessonGateway from '@/modules/schedule-lesson-management/application/gateway/lesson.gateway';
 import LessonMapper from '../../mapper/lesson-usecase.mapper';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for adding days to a lesson.
@@ -20,7 +19,10 @@ export default class AddDay
 {
   private _lessonRepository: LessonGateway;
 
-  constructor(lessonRepository: LessonGateway) {
+  constructor(
+    lessonRepository: LessonGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._lessonRepository = lessonRepository;
   }
 
@@ -29,18 +31,13 @@ export default class AddDay
    */
   async execute(
     { id, newDaysList }: AddDayInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<AddDayOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.LESSON,
-        FunctionCalledEnum.ADD,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.LESSON,
+      FunctionCalledEnum.ADD,
+      token
+    );
 
     const lessonVerification = await this._lessonRepository.find(id);
     if (!lessonVerification) throw new Error('Lesson not found');

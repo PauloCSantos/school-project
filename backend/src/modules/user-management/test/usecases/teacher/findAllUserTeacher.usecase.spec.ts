@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import FindAllUserTeacher from '@/modules/user-management/application/usecases/teacher/findAllUserTeacher.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
@@ -30,7 +31,7 @@ describe('findAllUserTeacher usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -81,10 +82,12 @@ describe('findAllUserTeacher usecase unit test', () => {
         userTeacher1,
         userTeacher2,
       ]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new FindAllUserTeacher(userTeacherRepository);
+      const usecase = new FindAllUserTeacher(
+        userTeacherRepository,
+        policieService
+      );
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(userTeacherRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(2);
@@ -92,10 +95,12 @@ describe('findAllUserTeacher usecase unit test', () => {
     it('should return an empty array when the repository is empty', async () => {
       const userTeacherRepository = MockRepository();
       userTeacherRepository.findAll.mockResolvedValue([]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new FindAllUserTeacher(userTeacherRepository);
+      const usecase = new FindAllUserTeacher(
+        userTeacherRepository,
+        policieService
+      );
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(userTeacherRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(0);

@@ -7,6 +7,7 @@ import FindAllUserTeacher from '../usecases/teacher/findAllUserTeacher.usecase';
 import FindUserTeacher from '../usecases/teacher/findUserTeacher.usecase';
 import UpdateUserTeacher from '../usecases/teacher/updateUserTeacher.usecase';
 import { EmailAuthValidatorService } from '../services/email-auth-validator.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 export default class TeacherFacadeFactory {
   static create(): TeacherFacade {
@@ -15,14 +16,26 @@ export default class TeacherFacadeFactory {
     const emailValidatorService = new EmailAuthValidatorService(
       authUserRepository
     );
+    const policiesService = new PoliciesService();
+
     const createUserTeacher = new CreateUserTeacher(
       repository,
-      emailValidatorService
+      emailValidatorService,
+      policiesService
     );
-    const deleteUserTeacher = new DeleteUserTeacher(repository);
-    const findAllUserTeacher = new FindAllUserTeacher(repository);
-    const findUserTeacher = new FindUserTeacher(repository);
-    const updateUserTeacher = new UpdateUserTeacher(repository);
+    const deleteUserTeacher = new DeleteUserTeacher(
+      repository,
+      policiesService
+    );
+    const findAllUserTeacher = new FindAllUserTeacher(
+      repository,
+      policiesService
+    );
+    const findUserTeacher = new FindUserTeacher(repository, policiesService);
+    const updateUserTeacher = new UpdateUserTeacher(
+      repository,
+      policiesService
+    );
     const facade = new TeacherFacade({
       createUserTeacher,
       deleteUserTeacher,

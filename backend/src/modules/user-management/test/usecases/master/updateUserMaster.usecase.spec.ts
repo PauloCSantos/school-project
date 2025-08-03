@@ -5,6 +5,7 @@ import Name from '@/modules/user-management/domain/@shared/value-object/name.val
 import UserMaster from '@/modules/user-management/domain/entity/master.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('updateUserMaster usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -27,7 +28,7 @@ describe('updateUserMaster usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -76,9 +77,11 @@ describe('updateUserMaster usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the user does not exist', async () => {
       const userMasterRepository = MockRepository();
-      userMasterRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new UpdateUserMaster(userMasterRepository);
+      userMasterRepository.find.mockResolvedValue(null);
+      const usecase = new UpdateUserMaster(
+        userMasterRepository,
+        policieService
+      );
 
       await expect(
         usecase.execute(
@@ -86,7 +89,6 @@ describe('updateUserMaster usecase unit test', () => {
             id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
             ...input,
           },
-          policieService,
           token
         )
       ).rejects.toThrow('User not found');
@@ -96,8 +98,10 @@ describe('updateUserMaster usecase unit test', () => {
     it('should update an user administrator', async () => {
       const userMasterRepository = MockRepository();
       userMasterRepository.find.mockResolvedValue(userMaster1);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new UpdateUserMaster(userMasterRepository);
+      const usecase = new UpdateUserMaster(
+        userMasterRepository,
+        policieService
+      );
 
       const result = await usecase.execute(
         {
@@ -111,7 +115,6 @@ describe('updateUserMaster usecase unit test', () => {
             state: 'State B',
           },
         },
-        policieService,
         token
       );
 

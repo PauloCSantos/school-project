@@ -5,12 +5,11 @@ import {
 } from '../../dto/administrator-usecase.dto';
 import UserAdministratorGateway from '@/modules/user-management/application/gateway/administrator.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class UpdateUserAdministrator
   implements
@@ -21,7 +20,10 @@ export default class UpdateUserAdministrator
 {
   private _userAdministratorRepository: UserAdministratorGateway;
 
-  constructor(userAdministratorRepository: UserAdministratorGateway) {
+  constructor(
+    userAdministratorRepository: UserAdministratorGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._userAdministratorRepository = userAdministratorRepository;
   }
   async execute(
@@ -34,18 +36,13 @@ export default class UpdateUserAdministrator
       graduation,
       salary,
     }: UpdateUserAdministratorInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<UpdateUserAdministratorOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.ADMINISTRATOR,
-        FunctionCalledEnum.UPDATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.ADMINISTRATOR,
+      FunctionCalledEnum.UPDATE,
+      token
+    );
 
     const userAdm = await this._userAdministratorRepository.find(id);
     if (!userAdm) throw new Error('User not found');

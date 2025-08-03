@@ -5,15 +5,14 @@ import {
   RemoveTimeInputDto,
   RemoveTimeOutputDto,
 } from '../../dto/lesson-usecase.dto';
-import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
+import LessonGateway from '@/modules/schedule-lesson-management/application/gateway/lesson.gateway';
 import LessonMapper from '../../mapper/lesson-usecase.mapper';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for removing time slots from a lesson.
@@ -23,7 +22,10 @@ export default class RemoveTime
 {
   private _lessonRepository: LessonGateway;
 
-  constructor(lessonRepository: LessonGateway) {
+  constructor(
+    lessonRepository: LessonGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._lessonRepository = lessonRepository;
   }
 
@@ -32,18 +34,13 @@ export default class RemoveTime
    */
   async execute(
     { id, timesListToRemove }: RemoveTimeInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<RemoveTimeOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.LESSON,
-        FunctionCalledEnum.REMOVE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.LESSON,
+      FunctionCalledEnum.REMOVE,
+      token
+    );
 
     const lessonVerification = await this._lessonRepository.find(id);
     if (!lessonVerification) throw new Error('Lesson not found');

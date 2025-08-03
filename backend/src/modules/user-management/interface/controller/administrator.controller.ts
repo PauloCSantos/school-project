@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateUserAdministratorInputDto,
   CreateUserAdministratorOutputDto,
@@ -24,63 +23,42 @@ export class UserAdministratorController {
     private readonly findUserAdministrator: FindUserAdministrator,
     private readonly findAllUserAdministrator: FindAllUserAdministrator,
     private readonly updateUserAdministrator: UpdateUserAdministrator,
-    private readonly deleteUserAdministrator: DeleteUserAdministrator,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly deleteUserAdministrator: DeleteUserAdministrator
   ) {}
 
   async create(
     input: CreateUserAdministratorInputDto,
     token: TokenData
   ): Promise<CreateUserAdministratorOutputDto> {
-    const response = await this.createUserAdministrator.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createUserAdministrator.execute(input, token);
     return response;
   }
   async find(
     input: FindUserAdministratorInputDto,
     token: TokenData
   ): Promise<FindUserAdministratorOutputDto | null> {
-    const response = await this.findUserAdministrator.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findUserAdministrator.execute(input, token);
     return response;
   }
   async findAll(
     input: FindAllUserAdministratorInputDto,
     token: TokenData
   ): Promise<FindAllUserAdministratorOutputDto> {
-    const response = await this.findAllUserAdministrator.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAllUserAdministrator.execute(input, token);
     return response;
   }
   async delete(
     input: DeleteUserAdministratorInputDto,
     token: TokenData
   ): Promise<DeleteUserAdministratorOutputDto> {
-    const response = await this.deleteUserAdministrator.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.deleteUserAdministrator.execute(input, token);
     return response;
   }
   async update(
     input: UpdateUserAdministratorInputDto,
     token: TokenData
   ): Promise<UpdateUserAdministratorOutputDto> {
-    const response = await this.updateUserAdministrator.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateUserAdministrator.execute(input, token);
     return response;
   }
 }

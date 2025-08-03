@@ -14,6 +14,7 @@ import DeleteEvent from '@/modules/event-calendar-management/application/usecase
 import EventController from '@/modules/event-calendar-management/interface/controller/event.controller';
 import EventRoute from '@/modules/event-calendar-management/interface/route/event.route';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('Event calendar management module end to end test', () => {
   let eventRepository = new MemoryEventRepository();
@@ -21,33 +22,43 @@ describe('Event calendar management module end to end test', () => {
   let app: any;
   beforeEach(() => {
     eventRepository = new MemoryEventRepository();
-
-    const createEventUsecase = new CreateEvent(eventRepository);
-    const findEventUsecase = new FindEvent(eventRepository);
-    const findAllEventUsecase = new FindAllEvent(eventRepository);
-    const updateEventUsecase = new UpdateEvent(eventRepository);
-    const deleteEventUsecase = new DeleteEvent(eventRepository);
-
     const policiesService = new PoliciesService();
+
+    const createEventUsecase = new CreateEvent(
+      eventRepository,
+      policiesService
+    );
+    const findEventUsecase = new FindEvent(eventRepository, policiesService);
+    const findAllEventUsecase = new FindAllEvent(
+      eventRepository,
+      policiesService
+    );
+    const updateEventUsecase = new UpdateEvent(
+      eventRepository,
+      policiesService
+    );
+    const deleteEventUsecase = new DeleteEvent(
+      eventRepository,
+      policiesService
+    );
 
     const eventController = new EventController(
       createEventUsecase,
       findEventUsecase,
       findAllEventUsecase,
       updateEventUsecase,
-      deleteEventUsecase,
-      policiesService
+      deleteEventUsecase
     );
 
     const expressHttp = new ExpressAdapter();
     const tokerService = tokenInstance();
 
     const authUserMiddlewareEvent = new AuthUserMiddleware(tokerService, [
-      'master',
-      'administrator',
-      'student',
-      'teacher',
-      'worker',
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
+      RoleUsersEnum.STUDENT,
+      RoleUsersEnum.TEACHER,
+      RoleUsersEnum.WORKER,
     ]);
 
     const eventRoute = new EventRoute(

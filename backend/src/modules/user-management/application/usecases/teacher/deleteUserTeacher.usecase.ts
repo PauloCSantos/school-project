@@ -5,12 +5,11 @@ import {
 } from '../../dto/teacher-usecase.dto';
 import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class DeleteUserTeacher
   implements
@@ -18,23 +17,21 @@ export default class DeleteUserTeacher
 {
   private _userTeacherRepository: UserTeacherGateway;
 
-  constructor(userTeacherRepository: UserTeacherGateway) {
+  constructor(
+    userTeacherRepository: UserTeacherGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._userTeacherRepository = userTeacherRepository;
   }
   async execute(
     { id }: DeleteUserTeacherInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<DeleteUserTeacherOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.TEACHER,
-        FunctionCalledEnum.DELETE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.TEACHER,
+      FunctionCalledEnum.DELETE,
+      token
+    );
 
     const userVerification = await this._userTeacherRepository.find(id);
     if (!userVerification) throw new Error('User not found');

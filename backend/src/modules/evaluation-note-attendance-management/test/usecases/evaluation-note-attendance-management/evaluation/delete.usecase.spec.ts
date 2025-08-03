@@ -3,7 +3,8 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import DeleteEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/delete.usecase';
 import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
-import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
+import EvaluationGateway from '@/modules/evaluation-note-attendance-management/application/gateway/evaluation.gateway';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('deleteEvaluation usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -35,7 +36,7 @@ describe('deleteEvaluation usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -45,16 +46,14 @@ describe('deleteEvaluation usecase unit test', () => {
     it('should return an error if the evaluation does not exist', async () => {
       const evaluationRepository = MockRepository();
       evaluationRepository.find.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new DeleteEvaluation(evaluationRepository);
+      const usecase = new DeleteEvaluation(
+        evaluationRepository,
+        policieService
+      );
 
       await expect(
-        usecase.execute(
-          { id: '75c791ca-7a40-4217-8b99-2cf22c01d543' },
-          policieService,
-          token
-        )
+        usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
       ).rejects.toThrow('Evaluation not found');
       expect(evaluationRepository.find).toHaveBeenCalledWith(
         '75c791ca-7a40-4217-8b99-2cf22c01d543'
@@ -67,14 +66,15 @@ describe('deleteEvaluation usecase unit test', () => {
     it('should delete an evaluation', async () => {
       const evaluationRepository = MockRepository();
       evaluationRepository.find.mockResolvedValue(evaluation);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new DeleteEvaluation(evaluationRepository);
+      const usecase = new DeleteEvaluation(
+        evaluationRepository,
+        policieService
+      );
       const result = await usecase.execute(
         {
           id: evaluation.id.value,
         },
-        policieService,
         token
       );
 

@@ -1,4 +1,4 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import CreateUserAdministrator from '../../application/usecases/administrator/createUserAdministrator.usecase';
 import DeleteUserAdministrator from '../../application/usecases/administrator/deleteUserAdministrator.usecase';
 import FindAllUserAdministrator from '../../application/usecases/administrator/findAllUserAdministrator.usecase';
@@ -9,7 +9,6 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 describe('UserAdministratorController unit test', () => {
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
 
   const mockCreateUserAdministrator = jest.fn(() => {
@@ -99,12 +98,9 @@ describe('UserAdministratorController unit test', () => {
     } as unknown as DeleteUserAdministrator;
   });
 
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -113,15 +109,13 @@ describe('UserAdministratorController unit test', () => {
   const findAllUserAdministrator = mockFindAllUserAdministrator();
   const findUserAdministrator = mockFindUserAdministrator();
   const updateUserAdministrator = mockUpdateUserAdministrator();
-  policieService = MockPolicyService();
 
   const controller = new UserAdministratorController(
     createUserAdministrator,
     findUserAdministrator,
     findAllUserAdministrator,
     updateUserAdministrator,
-    deleteUserAdministrator,
-    policieService
+    deleteUserAdministrator
   );
 
   it('should return a id for the new user created', async () => {

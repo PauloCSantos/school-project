@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import AddSubjects from '@/modules/subject-curriculum-management/application/usecases/curriculum/add-subjects.usecase';
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
@@ -34,7 +35,7 @@ describe('AddSubjects use case unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -52,22 +53,20 @@ describe('AddSubjects use case unit test', () => {
     it('should throw an error if the curriculum does not exist', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new AddSubjects(curriculumRepository);
+      const usecase = new AddSubjects(curriculumRepository, policieService);
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Curriculum not found');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Curriculum not found'
+      );
       expect(curriculumRepository.find).toHaveBeenCalledWith(input.id);
       expect(curriculumRepository.addSubjects).not.toHaveBeenCalled();
     });
     it('should throw an error if the subject`s id does not exist in curriculum', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(curriculum);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new AddSubjects(curriculumRepository);
+      const usecase = new AddSubjects(curriculumRepository, policieService);
 
       await expect(
         usecase.execute(
@@ -75,7 +74,6 @@ describe('AddSubjects use case unit test', () => {
             ...input,
             newSubjectsList: [curriculum.subjectList[1]],
           },
-          policieService,
           token
         )
       ).rejects.toThrow('This subject is already on the curriculum');
@@ -88,10 +86,9 @@ describe('AddSubjects use case unit test', () => {
     it('should add subjects to the curriculum', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(curriculum);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new AddSubjects(curriculumRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new AddSubjects(curriculumRepository, policieService);
+      const result = await usecase.execute(input, token);
 
       expect(curriculumRepository.find).toHaveBeenCalledWith(input.id);
       expect(curriculumRepository.addSubjects).toHaveBeenCalledWith(

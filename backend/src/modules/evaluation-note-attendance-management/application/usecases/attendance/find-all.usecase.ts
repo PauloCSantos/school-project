@@ -3,14 +3,13 @@ import {
   FindAllAttendanceInputDto,
   FindAllAttendanceOutputDto,
 } from '../../dto/attendance-usecase.dto';
-import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
+import AttendanceGateway from '@/modules/evaluation-note-attendance-management/application/gateway/attendance.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for retrieving all attendance records with pagination.
@@ -29,7 +28,10 @@ export default class FindAllAttendance
    *
    * @param attendanceRepository - Gateway implementation for data persistence
    */
-  constructor(attendanceRepository: AttendanceGateway) {
+  constructor(
+    attendanceRepository: AttendanceGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._attendanceRepository = attendanceRepository;
   }
 
@@ -41,18 +43,13 @@ export default class FindAllAttendance
    */
   async execute(
     { offset, quantity }: FindAllAttendanceInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<FindAllAttendanceOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.ATTENDANCE,
-        FunctionCalledEnum.FIND_ALL,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.ATTENDANCE,
+      FunctionCalledEnum.FIND_ALL,
+      token
+    );
 
     const results = await this._attendanceRepository.findAll(quantity, offset);
 

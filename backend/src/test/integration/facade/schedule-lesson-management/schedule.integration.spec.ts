@@ -1,4 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import ScheduleFacadeFactory from '@/modules/schedule-lesson-management/application/factory/schedule.factory';
 
@@ -21,7 +22,7 @@ describe('Schedule facade integration test', () => {
   const token: TokenData = {
     email: 'teste@teste.com.br',
     masterId: 'validID',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
   };
 
   it('should create an Schedule using the facade', async () => {

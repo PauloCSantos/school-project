@@ -3,6 +3,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('findAllCurriculum usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -28,7 +29,7 @@ describe('findAllCurriculum usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -50,10 +51,12 @@ describe('findAllCurriculum usecase unit test', () => {
         curriculum1,
         curriculum2,
       ]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new FindAllCurriculum(curriculumRepository);
+      const usecase = new FindAllCurriculum(
+        curriculumRepository,
+        policieService
+      );
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(curriculumRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(2);
@@ -61,10 +64,12 @@ describe('findAllCurriculum usecase unit test', () => {
     it('should return an empty array when the repository is empty', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.findAll.mockResolvedValue([]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new FindAllCurriculum(curriculumRepository);
+      const usecase = new FindAllCurriculum(
+        curriculumRepository,
+        policieService
+      );
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(curriculumRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(0);

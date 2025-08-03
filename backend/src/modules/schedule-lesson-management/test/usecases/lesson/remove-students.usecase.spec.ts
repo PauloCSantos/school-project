@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import RemoveStudents from '@/modules/schedule-lesson-management/application/usecases/lesson/remove-students.usecase';
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
@@ -38,7 +39,7 @@ describe('RemoveStudent use case unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -61,22 +62,20 @@ describe('RemoveStudent use case unit test', () => {
     it('should throw an error if the lesson does not exist', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new RemoveStudents(lessonRepository);
+      const usecase = new RemoveStudents(lessonRepository, policieService);
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Lesson not found');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Lesson not found'
+      );
       expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
       expect(lessonRepository.removeStudents).not.toHaveBeenCalled();
     });
     it('should throw an error if the student does not exists in the lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new RemoveStudents(lessonRepository);
+      const usecase = new RemoveStudents(lessonRepository, policieService);
 
       await expect(
         usecase.execute(
@@ -84,7 +83,7 @@ describe('RemoveStudent use case unit test', () => {
             ...input,
             studentsListToRemove: [new Id().value],
           },
-          policieService,
+
           token
         )
       ).rejects.toThrow(`This student is not included in the lesson`);
@@ -97,10 +96,9 @@ describe('RemoveStudent use case unit test', () => {
     it('should remove students to the lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new RemoveStudents(lessonRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new RemoveStudents(lessonRepository, policieService);
+      const result = await usecase.execute(input, token);
 
       expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
       expect(lessonRepository.removeStudents).toHaveBeenCalledWith(

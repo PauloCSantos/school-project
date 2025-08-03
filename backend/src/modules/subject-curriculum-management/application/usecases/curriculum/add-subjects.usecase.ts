@@ -5,38 +5,35 @@ import {
   AddSubjectsInputDto,
   AddSubjectsOutputDto,
 } from '../../dto/curriculum-usecase.dto';
-import CurriculumGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/curriculum.gateway';
+import CurriculumGateway from '@/modules/subject-curriculum-management/application/gateway/curriculum.gateway';
 import CurriculumMapper from '../../mapper/curriculum.mapper';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class AddSubjects
   implements UseCaseInterface<AddSubjectsInputDto, AddSubjectsOutputDto>
 {
   private _curriculumRepository: CurriculumGateway;
 
-  constructor(curriculumRepository: CurriculumGateway) {
+  constructor(
+    curriculumRepository: CurriculumGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._curriculumRepository = curriculumRepository;
   }
   async execute(
     { id, newSubjectsList }: AddSubjectsInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<AddSubjectsOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.CURRICULUM,
-        FunctionCalledEnum.ADD,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.CURRICULUM,
+      FunctionCalledEnum.ADD,
+      token
+    );
 
     const curriculumVerification = await this._curriculumRepository.find(id);
     if (!curriculumVerification) throw new Error('Curriculum not found');

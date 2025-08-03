@@ -3,14 +3,13 @@ import {
   FindAllScheduleInputDto,
   FindAllScheduleOutputDto,
 } from '../../dto/schedule-usecase.dto';
-import ScheduleGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/schedule.gateway';
+import ScheduleGateway from '@/modules/schedule-lesson-management/application/gateway/schedule.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for retrieving a schedule by ID.
@@ -21,7 +20,10 @@ export default class FindAllSchedule
 {
   private _scheduleRepository: ScheduleGateway;
 
-  constructor(scheduleRepository: ScheduleGateway) {
+  constructor(
+    scheduleRepository: ScheduleGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._scheduleRepository = scheduleRepository;
   }
   /**
@@ -29,18 +31,13 @@ export default class FindAllSchedule
    */
   async execute(
     { quantity, offset }: FindAllScheduleInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<FindAllScheduleOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.SCHEDULE,
-        FunctionCalledEnum.FIND_ALL,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.SCHEDULE,
+      FunctionCalledEnum.FIND_ALL,
+      token
+    );
 
     const results = await this._scheduleRepository.findAll(quantity, offset);
 

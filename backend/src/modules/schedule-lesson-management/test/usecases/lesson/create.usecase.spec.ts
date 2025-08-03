@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/create.usecase';
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
@@ -32,7 +33,7 @@ describe('createLesson usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -52,13 +53,12 @@ describe('createLesson usecase unit test', () => {
     it('should throw an error if the lesson already exists', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new CreateLesson(lessonRepository);
+      const usecase = new CreateLesson(lessonRepository, policieService);
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Lesson already exists');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Lesson already exists'
+      );
       expect(lessonRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(lessonRepository.create).not.toHaveBeenCalled();
     });
@@ -68,10 +68,9 @@ describe('createLesson usecase unit test', () => {
     it('should create a lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new CreateLesson(lessonRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new CreateLesson(lessonRepository, policieService);
+      const result = await usecase.execute(input, token);
 
       expect(lessonRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(lessonRepository.create).toHaveBeenCalled();

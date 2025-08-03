@@ -28,6 +28,7 @@ import { LessonController } from '@/modules/schedule-lesson-management/interface
 import ScheduleRoute from '@/modules/schedule-lesson-management/interface/route/schedule.route';
 import LessonRoute from '@/modules/schedule-lesson-management/interface/route/lesson.route';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('Schedule lesson management module end to end test', () => {
   let scheduleRepository = new MemoryScheduleRepository();
@@ -36,28 +37,60 @@ describe('Schedule lesson management module end to end test', () => {
   beforeEach(() => {
     scheduleRepository = new MemoryScheduleRepository();
     lessonRepository = new MemoryLessonRepository();
-
-    const createScheduleUsecase = new CreateSchedule(scheduleRepository);
-    const findScheduleUsecase = new FindSchedule(scheduleRepository);
-    const findAllScheduleUsecase = new FindAllSchedule(scheduleRepository);
-    const updateScheduleUsecase = new UpdateSchedule(scheduleRepository);
-    const deleteScheduleUsecase = new DeleteSchedule(scheduleRepository);
-    const addLessons = new AddLessons(scheduleRepository);
-    const removeLessons = new RemoveLessons(scheduleRepository);
-
-    const createLessonUsecase = new CreateLesson(lessonRepository);
-    const findLessonUsecase = new FindLesson(lessonRepository);
-    const findAllLessonUsecase = new FindAllLesson(lessonRepository);
-    const updateLessonUsecase = new UpdateLesson(lessonRepository);
-    const deleteLessonUsecase = new DeleteLesson(lessonRepository);
-    const addStudents = new AddStudents(lessonRepository);
-    const removeStudents = new RemoveStudents(lessonRepository);
-    const addDay = new AddDay(lessonRepository);
-    const removeDay = new RemoveDay(lessonRepository);
-    const addTime = new AddTime(lessonRepository);
-    const removeTime = new RemoveTime(lessonRepository);
-
     const policiesService = new PoliciesService();
+
+    const createScheduleUsecase = new CreateSchedule(
+      scheduleRepository,
+      policiesService
+    );
+    const findScheduleUsecase = new FindSchedule(
+      scheduleRepository,
+      policiesService
+    );
+    const findAllScheduleUsecase = new FindAllSchedule(
+      scheduleRepository,
+      policiesService
+    );
+    const updateScheduleUsecase = new UpdateSchedule(
+      scheduleRepository,
+      policiesService
+    );
+    const deleteScheduleUsecase = new DeleteSchedule(
+      scheduleRepository,
+      policiesService
+    );
+    const addLessons = new AddLessons(scheduleRepository, policiesService);
+    const removeLessons = new RemoveLessons(
+      scheduleRepository,
+      policiesService
+    );
+
+    const createLessonUsecase = new CreateLesson(
+      lessonRepository,
+      policiesService
+    );
+    const findLessonUsecase = new FindLesson(lessonRepository, policiesService);
+    const findAllLessonUsecase = new FindAllLesson(
+      lessonRepository,
+      policiesService
+    );
+    const updateLessonUsecase = new UpdateLesson(
+      lessonRepository,
+      policiesService
+    );
+    const deleteLessonUsecase = new DeleteLesson(
+      lessonRepository,
+      policiesService
+    );
+    const addStudents = new AddStudents(lessonRepository, policiesService);
+    const removeStudents = new RemoveStudents(
+      lessonRepository,
+      policiesService
+    );
+    const addDay = new AddDay(lessonRepository, policiesService);
+    const removeDay = new RemoveDay(lessonRepository, policiesService);
+    const addTime = new AddTime(lessonRepository, policiesService);
+    const removeTime = new RemoveTime(lessonRepository, policiesService);
 
     const scheduleController = new ScheduleController(
       createScheduleUsecase,
@@ -66,8 +99,7 @@ describe('Schedule lesson management module end to end test', () => {
       updateScheduleUsecase,
       deleteScheduleUsecase,
       addLessons,
-      removeLessons,
-      policiesService
+      removeLessons
     );
     const lessonController = new LessonController(
       createLessonUsecase,
@@ -80,20 +112,19 @@ describe('Schedule lesson management module end to end test', () => {
       addDay,
       removeDay,
       addTime,
-      removeTime,
-      policiesService
+      removeTime
     );
 
     const expressHttp = new ExpressAdapter();
     const tokenService = tokenInstance();
 
     const authUserMiddlewareSchedule = new AuthUserMiddleware(tokenService, [
-      'master',
-      'administrator',
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
     ]);
     const authUserMiddlewareLesson = new AuthUserMiddleware(tokenService, [
-      'master',
-      'administrator',
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
     ]);
 
     const scheduleRoute = new ScheduleRoute(

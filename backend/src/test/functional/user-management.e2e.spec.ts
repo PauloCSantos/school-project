@@ -44,6 +44,7 @@ import { UserWorkerRoute } from '@/modules/user-management/interface/route/worke
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 async function createAuthUserInMemory(
   email: string,
@@ -77,136 +78,166 @@ describe('User management module end to end test', () => {
     userWorkerRepository = new MemoryUserWorkerRepository();
     authUserRepository = new MemoryAuthUserRepository();
     emailValidatorService = new EmailAuthValidatorService(authUserRepository);
+    const policiesService = new PoliciesService();
     const createUserAdministratorUsecase = new CreateUserAdministrator(
       userAdministratorRepository,
-      emailValidatorService
+      emailValidatorService,
+      policiesService
     );
     const findUserAdministratorUsecase = new FindUserAdministrator(
-      userAdministratorRepository
+      userAdministratorRepository,
+      policiesService
     );
     const findAllUserAdministratorUsecase = new FindAllUserAdministrator(
-      userAdministratorRepository
+      userAdministratorRepository,
+      policiesService
     );
     const updateUserAdministratorUsecase = new UpdateUserAdministrator(
-      userAdministratorRepository
+      userAdministratorRepository,
+      policiesService
     );
     const deleteUserAdministratorUsecase = new DeleteUserAdministrator(
-      userAdministratorRepository
+      userAdministratorRepository,
+      policiesService
     );
     const createUserMasterUsecase = new CreateUserMaster(
       userMasterRepository,
-      emailValidatorService
+      emailValidatorService,
+      policiesService
     );
-    const findUserMasterUsecase = new FindUserMaster(userMasterRepository);
-    const updateUserMasterUsecase = new UpdateUserMaster(userMasterRepository);
+    const findUserMasterUsecase = new FindUserMaster(
+      userMasterRepository,
+      policiesService
+    );
+    const updateUserMasterUsecase = new UpdateUserMaster(
+      userMasterRepository,
+      policiesService
+    );
 
     const createUserStudentUsecase = new CreateUserStudent(
       userStudentRepository,
-      emailValidatorService
+      emailValidatorService,
+      policiesService
     );
-    const findUserStudentUsecase = new FindUserStudent(userStudentRepository);
+    const findUserStudentUsecase = new FindUserStudent(
+      userStudentRepository,
+      policiesService
+    );
     const findAllUserStudentUsecase = new FindAllUserStudent(
-      userStudentRepository
+      userStudentRepository,
+      policiesService
     );
     const updateUserStudentUsecase = new UpdateUserStudent(
-      userStudentRepository
+      userStudentRepository,
+      policiesService
     );
     const deleteUserStudentUsecase = new DeleteUserStudent(
-      userStudentRepository
+      userStudentRepository,
+      policiesService
     );
 
     const createUserTeacherUsecase = new CreateUserTeacher(
       userTeacherRepository,
-      emailValidatorService
+      emailValidatorService,
+      policiesService
     );
-    const findUserTeacherUsecase = new FindUserTeacher(userTeacherRepository);
+    const findUserTeacherUsecase = new FindUserTeacher(
+      userTeacherRepository,
+      policiesService
+    );
     const findAllUserTeacherUsecase = new FindAllUserTeacher(
-      userTeacherRepository
+      userTeacherRepository,
+      policiesService
     );
     const updateUserTeacherUsecase = new UpdateUserTeacher(
-      userTeacherRepository
+      userTeacherRepository,
+      policiesService
     );
     const deleteUserTeacherUsecase = new DeleteUserTeacher(
-      userTeacherRepository
+      userTeacherRepository,
+      policiesService
     );
 
     const createUserWorkerUsecase = new CreateUserWorker(
       userWorkerRepository,
-      emailValidatorService
+      emailValidatorService,
+      policiesService
     );
-    const findUserWorkerUsecase = new FindUserWorker(userWorkerRepository);
+    const findUserWorkerUsecase = new FindUserWorker(
+      userWorkerRepository,
+      policiesService
+    );
     const findAllUserWorkerUsecase = new FindAllUserWorker(
-      userWorkerRepository
+      userWorkerRepository,
+      policiesService
     );
-    const updateUserWorkerUsecase = new UpdateUserWorker(userWorkerRepository);
-    const deleteUserWorkerUsecase = new DeleteUserWorker(userWorkerRepository);
-
-    const policiesService = new PoliciesService();
+    const updateUserWorkerUsecase = new UpdateUserWorker(
+      userWorkerRepository,
+      policiesService
+    );
+    const deleteUserWorkerUsecase = new DeleteUserWorker(
+      userWorkerRepository,
+      policiesService
+    );
 
     const userAdministratorController = new UserAdministratorController(
       createUserAdministratorUsecase,
       findUserAdministratorUsecase,
       findAllUserAdministratorUsecase,
       updateUserAdministratorUsecase,
-      deleteUserAdministratorUsecase,
-      policiesService
+      deleteUserAdministratorUsecase
     );
     const userMasterController = new UserMasterController(
       createUserMasterUsecase,
       findUserMasterUsecase,
-      updateUserMasterUsecase,
-      policiesService
+      updateUserMasterUsecase
     );
     const userStudentController = new UserStudentController(
       createUserStudentUsecase,
       findUserStudentUsecase,
       findAllUserStudentUsecase,
       updateUserStudentUsecase,
-      deleteUserStudentUsecase,
-      policiesService
+      deleteUserStudentUsecase
     );
     const userTeacherController = new UserTeacherController(
       createUserTeacherUsecase,
       findUserTeacherUsecase,
       findAllUserTeacherUsecase,
       updateUserTeacherUsecase,
-      deleteUserTeacherUsecase,
-      policiesService
+      deleteUserTeacherUsecase
     );
     const userWorkerController = new UserWorkerController(
       createUserWorkerUsecase,
       findUserWorkerUsecase,
       findAllUserWorkerUsecase,
       updateUserWorkerUsecase,
-      deleteUserWorkerUsecase,
-      policiesService
+      deleteUserWorkerUsecase
     );
     const expressHttp = new ExpressAdapter();
     const tokerService = tokenInstance();
 
     const authUserMiddlewareMaster = new AuthUserMiddleware(tokerService, [
-      'master',
+      RoleUsersEnum.MASTER,
     ]);
     const authUserMiddlewareAdministrator = new AuthUserMiddleware(
       tokerService,
-      ['master', 'administrator']
+      [RoleUsersEnum.MASTER, RoleUsersEnum.ADMINISTRATOR]
     );
     const authUserMiddlewareTeacher = new AuthUserMiddleware(tokerService, [
-      'master',
-      'administrator',
-      'teacher',
-      'student',
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
+      RoleUsersEnum.TEACHER,
     ]);
     const authUserMiddlewareStudent = new AuthUserMiddleware(tokerService, [
-      'master',
-      'administrator',
-      'teacher',
-      'student',
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
+      RoleUsersEnum.STUDENT,
+      RoleUsersEnum.TEACHER,
     ]);
     const authUserMiddlewareWorker = new AuthUserMiddleware(tokerService, [
-      'master',
-      'worker',
-      'administrator',
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
+      RoleUsersEnum.WORKER,
     ]);
 
     const userAdministratorRoute = new UserAdministratorRoute(

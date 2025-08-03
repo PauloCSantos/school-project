@@ -3,14 +3,13 @@ import {
   UpdateScheduleInputDto,
   UpdateScheduleOutputDto,
 } from '../../dto/schedule-usecase.dto';
-import ScheduleGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/schedule.gateway';
+import ScheduleGateway from '@/modules/schedule-lesson-management/application/gateway/schedule.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for schedule operation.
@@ -20,7 +19,10 @@ export default class UpdateSchedule
 {
   private _scheduleRepository: ScheduleGateway;
 
-  constructor(scheduleRepository: ScheduleGateway) {
+  constructor(
+    scheduleRepository: ScheduleGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._scheduleRepository = scheduleRepository;
   }
   /**
@@ -28,18 +30,13 @@ export default class UpdateSchedule
    */
   async execute(
     { id, curriculum }: UpdateScheduleInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<UpdateScheduleOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.SCHEDULE,
-        FunctionCalledEnum.ADD,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.SCHEDULE,
+      FunctionCalledEnum.ADD,
+      token
+    );
 
     const schedule = await this._scheduleRepository.find(id);
     if (!schedule) throw new Error('Schedule not found');

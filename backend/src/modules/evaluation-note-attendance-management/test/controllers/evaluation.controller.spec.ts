@@ -5,11 +5,10 @@ import FindAllEvaluation from '../../application/usecases/evaluation/find-all.us
 import FindEvaluation from '../../application/usecases/evaluation/find.usecase';
 import UpdateEvaluation from '../../application/usecases/evaluation/update.usecase';
 import EvaluationController from '../../interface/controller/evaluation.controller';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('EvaluationController unit test', () => {
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
   // Mock the usecases directly
   const mockCreateEvaluation: jest.Mocked<CreateEvaluation> = {
@@ -46,12 +45,9 @@ describe('EvaluationController unit test', () => {
 
   // For create, the output should match the expected interface
   const createOutput = { id: id };
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
   beforeEach(() => {
@@ -79,15 +75,13 @@ describe('EvaluationController unit test', () => {
     mockDeleteEvaluation.execute.mockResolvedValue({
       message: 'Operação concluída com sucesso',
     });
-    policieService = MockPolicyService();
 
     controller = new EvaluationController(
       mockCreateEvaluation,
       mockFindEvaluation,
       mockFindAllEvaluation,
       mockUpdateEvaluation,
-      mockDeleteEvaluation,
-      policieService
+      mockDeleteEvaluation
     );
   });
 
@@ -104,7 +98,6 @@ describe('EvaluationController unit test', () => {
     expect(mockCreateEvaluation.execute).toHaveBeenCalledTimes(1);
     expect(mockCreateEvaluation.execute).toHaveBeenCalledWith(
       createInput,
-      policieService,
       token
     );
     expect(result).toEqual(createOutput);
@@ -115,11 +108,7 @@ describe('EvaluationController unit test', () => {
     const result = await controller.find(findInput, token);
 
     expect(mockFindEvaluation.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindEvaluation.execute).toHaveBeenCalledWith(
-      findInput,
-      policieService,
-      token
-    );
+    expect(mockFindEvaluation.execute).toHaveBeenCalledWith(findInput, token);
     expect(result).toEqual(evaluationData);
   });
 
@@ -130,7 +119,6 @@ describe('EvaluationController unit test', () => {
     expect(mockFindAllEvaluation.execute).toHaveBeenCalledTimes(1);
     expect(mockFindAllEvaluation.execute).toHaveBeenCalledWith(
       findAllInput,
-      policieService,
       token
     );
     expect(result).toBeDefined();
@@ -147,7 +135,6 @@ describe('EvaluationController unit test', () => {
     expect(mockUpdateEvaluation.execute).toHaveBeenCalledTimes(1);
     expect(mockUpdateEvaluation.execute).toHaveBeenCalledWith(
       updateInput,
-      policieService,
       token
     );
     expect(result).toBeDefined();
@@ -160,7 +147,6 @@ describe('EvaluationController unit test', () => {
     expect(mockDeleteEvaluation.execute).toHaveBeenCalledTimes(1);
     expect(mockDeleteEvaluation.execute).toHaveBeenCalledWith(
       deleteInput,
-      policieService,
       token
     );
     expect(result).toEqual({ message: 'Operação concluída com sucesso' });

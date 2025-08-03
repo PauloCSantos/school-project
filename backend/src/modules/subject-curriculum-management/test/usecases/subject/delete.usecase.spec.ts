@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import DeleteSubject from '@/modules/subject-curriculum-management/application/usecases/subject/delete.usecase';
 import Subject from '@/modules/subject-curriculum-management/domain/entity/subject.entity';
@@ -26,7 +27,7 @@ describe('deleteSubject usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -44,16 +45,11 @@ describe('deleteSubject usecase unit test', () => {
     it('should return an error if the subject does not exist', async () => {
       const subjectRepository = MockRepository();
       subjectRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new DeleteSubject(subjectRepository);
+      const usecase = new DeleteSubject(subjectRepository, policieService);
 
       await expect(
-        usecase.execute(
-          { id: '75c791ca-7a40-4217-8b99-2cf22c01d543' },
-          policieService,
-          token
-        )
+        usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
       ).rejects.toThrow('Subject not found');
     });
   });
@@ -61,13 +57,11 @@ describe('deleteSubject usecase unit test', () => {
     it('should delete a subject', async () => {
       const subjectRepository = MockRepository();
       subjectRepository.find.mockResolvedValue(subject);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new DeleteSubject(subjectRepository);
+      const usecase = new DeleteSubject(subjectRepository, policieService);
       const result = await usecase.execute(
         {
           id: subject.id.value,
         },
-        policieService,
         token
       );
 

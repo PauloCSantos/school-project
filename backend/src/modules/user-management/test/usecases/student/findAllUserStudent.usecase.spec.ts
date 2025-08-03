@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import FindAllUserStudent from '@/modules/user-management/application/usecases/student/findAllUserStudent.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
@@ -29,7 +30,7 @@ describe('findAllUserStudent usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -76,10 +77,12 @@ describe('findAllUserStudent usecase unit test', () => {
         userStudent1,
         userStudent2,
       ]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new FindAllUserStudent(userStudentRepository);
+      const usecase = new FindAllUserStudent(
+        userStudentRepository,
+        policieService
+      );
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(userStudentRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(2);
@@ -87,10 +90,12 @@ describe('findAllUserStudent usecase unit test', () => {
     it('should return an empty array when the repository is empty', async () => {
       const userStudentRepository = MockRepository();
       userStudentRepository.findAll.mockResolvedValue([]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new FindAllUserStudent(userStudentRepository);
+      const usecase = new FindAllUserStudent(
+        userStudentRepository,
+        policieService
+      );
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(userStudentRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(0);

@@ -32,6 +32,7 @@ import EvaluationRoute from '@/modules/evaluation-note-attendance-management/int
 import NoteRoute from '@/modules/evaluation-note-attendance-management/interface/route/note.route';
 import AttendanceRoute from '@/modules/evaluation-note-attendance-management/interface/route/attendance.route';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('Evaluation note attendance management module end to end test', () => {
   let evaluationRepository: MemoryEvaluationRepository;
@@ -42,48 +43,74 @@ describe('Evaluation note attendance management module end to end test', () => {
     evaluationRepository = new MemoryEvaluationRepository();
     noteRepository = new MemoryNoteRepository();
     attendanceRepository = new MemoryAttendanceRepository();
-
-    const createEvaluationUsecase = new CreateEvaluation(evaluationRepository);
-    const findEvaluationUsecase = new FindEvaluation(evaluationRepository);
-    const findAllEvaluationUsecase = new FindAllEvaluation(
-      evaluationRepository
-    );
-    const updateEvaluationUsecase = new UpdateEvaluation(evaluationRepository);
-    const deleteEvaluationUsecase = new DeleteEvaluation(evaluationRepository);
-
-    const createNoteUsecase = new CreateNote(noteRepository);
-    const findNoteUsecase = new FindNote(noteRepository);
-    const findAllNoteUsecase = new FindAllNote(noteRepository);
-    const updateNoteUsecase = new UpdateNote(noteRepository);
-    const deleteNoteUsecase = new DeleteNote(noteRepository);
-
-    const createAttendanceUsecase = new CreateAttendance(attendanceRepository);
-    const findAttendanceUsecase = new FindAttendance(attendanceRepository);
-    const findAllAttendanceUsecase = new FindAllAttendance(
-      attendanceRepository
-    );
-    const updateAttendanceUsecase = new UpdateAttendance(attendanceRepository);
-    const deleteAttendanceUsecase = new DeleteAttendance(attendanceRepository);
-    const addStudents = new AddStudents(attendanceRepository);
-    const removeStudents = new RemoveStudents(attendanceRepository);
-
     const policiesService = new PoliciesService();
+
+    const createEvaluationUsecase = new CreateEvaluation(
+      evaluationRepository,
+      policiesService
+    );
+    const findEvaluationUsecase = new FindEvaluation(
+      evaluationRepository,
+      policiesService
+    );
+    const findAllEvaluationUsecase = new FindAllEvaluation(
+      evaluationRepository,
+      policiesService
+    );
+    const updateEvaluationUsecase = new UpdateEvaluation(
+      evaluationRepository,
+      policiesService
+    );
+    const deleteEvaluationUsecase = new DeleteEvaluation(
+      evaluationRepository,
+      policiesService
+    );
+
+    const createNoteUsecase = new CreateNote(noteRepository, policiesService);
+    const findNoteUsecase = new FindNote(noteRepository, policiesService);
+    const findAllNoteUsecase = new FindAllNote(noteRepository, policiesService);
+    const updateNoteUsecase = new UpdateNote(noteRepository, policiesService);
+    const deleteNoteUsecase = new DeleteNote(noteRepository, policiesService);
+
+    const createAttendanceUsecase = new CreateAttendance(
+      attendanceRepository,
+      policiesService
+    );
+    const findAttendanceUsecase = new FindAttendance(
+      attendanceRepository,
+      policiesService
+    );
+    const findAllAttendanceUsecase = new FindAllAttendance(
+      attendanceRepository,
+      policiesService
+    );
+    const updateAttendanceUsecase = new UpdateAttendance(
+      attendanceRepository,
+      policiesService
+    );
+    const deleteAttendanceUsecase = new DeleteAttendance(
+      attendanceRepository,
+      policiesService
+    );
+    const addStudents = new AddStudents(attendanceRepository, policiesService);
+    const removeStudents = new RemoveStudents(
+      attendanceRepository,
+      policiesService
+    );
 
     const evaluationController = new EvaluationController(
       createEvaluationUsecase,
       findEvaluationUsecase,
       findAllEvaluationUsecase,
       updateEvaluationUsecase,
-      deleteEvaluationUsecase,
-      policiesService
+      deleteEvaluationUsecase
     );
     const noteController = new NoteController(
       createNoteUsecase,
       findNoteUsecase,
       findAllNoteUsecase,
       updateNoteUsecase,
-      deleteNoteUsecase,
-      policiesService
+      deleteNoteUsecase
     );
     const attendanceController = new AttendanceController(
       createAttendanceUsecase,
@@ -92,32 +119,31 @@ describe('Evaluation note attendance management module end to end test', () => {
       updateAttendanceUsecase,
       deleteAttendanceUsecase,
       addStudents,
-      removeStudents,
-      policiesService
+      removeStudents
     );
 
     const expressHttp = new ExpressAdapter();
     const tokerService = tokenInstance();
 
     const authUserMiddlewareEvaluation = new AuthUserMiddleware(tokerService, [
-      'master',
-      'administrator',
-      'student',
-      'teacher',
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
+      RoleUsersEnum.STUDENT,
+      RoleUsersEnum.TEACHER,
     ]);
 
     const authUserMiddlewareNote = new AuthUserMiddleware(tokerService, [
-      'master',
-      'administrator',
-      'student',
-      'teacher',
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
+      RoleUsersEnum.STUDENT,
+      RoleUsersEnum.TEACHER,
     ]);
 
     const authUserMiddlewareAttendance = new AuthUserMiddleware(tokerService, [
-      'master',
-      'administrator',
-      'student',
-      'teacher',
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
+      RoleUsersEnum.STUDENT,
+      RoleUsersEnum.TEACHER,
     ]);
 
     const evaluationRoute = new EvaluationRoute(

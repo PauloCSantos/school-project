@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import AddTime from '@/modules/schedule-lesson-management/application/usecases/lesson/add-time.usecase';
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
@@ -38,7 +39,7 @@ describe('AddTime use case unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -61,22 +62,20 @@ describe('AddTime use case unit test', () => {
     it('should throw an error if the lesson does not exist', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new AddTime(lessonRepository);
+      const usecase = new AddTime(lessonRepository, policieService);
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Lesson not found');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Lesson not found'
+      );
       expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
       expect(lessonRepository.addDay).not.toHaveBeenCalled();
     });
     it('should throw an error if the time already exists in the lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new AddTime(lessonRepository);
+      const usecase = new AddTime(lessonRepository, policieService);
 
       await expect(
         usecase.execute(
@@ -84,7 +83,6 @@ describe('AddTime use case unit test', () => {
             ...input,
             newTimesList: [lesson.times[0]],
           },
-          policieService,
           token
         )
       ).rejects.toThrow(`Time 15:55 is already added to the lesson`);
@@ -97,10 +95,9 @@ describe('AddTime use case unit test', () => {
     it('should add times to the lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new AddTime(lessonRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new AddTime(lessonRepository, policieService);
+      const result = await usecase.execute(input, token);
 
       expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
       expect(lessonRepository.addTime).toHaveBeenCalledWith(

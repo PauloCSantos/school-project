@@ -1,6 +1,6 @@
-import TokenService from '../../../authentication-authorization-management/application/service/token.service';
+import TokenService from '../../../authentication-authorization-management/infrastructure/services/token.service';
 import AuthUserMiddleware from '../../application/middleware/authUser.middleware';
-import TokenServiceInterface from '../../../authentication-authorization-management/application/service/token.service';
+import TokenServiceInterface from '../../../authentication-authorization-management/infrastructure/services/token.service';
 import { RoleUsers } from '../../type/sharedTypes';
 import { HttpRequest } from '../../infraestructure/http/http.interface';
 import { RoleUsersEnum } from '../../enums/enums';

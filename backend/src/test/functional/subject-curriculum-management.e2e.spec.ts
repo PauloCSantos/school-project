@@ -22,6 +22,7 @@ import { CurriculumController } from '@/modules/subject-curriculum-management/in
 import { SubjectRoute } from '@/modules/subject-curriculum-management/interface/route/subject.route';
 import { CurriculumRoute } from '@/modules/subject-curriculum-management/interface/route/curriculum.route';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('Subject curriculum management module end to end test', () => {
   let subjectRepository = new MemorySubjectRepository();
@@ -30,32 +31,61 @@ describe('Subject curriculum management module end to end test', () => {
   beforeEach(() => {
     subjectRepository = new MemorySubjectRepository();
     curriculumRepository = new MemoryCurriculumRepository();
-
-    const createSubjectUsecase = new CreateSubject(subjectRepository);
-    const findSubjectUsecase = new FindSubject(subjectRepository);
-    const findAllSubjectUsecase = new FindAllSubject(subjectRepository);
-    const updateSubjectUsecase = new UpdateSubject(subjectRepository);
-    const deleteSubjectUsecase = new DeleteSubject(subjectRepository);
-
-    const createCurriculumUsecase = new CreateCurriculum(curriculumRepository);
-    const findCurriculumUsecase = new FindCurriculum(curriculumRepository);
-    const findAllCurriculumUsecase = new FindAllCurriculum(
-      curriculumRepository
-    );
-    const updateCurriculumUsecase = new UpdateCurriculum(curriculumRepository);
-    const deleteCurriculumUsecase = new DeleteCurriculum(curriculumRepository);
-    const addSubjects = new AddSubjects(curriculumRepository);
-    const removeSubjects = new RemoveSubjects(curriculumRepository);
-
     const policiesService = new PoliciesService();
+
+    const createSubjectUsecase = new CreateSubject(
+      subjectRepository,
+      policiesService
+    );
+    const findSubjectUsecase = new FindSubject(
+      subjectRepository,
+      policiesService
+    );
+    const findAllSubjectUsecase = new FindAllSubject(
+      subjectRepository,
+      policiesService
+    );
+    const updateSubjectUsecase = new UpdateSubject(
+      subjectRepository,
+      policiesService
+    );
+    const deleteSubjectUsecase = new DeleteSubject(
+      subjectRepository,
+      policiesService
+    );
+
+    const createCurriculumUsecase = new CreateCurriculum(
+      curriculumRepository,
+      policiesService
+    );
+    const findCurriculumUsecase = new FindCurriculum(
+      curriculumRepository,
+      policiesService
+    );
+    const findAllCurriculumUsecase = new FindAllCurriculum(
+      curriculumRepository,
+      policiesService
+    );
+    const updateCurriculumUsecase = new UpdateCurriculum(
+      curriculumRepository,
+      policiesService
+    );
+    const deleteCurriculumUsecase = new DeleteCurriculum(
+      curriculumRepository,
+      policiesService
+    );
+    const addSubjects = new AddSubjects(curriculumRepository, policiesService);
+    const removeSubjects = new RemoveSubjects(
+      curriculumRepository,
+      policiesService
+    );
 
     const subjectController = new SubjectController(
       createSubjectUsecase,
       findSubjectUsecase,
       findAllSubjectUsecase,
       updateSubjectUsecase,
-      deleteSubjectUsecase,
-      policiesService
+      deleteSubjectUsecase
     );
     const curriculumController = new CurriculumController(
       createCurriculumUsecase,
@@ -64,20 +94,19 @@ describe('Subject curriculum management module end to end test', () => {
       updateCurriculumUsecase,
       deleteCurriculumUsecase,
       addSubjects,
-      removeSubjects,
-      policiesService
+      removeSubjects
     );
 
     const expressHttp = new ExpressAdapter();
     const tokerService = tokenInstance();
 
     const authUserMiddlewareSubject = new AuthUserMiddleware(tokerService, [
-      'master',
-      'administrator',
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
     ]);
     const authUserMiddlewareCurriculum = new AuthUserMiddleware(tokerService, [
-      'master',
-      'administrator',
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
     ]);
 
     const subjectRoute = new SubjectRoute(

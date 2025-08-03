@@ -3,14 +3,13 @@ import {
   UpdateLessonInputDto,
   UpdateLessonOutputDto,
 } from '../../dto/lesson-usecase.dto';
-import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
+import LessonGateway from '@/modules/schedule-lesson-management/application/gateway/lesson.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for updating an existing lesson.
@@ -20,7 +19,10 @@ export default class UpdateLesson
 {
   private _lessonRepository: LessonGateway;
 
-  constructor(lessonRepository: LessonGateway) {
+  constructor(
+    lessonRepository: LessonGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._lessonRepository = lessonRepository;
   }
 
@@ -29,18 +31,13 @@ export default class UpdateLesson
    */
   async execute(
     { id, duration, name, semester, subject, teacher }: UpdateLessonInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<UpdateLessonOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.LESSON,
-        FunctionCalledEnum.UPDATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.LESSON,
+      FunctionCalledEnum.UPDATE,
+      token
+    );
 
     const lesson = await this._lessonRepository.find(id);
     if (!lesson) throw new Error('Lesson not found');

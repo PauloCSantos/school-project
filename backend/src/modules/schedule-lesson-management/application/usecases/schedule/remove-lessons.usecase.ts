@@ -5,15 +5,14 @@ import {
   RemoveLessonsInputDto,
   RemoveLessonsOutputDto,
 } from '../../dto/schedule-usecase.dto';
-import ScheduleGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/schedule.gateway';
+import ScheduleGateway from '@/modules/schedule-lesson-management/application/gateway/schedule.gateway';
 import ScheduleMapper from '../../mapper/schedule.mapper';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for removing lessons from a schedule.
@@ -23,7 +22,10 @@ export default class RemoveLessons
 {
   private _scheduleRepository: ScheduleGateway;
 
-  constructor(scheduleRepository: ScheduleGateway) {
+  constructor(
+    scheduleRepository: ScheduleGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._scheduleRepository = scheduleRepository;
   }
   /**
@@ -31,18 +33,13 @@ export default class RemoveLessons
    */
   async execute(
     { id, lessonsListToRemove }: RemoveLessonsInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<RemoveLessonsOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.SCHEDULE,
-        FunctionCalledEnum.ADD,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.SCHEDULE,
+      FunctionCalledEnum.ADD,
+      token
+    );
 
     const scheduleVerification = await this._scheduleRepository.find(id);
     if (!scheduleVerification) throw new Error('Schedule not found');

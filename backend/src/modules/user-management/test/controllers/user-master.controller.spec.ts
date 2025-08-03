@@ -1,4 +1,4 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import CreateUserMaster from '../../application/usecases/master/createUserMaster.usecase';
 import FindUserMaster from '../../application/usecases/master/findUserMaster.usecase';
 import UpdateUserMaster from '../../application/usecases/master/updateUserMaster.usecase';
@@ -7,7 +7,6 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 describe('UserMasterController unit test', () => {
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
 
   const mockCreateUserMaster = jest.fn(() => {
@@ -52,25 +51,20 @@ describe('UserMasterController unit test', () => {
     } as unknown as UpdateUserMaster;
   });
 
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
   const createUserMaster = mockCreateUserMaster();
   const findUserMaster = mockFindUserMaster();
   const updateUserMaster = mockUpdateUserMaster();
-  policieService = MockPolicyService();
 
   const controller = new UserMasterController(
     createUserMaster,
     findUserMaster,
-    updateUserMaster,
-    policieService
+    updateUserMaster
   );
 
   it('should return a id for the new user created', async () => {

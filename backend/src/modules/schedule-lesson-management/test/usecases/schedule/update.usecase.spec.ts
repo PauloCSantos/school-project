@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import UpdateSchedule from '@/modules/schedule-lesson-management/application/usecases/schedule/update.usecase';
 import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
@@ -28,7 +29,7 @@ describe('updateSchedule usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -45,9 +46,8 @@ describe('updateSchedule usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the schedule does not exist', async () => {
       const scheduleRepository = MockRepository();
-      scheduleRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new UpdateSchedule(scheduleRepository);
+      scheduleRepository.find.mockResolvedValue(null);
+      const usecase = new UpdateSchedule(scheduleRepository, policieService);
 
       await expect(
         usecase.execute(
@@ -55,7 +55,6 @@ describe('updateSchedule usecase unit test', () => {
             ...input,
             id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
           },
-          policieService,
           token
         )
       ).rejects.toThrow('Schedule not found');
@@ -65,15 +64,13 @@ describe('updateSchedule usecase unit test', () => {
     it('should update a schedule', async () => {
       const scheduleRepository = MockRepository();
       scheduleRepository.find.mockResolvedValue(schedule);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new UpdateSchedule(scheduleRepository);
+      const usecase = new UpdateSchedule(scheduleRepository, policieService);
 
       const result = await usecase.execute(
         {
           id: input.id,
           curriculum: input.curriculum,
         },
-        policieService,
         token
       );
 

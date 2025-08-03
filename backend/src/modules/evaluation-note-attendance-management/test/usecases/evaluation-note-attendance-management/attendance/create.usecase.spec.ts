@@ -3,7 +3,8 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/create.usecase';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
-import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
+import AttendanceGateway from '@/modules/evaluation-note-attendance-management/application/gateway/attendance.gateway';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('CreateAttendance usecase unit test', () => {
   let input: any;
@@ -41,10 +42,10 @@ describe('CreateAttendance usecase unit test', () => {
     policieService = MockPolicyService();
     token = {
       email: 'caller@domain.com',
-      role: 'master',
+      role: RoleUsersEnum.MASTER,
       masterId: new Id().value,
     };
-    usecase = new CreateAttendance(repository);
+    usecase = new CreateAttendance(repository, policieService);
   });
 
   afterEach(() => {
@@ -53,9 +54,8 @@ describe('CreateAttendance usecase unit test', () => {
 
   it('should create an attendance and return its id', async () => {
     repository.find.mockResolvedValueOnce(null);
-    policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-    const result = await usecase.execute(input, policieService, token);
+    const result = await usecase.execute(input, token);
 
     expect(repository.find).toHaveBeenCalledWith(expect.any(String));
     expect(repository.create).toHaveBeenCalledTimes(1);
@@ -65,9 +65,8 @@ describe('CreateAttendance usecase unit test', () => {
 
   it('should check if attendance already exists before creating', async () => {
     repository.find.mockResolvedValueOnce(null);
-    policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-    await usecase.execute(input, policieService, token);
+    await usecase.execute(input, token);
 
     expect(repository.find).toHaveBeenCalledWith(expect.any(String));
     expect(repository.find).toHaveBeenCalledTimes(1);
@@ -75,9 +74,8 @@ describe('CreateAttendance usecase unit test', () => {
 
   it('should throw an error if attendance already exists', async () => {
     repository.find.mockResolvedValueOnce(new Attendance(input));
-    policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-    await expect(usecase.execute(input, policieService, token)).rejects.toThrow(
+    await expect(usecase.execute(input, token)).rejects.toThrow(
       'Attendance already exists'
     );
     expect(repository.create).not.toHaveBeenCalled();
@@ -85,9 +83,8 @@ describe('CreateAttendance usecase unit test', () => {
 
   it('should pass the correct entity to repository.create', async () => {
     repository.find.mockResolvedValueOnce(null);
-    policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-    await usecase.execute(input, policieService, token);
+    await usecase.execute(input, token);
 
     expect(repository.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -104,9 +101,8 @@ describe('CreateAttendance usecase unit test', () => {
     const expectedId = 'some-id';
     repository.find.mockResolvedValueOnce(null);
     repository.create.mockResolvedValueOnce(expectedId);
-    policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-    const result = await usecase.execute(input, policieService, token);
+    const result = await usecase.execute(input, token);
 
     expect(result.id).toEqual(expectedId);
   });

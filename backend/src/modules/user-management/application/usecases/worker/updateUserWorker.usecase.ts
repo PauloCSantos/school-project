@@ -5,12 +5,11 @@ import {
 } from '../../dto/worker-usecase.dto';
 import UserWorkerGateway from '@/modules/user-management/application/gateway/worker.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class UpdateUserWorker
   implements
@@ -18,23 +17,21 @@ export default class UpdateUserWorker
 {
   private _userWorkerRepository: UserWorkerGateway;
 
-  constructor(userWorkerRepository: UserWorkerGateway) {
+  constructor(
+    userWorkerRepository: UserWorkerGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._userWorkerRepository = userWorkerRepository;
   }
   async execute(
     { id, name, address, email, birthday, salary }: UpdateUserWorkerInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<UpdateUserWorkerOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.WORKER,
-        FunctionCalledEnum.UPDATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.WORKER,
+      FunctionCalledEnum.UPDATE,
+      token
+    );
 
     const userAdm = await this._userWorkerRepository.find(id);
     if (!userAdm) throw new Error('User not found');

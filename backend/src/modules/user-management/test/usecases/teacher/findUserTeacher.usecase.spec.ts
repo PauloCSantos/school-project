@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import FindUserTeacher from '@/modules/user-management/application/usecases/teacher/findUserTeacher.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
@@ -30,7 +31,7 @@ describe('findUserTeacher usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -58,12 +59,13 @@ describe('findUserTeacher usecase unit test', () => {
     it('should find an user teacher', async () => {
       const userTeacherRepository = MockRepository();
       userTeacherRepository.find.mockResolvedValue(userTeacher1);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new FindUserTeacher(userTeacherRepository);
+      const usecase = new FindUserTeacher(
+        userTeacherRepository,
+        policieService
+      );
 
       const result = await usecase.execute(
         { id: userTeacher1.id.value },
-        policieService,
         token
       );
 
@@ -73,14 +75,15 @@ describe('findUserTeacher usecase unit test', () => {
     it('should return undefined when id is not found', async () => {
       const userTeacherRepository = MockRepository();
       userTeacherRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindUserTeacher(userTeacherRepository);
+      const usecase = new FindUserTeacher(
+        userTeacherRepository,
+        policieService
+      );
       const result = await usecase.execute(
         {
           id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
         },
-        policieService,
         token
       );
 

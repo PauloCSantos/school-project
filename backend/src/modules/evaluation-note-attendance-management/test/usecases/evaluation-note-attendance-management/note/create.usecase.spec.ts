@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/create.usecase';
 import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
@@ -26,7 +27,7 @@ describe('createNote usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -42,13 +43,12 @@ describe('createNote usecase unit test', () => {
     it('should throw an error if the note already exists', async () => {
       const noteRepository = MockRepository();
       noteRepository.find.mockResolvedValue(note);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new CreateNote(noteRepository);
+      const usecase = new CreateNote(noteRepository, policieService);
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Note already exists');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Note already exists'
+      );
       expect(noteRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(noteRepository.create).not.toHaveBeenCalled();
     });
@@ -58,10 +58,9 @@ describe('createNote usecase unit test', () => {
     it('should create a note', async () => {
       const noteRepository = MockRepository();
       noteRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new CreateNote(noteRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new CreateNote(noteRepository, policieService);
+      const result = await usecase.execute(input, token);
 
       expect(noteRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(noteRepository.create).toHaveBeenCalled();

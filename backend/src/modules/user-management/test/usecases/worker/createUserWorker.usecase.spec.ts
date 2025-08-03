@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateUserWorker from '@/modules/user-management/application/usecases/worker/createUserWorker.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
@@ -32,7 +33,7 @@ describe('createUserWorker usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -70,16 +71,16 @@ describe('createUserWorker usecase unit test', () => {
       const emailAuthValidatorService = MockEmailAuthValidatorService();
 
       userWorkerRepository.findByEmail.mockResolvedValue(userWorker);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       const usecase = new CreateUserWorker(
         userWorkerRepository,
-        emailAuthValidatorService
+        emailAuthValidatorService,
+        policieService
       );
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('User already exists');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'User already exists'
+      );
       expect(userWorkerRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)
       );
@@ -94,15 +95,15 @@ describe('createUserWorker usecase unit test', () => {
     it('should create a user worker', async () => {
       const userWorkerRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       userWorkerRepository.findByEmail.mockResolvedValue(null);
 
       const usecase = new CreateUserWorker(
         userWorkerRepository,
-        emailAuthValidatorService
+        emailAuthValidatorService,
+        policieService
       );
-      const result = await usecase.execute(input, policieService, token);
+      const result = await usecase.execute(input, token);
 
       expect(userWorkerRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)

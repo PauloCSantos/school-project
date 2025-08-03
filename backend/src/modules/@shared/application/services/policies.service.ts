@@ -1,11 +1,7 @@
-import {
-  FunctionCalled,
-  ModulesName,
-  RoleUsers,
-  RoleUsersEnum,
-} from '../../type/sharedTypes';
+import { RoleUsersEnum } from '../../enums/enums';
+import { FunctionCalled, ModulesName, RoleUsers } from '../../type/sharedTypes';
 
-export enum PermissionType {
+enum PermissionType {
   ALLOW = 'allow',
   DENY = 'deny',
   SELF = 'self',
@@ -23,13 +19,32 @@ type PolicyData = {
   targetRole?: RoleUsers;
 };
 
+class AccessDeniedException extends Error {
+  constructor(
+    public readonly module: ModulesName,
+    public readonly action: FunctionCalled,
+    public readonly reason: string,
+    public readonly userRole?: RoleUsers
+  ) {
+    super(`Access denied for ${module}.${action}: ${reason}`);
+    this.name = 'AccessDeniedException';
+  }
+}
+
+class UnauthorizedException extends Error {
+  constructor(message: string = 'User not authenticated') {
+    super(message);
+    this.name = 'UnauthorizedException';
+  }
+}
+
 export interface PoliciesServiceInterface {
   verifyPolicies(
     module: ModulesName,
     action: FunctionCalled,
     userToken?: TokenProps,
     data?: PolicyData
-  ): Promise<boolean>;
+  ): Promise<void>;
 }
 
 export class PoliciesService implements PoliciesServiceInterface {
@@ -40,44 +55,89 @@ export class PoliciesService implements PoliciesServiceInterface {
     action: FunctionCalled,
     userToken?: TokenProps,
     data?: PolicyData
-  ): Promise<boolean> {
+  ): Promise<void> {
     if (!userToken) {
       if (
         module === 'authuser' &&
         action === 'create' &&
         data?.targetRole === RoleUsersEnum.MASTER
       ) {
-        return true;
+        return;
       }
-      return false;
+      throw new UnauthorizedException(
+        'Authentication required for this operation'
+      );
     }
-    if (userToken.role === RoleUsersEnum.MASTER) return true;
+
+    if (userToken.role === RoleUsersEnum.MASTER) {
+      return;
+    }
 
     this._policies = this.loadPolicies(userToken.role);
 
     const modulePolicies = this._policies[module];
-    if (!modulePolicies) return false;
+    if (!modulePolicies) {
+      throw new AccessDeniedException(
+        module,
+        action,
+        `Module '${module}' not accessible for role '${userToken.role}'`,
+        userToken.role
+      );
+    }
 
     const permission = modulePolicies[action];
-    if (!permission) return false;
+    if (!permission) {
+      throw new AccessDeniedException(
+        module,
+        action,
+        `Action '${action}' not permitted for role '${userToken.role}' in module '${module}'`,
+        userToken.role
+      );
+    }
 
     switch (permission) {
       case PermissionType.ALLOW:
       case true:
-        return true;
+        return;
 
       case PermissionType.DENY:
       case false:
-        return false;
+        throw new AccessDeniedException(
+          module,
+          action,
+          `Explicitly denied for role '${userToken.role}'`,
+          userToken.role
+        );
 
       case PermissionType.SELF:
-        return data?.targetEmail === userToken.email;
+        if (data?.targetEmail !== userToken.email) {
+          throw new AccessDeniedException(
+            module,
+            action,
+            `Self-only permission: can only access own resources`,
+            userToken.role
+          );
+        }
+        return;
 
       case PermissionType.EXCEPT_MASTER:
-        return data?.targetRole !== RoleUsersEnum.MASTER;
+        if (data?.targetRole === RoleUsersEnum.MASTER) {
+          throw new AccessDeniedException(
+            module,
+            action,
+            `Cannot perform action on MASTER role`,
+            userToken.role
+          );
+        }
+        return;
 
       default:
-        return false;
+        throw new AccessDeniedException(
+          module,
+          action,
+          `Unknown permission type: ${permission}`,
+          userToken.role
+        );
     }
   }
 

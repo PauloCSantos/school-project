@@ -3,7 +3,8 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import UpdateEvent from '@/modules/event-calendar-management/application/usecases/event/update.usecase';
 import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
+import EventGateway from '@/modules/event-calendar-management/application/gateway/event.gateway';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('UpdateEvent usecase unit test', () => {
   let repository: jest.Mocked<EventGateway>;
@@ -64,10 +65,10 @@ describe('UpdateEvent usecase unit test', () => {
     event = new Event(input);
     repository = MockRepository();
     policieService = MockPolicyService();
-    usecase = new UpdateEvent(repository);
+    usecase = new UpdateEvent(repository, policieService);
     token = {
       email: 'caller@domain.com',
-      role: 'master',
+      role: RoleUsersEnum.MASTER,
       masterId: new Id().value,
     };
   });
@@ -79,7 +80,6 @@ describe('UpdateEvent usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the event does not exist', async () => {
       repository.find.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       const notFoundId = '75c791ca-7a40-4217-8b99-2cf22c01d543';
 
@@ -89,7 +89,6 @@ describe('UpdateEvent usecase unit test', () => {
             ...dataToUpdate,
             id: notFoundId,
           },
-          policieService,
           token
         )
       ).rejects.toThrow('Event not found');
@@ -102,14 +101,12 @@ describe('UpdateEvent usecase unit test', () => {
   describe('On success', () => {
     it('should update an event', async () => {
       repository.find.mockResolvedValue(event);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       const result = await usecase.execute(
         {
           id: event.id.value,
           ...dataToUpdate,
         },
-        policieService,
         token
       );
 
@@ -129,7 +126,6 @@ describe('UpdateEvent usecase unit test', () => {
 
     it('should only update the provided fields', async () => {
       repository.find.mockResolvedValue(event);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       const partialUpdate = { hour: '10:00' as Hour };
 
@@ -138,7 +134,6 @@ describe('UpdateEvent usecase unit test', () => {
           id: event.id.value,
           ...partialUpdate,
         },
-        policieService,
         token
       );
 

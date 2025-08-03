@@ -5,11 +5,10 @@ import FindAllNote from '../../application/usecases/note/find-all.usecase';
 import FindNote from '../../application/usecases/note/find.usecase';
 import UpdateNote from '../../application/usecases/note/update.usecase';
 import NoteController from '../../interface/controller/note.controller';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('NoteController unit test', () => {
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
   // Mock the usecases directly
   const mockCreateNote: jest.Mocked<CreateNote> = {
@@ -45,13 +44,9 @@ describe('NoteController unit test', () => {
 
   // For create, the output should match the expected interface
   const createOutput = { id: id };
-
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -75,15 +70,12 @@ describe('NoteController unit test', () => {
       message: 'Operação concluída com sucesso',
     });
 
-    policieService = MockPolicyService();
-
     controller = new NoteController(
       mockCreateNote,
       mockFindNote,
       mockFindAllNote,
       mockUpdateNote,
-      mockDeleteNote,
-      policieService
+      mockDeleteNote
     );
   });
 
@@ -97,11 +89,7 @@ describe('NoteController unit test', () => {
     const result = await controller.create(createInput, token);
 
     expect(mockCreateNote.execute).toHaveBeenCalledTimes(1);
-    expect(mockCreateNote.execute).toHaveBeenCalledWith(
-      createInput,
-      policieService,
-      token
-    );
+    expect(mockCreateNote.execute).toHaveBeenCalledWith(createInput, token);
     expect(result).toEqual(createOutput);
   });
 
@@ -110,11 +98,7 @@ describe('NoteController unit test', () => {
     const result = await controller.find(findInput, token);
 
     expect(mockFindNote.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindNote.execute).toHaveBeenCalledWith(
-      findInput,
-      policieService,
-      token
-    );
+    expect(mockFindNote.execute).toHaveBeenCalledWith(findInput, token);
     expect(result).toEqual(noteData);
   });
 
@@ -123,11 +107,7 @@ describe('NoteController unit test', () => {
     const result = await controller.findAll(findAllInput, token);
 
     expect(mockFindAllNote.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindAllNote.execute).toHaveBeenCalledWith(
-      findAllInput,
-      policieService,
-      token
-    );
+    expect(mockFindAllNote.execute).toHaveBeenCalledWith(findAllInput, token);
     expect(result).toBeDefined();
     expect(result.length).toBe(2);
   });
@@ -140,11 +120,7 @@ describe('NoteController unit test', () => {
     const result = await controller.update(updateInput, token);
 
     expect(mockUpdateNote.execute).toHaveBeenCalledTimes(1);
-    expect(mockUpdateNote.execute).toHaveBeenCalledWith(
-      updateInput,
-      policieService,
-      token
-    );
+    expect(mockUpdateNote.execute).toHaveBeenCalledWith(updateInput, token);
     expect(result).toEqual(noteData);
   });
 
@@ -153,11 +129,7 @@ describe('NoteController unit test', () => {
     const result = await controller.delete(deleteInput, token);
 
     expect(mockDeleteNote.execute).toHaveBeenCalledTimes(1);
-    expect(mockDeleteNote.execute).toHaveBeenCalledWith(
-      deleteInput,
-      policieService,
-      token
-    );
+    expect(mockDeleteNote.execute).toHaveBeenCalledWith(deleteInput, token);
     expect(result).toEqual({ message: 'Operação concluída com sucesso' });
   });
 });
