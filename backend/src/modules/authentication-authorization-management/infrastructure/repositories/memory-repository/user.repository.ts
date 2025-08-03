@@ -7,14 +7,19 @@ import AuthUserGateway from '../../../application/gateway/user.gateway';
  * Useful for testing and development purposes.
  */
 export default class MemoryAuthUserRepository implements AuthUserGateway {
-  private _authUser: AuthUser[];
+  private _authUser: Map<string, AuthUser>;
 
   /**
    * Creates a new in-memory repository.
    * @param authUser - Optional initial array of authentication users
    */
   constructor(authUser?: AuthUser[]) {
-    authUser ? (this._authUser = authUser) : (this._authUser = []);
+    this._authUser = new Map<string, AuthUser>();
+    if (authUser) {
+      for (const user of authUser) {
+        this._authUser.set(user.email, user);
+      }
+    }
   }
 
   /**
@@ -23,12 +28,7 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
    * @returns Promise resolving to the found AuthUser or null if not found
    */
   async find(email: string): Promise<AuthUser | null> {
-    const authUser = this._authUser.find(authUser => authUser.email === email);
-    if (authUser) {
-      return authUser;
-    } else {
-      return null;
-    }
+    return this._authUser.get(email) ?? null;
   }
 
   /**
@@ -36,11 +36,9 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
    * @param authUser - The user entity to be created
    * @returns Promise resolving to an object containing the email and masterId of the created user
    */
-  async create(
-    authUser: AuthUser
-  ): Promise<{ email: string; masterId: string }> {
-    this._authUser.push(authUser);
-    return { email: authUser.email, masterId: authUser.masterId };
+  async create(authUser: AuthUser): Promise<{ email: string }> {
+    this._authUser.set(authUser.email, authUser);
+    return { email: authUser.email };
   }
 
   /**
@@ -51,35 +49,35 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
    * @throws Error if the user is not found
    */
   async update(authUser: AuthUser, email: string): Promise<AuthUser> {
-    const authUserIndex = this._authUser.findIndex(
-      dbAuthUser => dbAuthUser.email === email
-    );
-    if (authUserIndex !== -1) {
-      return (this._authUser[authUserIndex] = authUser);
-    } else {
+    if (!this._authUser.has(email)) {
       throw new Error('AuthUser not found');
     }
+    this._authUser.set(email, authUser);
+    return authUser;
   }
 
   /**
-   * Deletes a user by their email address.
-   * @param email - The email address of the user to delete
+   * Deactivate a user by their email address.
+   * @param email - The email address of the user to deactivate
    * @returns Promise resolving to a success message
    * @throws Error if the user is not found
    */
   async delete(email: string): Promise<string> {
-    const authUserIndex = this._authUser.findIndex(
-      dbAuthUser => dbAuthUser.email === email
-    );
-    if (authUserIndex !== -1) {
-      this._authUser.splice(authUserIndex, 1);
-      return 'Operação concluída com sucesso';
-    } else {
+    let user = this._authUser.get(email);
+    if (!user) {
       throw new Error('AuthUser not found');
     }
+    user.deactivate();
+    this._authUser.set(email, user);
+    return 'Operação concluída com sucesso';
   }
 
+  /**
+   * Verifies whether a user exists by email.
+   * @param email - The email address to verify
+   * @returns Promise resolving to true if exists, false otherwise
+   */
   async verify(email: string): Promise<boolean> {
-    return this._authUser.some(authUser => authUser.email === email);
+    return this._authUser.has(email);
   }
 }

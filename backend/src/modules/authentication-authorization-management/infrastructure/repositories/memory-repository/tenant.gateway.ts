@@ -36,6 +36,18 @@ export default class MemoryTenantRepository implements TenantGateway {
   }
 
   /**
+   * Finds tenants by its Email.
+   * @param email - The email of the tenants to find
+   * @returns Promise resolving to the arrya of found Tenants
+   */
+  async findByEmail(email: string): Promise<Tenant[]> {
+    return Array.from(this._tenants.values()).filter(tenant => {
+      const roles = tenant.tenantUserRolesMap.get(email);
+      return Array.isArray(roles) && roles.length > 0;
+    });
+  }
+
+  /**
    * Updates a tenant's CNPJ.
    * @param id - The ID of the tenant to update
    * @param cnpj - The new CNPJ value

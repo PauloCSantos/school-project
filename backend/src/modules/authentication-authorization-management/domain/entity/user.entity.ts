@@ -1,65 +1,62 @@
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import {
-  isNotEmpty,
-  validEmail,
-  validId,
-  validRole,
-} from '@/modules/@shared/utils/validations';
-import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
-import { AuthUserServiceInterface } from '../../application/service/user-entity.service';
+import { AuthUserServiceInterface } from '../service/interface/user-entity-service.interface';
+import { isNotEmpty, validEmail } from '@/modules/@shared/utils/validations';
 
 /**
- * Properties required to create an authenticated user
+ * Properties required to create an authenticated user.
  */
 export type AuthUserProps = {
+  /** User's email address */
   email: string;
+  /** User's password (plaintext or already hashed if `isHashed` is true) */
   password: string;
-  masterId?: string;
-  role: RoleUsers;
+  /** Whether the user is active. Defaults to true if omitted. */
+  isActive?: boolean;
+  /** Whether the password is already hashed. Defaults to false if omitted. */
   isHashed?: boolean;
 };
 
 /**
- * Entity representing an authenticated user in the system
+ * Entity representing an authenticated user in the system.
  *
- * Responsible for validating and managing user credentials and access rights
+ * Responsible for validating and managing user credentials and access rights.
  */
 export default class AuthUser {
+  /** User's email address */
   private _email: string;
+  /** User's password or hashed password */
   private _password: string;
-  private _masterId: string;
-  private _role: RoleUsers;
+  /** Whether the user account is active */
+  private _isActive: boolean = true;
+  /** Whether the password is already hashed */
   private _isHashed: boolean;
-  private readonly _authService: AuthUserServiceInterface;
 
   /**
-   * Creates a new authenticated user
+   * Creates a new authenticated user.
    *
-   * @param input - User properties including email, password, role, and optional masterId
-   * @param authService - Service for password hashing and verification
-   * @throws Error if any required field is missing or invalid
+   * @param input - User properties including email, password, and optional flags.
+   * @param authService - Service for password hashing and verification.
+   * @throws Error if any required field is missing or invalid.
    */
-  constructor(input: AuthUserProps, authService: AuthUserServiceInterface) {
+  constructor(
+    input: AuthUserProps,
+    private readonly authService: AuthUserServiceInterface
+  ) {
     this.validateConstructorParams(input);
 
-    this._authService = authService;
     this._email = input.email;
-    this._role = input.role;
-    this._masterId =
-      input.masterId !== undefined ? input.masterId : new Id().value;
     this._password = input.password;
+    this._isActive = !!!input.isActive;
     this._isHashed = input.isHashed === true;
   }
 
   /**
-   * Validates all parameters provided to the constructor
+   * Validates all parameters provided to the constructor.
+   *
+   * @param input - The properties passed to constructor.
+   * @throws Error if email or password missing/invalid, or if isHashed is not boolean when provided.
    */
   private validateConstructorParams(input: AuthUserProps): void {
-    if (
-      input.email === undefined ||
-      input.password === undefined ||
-      input.role === undefined
-    ) {
+    if (input.email === undefined || input.password === undefined) {
       throw new Error('All fields are mandatory');
     }
 
@@ -71,32 +68,26 @@ export default class AuthUser {
       throw new Error('Field password is not valid');
     }
 
-    if (!validRole(input.role)) {
-      throw new Error('Field role is not valid');
-    }
-
-    if (input.masterId && !validId(input.masterId)) {
-      throw new Error('Field masterId is not valid');
-    }
-
-    if (input.role !== 'master' && input.masterId === undefined) {
-      throw new Error('The masterId field is mandatory for regular users');
-    }
-
     if (input.isHashed !== undefined && typeof input.isHashed !== 'boolean') {
       throw new Error('The field isHashed must be a boolean');
+    }
+
+    if (input.isActive !== undefined && typeof input.isActive !== 'boolean') {
+      throw new Error('The field isActive must be a boolean');
     }
   }
 
   /**
-   * User's email address
+   * Gets the user's email address.
    */
   get email(): string {
     return this._email;
   }
 
   /**
-   * Sets a new email address after validation
+   * Sets a new email address after validation.
+   *
+   * @throws Error if the provided email is invalid.
    */
   set email(input: string) {
     if (!this.validateEmail(input)) {
@@ -106,38 +97,16 @@ export default class AuthUser {
   }
 
   /**
-   * User's master ID (for hierarchical relationships)
-   */
-  get masterId(): string {
-    return this._masterId;
-  }
-
-  /**
-   * User's role in the system
-   */
-  get role(): RoleUsers {
-    return this._role;
-  }
-
-  /**
-   * Sets a new role after validation
-   */
-  set role(input: string) {
-    if (!validRole(input)) {
-      throw new Error('Field role is not valid');
-    }
-    this._role = input as RoleUsers;
-  }
-
-  /**
-   * Indicates if the password is stored as a hash
+   * Indicates if the password is stored as a hash.
    */
   get isHashed(): boolean {
     return this._isHashed;
   }
 
   /**
-   * Retrieves the password (only if hashed)
+   * Retrieves the password (only if hashed).
+   *
+   * @throws Error if the password is not hashed yet.
    */
   get password(): string {
     if (!this._isHashed) {
@@ -147,7 +116,10 @@ export default class AuthUser {
   }
 
   /**
-   * Sets a new password after validation
+   * Sets a new password after validation.
+   * Marks the password as not hashed.
+   *
+   * @throws Error if the provided password is invalid.
    */
   set password(input: string) {
     if (!this.validatePassword(input)) {
@@ -158,21 +130,44 @@ export default class AuthUser {
   }
 
   /**
-   * Hashes the password if not already hashed
+   * Hashes the password if not already hashed.
    */
   async hashPassword(): Promise<void> {
     if (!this._isHashed) {
-      this._password = await this._authService.generateHash(this._password);
+      this._password = await this.authService.generateHash(this._password);
       this._isHashed = true;
     }
   }
 
   /**
-   * Compares a plain text password with the stored hashed password
+   * Gets the active status of the user.
    *
-   * @param input - Plain text password to compare
-   * @returns True if the passwords match, false otherwise
-   * @throws Error if the password is not hashed or input is invalid
+   * @returns True if the user is active, false otherwise.
+   */
+  async getStatus(): Promise<boolean> {
+    return this._isActive;
+  }
+
+  /**
+   * Activates the user account.
+   */
+  async activate(): Promise<void> {
+    this._isActive = true;
+  }
+
+  /**
+   * Deactivates the user account.
+   */
+  async deactivate(): Promise<void> {
+    this._isActive = false;
+  }
+
+  /**
+   * Compares a plain text password with the stored hashed password.
+   *
+   * @param input - Plain text password to compare.
+   * @returns True if the passwords match, false otherwise.
+   * @throws Error if the password is not hashed or input is invalid.
    */
   async comparePassword(input: string): Promise<boolean> {
     if (!this.validatePassword(input)) {
@@ -183,18 +178,24 @@ export default class AuthUser {
       throw new Error('Use the method to hash before comparing');
     }
 
-    return this._authService.comparePassword(input, this._password);
+    return this.authService.comparePassword(input, this._password);
   }
 
   /**
-   * Validates an email string
+   * Validates an email string.
+   *
+   * @param input - The email string to validate.
+   * @returns True if the input is a non-empty valid email.
    */
   private validateEmail(input: string): boolean {
     return isNotEmpty(input) && validEmail(input);
   }
 
   /**
-   * Validates a password string
+   * Validates a password string.
+   *
+   * @param input - The password string to validate.
+   * @returns True if the password is non-empty.
    */
   private validatePassword(input: string): boolean {
     return isNotEmpty(input);

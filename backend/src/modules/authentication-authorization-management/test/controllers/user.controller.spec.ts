@@ -17,8 +17,8 @@ import FindAuthUser from '../../application/usecases/authUser/find-user.usecase'
 import LoginAuthUser from '../../application/usecases/authUser/login-user.usecase';
 import UpdateAuthUser from '../../application/usecases/authUser/update-user.usecase';
 import AuthUserController from '../../interface/controller/user.controller';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 const mockCreateAuthUser: jest.Mocked<CreateAuthUser> = {
   execute: jest.fn(),
@@ -42,7 +42,6 @@ const mockLoginAuthUser: jest.Mocked<LoginAuthUser> = {
 
 describe('AuthUserController unit test', () => {
   let controller: AuthUserController;
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
 
   const masterId = new Id().value;
@@ -52,17 +51,13 @@ describe('AuthUserController unit test', () => {
   const createInput: CreateAuthUserInputDto = {
     email,
     password,
-    masterId,
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
   };
   const createOutput: CreateAuthUserOutputDto = { email, masterId };
 
   const findInput: FindAuthUserInputDto = { email };
   const findOutput: FindAuthUserOutputDto = {
     email,
-    masterId,
-    role: 'master',
-    isHashed: true,
   };
 
   const updateInput: UpdateAuthUserInputDto = {
@@ -71,7 +66,7 @@ describe('AuthUserController unit test', () => {
   };
   const updateOutput: UpdateAuthUserOutputDto = {
     email,
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
   };
 
   const deleteInput: DeleteAuthUserInputDto = { email };
@@ -82,17 +77,14 @@ describe('AuthUserController unit test', () => {
   const loginInput: LoginAuthUserInputDto = {
     email,
     password,
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
   };
   const loginOutput: LoginAuthUserOutputDto = {
     token: 'mock_jwt_token_string',
   };
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -104,15 +96,13 @@ describe('AuthUserController unit test', () => {
     mockUpdateAuthUser.execute.mockResolvedValue(updateOutput);
     mockDeleteAuthUser.execute.mockResolvedValue(deleteOutput);
     mockLoginAuthUser.execute.mockResolvedValue(loginOutput);
-    policieService = MockPolicyService();
 
     controller = new AuthUserController(
       mockCreateAuthUser,
       mockFindAuthUser,
       mockUpdateAuthUser,
       mockDeleteAuthUser,
-      mockLoginAuthUser,
-      policieService
+      mockLoginAuthUser
     );
   });
 
@@ -120,11 +110,7 @@ describe('AuthUserController unit test', () => {
     const result = await controller.create(createInput, token);
 
     expect(mockCreateAuthUser.execute).toHaveBeenCalledTimes(1);
-    expect(mockCreateAuthUser.execute).toHaveBeenCalledWith(
-      createInput,
-      policieService,
-      token
-    );
+    expect(mockCreateAuthUser.execute).toHaveBeenCalledWith(createInput, token);
     expect(result).toEqual(createOutput);
   });
 
@@ -132,11 +118,7 @@ describe('AuthUserController unit test', () => {
     const result = await controller.find(findInput, token);
 
     expect(mockFindAuthUser.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindAuthUser.execute).toHaveBeenCalledWith(
-      findInput,
-      policieService,
-      token
-    );
+    expect(mockFindAuthUser.execute).toHaveBeenCalledWith(findInput, token);
     expect(result).toEqual(findOutput);
   });
 
@@ -146,11 +128,7 @@ describe('AuthUserController unit test', () => {
     const result = await controller.find(findInput, token);
 
     expect(mockFindAuthUser.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindAuthUser.execute).toHaveBeenCalledWith(
-      findInput,
-      policieService,
-      token
-    );
+    expect(mockFindAuthUser.execute).toHaveBeenCalledWith(findInput, token);
     expect(result).toBeNull();
   });
 
@@ -158,11 +136,7 @@ describe('AuthUserController unit test', () => {
     const result = await controller.update(updateInput, token);
 
     expect(mockUpdateAuthUser.execute).toHaveBeenCalledTimes(1);
-    expect(mockUpdateAuthUser.execute).toHaveBeenCalledWith(
-      updateInput,
-      policieService,
-      token
-    );
+    expect(mockUpdateAuthUser.execute).toHaveBeenCalledWith(updateInput, token);
     expect(result).toEqual(updateOutput);
   });
 
@@ -170,11 +144,7 @@ describe('AuthUserController unit test', () => {
     const result = await controller.delete(deleteInput, token);
 
     expect(mockDeleteAuthUser.execute).toHaveBeenCalledTimes(1);
-    expect(mockDeleteAuthUser.execute).toHaveBeenCalledWith(
-      deleteInput,
-      policieService,
-      token
-    );
+    expect(mockDeleteAuthUser.execute).toHaveBeenCalledWith(deleteInput, token);
     expect(result).toEqual(deleteOutput);
   });
 

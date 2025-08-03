@@ -17,7 +17,7 @@ export default interface AuthUserGateway {
    * @param authUser - The user entity to be created
    * @returns Promise resolving to an object containing the email and masterId of the created user
    */
-  create(authUser: AuthUser): Promise<{ email: string; masterId: string }>;
+  create(authUser: AuthUser): Promise<{ email: string }>;
 
   /**
    * Updates an existing user identified by email.

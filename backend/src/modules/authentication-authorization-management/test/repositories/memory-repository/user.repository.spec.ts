@@ -1,6 +1,5 @@
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import { AuthUserService } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 
 describe('MemoryAuthUserRepository unit test', () => {
@@ -10,7 +9,6 @@ describe('MemoryAuthUserRepository unit test', () => {
     {
       email: 'teste@teste.com.br',
       password: '123456',
-      role: 'master',
     },
     authUserService
   );
@@ -18,8 +16,6 @@ describe('MemoryAuthUserRepository unit test', () => {
     {
       email: 'teste2@teste.com.br',
       password: '123456',
-      role: 'administrator',
-      masterId: new Id().value,
     },
     authUserService
   );
@@ -27,7 +23,6 @@ describe('MemoryAuthUserRepository unit test', () => {
     {
       email: 'teste3@teste.com.br',
       password: '123456',
-      role: 'master',
     },
     authUserService
   );
@@ -49,7 +44,6 @@ describe('MemoryAuthUserRepository unit test', () => {
         {
           email: 'teste7@teste.com.br',
           password: '12345678',
-          role: 'master',
         },
         authUserService
       );
@@ -64,6 +58,11 @@ describe('MemoryAuthUserRepository unit test', () => {
         'AuthUser not found'
       );
     });
+
+    it('should return false when verifying a non-existent authUser', async () => {
+      const exists = await repository.verify('notfound@teste.com');
+      expect(exists).toBe(false);
+    });
   });
 
   describe('On success', () => {
@@ -73,15 +72,12 @@ describe('MemoryAuthUserRepository unit test', () => {
 
       expect(authUserFound).toBeDefined();
       expect(authUserFound!.email).toBe(authUser1.email);
-      expect(authUserFound!.masterId).toBe(authUser1.masterId);
-      expect(authUserFound!.role).toBe(authUser1.role);
     });
 
     it('should create a new authUser and return its info', async () => {
       const result = await repository.create(authUser3);
 
       expect(result.email).toBe(authUser3.email);
-      expect(result.masterId).toBe(authUser3.masterId);
     });
 
     it('should update an existing authUser and persist changes', async () => {
@@ -90,8 +86,6 @@ describe('MemoryAuthUserRepository unit test', () => {
         {
           email: authUser2.email,
           password: authUser2.password,
-          role: 'teacher',
-          masterId: authUser2.masterId,
           isHashed: authUser2.isHashed,
         },
         authUserService
@@ -99,10 +93,9 @@ describe('MemoryAuthUserRepository unit test', () => {
 
       const result = await repository.update(updatedAuthUser, authUser2.email);
       expect(result).toBeDefined();
-      expect(result.role).toBe('teacher');
 
       const persisted = await repository.find(authUser2.email);
-      expect(persisted?.role).toBe('teacher');
+      expect(persisted).toBeDefined();
     });
 
     it('should delete an existing authUser', async () => {
@@ -110,7 +103,19 @@ describe('MemoryAuthUserRepository unit test', () => {
 
       expect(response).toBe('Operação concluída com sucesso');
       const deletedUser = await repository.find(authUser1.email);
-      expect(deletedUser).toBeNull();
+      expect(await deletedUser?.getStatus()).toBeFalsy();
+    });
+
+    it('should verify an existing authUser', async () => {
+      const exists = await repository.verify(authUser1.email);
+      expect(exists).toBe(true);
+    });
+
+    it('should persist the new authUser after creation', async () => {
+      await repository.create(authUser3);
+      const found = await repository.find(authUser3.email);
+      expect(found).not.toBeNull();
+      expect(found?.email).toBe(authUser3.email);
     });
   });
 });
