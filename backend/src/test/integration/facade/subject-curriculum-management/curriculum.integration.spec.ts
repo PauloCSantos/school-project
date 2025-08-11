@@ -1,4 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CurriculumFacadeFactory from '@/modules/subject-curriculum-management/application/factory/curriculum.factory';
 
@@ -21,7 +22,7 @@ describe('Curriculum facade integration test', () => {
   const token: TokenData = {
     email: 'teste@teste.com.br',
     masterId: 'validID',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
   };
 
   it('should create an Curriculum using the facade', async () => {

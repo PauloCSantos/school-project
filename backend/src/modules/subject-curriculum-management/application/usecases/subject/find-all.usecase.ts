@@ -3,37 +3,34 @@ import {
   FindAllSubjectInputDto,
   FindAllSubjectOutputDto,
 } from '../../dto/subject-usecase.dto';
-import SubjectGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/subject.gateway';
+import SubjectGateway from '@/modules/subject-curriculum-management/application/gateway/subject.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class FindAllSubject
   implements UseCaseInterface<FindAllSubjectInputDto, FindAllSubjectOutputDto>
 {
   private _subjectRepository: SubjectGateway;
 
-  constructor(subjectRepository: SubjectGateway) {
+  constructor(
+    subjectRepository: SubjectGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._subjectRepository = subjectRepository;
   }
   async execute(
     { offset, quantity }: FindAllSubjectInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<FindAllSubjectOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.SUBJECT,
-        FunctionCalledEnum.FIND_ALL,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.SUBJECT,
+      FunctionCalledEnum.FIND_ALL,
+      token
+    );
 
     const results = await this._subjectRepository.findAll(quantity, offset);
 

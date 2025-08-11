@@ -1,4 +1,4 @@
-import UserStudentGateway from '../../gateway/student.gateway';
+import UserStudentGateway from '../../../application/gateway/student.gateway';
 import UserStudent from '@/modules/user-management/domain/entity/student.entity';
 
 export default class MemoryUserStudentRepository implements UserStudentGateway {

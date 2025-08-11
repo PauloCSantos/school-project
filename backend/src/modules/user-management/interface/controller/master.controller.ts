@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateUserMasterInputDto,
   CreateUserMasterOutputDto,
@@ -16,41 +15,28 @@ export class UserMasterController {
   constructor(
     private readonly createUserMaster: CreateUserMaster,
     private readonly findUserMaster: FindUserMaster,
-    private readonly updateUserMaster: UpdateUserMaster,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly updateUserMaster: UpdateUserMaster
   ) {}
 
   async create(
     input: CreateUserMasterInputDto,
     token: TokenData
   ): Promise<CreateUserMasterOutputDto> {
-    const response = await this.createUserMaster.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createUserMaster.execute(input, token);
     return response;
   }
   async find(
     input: FindUserMasterInputDto,
     token: TokenData
   ): Promise<FindUserMasterOutputDto | null> {
-    const response = await this.findUserMaster.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findUserMaster.execute(input, token);
     return response;
   }
   async update(
     input: UpdateUserMasterInputDto,
     token: TokenData
   ): Promise<UpdateUserMasterOutputDto> {
-    const response = await this.updateUserMaster.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateUserMaster.execute(input, token);
     return response;
   }
 }

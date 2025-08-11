@@ -17,7 +17,7 @@ import {
   FunctionCalledEnum,
   StatusCodeEnum,
   StatusMessageEnum,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export class UserAdministratorRoute {
   constructor(

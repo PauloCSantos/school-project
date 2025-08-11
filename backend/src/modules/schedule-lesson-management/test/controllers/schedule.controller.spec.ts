@@ -8,11 +8,10 @@ import UpdateSchedule from '../../application/usecases/schedule/update.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import AddLessons from '../../application/usecases/schedule/add-lessons.usecase';
 import { ScheduleController } from '../../interface/controller/schedule.controller';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('ScheduleController unit test', () => {
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
 
   const mockCreateSchedule = jest.fn(() => {
@@ -77,12 +76,9 @@ describe('ScheduleController unit test', () => {
     } as unknown as RemoveLessons;
   });
 
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -93,7 +89,6 @@ describe('ScheduleController unit test', () => {
   const updateSchedule = mockUpdateSchedule();
   const addLessons = mockAddLessons();
   const removeLessons = mockRemoveLessons();
-  policieService = MockPolicyService();
 
   const controller = new ScheduleController(
     createSchedule,
@@ -102,8 +97,7 @@ describe('ScheduleController unit test', () => {
     updateSchedule,
     deleteSchedule,
     addLessons,
-    removeLessons,
-    policieService
+    removeLessons
   );
 
   it('should return a id for the new schedule created', async () => {

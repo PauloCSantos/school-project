@@ -5,11 +5,10 @@ import FindSubject from '../../application/usecases/subject/find.usecase';
 import UpdateSubject from '../../application/usecases/subject/update.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { SubjectController } from '../../interface/controller/subject.controller';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('SubjectController unit test', () => {
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
 
   const mockCreateSubject = jest.fn(() => {
@@ -46,13 +45,9 @@ describe('SubjectController unit test', () => {
       }),
     } as unknown as DeleteSubject;
   });
-
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -61,15 +56,13 @@ describe('SubjectController unit test', () => {
   const findAllSubject = mockFindAllSubject();
   const findSubject = mockFindSubject();
   const updateSubject = mockUpdateSubject();
-  policieService = MockPolicyService();
 
   const controller = new SubjectController(
     createSubject,
     findSubject,
     findAllSubject,
     updateSubject,
-    deleteSubject,
-    policieService
+    deleteSubject
   );
 
   it('should return a id for the new subject created', async () => {

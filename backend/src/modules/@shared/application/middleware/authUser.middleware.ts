@@ -1,11 +1,12 @@
-import TokenServiceInterface from '../../infraestructure/services/token.service';
+import TokenServiceInterface from '../../../authentication-authorization-management/infrastructure/services/token.service';
 import { isNotEmpty } from '../../utils/validations';
 import {
   HttpRequest,
   HttpResponseData,
   HttpMiddleware,
 } from '../../infraestructure/http/http.interface';
-import { ErrorMessage, HttpStatus, RoleUsers } from '../../type/sharedTypes';
+import { RoleUsers } from '../../type/sharedTypes';
+import { ErrorMessage, HttpStatus } from '../../enums/enums';
 
 export default class AuthUserMiddleware
   implements HttpMiddleware<any, any, any, any>

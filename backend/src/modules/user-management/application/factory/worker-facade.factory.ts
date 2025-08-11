@@ -7,6 +7,7 @@ import FindAllUserWorker from '../usecases/worker/findAllUserWorker.usecase';
 import FindUserWorker from '../usecases/worker/findUserWorker.usecase';
 import UpdateUserWorker from '../usecases/worker/updateUserWorker.usecase';
 import { EmailAuthValidatorService } from '../services/email-auth-validator.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 export default class WorkerFacadeFactory {
   static create(): WorkerFacade {
@@ -15,14 +16,20 @@ export default class WorkerFacadeFactory {
     const emailValidatorService = new EmailAuthValidatorService(
       authUserRepository
     );
+    const policiesService = new PoliciesService();
+
     const createUserWorker = new CreateUserWorker(
       repository,
-      emailValidatorService
+      emailValidatorService,
+      policiesService
     );
-    const deleteUserWorker = new DeleteUserWorker(repository);
-    const findAllUserWorker = new FindAllUserWorker(repository);
-    const findUserWorker = new FindUserWorker(repository);
-    const updateUserWorker = new UpdateUserWorker(repository);
+    const deleteUserWorker = new DeleteUserWorker(repository, policiesService);
+    const findAllUserWorker = new FindAllUserWorker(
+      repository,
+      policiesService
+    );
+    const findUserWorker = new FindUserWorker(repository, policiesService);
+    const updateUserWorker = new UpdateUserWorker(repository, policiesService);
     const facade = new WorkerFacade({
       createUserWorker,
       deleteUserWorker,

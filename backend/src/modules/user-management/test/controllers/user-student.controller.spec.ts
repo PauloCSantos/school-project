@@ -1,4 +1,4 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import CreateUserStudent from '../../application/usecases/student/createUserStudent.usecase';
 import DeleteUserStudent from '../../application/usecases/student/deleteUserStudent.usecase';
 import FindAllUserStudent from '../../application/usecases/student/findAllUserStudent.usecase';
@@ -9,7 +9,6 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 describe('UserStudentController unit test', () => {
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
 
   const mockCreateUserStudent = jest.fn(() => {
@@ -103,12 +102,9 @@ describe('UserStudentController unit test', () => {
     } as unknown as DeleteUserStudent;
   });
 
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -117,15 +113,13 @@ describe('UserStudentController unit test', () => {
   const findAllUserStudent = mockFindAllUserStudent();
   const findUserStudent = mockFindUserStudent();
   const updateUserStudent = mockUpdateUserStudent();
-  policieService = MockPolicyService();
 
   const controller = new UserStudentController(
     createUserStudent,
     findUserStudent,
     findAllUserStudent,
     updateUserStudent,
-    deleteUserStudent,
-    policieService
+    deleteUserStudent
   );
 
   it('should return a id for the new user created', async () => {

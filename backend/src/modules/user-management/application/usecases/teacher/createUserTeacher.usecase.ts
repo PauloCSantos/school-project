@@ -4,18 +4,17 @@ import {
   CreateUserTeacherInputDto,
   CreateUserTeacherOutputDto,
 } from '../../dto/teacher-usecase.dto';
-import UserTeacherGateway from '@/modules/user-management/infrastructure/gateway/teacher.gateway';
+import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import { EmailAuthValidator } from '../../services/email-auth-validator.service';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class CreateUserTeacher
   implements
@@ -25,7 +24,8 @@ export default class CreateUserTeacher
 
   constructor(
     userTeacherRepository: UserTeacherGateway,
-    readonly emailValidatorService: EmailAuthValidator
+    readonly emailValidatorService: EmailAuthValidator,
+    private readonly policiesService: PoliciesServiceInterface
   ) {
     this._userTeacherRepository = userTeacherRepository;
   }
@@ -39,18 +39,13 @@ export default class CreateUserTeacher
       salary,
       academicDegrees,
     }: CreateUserTeacherInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<CreateUserTeacherOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.TEACHER,
-        FunctionCalledEnum.CREATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.TEACHER,
+      FunctionCalledEnum.CREATE,
+      token
+    );
 
     if (!(await this.emailValidatorService.validate(email))) {
       throw new Error('You must register this email before creating the user.');

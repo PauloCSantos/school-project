@@ -6,16 +6,15 @@ import {
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
-import UserAdministratorGateway from '@/modules/user-management/infrastructure/gateway/administrator.gateway';
+import UserAdministratorGateway from '@/modules/user-management/application/gateway/administrator.gateway';
 import UserAdministrator from '@/modules/user-management/domain/entity/administrator.entity';
 import { EmailAuthValidator } from '../../services/email-auth-validator.service';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class CreateUserAdministrator
   implements
@@ -28,7 +27,8 @@ export default class CreateUserAdministrator
 
   constructor(
     userAdministratorRepository: UserAdministratorGateway,
-    readonly emailValidatorService: EmailAuthValidator
+    private readonly emailValidatorService: EmailAuthValidator,
+    private readonly policiesService: PoliciesServiceInterface
   ) {
     this._userAdministratorRepository = userAdministratorRepository;
   }
@@ -41,18 +41,13 @@ export default class CreateUserAdministrator
       graduation,
       salary,
     }: CreateUserAdministratorInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<CreateUserAdministratorOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.ADMINISTRATOR,
-        FunctionCalledEnum.CREATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.ADMINISTRATOR,
+      FunctionCalledEnum.CREATE,
+      token
+    );
 
     if (!(await this.emailValidatorService.validate(email))) {
       throw new Error('You must register this email before creating the user.');

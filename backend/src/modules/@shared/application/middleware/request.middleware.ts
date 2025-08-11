@@ -1,10 +1,10 @@
+import { FunctionCalledEnum } from '../../enums/enums';
+import { validEmail, validId } from '../../utils/validations';
 import {
   HttpMiddleware,
   HttpRequest,
   HttpResponseData,
 } from '../../infraestructure/http/http.interface';
-import { FunctionCalledEnum } from '../../type/sharedTypes';
-import { validEmail, validId } from '../../utils/validations';
 
 enum errorStatus {
   BADREQUEST = 400,

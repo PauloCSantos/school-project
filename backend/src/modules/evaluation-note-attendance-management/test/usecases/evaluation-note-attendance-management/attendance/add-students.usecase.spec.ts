@@ -1,15 +1,16 @@
 import AddStudents from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/add-students.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
-import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
+import AttendanceGateway from '@/modules/evaluation-note-attendance-management/application/gateway/attendance.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('AddStudents use case unit test', () => {
   let attendance: Attendance;
   let token: TokenData;
   let input: { id: string; newStudentsList: string[] };
-  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let policiesService: jest.Mocked<PoliciesServiceInterface>;
 
   const MockRepository = (): jest.Mocked<AttendanceGateway> => {
     return {
@@ -45,10 +46,10 @@ describe('AddStudents use case unit test', () => {
       id: attendance.id.value,
       newStudentsList: [new Id().value, new Id().value],
     };
-    policieService = MockPolicyService();
+    policiesService = MockPolicyService();
     token = {
       email: 'caller@domain.com',
-      role: 'master',
+      role: RoleUsersEnum.MASTER,
       masterId: new Id().value,
     };
   });
@@ -61,23 +62,21 @@ describe('AddStudents use case unit test', () => {
     it('should throw an error if the attendance does not exist', async () => {
       const attendanceRepository = MockRepository();
       attendanceRepository.find.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new AddStudents(attendanceRepository);
+      const usecase = new AddStudents(attendanceRepository, policiesService);
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Attendance not found');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Attendance not found'
+      );
       expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
       expect(attendanceRepository.addStudent).not.toHaveBeenCalled();
     });
 
     it('should throw an error if the student already exists in the attendance', async () => {
       const attendanceRepository = MockRepository();
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
       attendanceRepository.find.mockResolvedValue(attendance);
 
-      const usecase = new AddStudents(attendanceRepository);
+      const usecase = new AddStudents(attendanceRepository, policiesService);
 
       await expect(
         usecase.execute(
@@ -85,7 +84,6 @@ describe('AddStudents use case unit test', () => {
             ...input,
             newStudentsList: [attendance.studentsPresent[0]],
           },
-          policieService,
           token
         )
       ).rejects.toThrow(`This student is already on the attendance`);
@@ -97,11 +95,10 @@ describe('AddStudents use case unit test', () => {
   describe('On success', () => {
     it('should add students to the attendance', async () => {
       const attendanceRepository = MockRepository();
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
       attendanceRepository.find.mockResolvedValue(attendance);
 
-      const usecase = new AddStudents(attendanceRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new AddStudents(attendanceRepository, policiesService);
+      const result = await usecase.execute(input, token);
 
       expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
       expect(attendanceRepository.addStudent).toHaveBeenCalledWith(
@@ -114,18 +111,13 @@ describe('AddStudents use case unit test', () => {
     it('should handle adding a single student correctly', async () => {
       const attendanceRepository = MockRepository();
       attendanceRepository.find.mockResolvedValue(attendance);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new AddStudents(attendanceRepository);
+      const usecase = new AddStudents(attendanceRepository, policiesService);
       const singleStudentInput = {
         id: input.id,
         newStudentsList: [new Id().value],
       };
-      const result = await usecase.execute(
-        singleStudentInput,
-        policieService,
-        token
-      );
+      const result = await usecase.execute(singleStudentInput, token);
 
       expect(attendanceRepository.find).toHaveBeenCalledWith(
         singleStudentInput.id

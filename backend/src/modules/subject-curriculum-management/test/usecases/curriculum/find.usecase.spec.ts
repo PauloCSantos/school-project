@@ -3,6 +3,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('findCurriculum usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -28,7 +29,7 @@ describe('findCurriculum usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -42,14 +43,9 @@ describe('findCurriculum usecase unit test', () => {
     it('should find a curriculum', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(curriculum1);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new FindCurriculum(curriculumRepository);
+      const usecase = new FindCurriculum(curriculumRepository, policieService);
 
-      const result = await usecase.execute(
-        { id: curriculum1.id.value },
-        policieService,
-        token
-      );
+      const result = await usecase.execute({ id: curriculum1.id.value }, token);
 
       expect(curriculumRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();
@@ -57,14 +53,12 @@ describe('findCurriculum usecase unit test', () => {
     it('should return undefined when id is not found', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindCurriculum(curriculumRepository);
+      const usecase = new FindCurriculum(curriculumRepository, policieService);
       const result = await usecase.execute(
         {
           id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
         },
-        policieService,
         token
       );
 

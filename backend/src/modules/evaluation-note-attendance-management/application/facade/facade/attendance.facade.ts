@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   AddStudentsInputDto,
   AddStudentsOutputDto,
@@ -36,7 +35,6 @@ type AttendanceFacadeProps = {
   readonly updateAttendance: UpdateAttendance;
   readonly addStudents: AddStudents;
   readonly removeStudents: RemoveStudents;
-  readonly policiesService: PoliciesServiceInterface;
 };
 
 /**
@@ -53,7 +51,6 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
   private readonly _updateAttendance: UpdateAttendance;
   private readonly _addStudents: AddStudents;
   private readonly _removeStudents: RemoveStudents;
-  private readonly _policiesService: PoliciesServiceInterface;
 
   /**
    * Creates a new instance of AttendanceFacade
@@ -67,7 +64,6 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
     this._updateAttendance = input.updateAttendance;
     this._addStudents = input.addStudents;
     this._removeStudents = input.removeStudents;
-    this._policiesService = input.policiesService;
   }
 
   /**
@@ -79,11 +75,7 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
     input: CreateAttendanceInputDto,
     token: TokenData
   ): Promise<CreateAttendanceOutputDto> {
-    return await this._createAttendance.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._createAttendance.execute(input, token);
   }
 
   /**
@@ -96,11 +88,7 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
     token: TokenData
   ): Promise<FindAttendanceOutputDto | null> {
     // Changed from undefined to null for better semantic meaning
-    const result = await this._findAttendance.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    const result = await this._findAttendance.execute(input, token);
     return result || null;
   }
 
@@ -113,11 +101,7 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
     input: FindAllAttendanceInputDto,
     token: TokenData
   ): Promise<FindAllAttendanceOutputDto> {
-    return await this._findAllAttendance.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._findAllAttendance.execute(input, token);
   }
 
   /**
@@ -129,11 +113,7 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
     input: DeleteAttendanceInputDto,
     token: TokenData
   ): Promise<DeleteAttendanceOutputDto> {
-    return await this._deleteAttendance.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._deleteAttendance.execute(input, token);
   }
 
   /**
@@ -145,11 +125,7 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
     input: UpdateAttendanceInputDto,
     token: TokenData
   ): Promise<UpdateAttendanceOutputDto> {
-    return await this._updateAttendance.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._updateAttendance.execute(input, token);
   }
 
   /**
@@ -161,7 +137,7 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
     input: AddStudentsInputDto,
     token: TokenData
   ): Promise<AddStudentsOutputDto> {
-    return await this._addStudents.execute(input, this._policiesService, token);
+    return await this._addStudents.execute(input, token);
   }
 
   /**
@@ -173,10 +149,6 @@ export default class AttendanceFacade implements AttendanceFacadeInterface {
     input: RemoveStudentsInputDto,
     token: TokenData
   ): Promise<RemoveStudentsOutputDto> {
-    return await this._removeStudents.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._removeStudents.execute(input, token);
   }
 }

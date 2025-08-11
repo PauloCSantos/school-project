@@ -12,18 +12,17 @@ export default class SubjectFacadeFactory {
     const repository = new MemorySubjectRepository();
     const policiesService = new PoliciesService();
 
-    const createSubject = new CreateSubject(repository);
-    const deleteSubject = new DeleteSubject(repository);
-    const findAllSubject = new FindAllSubject(repository);
-    const findSubject = new FindSubject(repository);
-    const updateSubject = new UpdateSubject(repository);
+    const createSubject = new CreateSubject(repository, policiesService);
+    const deleteSubject = new DeleteSubject(repository, policiesService);
+    const findAllSubject = new FindAllSubject(repository, policiesService);
+    const findSubject = new FindSubject(repository, policiesService);
+    const updateSubject = new UpdateSubject(repository, policiesService);
     const facade = new SubjectFacade({
       createSubject,
       deleteSubject,
       findAllSubject,
       findSubject,
       updateSubject,
-      policiesService,
     });
 
     return facade;

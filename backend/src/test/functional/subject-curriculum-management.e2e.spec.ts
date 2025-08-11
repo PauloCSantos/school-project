@@ -1,15 +1,21 @@
-import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import tokenInstance from '@/main/config/tokenService/token-service.instance';
-import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
+import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
+import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
+import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
 import MemorySubjectRepository from '@/modules/subject-curriculum-management/infrastructure/repositories/memory-repository/subject.repository';
-import MemoryCurriculumRepository from '@/modules/subject-curriculum-management/infrastructure/repositories/memory-repository/curriculum.repository';
 import CreateSubject from '@/modules/subject-curriculum-management/application/usecases/subject/create.usecase';
 import FindSubject from '@/modules/subject-curriculum-management/application/usecases/subject/find.usecase';
 import FindAllSubject from '@/modules/subject-curriculum-management/application/usecases/subject/find-all.usecase';
 import UpdateSubject from '@/modules/subject-curriculum-management/application/usecases/subject/update.usecase';
 import DeleteSubject from '@/modules/subject-curriculum-management/application/usecases/subject/delete.usecase';
+import { SubjectController } from '@/modules/subject-curriculum-management/interface/controller/subject.controller';
+import { SubjectRoute } from '@/modules/subject-curriculum-management/interface/route/subject.route';
+import MemoryCurriculumRepository from '@/modules/subject-curriculum-management/infrastructure/repositories/memory-repository/curriculum.repository';
 import CreateCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/create.usecase';
 import FindCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/find.usecase';
 import FindAllCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/find-all.usecase';
@@ -17,636 +23,752 @@ import UpdateCurriculum from '@/modules/subject-curriculum-management/applicatio
 import DeleteCurriculum from '@/modules/subject-curriculum-management/application/usecases/curriculum/delete.usecase';
 import AddSubjects from '@/modules/subject-curriculum-management/application/usecases/curriculum/add-subjects.usecase';
 import RemoveSubjects from '@/modules/subject-curriculum-management/application/usecases/curriculum/remove-subjects.usecase';
-import { SubjectController } from '@/modules/subject-curriculum-management/interface/controller/subject.controller';
 import { CurriculumController } from '@/modules/subject-curriculum-management/interface/controller/curriculum.controller';
-import { SubjectRoute } from '@/modules/subject-curriculum-management/interface/route/subject.route';
 import { CurriculumRoute } from '@/modules/subject-curriculum-management/interface/route/curriculum.route';
-import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+
+let tokenService: TokenService;
+
+async function makeToken(): Promise<string> {
+  const authService = new AuthUserService();
+  const authUser = new AuthUser(
+    {
+      email: 'subjectcurriculum@example.com',
+      password: 'StrongPass1!',
+      isHashed: false,
+      isActive: true,
+    },
+    authService
+  );
+  const masterId = new Id().value;
+  return tokenService.generateToken(
+    authUser as any,
+    masterId,
+    RoleUsersEnum.MASTER,
+    '30m'
+  );
+}
+
+async function authHeader() {
+  const token = await makeToken();
+  return { authorization: token };
+}
 
 describe('Subject curriculum management module end to end test', () => {
-  let subjectRepository = new MemorySubjectRepository();
-  let curriculumRepository = new MemoryCurriculumRepository();
+  let subjectRepository: MemorySubjectRepository;
+  let curriculumRepository: MemoryCurriculumRepository;
   let app: any;
+
   beforeEach(() => {
     subjectRepository = new MemorySubjectRepository();
     curriculumRepository = new MemoryCurriculumRepository();
-
-    const createSubjectUsecase = new CreateSubject(subjectRepository);
-    const findSubjectUsecase = new FindSubject(subjectRepository);
-    const findAllSubjectUsecase = new FindAllSubject(subjectRepository);
-    const updateSubjectUsecase = new UpdateSubject(subjectRepository);
-    const deleteSubjectUsecase = new DeleteSubject(subjectRepository);
-
-    const createCurriculumUsecase = new CreateCurriculum(curriculumRepository);
-    const findCurriculumUsecase = new FindCurriculum(curriculumRepository);
-    const findAllCurriculumUsecase = new FindAllCurriculum(
-      curriculumRepository
-    );
-    const updateCurriculumUsecase = new UpdateCurriculum(curriculumRepository);
-    const deleteCurriculumUsecase = new DeleteCurriculum(curriculumRepository);
-    const addSubjects = new AddSubjects(curriculumRepository);
-    const removeSubjects = new RemoveSubjects(curriculumRepository);
-
     const policiesService = new PoliciesService();
+
+    tokenService = new TokenService('e2e-secret');
+
+    const createSubjectUsecase = new CreateSubject(
+      subjectRepository,
+      policiesService
+    );
+    const findSubjectUsecase = new FindSubject(
+      subjectRepository,
+      policiesService
+    );
+    const findAllSubjectUsecase = new FindAllSubject(
+      subjectRepository,
+      policiesService
+    );
+    const updateSubjectUsecase = new UpdateSubject(
+      subjectRepository,
+      policiesService
+    );
+    const deleteSubjectUsecase = new DeleteSubject(
+      subjectRepository,
+      policiesService
+    );
 
     const subjectController = new SubjectController(
       createSubjectUsecase,
       findSubjectUsecase,
       findAllSubjectUsecase,
       updateSubjectUsecase,
-      deleteSubjectUsecase,
+      deleteSubjectUsecase
+    );
+
+    const createCurriculumUsecase = new CreateCurriculum(
+      curriculumRepository,
       policiesService
     );
+    const findCurriculumUsecase = new FindCurriculum(
+      curriculumRepository,
+      policiesService
+    );
+    const findAllCurriculumUsecase = new FindAllCurriculum(
+      curriculumRepository,
+      policiesService
+    );
+    const updateCurriculumUsecase = new UpdateCurriculum(
+      curriculumRepository,
+      policiesService
+    );
+    const deleteCurriculumUsecase = new DeleteCurriculum(
+      curriculumRepository,
+      policiesService
+    );
+    const addSubjectsUsecase = new AddSubjects(
+      curriculumRepository,
+      policiesService
+    );
+    const removeSubjectsUsecase = new RemoveSubjects(
+      curriculumRepository,
+      policiesService
+    );
+
     const curriculumController = new CurriculumController(
       createCurriculumUsecase,
       findCurriculumUsecase,
       findAllCurriculumUsecase,
       updateCurriculumUsecase,
       deleteCurriculumUsecase,
-      addSubjects,
-      removeSubjects,
-      policiesService
+      addSubjectsUsecase,
+      removeSubjectsUsecase
     );
 
     const expressHttp = new ExpressAdapter();
-    const tokerService = tokenInstance();
-
-    const authUserMiddlewareSubject = new AuthUserMiddleware(tokerService, [
-      'master',
-      'administrator',
+    const authMiddlewareSubject = new AuthUserMiddleware(tokenService, [
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
+      RoleUsersEnum.STUDENT,
+      RoleUsersEnum.TEACHER,
+      RoleUsersEnum.WORKER,
     ]);
-    const authUserMiddlewareCurriculum = new AuthUserMiddleware(tokerService, [
-      'master',
-      'administrator',
+    const authMiddlewareCurriculum = new AuthUserMiddleware(tokenService, [
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
+      RoleUsersEnum.STUDENT,
+      RoleUsersEnum.TEACHER,
+      RoleUsersEnum.WORKER,
     ]);
 
-    const subjectRoute = new SubjectRoute(
+    new SubjectRoute(
       subjectController,
       expressHttp,
-      authUserMiddlewareSubject
-    );
-    const curriculumRoute = new CurriculumRoute(
+      authMiddlewareSubject
+    ).routes();
+    new CurriculumRoute(
       curriculumController,
       expressHttp,
-      authUserMiddlewareCurriculum
-    );
+      authMiddlewareCurriculum
+    ).routes();
 
-    subjectRoute.routes();
-    curriculumRoute.routes();
     app = expressHttp.getNativeServer();
   });
 
   describe('Subject', () => {
     describe('On error', () => {
+      describe('MIDDLEWARE /subject', () => {
+        it('should return 401 when authorization header is missing', async () => {
+          const result = await supertest(app).get('/subjects');
+          expect(result.status).toBe(401);
+          expect(result.body).toBeDefined();
+        });
+
+        it('should return 401 when token is invalid', async () => {
+          const result = await supertest(app)
+            .get('/subjects')
+            .set('authorization', 'invalid');
+          expect(result.status).toBe(401);
+          expect(result.body).toBeDefined();
+        });
+      });
+
       describe('POST /subject', () => {
-        it('should throw an error when the data to create a user is wrong', async () => {
+        it('should return 400 when the data to create a subject is wrong', async () => {
+          const headers = await authHeader();
           const response = await supertest(app)
             .post('/subject')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              description: 'Des',
+              name: 123,
+              description: ['invalid'],
             });
           expect(response.status).toBe(400);
           expect(response.body.error).toBeDefined();
         });
       });
+
       describe('GET /subject/:id', () => {
-        it('should return empty string when the ID is wrong or non-standard', async () => {
-          await supertest(app)
-            .post('/subject')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              name: 'Math',
-              description: 'Described a subject',
-            });
-          const subject = await supertest(app)
-            .get(`/subject/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
-          expect(subject.status).toBe(400);
-          expect(subject.body.error).toBeDefined();
+        it('should return 400 when the ID is wrong or non-standard', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app).get('/subject/123').set(headers);
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when subject does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .get(`/subject/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(404);
+          expect(res.body.error).toBeDefined();
         });
       });
+
       describe('PATCH /subject', () => {
-        it('should throw an error when the data to update a subject is wrong', async () => {
-          const response = await supertest(app)
+        it('should return 400 when id is missing on body', async () => {
+          const headers = await authHeader();
+          const updated = await supertest(app)
+            .patch('/subject')
+            .set(headers)
+            .send({
+              name: 'No id',
+            });
+          expect(updated.status).toBe(400);
+          expect(updated.body.error).toBeDefined();
+        });
+
+        it('should return 400 when id is malformed', async () => {
+          const headers = await authHeader();
+          const updated = await supertest(app)
+            .patch('/subject')
+            .set(headers)
+            .send({
+              id: '123',
+              name: 'Bad id',
+            });
+          expect(updated.status).toBe(400);
+          expect(updated.body.error).toBeDefined();
+        });
+
+        it('should return 400 when the data to update a subject is wrong', async () => {
+          const headers = await authHeader();
+
+          const created = await supertest(app)
             .post('/subject')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
               name: 'Math',
               description: 'Described a subject',
             });
-          const id = response.body.id;
-          const updatedSubject = await supertest(app)
-            .patch(`/subject`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+
+          const updated = await supertest(app)
+            .patch('/subject')
+            .set(headers)
             .send({
-              id,
-              description: '',
+              id: created.body.id,
+              name: 999,
             });
-          expect(updatedSubject.status).toBe(400);
-          expect(updatedSubject.body.error).toBeDefined();
+          expect(updated.status).toBe(400);
+          expect(updated.body.error).toBeDefined();
+        });
+
+        it('should return 404 when trying to update a non-existent subject', async () => {
+          const headers = await authHeader();
+          const updated = await supertest(app)
+            .patch('/subject')
+            .set(headers)
+            .send({
+              id: new Id().value,
+              name: 'Edited',
+            });
+          expect(updated.status).toBe(400);
+          expect(updated.body.error).toBeDefined();
         });
       });
+
       describe('DELETE /subject/:id', () => {
-        it('should throw an error when the ID is wrong or non-standard', async () => {
-          await supertest(app)
-            .post('/subject')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              name: 'Math',
-              description: 'Described a subject',
-            });
-          const result = await supertest(app)
-            .delete(`/subject/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+        it('should return 400 when the ID is wrong or non-standard', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app).delete('/subject/123').set(headers);
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when trying to delete a non-existent subject', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .delete(`/subject/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
         });
       });
     });
-    describe('On sucess', () => {
+
+    describe('On success', () => {
+      describe('GET /subjects (empty state)', () => {
+        it('should return empty array when there are no subjects', async () => {
+          const headers = await authHeader();
+          const response = await supertest(app).get('/subjects').set(headers);
+          expect(response.status).toBe(200);
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body.length).toBe(0);
+        });
+      });
+
       describe('POST /subject', () => {
-        it('should create a user', async () => {
+        it('should create a subject', async () => {
+          const headers = await authHeader();
           const response = await supertest(app)
             .post('/subject')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              description: 'Described a subject',
+              name: 'Physics',
+              description: 'Classical mechanics',
             });
           expect(response.status).toBe(201);
+          expect(response.body).toBeDefined();
           expect(response.body.id).toBeDefined();
         });
       });
+
       describe('GET /subject/:id', () => {
-        it('should find a user by ID', async () => {
-          const response = await supertest(app)
+        it('should find a subject by ID', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
             .post('/subject')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              description: 'Described a subject',
+              name: 'Chemistry',
+              description: 'Organic chemistry',
             });
-          const id = response.body.id;
-          const subject = await supertest(app)
-            .get(`/subject/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
-          expect(subject.status).toBe(200);
-          expect(subject.body).toBeDefined();
+          const res = await supertest(app)
+            .get(`/subject/${created.body.id}`)
+            .set(headers);
+          expect(res.status).toBe(200);
+          expect(res.body).toBeDefined();
         });
       });
+
       describe('GET /subjects', () => {
-        it('should find all users', async () => {
-          await supertest(app)
-            .post('/subject')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              name: 'Math',
-              description: 'Described a subject',
-            });
-          await supertest(app)
-            .post('/subject')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              name: 'Math',
-              description: 'Described a subject',
-            });
-          const response = await supertest(app)
-            .get('/subjects')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
-          expect(response.status).toBe(200);
-          expect(response.body).toBeDefined();
-          expect(response.body.length).toBe(2);
+        it('should find all subjects', async () => {
+          const headers = await authHeader();
+          await supertest(app).post('/subject').set(headers).send({
+            name: 'Biology',
+            description: 'Cells and DNA',
+          });
+          await supertest(app).post('/subject').set(headers).send({
+            name: 'History',
+            description: 'World history',
+          });
+          const list = await supertest(app).get('/subjects').set(headers);
+          expect(list.status).toBe(200);
+          expect(Array.isArray(list.body)).toBe(true);
+          expect(list.body.length).toBe(2);
         });
       });
+
       describe('PATCH /subject', () => {
-        it('should update a user by ID', async () => {
-          const response = await supertest(app)
+        it('should update a subject by ID', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
             .post('/subject')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              description: 'Described a subject',
+              name: 'Geography',
+              description: 'Maps and climate',
             });
-          const id = response.body.id;
-          const updatedSubject = await supertest(app)
-            .patch(`/subject`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+          const updated = await supertest(app)
+            .patch('/subject')
+            .set(headers)
             .send({
-              id,
-              description: 'New describe',
+              id: created.body.id,
+              description: 'Maps and climates',
             });
-          expect(updatedSubject.status).toBe(200);
-          expect(updatedSubject.body).toBeDefined();
+          expect(updated.status).toBe(200);
+          expect(updated.body).toBeDefined();
         });
       });
+
       describe('DELETE /subject/:id', () => {
-        it('should delete a user by ID', async () => {
-          const response = await supertest(app)
+        it('should delete a subject by ID', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
             .post('/subject')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              description: 'Described a subject',
+              name: 'Philosophy',
+              description: 'Epistemology',
             });
-          const id = response.body.id;
-          const result = await supertest(app)
-            .delete(`/subject/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
-          expect(result.status).toBe(200);
-          expect(result.body.message).toBe('Operação concluída com sucesso');
+          const res = await supertest(app)
+            .delete(`/subject/${created.body.id}`)
+            .set(headers);
+          expect(res.status).toBe(200);
+          expect(res.body).toBeDefined();
         });
       });
     });
   });
+
   describe('Curriculum', () => {
     describe('On error', () => {
+      describe('MIDDLEWARE /curriculum', () => {
+        it('should return 401 when authorization header is missing', async () => {
+          const result = await supertest(app).get('/curriculums');
+          expect(result.status).toBe(401);
+          expect(result.body).toBeDefined();
+        });
+
+        it('should return 401 when token is invalid', async () => {
+          const result = await supertest(app)
+            .get('/curriculums')
+            .set('authorization', 'invalid');
+          expect(result.status).toBe(401);
+          expect(result.body).toBeDefined();
+        });
+      });
+
       describe('POST /curriculum', () => {
-        it('should throw an error when the data to create a curriculum is wrong', async () => {
+        it('should return 400 when the data to create a curriculum is wrong', async () => {
+          const headers = await authHeader();
           const response = await supertest(app)
             .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              subjectsList: [new Id().value, new Id().value, new Id().value],
-              yearsToComplete: 0,
+              name: 321,
+              yearsToComplete: 5,
+              subjectsList: [new Id().value],
             });
           expect(response.status).toBe(400);
           expect(response.body.error).toBeDefined();
         });
       });
+
       describe('GET /curriculum/:id', () => {
-        it('should return empty string when the ID is wrong or non-standard', async () => {
-          await supertest(app)
-            .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              name: 'Math',
-              subjectsList: [new Id().value, new Id().value, new Id().value],
-              yearsToComplete: 5,
-            });
-          const curriculum = await supertest(app)
-            .get(`/curriculum/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
-          expect(curriculum.status).toBe(400);
-          expect(curriculum.body.error).toBeDefined();
+        it('should return 400 when the ID is wrong or non-standard', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app).get('/curriculum/123').set(headers);
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when curriculum does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .get(`/curriculum/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(404);
+          expect(res.body.error).toBeDefined();
         });
       });
+
       describe('PATCH /curriculum', () => {
-        it('should throw an error when the data to update a user is wrong', async () => {
-          const response = await supertest(app)
-            .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+        it('should return 400 when id is missing on body', async () => {
+          const headers = await authHeader();
+          const updated = await supertest(app)
+            .patch('/curriculum')
+            .set(headers)
             .send({
-              name: 'Math',
-              subjectsList: [new Id().value, new Id().value, new Id().value],
+              name: 'No id',
+            });
+          expect(updated.status).toBe(400);
+          expect(updated.body.error).toBeDefined();
+        });
+
+        it('should return 400 when id is malformed', async () => {
+          const headers = await authHeader();
+          const updated = await supertest(app)
+            .patch('/curriculum')
+            .set(headers)
+            .send({
+              id: '123',
+              name: 'Bad id',
+            });
+          expect(updated.status).toBe(400);
+          expect(updated.body.error).toBeDefined();
+        });
+
+        it('should return 400 when the data to update a curriculum is wrong', async () => {
+          const headers = await authHeader();
+
+          const created = await supertest(app)
+            .post('/curriculum')
+            .set(headers)
+            .send({
+              name: 'Ensino Médio',
+              subjectsList: [new Id().value],
               yearsToComplete: 5,
             });
-          const id = response.body.id;
-          const updatedCurriculum = await supertest(app)
-            .patch(`/curriculum`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+
+          const updated = await supertest(app)
+            .patch('/curriculum')
+            .set(headers)
             .send({
-              id,
-              name: 'Ma',
-              yearsToComplete: -2,
+              id: created.body.id,
+              yearsToComplete: -999,
             });
-          expect(updatedCurriculum.status).toBe(400);
-          expect(updatedCurriculum.body.error).toBeDefined();
+          expect(updated.status).toBe(400);
+          expect(updated.body.error).toBeDefined();
         });
-      });
-      describe('DELETE /curriculum/:id', () => {
-        it('should throw an error when the ID is wrong or non-standard', async () => {
-          await supertest(app)
-            .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              name: 'Math',
-              subjectsList: [new Id().value, new Id().value, new Id().value],
-              yearsToComplete: 5,
-            });
-          const result = await supertest(app)
-            .delete(`/curriculum/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
-        });
-      });
-      describe('POST /curriculum/subject/add', () => {
-        it('should throw an error when the subject`ID is incorrect', async () => {
-          const response = await supertest(app)
-            .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              name: 'Math',
-              subjectsList: [new Id().value, new Id().value, new Id().value],
-              yearsToComplete: 5,
-            });
-          const id = response.body.id;
-          const result = await supertest(app)
-            .post('/curriculum/subject/add')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              id: id,
-              newSubjectsList: ['123'],
-            });
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
-        });
-      });
-      describe('POST /curriculum/subject/remove', () => {
-        it('should throw an error when the ID is incorrect', async () => {
-          const input = {
-            name: 'Math',
-            subjectsList: [new Id().value, new Id().value, new Id().value],
-            yearsToComplete: 5,
-          };
-          await supertest(app)
-            .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send(input);
-          const result = await supertest(app)
-            .post('/curriculum/subject/remove')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+
+        it('should return 404 when trying to update a non-existent curriculum', async () => {
+          const headers = await authHeader();
+          const updated = await supertest(app)
+            .patch('/curriculum')
+            .set(headers)
             .send({
               id: new Id().value,
-              subjectsListToRemove: input.subjectsList,
+              name: 'Updated',
             });
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+          expect(updated.status).toBe(400);
+          expect(updated.body.error).toBeDefined();
+        });
+      });
+
+      describe('DELETE /curriculum/:id', () => {
+        it('should return 400 when the ID is wrong or non-standard', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .delete('/curriculum/123')
+            .set(headers);
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when trying to delete a non-existent curriculum', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .delete(`/curriculum/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+      });
+
+      describe('POST /curriculum/subject/add', () => {
+        it('should return 400 when subjects list is invalid', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
+            .post('/curriculum')
+            .set(headers)
+            .send({
+              name: 'Grade 1',
+              subjectsList: [],
+              yearsToComplete: 9,
+            });
+          const res = await supertest(app)
+            .post('/curriculum/subject/add')
+            .set(headers)
+            .send({
+              id: created.body.id,
+              newSubjectsList: [123],
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when curriculum does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .post('/curriculum/subject/add')
+            .set(headers)
+            .send({
+              id: new Id().value,
+              newSubjectsList: [new Id().value],
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+      });
+
+      describe('POST /curriculum/subject/remove', () => {
+        it('should return 400 when subjects list is invalid', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
+            .post('/curriculum')
+            .set(headers)
+            .send({
+              name: 'Grade 2',
+              subjectsList: [new Id().value],
+              yearsToComplete: 5,
+            });
+          const res = await supertest(app)
+            .post('/curriculum/subject/remove')
+            .set(headers)
+            .send({
+              id: created.body.id,
+              subjectsListToRemove: [123],
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when curriculum does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .post('/curriculum/subject/remove')
+            .set(headers)
+            .send({
+              id: new Id().value,
+              subjectsListToRemove: [new Id().value],
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
         });
       });
     });
-    describe('On sucess', () => {
+
+    describe('On success', () => {
+      describe('GET /curriculums (empty state)', () => {
+        it('should return empty array when there are no curriculums', async () => {
+          const headers = await authHeader();
+          const response = await supertest(app)
+            .get('/curriculums')
+            .set(headers);
+          expect(response.status).toBe(200);
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body.length).toBe(0);
+        });
+      });
+
       describe('POST /curriculum', () => {
-        it('should create a user', async () => {
+        it('should create a curriculum', async () => {
+          const headers = await authHeader();
           const response = await supertest(app)
             .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              subjectsList: [new Id().value, new Id().value, new Id().value],
+              name: 'Fundamental I',
+              subjectsList: [new Id().value],
               yearsToComplete: 5,
             });
           expect(response.status).toBe(201);
+          expect(response.body).toBeDefined();
           expect(response.body.id).toBeDefined();
         });
       });
+
       describe('GET /curriculum/:id', () => {
-        it('should find a user by ID', async () => {
-          const response = await supertest(app)
+        it('should find a curriculum by ID', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
             .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              subjectsList: [new Id().value, new Id().value, new Id().value],
+              name: 'Fundamental II',
+              subjectsList: [new Id().value],
               yearsToComplete: 5,
             });
-          const id = response.body.id;
-          const curriculum = await supertest(app)
-            .get(`/curriculum/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
-          expect(curriculum.status).toBe(200);
-          expect(curriculum.body).toBeDefined();
+          const res = await supertest(app)
+            .get(`/curriculum/${created.body.id}`)
+            .set(headers);
+          expect(res.status).toBe(200);
+          expect(res.body).toBeDefined();
         });
       });
-      describe('GET /curriculums/', () => {
-        it('should find all users', async () => {
+
+      describe('GET /curriculums', () => {
+        it('should find all curriculums', async () => {
+          const headers = await authHeader();
           await supertest(app)
             .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              subjectsList: [new Id().value, new Id().value, new Id().value],
+              name: 'Grade A',
+              subjectsList: [new Id().value],
               yearsToComplete: 5,
             });
           await supertest(app)
             .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              subjectsList: [new Id().value, new Id().value, new Id().value],
+              name: 'Grade B',
+              subjectsList: [new Id().value],
               yearsToComplete: 5,
             });
-          const response = await supertest(app)
-            .get('/curriculums')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
-          expect(response.status).toBe(200);
-          expect(response.body).toBeDefined();
-          expect(response.body.length).toBe(2);
+          const list = await supertest(app).get('/curriculums').set(headers);
+          expect(list.status).toBe(200);
+          expect(Array.isArray(list.body)).toBe(true);
+          expect(list.body.length).toBe(2);
         });
       });
+
       describe('PATCH /curriculum', () => {
-        it('should update a user by ID', async () => {
-          const response = await supertest(app)
+        it('should update a curriculum by ID', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
             .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              subjectsList: [new Id().value, new Id().value, new Id().value],
+              name: 'Grade C',
+              subjectsList: [new Id().value],
               yearsToComplete: 5,
             });
-          const id = response.body.id;
-          const updatedCurriculum = await supertest(app)
-            .patch(`/curriculum`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+          const updated = await supertest(app)
+            .patch('/curriculum')
+            .set(headers)
             .send({
-              id,
-              name: 'Math II',
-              yearsToComplete: 8,
+              id: created.body.id,
+              description: 'C updated',
             });
-          expect(updatedCurriculum.status).toBe(200);
-          expect(updatedCurriculum.body).toBeDefined();
+          expect(updated.status).toBe(200);
+          expect(updated.body).toBeDefined();
         });
       });
+
       describe('DELETE /curriculum/:id', () => {
-        it('should delete a user by ID', async () => {
-          const response = await supertest(app)
+        it('should delete a curriculum by ID', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
             .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              subjectsList: [new Id().value, new Id().value, new Id().value],
+              name: 'Grade D',
+              subjectsList: [new Id().value],
               yearsToComplete: 5,
             });
-          const id = response.body.id;
-          const result = await supertest(app)
-            .delete(`/curriculum/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
-          expect(result.status).toBe(200);
-          expect(result.body.message).toBe('Operação concluída com sucesso');
+          const res = await supertest(app)
+            .delete(`/curriculum/${created.body.id}`)
+            .set(headers);
+          expect(res.status).toBe(200);
+          expect(res.body).toBeDefined();
         });
       });
+
       describe('POST /curriculum/subject/add', () => {
         it('should add subjects to the curriculum', async () => {
-          const response = await supertest(app)
+          const headers = await authHeader();
+          const created = await supertest(app)
             .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              name: 'Math',
-              subjectsList: [new Id().value, new Id().value, new Id().value],
+              name: 'Curriculum E',
+              subjectsList: [new Id().value],
               yearsToComplete: 5,
             });
-          const id = response.body.id;
-          const result = await supertest(app)
+          const res = await supertest(app)
             .post('/curriculum/subject/add')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              id: id,
-              newSubjectsList: [new Id().value],
+              id: created.body.id,
+              newSubjectsList: [new Id().value, new Id().value],
             });
-          expect(result.status).toBe(200);
-          expect(result.body).toBeDefined();
+          expect(res.status).toBe(200);
+          expect(res.body).toBeDefined();
         });
       });
+
       describe('POST /curriculum/subject/remove', () => {
         it('should remove subjects from the curriculum', async () => {
-          const input = {
-            name: 'Math',
-            subjectsList: [new Id().value, new Id().value, new Id().value],
-            yearsToComplete: 5,
-          };
-          const response = await supertest(app)
+          const headers = await authHeader();
+          const subA = new Id().value;
+          const created = await supertest(app)
             .post('/curriculum')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send(input);
-          const id = response.body.id;
-          const result = await supertest(app)
-            .post('/curriculum/subject/remove')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(headers)
             .send({
-              id: id,
-              subjectsListToRemove: input.subjectsList,
+              name: 'Curriculum F',
+              subjectsList: [subA, new Id().value],
+              yearsToComplete: 5,
             });
-          expect(result.status).toBe(200);
-          expect(result.body).toBeDefined();
+          const res = await supertest(app)
+            .post('/curriculum/subject/remove')
+            .set(headers)
+            .send({
+              id: created.body.id,
+              subjectsListToRemove: [subA],
+            });
+          expect(res.status).toBe(200);
+          expect(res.body).toBeDefined();
         });
       });
     });

@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import DeleteUserTeacher from '@/modules/user-management/application/usecases/teacher/deleteUserTeacher.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
@@ -30,7 +31,7 @@ describe('deleteUserTeacher usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -69,17 +70,15 @@ describe('deleteUserTeacher usecase unit test', () => {
   describe('On fail', () => {
     it('should return an error if the user does not exist', async () => {
       const userTeacherRepository = MockRepository();
-      userTeacherRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
+      userTeacherRepository.find.mockResolvedValue(null);
 
-      const usecase = new DeleteUserTeacher(userTeacherRepository);
+      const usecase = new DeleteUserTeacher(
+        userTeacherRepository,
+        policieService
+      );
 
       await expect(
-        usecase.execute(
-          { id: '75c791ca-7a40-4217-8b99-2cf22c01d543' },
-          policieService,
-          token
-        )
+        usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
       ).rejects.toThrow('User not found');
     });
   });
@@ -87,13 +86,14 @@ describe('deleteUserTeacher usecase unit test', () => {
     it('should delete a user teacher', async () => {
       const userTeacherRepository = MockRepository();
       userTeacherRepository.find.mockResolvedValue(userTeacher);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new DeleteUserTeacher(userTeacherRepository);
+      const usecase = new DeleteUserTeacher(
+        userTeacherRepository,
+        policieService
+      );
       const result = await usecase.execute(
         {
           id: userTeacher.id.value,
         },
-        policieService,
         token
       );
 

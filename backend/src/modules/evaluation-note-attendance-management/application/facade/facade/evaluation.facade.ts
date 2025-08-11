@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateEvaluationInputDto,
   CreateEvaluationOutputDto,
@@ -28,7 +27,6 @@ type EvaluationFacadeProps = {
   readonly findAllEvaluation: FindAllEvaluation;
   readonly findEvaluation: FindEvaluation;
   readonly updateEvaluation: UpdateEvaluation;
-  readonly policiesService: PoliciesServiceInterface;
 };
 
 /**
@@ -43,7 +41,6 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
   private readonly _findAllEvaluation: FindAllEvaluation;
   private readonly _findEvaluation: FindEvaluation;
   private readonly _updateEvaluation: UpdateEvaluation;
-  private readonly _policiesService: PoliciesServiceInterface;
 
   /**
    * Creates a new instance of EvaluationFacade
@@ -55,7 +52,6 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
     this._findAllEvaluation = input.findAllEvaluation;
     this._findEvaluation = input.findEvaluation;
     this._updateEvaluation = input.updateEvaluation;
-    this._policiesService = input.policiesService;
   }
 
   /**
@@ -67,11 +63,7 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
     input: CreateEvaluationInputDto,
     token: TokenData
   ): Promise<CreateEvaluationOutputDto> {
-    return await this._createEvaluation.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._createEvaluation.execute(input, token);
   }
 
   /**
@@ -84,11 +76,7 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
     token: TokenData
   ): Promise<FindEvaluationOutputDto | null> {
     // Changed from undefined to null for better semantic meaning
-    const result = await this._findEvaluation.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    const result = await this._findEvaluation.execute(input, token);
     return result || null;
   }
 
@@ -101,11 +89,7 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
     input: FindAllEvaluationInputDto,
     token: TokenData
   ): Promise<FindAllEvaluationOutputDto> {
-    return await this._findAllEvaluation.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._findAllEvaluation.execute(input, token);
   }
 
   /**
@@ -117,11 +101,7 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
     input: DeleteEvaluationInputDto,
     token: TokenData
   ): Promise<DeleteEvaluationOutputDto> {
-    return await this._deleteEvaluation.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._deleteEvaluation.execute(input, token);
   }
 
   /**
@@ -133,10 +113,6 @@ export default class EvaluationFacade implements EvaluationFacadeInterface {
     input: UpdateEvaluationInputDto,
     token: TokenData
   ): Promise<UpdateEvaluationOutputDto> {
-    return await this._updateEvaluation.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._updateEvaluation.execute(input, token);
   }
 }

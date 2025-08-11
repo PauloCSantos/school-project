@@ -16,7 +16,6 @@ import {
   LoginAuthUserInputDto,
   LoginAuthUserOutputDto,
 } from '../../dto/user-facade.dto';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 /**
@@ -28,7 +27,6 @@ type AuthUserFacadeProps = {
   readonly findAuthUser: FindAuthUser;
   readonly updateAuthUser: UpdateAuthUser;
   readonly loginAuthUser: LoginAuthUser;
-  readonly policiesService: PoliciesServiceInterface;
 };
 
 /**
@@ -43,7 +41,6 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
   private readonly _findAuthUser: FindAuthUser;
   private readonly _updateAuthUser: UpdateAuthUser;
   private readonly _loginAuthUser: LoginAuthUser;
-  private readonly _policiesService: PoliciesServiceInterface;
 
   /**
    * Creates a new instance of AuthUserFacade
@@ -55,7 +52,6 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
     this._findAuthUser = input.findAuthUser;
     this._updateAuthUser = input.updateAuthUser;
     this._loginAuthUser = input.loginAuthUser;
-    this._policiesService = input.policiesService;
   }
 
   /**
@@ -65,13 +61,9 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
    */
   public async create(
     input: CreateAuthUserInputDto,
-    token: TokenData
+    token?: TokenData
   ): Promise<CreateAuthUserOutputDto> {
-    return await this._createAuthUser.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._createAuthUser.execute(input, token);
   }
 
   /**
@@ -84,11 +76,7 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
     token: TokenData
   ): Promise<FindAuthUserOutputDto | null> {
     // Changed from undefined to null for better semantic meaning
-    const result = await this._findAuthUser.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    const result = await this._findAuthUser.execute(input, token);
     return result || null;
   }
 
@@ -101,11 +89,7 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
     input: DeleteAuthUserInputDto,
     token: TokenData
   ): Promise<DeleteAuthUserOutputDto> {
-    return await this._deleteAuthUser.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._deleteAuthUser.execute(input, token);
   }
 
   /**
@@ -117,11 +101,7 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
     input: UpdateAuthUserInputDto,
     token: TokenData
   ): Promise<UpdateAuthUserOutputDto> {
-    return await this._updateAuthUser.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._updateAuthUser.execute(input, token);
   }
 
   /**

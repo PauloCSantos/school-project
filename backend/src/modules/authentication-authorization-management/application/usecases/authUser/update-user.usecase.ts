@@ -3,16 +3,18 @@ import {
   UpdateAuthUserInputDto,
   UpdateAuthUserOutputDto,
 } from '../../dto/user-usecase.dto';
-import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+} from '@/modules/@shared/enums/enums';
+import TenantGateway from '../../gateway/tenant.gateway';
+import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
+import { TenantServiceInterface } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
 
 /**
  * Use case responsible for updating an authenticated user.
@@ -22,9 +24,6 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 export default class UpdateAuthUser
   implements UseCaseInterface<UpdateAuthUserInputDto, UpdateAuthUserOutputDto>
 {
-  private readonly _authUserRepository: AuthUserGateway;
-  private readonly _authUserService: AuthUserServiceInterface;
-
   /**
    * Constructs a new instance of the UpdateAuthUser use case.
    *
@@ -32,12 +31,12 @@ export default class UpdateAuthUser
    * @param authUserService - Domain service for user-related logic
    */
   constructor(
-    authUserRepository: AuthUserGateway,
-    authUserService: AuthUserServiceInterface
-  ) {
-    this._authUserRepository = authUserRepository;
-    this._authUserService = authUserService;
-  }
+    private readonly authUserRepository: AuthUserGateway,
+    private readonly tenantRepository: TenantGateway,
+    private readonly authUserService: AuthUserServiceInterface,
+    private readonly tenantService: TenantServiceInterface,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {}
 
   /**
    * Executes the update of an authenticated user.
@@ -49,21 +48,16 @@ export default class UpdateAuthUser
    */
   async execute(
     { email, authUserDataToUpdate }: UpdateAuthUserInputDto,
-    policiesService: PoliciesServiceInterface,
     token: TokenData
   ): Promise<UpdateAuthUserOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.AUTHUSER,
-        FunctionCalledEnum.UPDATE,
-        token,
-        { targetEmail: email }
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.AUTHUSER,
+      FunctionCalledEnum.UPDATE,
+      token,
+      { targetEmail: email }
+    );
 
-    const existingUser = await this._authUserRepository.find(email);
+    const existingUser = await this.authUserRepository.find(email);
     if (!existingUser) {
       throw new Error('AuthUser not found');
     }
@@ -72,19 +66,25 @@ export default class UpdateAuthUser
       {
         email: existingUser.email,
         password: existingUser.password,
-        role: existingUser.role,
-        masterId: existingUser.masterId,
         isHashed: existingUser.isHashed,
       },
-      this._authUserService
+      this.authUserService
     );
 
+    const tenant = await this.tenantService.getTenant(token.masterId);
+
     if (authUserDataToUpdate.email !== undefined) {
+      tenant.renameUserEmail(authUser.email, authUserDataToUpdate.email);
       authUser.email = authUserDataToUpdate.email;
     }
-
+    let role = token.role;
     if (authUserDataToUpdate.role !== undefined) {
-      authUser.role = authUserDataToUpdate.role;
+      tenant.changeTenantUserRole(
+        authUser.email,
+        token.role,
+        authUserDataToUpdate.role
+      );
+      role = authUserDataToUpdate.role;
     }
 
     if (authUserDataToUpdate.password !== undefined) {
@@ -92,11 +92,12 @@ export default class UpdateAuthUser
       await authUser.hashPassword();
     }
 
-    const result = await this._authUserRepository.update(authUser, email);
+    const result = await this.authUserRepository.update(authUser, email);
+    await this.tenantRepository.update(token.masterId, tenant);
 
     return {
       email: result.email,
-      role: result.role,
+      role: role,
     };
   }
 }

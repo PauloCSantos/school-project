@@ -1,5 +1,5 @@
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
-import LessonGateway from '../../gateway/lesson.gateway';
+import LessonGateway from '../../../application/gateway/lesson.gateway';
 
 /**
  * In-memory implementation of LessonGateway.

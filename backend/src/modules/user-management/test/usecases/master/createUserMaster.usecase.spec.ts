@@ -5,6 +5,7 @@ import Name from '@/modules/user-management/domain/@shared/value-object/name.val
 import UserMaster from '@/modules/user-management/domain/entity/master.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('createUserMaster usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -31,7 +32,7 @@ describe('createUserMaster usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -69,11 +70,11 @@ describe('createUserMaster usecase unit test', () => {
       const emailAuthValidatorService = MockEmailAuthValidatorService();
 
       userMasterRepository.findByEmail.mockResolvedValue(userMaster);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       const usecase = new CreateUserMaster(
         userMasterRepository,
-        emailAuthValidatorService
+        emailAuthValidatorService,
+        policieService
       );
 
       await expect(
@@ -81,7 +82,6 @@ describe('createUserMaster usecase unit test', () => {
           {
             ...input,
           },
-          policieService,
           token
         )
       ).rejects.toThrow('User already exists');
@@ -101,13 +101,13 @@ describe('createUserMaster usecase unit test', () => {
       const emailAuthValidatorService = MockEmailAuthValidatorService();
 
       userMasterRepository.findByEmail.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       const usecase = new CreateUserMaster(
         userMasterRepository,
-        emailAuthValidatorService
+        emailAuthValidatorService,
+        policieService
       );
-      const result = await usecase.execute({ ...input }, policieService, token);
+      const result = await usecase.execute({ ...input }, token);
 
       expect(userMasterRepository.findByEmail).toHaveBeenCalledWith(
         expect.any(String)

@@ -3,7 +3,8 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateEvent from '@/modules/event-calendar-management/application/usecases/event/create.usecase';
 import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
+import EventGateway from '@/modules/event-calendar-management/application/gateway/event.gateway';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('CreateEvent usecase unit test', () => {
   let repository: jest.Mocked<EventGateway>;
@@ -50,11 +51,11 @@ describe('CreateEvent usecase unit test', () => {
 
     event = new Event(input);
     repository = MockRepository();
-    usecase = new CreateEvent(repository);
     policieService = MockPolicyService();
+    usecase = new CreateEvent(repository, policieService);
     token = {
       email: 'caller@domain.com',
-      role: 'master',
+      role: RoleUsersEnum.MASTER,
       masterId: new Id().value,
     };
   });
@@ -66,11 +67,10 @@ describe('CreateEvent usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the event already exists', async () => {
       repository.find.mockResolvedValue(event);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Event already exists');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Event already exists'
+      );
       expect(repository.find).toHaveBeenCalledWith(expect.any(String));
       expect(repository.create).not.toHaveBeenCalled();
     });
@@ -79,9 +79,8 @@ describe('CreateEvent usecase unit test', () => {
   describe('On success', () => {
     it('should create an event', async () => {
       repository.find.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const result = await usecase.execute(input, policieService, token);
+      const result = await usecase.execute(input, token);
 
       expect(repository.find).toHaveBeenCalledWith(expect.any(String));
       expect(repository.create).toHaveBeenCalled();

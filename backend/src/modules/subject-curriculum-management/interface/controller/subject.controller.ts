@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateSubjectInputDto,
   CreateSubjectOutputDto,
@@ -24,63 +23,42 @@ export class SubjectController {
     private readonly findSubject: FindSubject,
     private readonly findAllSubject: FindAllSubject,
     private readonly updateSubject: UpdateSubject,
-    private readonly deleteSubject: DeleteSubject,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly deleteSubject: DeleteSubject
   ) {}
 
   async create(
     input: CreateSubjectInputDto,
     token: TokenData
   ): Promise<CreateSubjectOutputDto> {
-    const response = await this.createSubject.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createSubject.execute(input, token);
     return response;
   }
   async find(
     input: FindSubjectInputDto,
     token: TokenData
   ): Promise<FindSubjectOutputDto | null> {
-    const response = await this.findSubject.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findSubject.execute(input, token);
     return response;
   }
   async findAll(
     input: FindAllSubjectInputDto,
     token: TokenData
   ): Promise<FindAllSubjectOutputDto> {
-    const response = await this.findAllSubject.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAllSubject.execute(input, token);
     return response;
   }
   async delete(
     input: DeleteSubjectInputDto,
     token: TokenData
   ): Promise<DeleteSubjectOutputDto> {
-    const response = await this.deleteSubject.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.deleteSubject.execute(input, token);
     return response;
   }
   async update(
     input: UpdateSubjectInputDto,
     token: TokenData
   ): Promise<UpdateSubjectOutputDto> {
-    const response = await this.updateSubject.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateSubject.execute(input, token);
     return response;
   }
 }

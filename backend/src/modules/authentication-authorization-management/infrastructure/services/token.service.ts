@@ -1,15 +1,8 @@
 import jwt from 'jsonwebtoken';
-import AuthUser from '../../../authentication-authorization-management/domain/entity/user.entity';
-import { TokenData } from '../../type/sharedTypes';
+import AuthUser from '../../domain/entity/user.entity';
+import { RoleUsers, TokenData } from '../../../@shared/type/sharedTypes';
+import TokenServiceInterface from '../../domain/service/interface/token-service.interface';
 
-export default interface TokenServiceInterface {
-  generateToken(
-    authUser: AuthUser,
-    timeToExpire?: number | string
-  ): Promise<string>;
-  validateToken(token: string): Promise<TokenData | null>;
-  refreshExpiresToken(token: string): Promise<string>;
-}
 /**
  * Service responsible for generating, validating, and refreshing JWT tokens.
  */
@@ -37,12 +30,14 @@ export default class TokenService implements TokenServiceInterface {
    */
   async generateToken(
     authUser: AuthUser,
+    id: string,
+    role: RoleUsers,
     timeToExpire?: number | string
   ): Promise<string> {
     const payload = {
-      masterId: authUser.masterId,
+      masterId: id,
       email: authUser.email,
-      role: authUser.role,
+      role: role,
     };
 
     const options = {

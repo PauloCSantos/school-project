@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateSchedule from '@/modules/schedule-lesson-management/application/usecases/schedule/create.usecase';
 import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
@@ -28,7 +29,7 @@ describe('createSchedule usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -47,13 +48,12 @@ describe('createSchedule usecase unit test', () => {
     it('should throw an error if the schedule already exists', async () => {
       const scheduleRepository = MockRepository();
       scheduleRepository.find.mockResolvedValue(schedule);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new CreateSchedule(scheduleRepository);
+      const usecase = new CreateSchedule(scheduleRepository, policieService);
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Schedule already exists');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Schedule already exists'
+      );
       expect(scheduleRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(scheduleRepository.create).not.toHaveBeenCalled();
     });
@@ -63,10 +63,9 @@ describe('createSchedule usecase unit test', () => {
     it('should create a schedule', async () => {
       const scheduleRepository = MockRepository();
       scheduleRepository.find.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new CreateSchedule(scheduleRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new CreateSchedule(scheduleRepository, policieService);
+      const result = await usecase.execute(input, token);
 
       expect(scheduleRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(scheduleRepository.create).toHaveBeenCalled();

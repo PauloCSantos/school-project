@@ -3,6 +3,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('updateCurriculum usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -28,7 +29,7 @@ describe('updateCurriculum usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -46,9 +47,11 @@ describe('updateCurriculum usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the curriculum does not exist', async () => {
       const curriculumRepository = MockRepository();
-      curriculumRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new UpdateCurriculum(curriculumRepository);
+      curriculumRepository.find.mockResolvedValue(null);
+      const usecase = new UpdateCurriculum(
+        curriculumRepository,
+        policieService
+      );
 
       await expect(
         usecase.execute(
@@ -56,7 +59,6 @@ describe('updateCurriculum usecase unit test', () => {
             ...input,
             id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
           },
-          policieService,
           token
         )
       ).rejects.toThrow('Curriculum not found');
@@ -66,8 +68,10 @@ describe('updateCurriculum usecase unit test', () => {
     it('should update a curriculum', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(curriculum1);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new UpdateCurriculum(curriculumRepository);
+      const usecase = new UpdateCurriculum(
+        curriculumRepository,
+        policieService
+      );
 
       const result = await usecase.execute(
         {
@@ -75,7 +79,6 @@ describe('updateCurriculum usecase unit test', () => {
           name: input.name,
           yearsToComplete: input.yearsToComplete,
         },
-        policieService,
         token
       );
 

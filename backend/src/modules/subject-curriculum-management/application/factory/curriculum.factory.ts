@@ -14,13 +14,16 @@ export default class CurriculumFacadeFactory {
     const repository = new MemoryCurriculumRepository();
     const policiesService = new PoliciesService();
 
-    const createCurriculum = new CreateCurriculum(repository);
-    const deleteCurriculum = new DeleteCurriculum(repository);
-    const findAllCurriculum = new FindAllCurriculum(repository);
-    const findCurriculum = new FindCurriculum(repository);
-    const updateCurriculum = new UpdateCurriculum(repository);
-    const addSubjects = new AddSubjects(repository);
-    const removeSubjects = new RemoveSubjects(repository);
+    const createCurriculum = new CreateCurriculum(repository, policiesService);
+    const deleteCurriculum = new DeleteCurriculum(repository, policiesService);
+    const findAllCurriculum = new FindAllCurriculum(
+      repository,
+      policiesService
+    );
+    const findCurriculum = new FindCurriculum(repository, policiesService);
+    const updateCurriculum = new UpdateCurriculum(repository, policiesService);
+    const addSubjects = new AddSubjects(repository, policiesService);
+    const removeSubjects = new RemoveSubjects(repository, policiesService);
     const facade = new CurriculumFacade({
       createCurriculum,
       deleteCurriculum,
@@ -29,7 +32,6 @@ export default class CurriculumFacadeFactory {
       updateCurriculum,
       addSubjects,
       removeSubjects,
-      policiesService,
     });
 
     return facade;

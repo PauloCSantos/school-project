@@ -3,7 +3,8 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import FindNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/find.usecase';
 import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
-import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
+import NoteGateway from '@/modules/evaluation-note-attendance-management/application/gateway/note.gateway';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('findNote usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -27,7 +28,7 @@ describe('findNote usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -40,15 +41,10 @@ describe('findNote usecase unit test', () => {
     it('should find a note', async () => {
       const noteRepository = MockRepository();
       noteRepository.find.mockResolvedValue(note1);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindNote(noteRepository);
+      const usecase = new FindNote(noteRepository, policieService);
 
-      const result = await usecase.execute(
-        { id: note1.id.value },
-        policieService,
-        token
-      );
+      const result = await usecase.execute({ id: note1.id.value }, token);
 
       expect(noteRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();
@@ -56,14 +52,12 @@ describe('findNote usecase unit test', () => {
     it('should return null when id is not found', async () => {
       const noteRepository = MockRepository();
       noteRepository.find.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindNote(noteRepository);
+      const usecase = new FindNote(noteRepository, policieService);
       const result = await usecase.execute(
         {
           id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
         },
-        policieService,
         token
       );
 

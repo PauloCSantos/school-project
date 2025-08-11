@@ -6,17 +6,13 @@ export interface IFindAuthUserInput {
 
 export interface IFindAuthUserOutput {
   email: string;
-  masterId?: string;
-  role: RoleUsers;
-  isHashed: boolean;
 }
 
 export interface ICreateAuthUserInput {
   email: string;
   password: string;
-  masterId?: string;
   role: RoleUsers;
-  // isHashed?: boolean;
+  cnpj?: string;
 }
 
 export interface ICreateAuthUserOutput {
@@ -49,9 +45,14 @@ export interface IDeleteAuthUserOutput {
 export interface ILoginAuthUserInput {
   email: string;
   password: string;
-  role: RoleUsers;
+  masterId?: string;
+  role?: RoleUsers;
 }
 
 export interface ILoginAuthUserOutput {
-  token: string;
+  token?: string;
+  data?: {
+    id: string;
+    roles: RoleUsers[];
+  }[];
 }

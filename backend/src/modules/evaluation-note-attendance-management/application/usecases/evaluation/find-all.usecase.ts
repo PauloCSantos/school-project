@@ -3,14 +3,13 @@ import {
   FindAllEvaluationInputDto,
   FindAllEvaluationOutputDto,
 } from '../../dto/evaluation-usecase.dto';
-import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
+import EvaluationGateway from '@/modules/evaluation-note-attendance-management/application/gateway/evaluation.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for retrieving all evaluation records with pagination.
@@ -29,7 +28,10 @@ export default class FindAllEvaluation
    *
    * @param evaluationRepository - Gateway implementation for data persistence
    */
-  constructor(evaluationRepository: EvaluationGateway) {
+  constructor(
+    evaluationRepository: EvaluationGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._evaluationRepository = evaluationRepository;
   }
 
@@ -41,18 +43,13 @@ export default class FindAllEvaluation
    */
   async execute(
     { offset, quantity }: FindAllEvaluationInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<FindAllEvaluationOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.EVALUATION,
-        FunctionCalledEnum.FIND_ALL,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.EVALUATION,
+      FunctionCalledEnum.FIND_ALL,
+      token
+    );
 
     const results = await this._evaluationRepository.findAll(quantity, offset);
 

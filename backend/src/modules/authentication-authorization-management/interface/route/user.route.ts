@@ -16,7 +16,7 @@ import {
   FunctionCalledEnum,
   StatusCodeEnum,
   StatusMessageEnum,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class AuthUserRoute {
   constructor(
@@ -139,11 +139,12 @@ export default class AuthUserRoute {
     req: HttpRequest<{}, {}, LoginAuthUserInputDto, {}>
   ): Promise<HttpResponseData> {
     try {
-      const { email, password, role } = req.body;
+      const { email, password, role, masterId } = req.body;
       const response = await this.authUserController.login({
         email,
         password,
         role,
+        masterId,
       });
       return {
         statusCode: StatusCodeEnum.OK,

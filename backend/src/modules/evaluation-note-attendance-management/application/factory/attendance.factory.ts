@@ -25,13 +25,16 @@ export default class AttendanceFacadeFactory {
     const policiesService = new PoliciesService();
 
     // Create all required use cases
-    const createAttendance = new CreateAttendance(repository);
-    const deleteAttendance = new DeleteAttendance(repository);
-    const findAllAttendance = new FindAllAttendance(repository);
-    const findAttendance = new FindAttendance(repository);
-    const updateAttendance = new UpdateAttendance(repository);
-    const addStudents = new AddStudents(repository);
-    const removeStudents = new RemoveStudents(repository);
+    const createAttendance = new CreateAttendance(repository, policiesService);
+    const deleteAttendance = new DeleteAttendance(repository, policiesService);
+    const findAllAttendance = new FindAllAttendance(
+      repository,
+      policiesService
+    );
+    const findAttendance = new FindAttendance(repository, policiesService);
+    const updateAttendance = new UpdateAttendance(repository, policiesService);
+    const addStudents = new AddStudents(repository, policiesService);
+    const removeStudents = new RemoveStudents(repository, policiesService);
 
     // Instantiate and return the facade with all required use cases
     const facade = new AttendanceFacade({
@@ -42,7 +45,6 @@ export default class AttendanceFacadeFactory {
       updateAttendance,
       addStudents,
       removeStudents,
-      policiesService,
     });
 
     return facade;

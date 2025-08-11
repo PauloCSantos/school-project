@@ -1,5 +1,5 @@
 import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
-import EvaluationGateway from '../../gateway/evaluation.gateway';
+import EvaluationGateway from '../../../application/gateway/evaluation.gateway';
 
 /**
  * In-memory implementation of EvaluationGateway.

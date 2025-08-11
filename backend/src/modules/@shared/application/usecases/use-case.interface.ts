@@ -1,5 +1,4 @@
 import { TokenData } from '../../type/sharedTypes';
-import { PoliciesServiceInterface } from '../services/policies.service';
 
 /**
  * @interface UseCaseInterface
@@ -14,9 +13,5 @@ export default interface UseCaseInterface<InputT, ResultT> {
    * @returns A promise that resolves to the result of the use case
    * @throws {Error} - When the use case execution fails
    */
-  execute(
-    input: InputT,
-    policiesService: PoliciesServiceInterface,
-    token: TokenData
-  ): Promise<ResultT>;
+  execute(input: InputT, token: TokenData): Promise<ResultT>;
 }

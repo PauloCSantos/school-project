@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import AddStudents from '@/modules/schedule-lesson-management/application/usecases/lesson/add-students.usecase';
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
@@ -38,7 +39,7 @@ describe('AddStudents use case unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -61,22 +62,20 @@ describe('AddStudents use case unit test', () => {
     it('should throw an error if the lesson does not exist', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new AddStudents(lessonRepository);
+      const usecase = new AddStudents(lessonRepository, policieService);
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Lesson not found');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Lesson not found'
+      );
       expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
       expect(lessonRepository.addDay).not.toHaveBeenCalled();
     });
     it('should throw an error if the student already exists in the lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new AddStudents(lessonRepository);
+      const usecase = new AddStudents(lessonRepository, policieService);
 
       await expect(
         usecase.execute(
@@ -84,7 +83,6 @@ describe('AddStudents use case unit test', () => {
             ...input,
             newStudentsList: [lesson.studentsList[0]],
           },
-          policieService,
           token
         )
       ).rejects.toThrow(`This student is already on the lesson`);
@@ -97,10 +95,9 @@ describe('AddStudents use case unit test', () => {
     it('should add students to the lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new AddStudents(lessonRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new AddStudents(lessonRepository, policieService);
+      const result = await usecase.execute(input, token);
 
       expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
       expect(lessonRepository.addStudents).toHaveBeenCalledWith(

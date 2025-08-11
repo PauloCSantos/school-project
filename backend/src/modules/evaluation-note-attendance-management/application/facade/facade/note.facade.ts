@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateNoteInputDto,
   CreateNoteOutputDto,
@@ -28,7 +27,6 @@ type NoteFacadeProps = {
   readonly findAllNote: FindAllNote;
   readonly findNote: FindNote;
   readonly updateNote: UpdateNote;
-  readonly policiesService: PoliciesServiceInterface;
 };
 
 /**
@@ -43,7 +41,6 @@ export default class NoteFacade implements NoteFacadeInterface {
   private readonly _findAllNote: FindAllNote;
   private readonly _findNote: FindNote;
   private readonly _updateNote: UpdateNote;
-  private readonly _policiesService: PoliciesServiceInterface;
 
   /**
    * Creates a new instance of NoteFacade
@@ -55,7 +52,6 @@ export default class NoteFacade implements NoteFacadeInterface {
     this._findAllNote = input.findAllNote;
     this._findNote = input.findNote;
     this._updateNote = input.updateNote;
-    this._policiesService = input.policiesService;
   }
 
   /**
@@ -67,7 +63,7 @@ export default class NoteFacade implements NoteFacadeInterface {
     input: CreateNoteInputDto,
     token: TokenData
   ): Promise<CreateNoteOutputDto> {
-    return await this._createNote.execute(input, this._policiesService, token);
+    return await this._createNote.execute(input, token);
   }
 
   /**
@@ -80,11 +76,7 @@ export default class NoteFacade implements NoteFacadeInterface {
     token: TokenData
   ): Promise<FindNoteOutputDto | null> {
     // Changed from undefined to null for better semantic meaning
-    const result = await this._findNote.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    const result = await this._findNote.execute(input, token);
     return result || null;
   }
 
@@ -97,7 +89,7 @@ export default class NoteFacade implements NoteFacadeInterface {
     input: FindAllNoteInputDto,
     token: TokenData
   ): Promise<FindAllNoteOutputDto> {
-    return await this._findAllNote.execute(input, this._policiesService, token);
+    return await this._findAllNote.execute(input, token);
   }
 
   /**
@@ -109,7 +101,7 @@ export default class NoteFacade implements NoteFacadeInterface {
     input: DeleteNoteInputDto,
     token: TokenData
   ): Promise<DeleteNoteOutputDto> {
-    return await this._deleteNote.execute(input, this._policiesService, token);
+    return await this._deleteNote.execute(input, token);
   }
 
   /**
@@ -121,6 +113,6 @@ export default class NoteFacade implements NoteFacadeInterface {
     input: UpdateNoteInputDto,
     token: TokenData
   ): Promise<UpdateNoteOutputDto> {
-    return await this._updateNote.execute(input, this._policiesService, token);
+    return await this._updateNote.execute(input, token);
   }
 }

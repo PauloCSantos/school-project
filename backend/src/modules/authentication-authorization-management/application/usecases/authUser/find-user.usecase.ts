@@ -3,13 +3,12 @@ import {
   FindAuthUserInputDto,
   FindAuthUserOutputDto,
 } from '../../dto/user-usecase.dto';
-import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 
 /**
@@ -28,7 +27,10 @@ export default class FindAuthUser
    *
    * @param authUserRepository - Gateway implementation for data persistence
    */
-  constructor(authUserRepository: AuthUserGateway) {
+  constructor(
+    authUserRepository: AuthUserGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._authUserRepository = authUserRepository;
   }
 
@@ -40,28 +42,20 @@ export default class FindAuthUser
    */
   async execute(
     { email }: FindAuthUserInputDto,
-    policiesService: PoliciesServiceInterface,
     token: TokenData
   ): Promise<FindAuthUserOutputDto | null> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.AUTHUSER,
-        FunctionCalledEnum.FIND,
-        token,
-        { targetEmail: email }
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.AUTHUSER,
+      FunctionCalledEnum.FIND,
+      token,
+      { targetEmail: email }
+    );
 
     const response = await this._authUserRepository.find(email);
 
     if (response) {
       return {
         email: response.email,
-        masterId: response.masterId,
-        role: response.role,
-        isHashed: true,
       };
     }
 

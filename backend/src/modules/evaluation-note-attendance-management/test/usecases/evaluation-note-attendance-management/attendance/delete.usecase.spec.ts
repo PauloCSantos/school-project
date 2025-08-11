@@ -1,9 +1,10 @@
 import DeleteAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/delete.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
-import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
+import AttendanceGateway from '@/modules/evaluation-note-attendance-management/application/gateway/attendance.gateway';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('DeleteAttendance usecase unit test', () => {
   let repository: jest.Mocked<AttendanceGateway>;
@@ -34,11 +35,11 @@ describe('DeleteAttendance usecase unit test', () => {
   beforeEach(() => {
     repository = MockRepository();
     policieService = MockPolicyService();
-    usecase = new DeleteAttendance(repository);
+    usecase = new DeleteAttendance(repository, policieService);
 
     token = {
       email: 'caller@domain.com',
-      role: 'master',
+      role: RoleUsersEnum.MASTER,
       masterId: new Id().value,
     };
 
@@ -58,14 +59,9 @@ describe('DeleteAttendance usecase unit test', () => {
   describe('On fail', () => {
     it('should return an error if the attendance does not exist', async () => {
       repository.find.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
       await expect(
-        usecase.execute(
-          { id: '75c791ca-7a40-4217-8b99-2cf22c01d543' },
-          policieService,
-          token
-        )
+        usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
       ).rejects.toThrow('Attendance not found');
 
       expect(repository.find).toHaveBeenCalledWith(
@@ -76,11 +72,10 @@ describe('DeleteAttendance usecase unit test', () => {
 
     it('should throw an error if repository.delete fails', async () => {
       repository.find.mockResolvedValue(attendance);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
       repository.delete.mockRejectedValueOnce(new Error('Database error'));
 
       await expect(
-        usecase.execute({ id: attendance.id.value }, policieService, token)
+        usecase.execute({ id: attendance.id.value }, token)
       ).rejects.toThrow('Database error');
 
       expect(repository.find).toHaveBeenCalledWith(attendance.id.value);
@@ -91,12 +86,7 @@ describe('DeleteAttendance usecase unit test', () => {
   describe('On success', () => {
     it('should delete an attendance', async () => {
       repository.find.mockResolvedValue(attendance);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const result = await usecase.execute(
-        { id: attendance.id.value },
-        policieService,
-        token
-      );
+      const result = await usecase.execute({ id: attendance.id.value }, token);
 
       expect(repository.find).toHaveBeenCalledWith(attendance.id.value);
       expect(repository.delete).toHaveBeenCalledWith(attendance.id.value);

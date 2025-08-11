@@ -5,37 +5,34 @@ import {
 } from '../../dto/subject-usecase.dto';
 
 import Subject from '@/modules/subject-curriculum-management/domain/entity/subject.entity';
-import SubjectGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/subject.gateway';
+import SubjectGateway from '@/modules/subject-curriculum-management/application/gateway/subject.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class CreateSubject
   implements UseCaseInterface<CreateSubjectInputDto, CreateSubjectOutputDto>
 {
   private _subjectRepository: SubjectGateway;
 
-  constructor(subjectRepository: SubjectGateway) {
+  constructor(
+    subjectRepository: SubjectGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._subjectRepository = subjectRepository;
   }
   async execute(
     { name, description }: CreateSubjectInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<CreateSubjectOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.SUBJECT,
-        FunctionCalledEnum.CREATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.SUBJECT,
+      FunctionCalledEnum.CREATE,
+      token
+    );
 
     const subject = new Subject({
       name,

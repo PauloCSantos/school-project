@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateAuthUserInputDto,
   CreateAuthUserOutputDto,
@@ -36,8 +35,7 @@ export default class AuthUserController {
     private readonly findAuthUser: FindAuthUser,
     private readonly updateAuthUser: UpdateAuthUser,
     private readonly deleteAuthUser: DeleteAuthUser,
-    private readonly loginAuthUser: LoginAuthUser,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly loginAuthUser: LoginAuthUser
   ) {}
 
   /**
@@ -49,11 +47,7 @@ export default class AuthUserController {
     input: CreateAuthUserInputDto,
     token: TokenData
   ): Promise<CreateAuthUserOutputDto> {
-    const response = await this.createAuthUser.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createAuthUser.execute(input, token);
     return response;
   }
 
@@ -66,11 +60,7 @@ export default class AuthUserController {
     input: FindAuthUserInputDto,
     token: TokenData
   ): Promise<FindAuthUserOutputDto | null> {
-    const response = await this.findAuthUser.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAuthUser.execute(input, token);
     return response;
   }
 
@@ -83,11 +73,7 @@ export default class AuthUserController {
     input: DeleteAuthUserInputDto,
     token: TokenData
   ): Promise<DeleteAuthUserOutputDto> {
-    const response = await this.deleteAuthUser.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.deleteAuthUser.execute(input, token);
     return response;
   }
 
@@ -100,11 +86,7 @@ export default class AuthUserController {
     input: UpdateAuthUserInputDto,
     token: TokenData
   ): Promise<UpdateAuthUserOutputDto> {
-    const response = await this.updateAuthUser.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateAuthUser.execute(input, token);
     return response;
   }
 

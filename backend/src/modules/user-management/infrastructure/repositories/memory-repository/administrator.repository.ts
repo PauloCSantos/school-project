@@ -1,4 +1,4 @@
-import UserAdministratorGateway from '../../gateway/administrator.gateway';
+import UserAdministratorGateway from '../../../application/gateway/administrator.gateway';
 import UserAdministrator from '@/modules/user-management/domain/entity/administrator.entity';
 
 export default class MemoryUserAdministratorRepository

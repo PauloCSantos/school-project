@@ -3,6 +3,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('RemoveSubjects use case unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -34,7 +35,7 @@ describe('RemoveSubjects use case unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -51,28 +52,25 @@ describe('RemoveSubjects use case unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the curriculum is not found', async () => {
       const curriculumRepository = MockRepository();
-      curriculumRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
+      curriculumRepository.find.mockResolvedValue(null);
 
-      const usecase = new RemoveSubjects(curriculumRepository);
+      const usecase = new RemoveSubjects(curriculumRepository, policieService);
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Curriculum not found');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Curriculum not found'
+      );
       expect(curriculumRepository.find).toHaveBeenCalledWith(input.id);
       expect(curriculumRepository.removeSubjects).not.toHaveBeenCalled();
     });
     it('should throw an error if the subject is not found in the curriculum', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(curriculum);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new RemoveSubjects(curriculumRepository);
+      const usecase = new RemoveSubjects(curriculumRepository, policieService);
 
       await expect(
         usecase.execute(
           { ...input, subjectsListToRemove: [new Id().value] },
-          policieService,
           token
         )
       ).rejects.toThrow('This subject is not included in the curriculum');
@@ -85,10 +83,9 @@ describe('RemoveSubjects use case unit test', () => {
     it('should remove subjects from the curriculum', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(curriculum);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new RemoveSubjects(curriculumRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new RemoveSubjects(curriculumRepository, policieService);
+      const result = await usecase.execute(input, token);
 
       expect(curriculumRepository.find).toHaveBeenCalledWith(input.id);
       expect(curriculumRepository.removeSubjects).toHaveBeenCalledWith(

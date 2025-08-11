@@ -1,5 +1,5 @@
 import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
-import NoteGateway from '../../gateway/note.gateway';
+import NoteGateway from '../../../application/gateway/note.gateway';
 
 /**
  * In-memory implementation of NoteGateway.

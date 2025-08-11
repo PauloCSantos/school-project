@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import DeleteSchedule from '@/modules/schedule-lesson-management/application/usecases/schedule/delete.usecase';
 import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
@@ -28,7 +29,7 @@ describe('deleteSchedule usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -42,16 +43,11 @@ describe('deleteSchedule usecase unit test', () => {
     it('should return an error if the schedule does not exist', async () => {
       const scheduleRepository = MockRepository();
       scheduleRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new DeleteSchedule(scheduleRepository);
+      const usecase = new DeleteSchedule(scheduleRepository, policieService);
 
       await expect(
-        usecase.execute(
-          { id: '75c791ca-7a40-4217-8b99-2cf22c01d543' },
-          policieService,
-          token
-        )
+        usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
       ).rejects.toThrow('Schedule not found');
     });
   });
@@ -59,13 +55,11 @@ describe('deleteSchedule usecase unit test', () => {
     it('should delete a schedule', async () => {
       const scheduleRepository = MockRepository();
       scheduleRepository.find.mockResolvedValue(schedule);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new DeleteSchedule(scheduleRepository);
+      const usecase = new DeleteSchedule(scheduleRepository, policieService);
       const result = await usecase.execute(
         {
           id: schedule.id.value,
         },
-        policieService,
         token
       );
 

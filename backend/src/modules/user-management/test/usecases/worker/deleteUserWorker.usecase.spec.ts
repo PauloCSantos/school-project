@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import DeleteUserWorker from '@/modules/user-management/application/usecases/worker/deleteUserWorker.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
@@ -30,7 +31,7 @@ describe('deleteUserWorker usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -65,17 +66,15 @@ describe('deleteUserWorker usecase unit test', () => {
   describe('On fail', () => {
     it('should return an error if the user does not exist', async () => {
       const userWorkerRepository = MockRepository();
-      userWorkerRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
+      userWorkerRepository.find.mockResolvedValue(null);
 
-      const usecase = new DeleteUserWorker(userWorkerRepository);
+      const usecase = new DeleteUserWorker(
+        userWorkerRepository,
+        policieService
+      );
 
       await expect(
-        usecase.execute(
-          { id: '75c791ca-7a40-4217-8b99-2cf22c01d543' },
-          policieService,
-          token
-        )
+        usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
       ).rejects.toThrow('User not found');
     });
   });
@@ -83,13 +82,14 @@ describe('deleteUserWorker usecase unit test', () => {
     it('should delete a user worker', async () => {
       const userWorkerRepository = MockRepository();
       userWorkerRepository.find.mockResolvedValue(userWorker);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new DeleteUserWorker(userWorkerRepository);
+      const usecase = new DeleteUserWorker(
+        userWorkerRepository,
+        policieService
+      );
       const result = await usecase.execute(
         {
           id: userWorker.id.value,
         },
-        policieService,
         token
       );
 

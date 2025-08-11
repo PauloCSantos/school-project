@@ -4,18 +4,17 @@ import {
   CreateUserWorkerInputDto,
   CreateUserWorkerOutputDto,
 } from '../../dto/worker-usecase.dto';
-import UserWorkerGateway from '@/modules/user-management/infrastructure/gateway/worker.gateway';
+import UserWorkerGateway from '@/modules/user-management/application/gateway/worker.gateway';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import { EmailAuthValidator } from '../../services/email-auth-validator.service';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class CreateUserWorker
   implements
@@ -25,24 +24,20 @@ export default class CreateUserWorker
 
   constructor(
     userWorkerRepository: UserWorkerGateway,
-    readonly emailValidatorService: EmailAuthValidator
+    readonly emailValidatorService: EmailAuthValidator,
+    private readonly policiesService: PoliciesServiceInterface
   ) {
     this._userWorkerRepository = userWorkerRepository;
   }
   async execute(
     { name, address, email, birthday, salary }: CreateUserWorkerInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<CreateUserWorkerOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.WORKER,
-        FunctionCalledEnum.CREATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.WORKER,
+      FunctionCalledEnum.CREATE,
+      token
+    );
 
     if (!(await this.emailValidatorService.validate(email))) {
       throw new Error('You must register this email before creating the user.');

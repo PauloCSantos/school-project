@@ -1,20 +1,19 @@
 import DeleteAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/delete-user.usecase';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
 import {
+  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  ErrorMessage,
   RoleUsersEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
-import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
+} from '@/modules/@shared/enums/enums';
 
 describe('DeleteAuthUser Use Case', () => {
   let repository: jest.Mocked<AuthUserGateway>;
-  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let policiesService: jest.Mocked<PoliciesServiceInterface>;
   let usecase: DeleteAuthUser;
   let input: { email: string };
   let token: TokenData;
@@ -45,8 +44,8 @@ describe('DeleteAuthUser Use Case', () => {
 
   beforeEach(() => {
     repository = MockRepository();
-    policieService = MockPolicyService();
-    usecase = new DeleteAuthUser(repository);
+    policiesService = MockPolicyService();
+    usecase = new DeleteAuthUser(repository, policiesService);
 
     input = { email: 'test@example.com' };
     token = {
@@ -59,21 +58,21 @@ describe('DeleteAuthUser Use Case', () => {
       {
         email: input.email,
         password: 'hashed_password',
-        masterId: new Id().value,
-        role: RoleUsersEnum.STUDENT,
       },
       MockAuthUserService()
     );
   });
 
   it('should throw ACCESS_DENIED when policies are not permitted', async () => {
-    policieService.verifyPolicies.mockResolvedValueOnce(false);
+    policiesService.verifyPolicies.mockRejectedValueOnce(
+      new Error('User does not have access permission')
+    );
 
-    await expect(usecase.execute(input, policieService, token)).rejects.toThrow(
+    await expect(usecase.execute(input, token)).rejects.toThrow(
       ErrorMessage.ACCESS_DENIED
     );
 
-    expect(policieService.verifyPolicies).toHaveBeenCalledWith(
+    expect(policiesService.verifyPolicies).toHaveBeenCalledWith(
       ModulesNameEnum.AUTHUSER,
       FunctionCalledEnum.DELETE,
       token
@@ -82,30 +81,26 @@ describe('DeleteAuthUser Use Case', () => {
   });
 
   it('should throw an error if the authUser does not exist', async () => {
-    policieService.verifyPolicies.mockResolvedValueOnce(true);
-    repository.find.mockResolvedValueOnce(null);
+    repository.delete.mockRejectedValueOnce(new Error('AuthUser not found'));
 
-    await expect(usecase.execute(input, policieService, token)).rejects.toThrow(
-      'User not found'
+    await expect(usecase.execute(input, token)).rejects.toThrow(
+      'AuthUser not found'
     );
 
-    expect(repository.find).toHaveBeenCalledWith(input.email);
-    expect(repository.delete).not.toHaveBeenCalled();
+    expect(repository.delete).toHaveBeenCalledWith(input.email);
   });
 
   it('should delete an authUser successfully', async () => {
-    policieService.verifyPolicies.mockResolvedValueOnce(true);
     repository.find.mockResolvedValueOnce(existingUser);
     repository.delete.mockResolvedValueOnce('Operação concluída com sucesso');
 
-    const result = await usecase.execute(input, policieService, token);
+    const result = await usecase.execute(input, token);
 
-    expect(policieService.verifyPolicies).toHaveBeenCalledWith(
+    expect(policiesService.verifyPolicies).toHaveBeenCalledWith(
       ModulesNameEnum.AUTHUSER,
       FunctionCalledEnum.DELETE,
       token
     );
-    expect(repository.find).toHaveBeenCalledWith(input.email);
     expect(repository.delete).toHaveBeenCalledWith(input.email);
     expect(result).toEqual({ message: 'Operação concluída com sucesso' });
   });

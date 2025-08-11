@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateUserWorkerInputDto,
   CreateUserWorkerOutputDto,
@@ -24,63 +23,42 @@ export class UserWorkerController {
     private readonly findUserWorker: FindUserWorker,
     private readonly findAllUserWorker: FindAllUserWorker,
     private readonly updateUserWorker: UpdateUserWorker,
-    private readonly deleteUserWorker: DeleteUserWorker,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly deleteUserWorker: DeleteUserWorker
   ) {}
 
   async create(
     input: CreateUserWorkerInputDto,
     token: TokenData
   ): Promise<CreateUserWorkerOutputDto> {
-    const response = await this.createUserWorker.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createUserWorker.execute(input, token);
     return response;
   }
   async find(
     input: FindUserWorkerInputDto,
     token: TokenData
   ): Promise<FindUserWorkerOutputDto | null> {
-    const response = await this.findUserWorker.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findUserWorker.execute(input, token);
     return response;
   }
   async findAll(
     input: FindAllUserWorkerInputDto,
     token: TokenData
   ): Promise<FindAllUserWorkerOutputDto> {
-    const response = await this.findAllUserWorker.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAllUserWorker.execute(input, token);
     return response;
   }
   async delete(
     input: DeleteUserWorkerInputDto,
     token: TokenData
   ): Promise<DeleteUserWorkerOutputDto> {
-    const response = await this.deleteUserWorker.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.deleteUserWorker.execute(input, token);
     return response;
   }
   async update(
     input: UpdateUserWorkerInputDto,
     token: TokenData
   ): Promise<UpdateUserWorkerOutputDto> {
-    const response = await this.updateUserWorker.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateUserWorker.execute(input, token);
     return response;
   }
 }

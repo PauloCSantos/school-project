@@ -3,14 +3,13 @@ import {
   DeleteAuthUserInputDto,
   DeleteAuthUserOutputDto,
 } from '../../dto/user-usecase.dto';
-import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for deleting an authenticated user.
@@ -28,7 +27,10 @@ export default class DeleteAuthUser
    *
    * @param authUserRepository - Gateway implementation for data persistence
    */
-  constructor(authUserRepository: AuthUserGateway) {
+  constructor(
+    authUserRepository: AuthUserGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._authUserRepository = authUserRepository;
   }
 
@@ -41,21 +43,13 @@ export default class DeleteAuthUser
    */
   async execute(
     { email }: DeleteAuthUserInputDto,
-    policiesService: PoliciesServiceInterface,
     token: TokenData
   ): Promise<DeleteAuthUserOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.AUTHUSER,
-        FunctionCalledEnum.DELETE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
-
-    const authUserVerification = await this._authUserRepository.find(email);
-    if (!authUserVerification) throw new Error('AuthUser not found');
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.AUTHUSER,
+      FunctionCalledEnum.DELETE,
+      token
+    );
 
     const result = await this._authUserRepository.delete(email);
 

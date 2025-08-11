@@ -1,5 +1,5 @@
 import RequestMiddleware from '../../application/middleware/request.middleware';
-import { FunctionCalledEnum } from '../../type/sharedTypes';
+import { FunctionCalledEnum } from '../../enums/enums';
 import * as validations from '../../utils/validations';
 
 jest.mock('../../utils/validations', () => ({

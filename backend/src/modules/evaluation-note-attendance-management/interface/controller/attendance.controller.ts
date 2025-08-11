@@ -22,7 +22,6 @@ import FindAllAttendance from '../../application/usecases/attendance/find-all.us
 import FindAttendance from '../../application/usecases/attendance/find.usecase';
 import RemoveStudents from '../../application/usecases/attendance/remove-students.usecase';
 import UpdateAttendance from '../../application/usecases/attendance/update.usecase';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 
 /**
  * Controller for attendance management operations.
@@ -46,8 +45,7 @@ export default class AttendanceController {
     private readonly updateAttendance: UpdateAttendance,
     private readonly deleteAttendance: DeleteAttendance,
     private readonly addStudentsToAttendance: AddStudents,
-    private readonly removeStudentsFromAttendance: RemoveStudents,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly removeStudentsFromAttendance: RemoveStudents
   ) {}
 
   /**
@@ -59,11 +57,7 @@ export default class AttendanceController {
     input: CreateAttendanceInputDto,
     token: TokenData
   ): Promise<CreateAttendanceOutputDto> {
-    const response = await this.createAttendance.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createAttendance.execute(input, token);
     return response;
   }
 
@@ -76,11 +70,7 @@ export default class AttendanceController {
     input: FindAttendanceInputDto,
     token: TokenData
   ): Promise<FindAttendanceOutputDto | null> {
-    const response = await this.findAttendance.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAttendance.execute(input, token);
     return response;
   }
 
@@ -93,11 +83,7 @@ export default class AttendanceController {
     input: FindAllAttendanceInputDto,
     token: TokenData
   ): Promise<FindAllAttendanceOutputDto> {
-    const response = await this.findAllAttendance.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAllAttendance.execute(input, token);
     return response;
   }
 
@@ -110,11 +96,7 @@ export default class AttendanceController {
     input: UpdateAttendanceInputDto,
     token: TokenData
   ): Promise<UpdateAttendanceOutputDto> {
-    const response = await this.updateAttendance.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateAttendance.execute(input, token);
     return response;
   }
 
@@ -127,11 +109,7 @@ export default class AttendanceController {
     input: DeleteAttendanceInputDto,
     token: TokenData
   ): Promise<DeleteAttendanceOutputDto> {
-    const response = await this.deleteAttendance.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.deleteAttendance.execute(input, token);
     return response;
   }
 
@@ -144,11 +122,7 @@ export default class AttendanceController {
     input: AddStudentsInputDto,
     token: TokenData
   ): Promise<AddStudentsOutputDto> {
-    const response = await this.addStudentsToAttendance.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.addStudentsToAttendance.execute(input, token);
     return response;
   }
 
@@ -163,7 +137,6 @@ export default class AttendanceController {
   ): Promise<RemoveStudentsOutputDto> {
     const response = await this.removeStudentsFromAttendance.execute(
       input,
-      this.policiesService,
       token
     );
     return response;

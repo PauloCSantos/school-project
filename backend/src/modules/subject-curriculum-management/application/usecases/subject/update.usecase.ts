@@ -3,37 +3,34 @@ import {
   UpdateSubjectInputDto,
   UpdateSubjectOutputDto,
 } from '../../dto/subject-usecase.dto';
-import SubjectGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/subject.gateway';
+import SubjectGateway from '@/modules/subject-curriculum-management/application/gateway/subject.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class UpdateSubject
   implements UseCaseInterface<UpdateSubjectInputDto, UpdateSubjectOutputDto>
 {
   private _subjectRepository: SubjectGateway;
 
-  constructor(subjectRepository: SubjectGateway) {
+  constructor(
+    subjectRepository: SubjectGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._subjectRepository = subjectRepository;
   }
   async execute(
     { id, name, description }: UpdateSubjectInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<UpdateSubjectOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.SUBJECT,
-        FunctionCalledEnum.UPDATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.SUBJECT,
+      FunctionCalledEnum.UPDATE,
+      token
+    );
 
     const subject = await this._subjectRepository.find(id);
     if (!subject) throw new Error('Subject not found');

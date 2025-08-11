@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateScheduleInputDto,
   AddLessonsInputDto,
@@ -46,8 +45,7 @@ export class ScheduleController {
     private readonly updateSchedule: UpdateSchedule,
     private readonly deleteSchedule: DeleteSchedule,
     private readonly addLessonstoSchedule: AddLessons,
-    private readonly removeLessonstoSchedule: RemoveLessons,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly removeLessonstoSchedule: RemoveLessons
   ) {}
 
   /**
@@ -59,11 +57,7 @@ export class ScheduleController {
     input: CreateScheduleInputDto,
     token: TokenData
   ): Promise<CreateScheduleOutputDto> {
-    const response = await this.createSchedule.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createSchedule.execute(input, token);
     return response;
   }
 
@@ -76,11 +70,7 @@ export class ScheduleController {
     input: FindScheduleInputDto,
     token: TokenData
   ): Promise<FindScheduleOutputDto | null> {
-    const response = await this.findSchedule.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findSchedule.execute(input, token);
     return response;
   }
 
@@ -93,11 +83,7 @@ export class ScheduleController {
     input: FindAllScheduleInputDto,
     token: TokenData
   ): Promise<FindAllScheduleOutputDto> {
-    const response = await this.findAllSchedule.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAllSchedule.execute(input, token);
     return response;
   }
 
@@ -110,11 +96,7 @@ export class ScheduleController {
     input: DeleteScheduleInputDto,
     token: TokenData
   ): Promise<DeleteScheduleOutputDto> {
-    const response = await this.deleteSchedule.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.deleteSchedule.execute(input, token);
     return response;
   }
 
@@ -127,11 +109,7 @@ export class ScheduleController {
     input: UpdateScheduleInputDto,
     token: TokenData
   ): Promise<UpdateScheduleOutputDto> {
-    const response = await this.updateSchedule.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateSchedule.execute(input, token);
     return response;
   }
 
@@ -144,11 +122,7 @@ export class ScheduleController {
     input: AddLessonsInputDto,
     token: TokenData
   ): Promise<AddLessonsOutputDto> {
-    const response = await this.addLessonstoSchedule.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.addLessonstoSchedule.execute(input, token);
     return response;
   }
 
@@ -161,11 +135,7 @@ export class ScheduleController {
     input: RemoveLessonsInputDto,
     token: TokenData
   ): Promise<RemoveLessonsOutputDto> {
-    const response = await this.removeLessonstoSchedule.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.removeLessonstoSchedule.execute(input, token);
     return response;
   }
 }

@@ -17,8 +17,8 @@ import FindAllEvent from '../../application/usecases/event/find-all.usecase';
 import UpdateEvent from '../../application/usecases/event/update.usecase';
 import DeleteEvent from '../../application/usecases/event/delete.usecase';
 import EventController from '../../interface/controller/event.controller';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 const mockCreateEvent: jest.Mocked<CreateEvent> = {
   execute: jest.fn(),
@@ -42,7 +42,6 @@ const mockDeleteEvent: jest.Mocked<DeleteEvent> = {
 
 describe('EventController unit test', () => {
   let controller: EventController;
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
 
   const id = new Id().value;
@@ -115,12 +114,9 @@ describe('EventController unit test', () => {
     message: 'Operação concluída com sucesso',
   };
 
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -132,15 +128,13 @@ describe('EventController unit test', () => {
     mockFindAllEvent.execute.mockResolvedValue(findAllOutput);
     mockUpdateEvent.execute.mockResolvedValue(updateOutput);
     mockDeleteEvent.execute.mockResolvedValue(deleteOutput);
-    policieService = MockPolicyService();
 
     controller = new EventController(
       mockCreateEvent,
       mockFindEvent,
       mockFindAllEvent,
       mockUpdateEvent,
-      mockDeleteEvent,
-      policieService
+      mockDeleteEvent
     );
   });
 
@@ -148,11 +142,7 @@ describe('EventController unit test', () => {
     const result = await controller.create(createInput, token);
 
     expect(mockCreateEvent.execute).toHaveBeenCalledTimes(1);
-    expect(mockCreateEvent.execute).toHaveBeenCalledWith(
-      createInput,
-      policieService,
-      token
-    );
+    expect(mockCreateEvent.execute).toHaveBeenCalledWith(createInput, token);
     expect(result).toEqual(createOutput);
   });
 
@@ -160,11 +150,7 @@ describe('EventController unit test', () => {
     const result = await controller.find(findInput, token);
 
     expect(mockFindEvent.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindEvent.execute).toHaveBeenCalledWith(
-      findInput,
-      policieService,
-      token
-    );
+    expect(mockFindEvent.execute).toHaveBeenCalledWith(findInput, token);
     expect(result).toEqual(findOutput);
   });
 
@@ -172,11 +158,7 @@ describe('EventController unit test', () => {
     const result = await controller.findAll(findAllInput, token);
 
     expect(mockFindAllEvent.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindAllEvent.execute).toHaveBeenCalledWith(
-      findAllInput,
-      policieService,
-      token
-    );
+    expect(mockFindAllEvent.execute).toHaveBeenCalledWith(findAllInput, token);
     expect(result).toEqual(findAllOutput);
     expect(result.length).toBe(2);
   });
@@ -185,11 +167,7 @@ describe('EventController unit test', () => {
     const result = await controller.update(updateInput, token);
 
     expect(mockUpdateEvent.execute).toHaveBeenCalledTimes(1);
-    expect(mockUpdateEvent.execute).toHaveBeenCalledWith(
-      updateInput,
-      policieService,
-      token
-    );
+    expect(mockUpdateEvent.execute).toHaveBeenCalledWith(updateInput, token);
     expect(result).toEqual(updateOutput);
   });
 
@@ -197,11 +175,7 @@ describe('EventController unit test', () => {
     const result = await controller.delete(deleteInput, token);
 
     expect(mockDeleteEvent.execute).toHaveBeenCalledTimes(1);
-    expect(mockDeleteEvent.execute).toHaveBeenCalledWith(
-      deleteInput,
-      policieService,
-      token
-    );
+    expect(mockDeleteEvent.execute).toHaveBeenCalledWith(deleteInput, token);
     expect(result).toEqual(deleteOutput);
   });
 });

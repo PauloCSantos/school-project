@@ -3,14 +3,13 @@ import {
   FindAllUserWorkerInputDto,
   FindAllUserWorkerOutputDto,
 } from '../../dto/worker-usecase.dto';
-import UserWorkerGateway from '@/modules/user-management/infrastructure/gateway/worker.gateway';
+import UserWorkerGateway from '@/modules/user-management/application/gateway/worker.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class FindAllUserWorker
   implements
@@ -18,24 +17,21 @@ export default class FindAllUserWorker
 {
   private _userWorkerRepository: UserWorkerGateway;
 
-  constructor(userWorkerRepository: UserWorkerGateway) {
+  constructor(
+    userWorkerRepository: UserWorkerGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._userWorkerRepository = userWorkerRepository;
   }
   async execute(
     { offset, quantity }: FindAllUserWorkerInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<FindAllUserWorkerOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.WORKER,
-        FunctionCalledEnum.FIND_ALL,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
-
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.WORKER,
+      FunctionCalledEnum.FIND_ALL,
+      token
+    );
     const results = await this._userWorkerRepository.findAll(quantity, offset);
 
     const result = results.map(userWorker => ({

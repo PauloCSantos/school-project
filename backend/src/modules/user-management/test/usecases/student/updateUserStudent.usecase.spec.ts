@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import UpdateUserStudent from '@/modules/user-management/application/usecases/student/updateUserStudent.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
@@ -29,7 +30,7 @@ describe('updateUserStudent usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -73,9 +74,11 @@ describe('updateUserStudent usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the user does not exist', async () => {
       const userStudentRepository = MockRepository();
-      userStudentRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new UpdateUserStudent(userStudentRepository);
+      userStudentRepository.find.mockResolvedValue(null);
+      const usecase = new UpdateUserStudent(
+        userStudentRepository,
+        policieService
+      );
 
       await expect(
         usecase.execute(
@@ -83,7 +86,6 @@ describe('updateUserStudent usecase unit test', () => {
             ...input,
             id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
           },
-          policieService,
           token
         )
       ).rejects.toThrow('User not found');
@@ -93,8 +95,10 @@ describe('updateUserStudent usecase unit test', () => {
     it('should update an user student', async () => {
       const userStudentRepository = MockRepository();
       userStudentRepository.find.mockResolvedValue(userStudent1);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new UpdateUserStudent(userStudentRepository);
+      const usecase = new UpdateUserStudent(
+        userStudentRepository,
+        policieService
+      );
 
       const result = await usecase.execute(
         {
@@ -109,7 +113,6 @@ describe('updateUserStudent usecase unit test', () => {
           },
           paymentYear: input.paymentYear,
         },
-        policieService,
         token
       );
 

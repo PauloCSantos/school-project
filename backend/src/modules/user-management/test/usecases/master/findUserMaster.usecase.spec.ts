@@ -5,6 +5,7 @@ import Name from '@/modules/user-management/domain/@shared/value-object/name.val
 import UserMaster from '@/modules/user-management/domain/entity/master.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('findUserMaster usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -27,7 +28,7 @@ describe('findUserMaster usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -54,14 +55,9 @@ describe('findUserMaster usecase unit test', () => {
     it('should find an user master', async () => {
       const userMasterRepository = MockRepository();
       userMasterRepository.find.mockResolvedValue(userMaster1);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new FindUserMaster(userMasterRepository);
+      const usecase = new FindUserMaster(userMasterRepository, policieService);
 
-      const result = await usecase.execute(
-        { id: userMaster1.id.value },
-        policieService,
-        token
-      );
+      const result = await usecase.execute({ id: userMaster1.id.value }, token);
 
       expect(userMasterRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();
@@ -69,14 +65,12 @@ describe('findUserMaster usecase unit test', () => {
     it('should return undefined when id is not found', async () => {
       const userMasterRepository = MockRepository();
       userMasterRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindUserMaster(userMasterRepository);
+      const usecase = new FindUserMaster(userMasterRepository, policieService);
       const result = await usecase.execute(
         {
           id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
         },
-        policieService,
         token
       );
 

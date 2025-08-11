@@ -1,9 +1,10 @@
 import FindAllAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/find-all.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
-import AttendanceGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/attendance.gateway';
+import AttendanceGateway from '@/modules/evaluation-note-attendance-management/application/gateway/attendance.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('FindAllAttendance usecase unit test', () => {
   let attendance1: Attendance;
@@ -32,7 +33,7 @@ describe('FindAllAttendance usecase unit test', () => {
     policieService = MockPolicyService();
     token = {
       email: 'caller@domain.com',
-      role: 'master',
+      role: RoleUsersEnum.MASTER,
       masterId: new Id().value,
     };
 
@@ -63,11 +64,13 @@ describe('FindAllAttendance usecase unit test', () => {
         attendance1,
         attendance2,
       ]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindAllAttendance(attendanceRepository);
+      const usecase = new FindAllAttendance(
+        attendanceRepository,
+        policieService
+      );
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(attendanceRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(2);
@@ -76,11 +79,13 @@ describe('FindAllAttendance usecase unit test', () => {
     it('should return an empty array when the repository is empty', async () => {
       const attendanceRepository = MockRepository();
       attendanceRepository.findAll.mockResolvedValue([]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindAllAttendance(attendanceRepository);
+      const usecase = new FindAllAttendance(
+        attendanceRepository,
+        policieService
+      );
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(attendanceRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(0);
@@ -94,11 +99,13 @@ describe('FindAllAttendance usecase unit test', () => {
       attendanceRepository.findAll.mockRejectedValueOnce(
         new Error('Database error')
       );
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindAllAttendance(attendanceRepository);
+      const usecase = new FindAllAttendance(
+        attendanceRepository,
+        policieService
+      );
 
-      await expect(usecase.execute({}, policieService, token)).rejects.toThrow(
+      await expect(usecase.execute({}, token)).rejects.toThrow(
         'Database error'
       );
       expect(attendanceRepository.findAll).toHaveBeenCalled();

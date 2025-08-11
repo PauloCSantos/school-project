@@ -23,11 +23,11 @@ export default class NoteFacadeFactory {
     const policiesService = new PoliciesService();
 
     // Create all required use cases
-    const createNote = new CreateNote(repository);
-    const deleteNote = new DeleteNote(repository);
-    const findAllNote = new FindAllNote(repository);
-    const findNote = new FindNote(repository);
-    const updateNote = new UpdateNote(repository);
+    const createNote = new CreateNote(repository, policiesService);
+    const deleteNote = new DeleteNote(repository, policiesService);
+    const findAllNote = new FindAllNote(repository, policiesService);
+    const findNote = new FindNote(repository, policiesService);
+    const updateNote = new UpdateNote(repository, policiesService);
 
     // Instantiate and return the facade with all required use cases
     const facade = new NoteFacade({
@@ -36,7 +36,6 @@ export default class NoteFacadeFactory {
       findAllNote,
       findNote,
       updateNote,
-      policiesService,
     });
 
     return facade;

@@ -1,17 +1,17 @@
 import FindAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/find-user.usecase';
-import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
-import {
-  RoleUsersEnum,
-  TokenData,
-  ModulesNameEnum,
-  FunctionCalledEnum,
-} from '@/modules/@shared/type/sharedTypes';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import {
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  RoleUsersEnum,
+} from '@/modules/@shared/enums/enums';
 
 describe('FindAuthUser Use Case', () => {
   let repository: jest.Mocked<AuthUserGateway>;
-  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let policiesService: jest.Mocked<PoliciesServiceInterface>;
   let usecase: FindAuthUser;
   let input: { email: string };
   let token: TokenData;
@@ -33,8 +33,8 @@ describe('FindAuthUser Use Case', () => {
 
   beforeEach(() => {
     repository = MockRepository();
-    policieService = MockPolicyService();
-    usecase = new FindAuthUser(repository);
+    policiesService = MockPolicyService();
+    usecase = new FindAuthUser(repository, policiesService);
 
     input = { email: 'test@example.com' };
     token = {
@@ -49,12 +49,14 @@ describe('FindAuthUser Use Case', () => {
   });
 
   it('should throw ACCESS_DENIED when policies are not permitted', async () => {
-    policieService.verifyPolicies.mockResolvedValueOnce(false);
+    policiesService.verifyPolicies.mockRejectedValueOnce(
+      new Error('User does not have access permission')
+    );
 
-    await expect(usecase.execute(input, policieService, token)).rejects.toThrow(
+    await expect(usecase.execute(input, token)).rejects.toThrow(
       'User does not have access permission'
     );
-    expect(policieService.verifyPolicies).toHaveBeenCalledWith(
+    expect(policiesService.verifyPolicies).toHaveBeenCalledWith(
       ModulesNameEnum.AUTHUSER,
       FunctionCalledEnum.FIND,
       token,
@@ -64,12 +66,11 @@ describe('FindAuthUser Use Case', () => {
   });
 
   it('should return null when authUser is not found', async () => {
-    policieService.verifyPolicies.mockResolvedValueOnce(true);
     repository.find.mockResolvedValueOnce(null);
 
-    const result = await usecase.execute(input, policieService, token);
+    const result = await usecase.execute(input, token);
 
-    expect(policieService.verifyPolicies).toHaveBeenCalledWith(
+    expect(policiesService.verifyPolicies).toHaveBeenCalledWith(
       ModulesNameEnum.AUTHUSER,
       FunctionCalledEnum.FIND,
       token,
@@ -86,20 +87,20 @@ describe('FindAuthUser Use Case', () => {
       role: token.role,
       isHashed: true,
     };
-    policieService.verifyPolicies.mockResolvedValueOnce(true);
+
     repository.find.mockResolvedValueOnce(
       mockReturnedUser as unknown as ReturnType<typeof repository.find>
     );
 
-    const result = await usecase.execute(input, policieService, token);
+    const result = await usecase.execute(input, token);
 
-    expect(policieService.verifyPolicies).toHaveBeenCalledWith(
+    expect(policiesService.verifyPolicies).toHaveBeenCalledWith(
       ModulesNameEnum.AUTHUSER,
       FunctionCalledEnum.FIND,
       token,
       { targetEmail: input.email }
     );
     expect(repository.find).toHaveBeenCalledWith(input.email);
-    expect(result).toEqual(mockReturnedUser);
+    expect(result).toEqual({ email: mockReturnedUser.email });
   });
 });

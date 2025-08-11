@@ -3,14 +3,13 @@ import {
   FindLessonInputDto,
   FindLessonOutputDto,
 } from '../../dto/lesson-usecase.dto';
-import LessonGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/lesson.gateway';
+import LessonGateway from '@/modules/schedule-lesson-management/application/gateway/lesson.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for retrieving a lesson by ID.
@@ -20,7 +19,10 @@ export default class FindLesson
 {
   private _lessonRepository: LessonGateway;
 
-  constructor(lessonRepository: LessonGateway) {
+  constructor(
+    lessonRepository: LessonGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._lessonRepository = lessonRepository;
   }
 
@@ -29,18 +31,13 @@ export default class FindLesson
    */
   async execute(
     { id }: FindLessonInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<FindLessonOutputDto | null> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.LESSON,
-        FunctionCalledEnum.FIND,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.LESSON,
+      FunctionCalledEnum.FIND,
+      token
+    );
     const response = await this._lessonRepository.find(id);
     if (response) {
       return {

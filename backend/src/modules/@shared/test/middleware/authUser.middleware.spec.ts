@@ -1,8 +1,9 @@
-import TokenService from '../../infraestructure/services/token.service';
+import TokenService from '../../../authentication-authorization-management/infrastructure/services/token.service';
 import AuthUserMiddleware from '../../application/middleware/authUser.middleware';
-import { RoleUsers, RoleUsersEnum } from '../../type/sharedTypes';
+import TokenServiceInterface from '../../../authentication-authorization-management/infrastructure/services/token.service';
+import { RoleUsers } from '../../type/sharedTypes';
 import { HttpRequest } from '../../infraestructure/http/http.interface';
-import TokenServiceInterface from '../../infraestructure/services/token.service';
+import { RoleUsersEnum } from '../../enums/enums';
 
 describe('AuthUserMiddleware unit test', () => {
   let middleware: AuthUserMiddleware;

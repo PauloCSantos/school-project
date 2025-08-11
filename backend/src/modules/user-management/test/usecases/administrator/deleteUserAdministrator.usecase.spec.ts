@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import DeleteUserAdministrator from '@/modules/user-management/application/usecases/administrator/deleteUserAdministrator.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
@@ -30,7 +31,7 @@ describe('deleteUserAdministrator usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -67,17 +68,15 @@ describe('deleteUserAdministrator usecase unit test', () => {
   describe('On fail', () => {
     it('should return an error if the user does not exist', async () => {
       const userAdministratorRepository = MockRepository();
-      userAdministratorRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
+      userAdministratorRepository.find.mockResolvedValue(null);
 
-      const usecase = new DeleteUserAdministrator(userAdministratorRepository);
+      const usecase = new DeleteUserAdministrator(
+        userAdministratorRepository,
+        policieService
+      );
 
       await expect(
-        usecase.execute(
-          { id: '75c791ca-7a40-4217-8b99-2cf22c01d543' },
-          policieService,
-          token
-        )
+        usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
       ).rejects.toThrow('User not found');
     });
   });
@@ -85,13 +84,14 @@ describe('deleteUserAdministrator usecase unit test', () => {
     it('should delete a user administrator', async () => {
       const userAdministratorRepository = MockRepository();
       userAdministratorRepository.find.mockResolvedValue(userAdministrator);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new DeleteUserAdministrator(userAdministratorRepository);
+      const usecase = new DeleteUserAdministrator(
+        userAdministratorRepository,
+        policieService
+      );
       const result = await usecase.execute(
         {
           id: userAdministrator.id.value,
         },
-        policieService,
         token
       );
 

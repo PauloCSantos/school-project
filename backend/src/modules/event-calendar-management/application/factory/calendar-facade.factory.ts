@@ -23,11 +23,11 @@ export default class EventFacadeFactory {
     const policiesService = new PoliciesService();
 
     // Create all required use cases
-    const createEvent = new CreateEvent(repository);
-    const deleteEvent = new DeleteEvent(repository);
-    const findAllEvent = new FindAllEvent(repository);
-    const findEvent = new FindEvent(repository);
-    const updateEvent = new UpdateEvent(repository);
+    const createEvent = new CreateEvent(repository, policiesService);
+    const deleteEvent = new DeleteEvent(repository, policiesService);
+    const findAllEvent = new FindAllEvent(repository, policiesService);
+    const findEvent = new FindEvent(repository, policiesService);
+    const updateEvent = new UpdateEvent(repository, policiesService);
 
     // Instantiate and return the facade with all required use cases
     const facade = new EventFacade({
@@ -36,7 +36,6 @@ export default class EventFacadeFactory {
       findAllEvent,
       findEvent,
       updateEvent,
-      policiesService,
     });
 
     return facade;

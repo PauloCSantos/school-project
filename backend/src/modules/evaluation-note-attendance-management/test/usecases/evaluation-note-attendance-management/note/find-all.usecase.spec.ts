@@ -3,7 +3,8 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import FindAllNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/find-all.usecase';
 import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
-import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
+import NoteGateway from '@/modules/evaluation-note-attendance-management/application/gateway/note.gateway';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('findAllNote usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -27,7 +28,7 @@ describe('findAllNote usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -46,11 +47,10 @@ describe('findAllNote usecase unit test', () => {
     it('should find all notes', async () => {
       const noteRepository = MockRepository();
       noteRepository.findAll.mockResolvedValue([note1, note2]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindAllNote(noteRepository);
+      const usecase = new FindAllNote(noteRepository, policieService);
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(noteRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(2);
@@ -58,11 +58,10 @@ describe('findAllNote usecase unit test', () => {
     it('should return an empty array when the repository is empty', async () => {
       const noteRepository = MockRepository();
       noteRepository.findAll.mockResolvedValue([]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindAllNote(noteRepository);
+      const usecase = new FindAllNote(noteRepository, policieService);
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(noteRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(0);

@@ -1,4 +1,4 @@
-import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
+import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
 
 export interface EmailAuthValidator {
   validate(email: string): Promise<boolean>;
