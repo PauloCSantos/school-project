@@ -28,17 +28,17 @@ export default class LessonFacadeFactory {
     const policiesService = new PoliciesService();
 
     // Create all required use cases
-    const createLesson = new CreateLesson(repository);
-    const deleteLesson = new DeleteLesson(repository);
-    const findAllLesson = new FindAllLesson(repository);
-    const findLesson = new FindLesson(repository);
-    const updateLesson = new UpdateLesson(repository);
-    const addStudents = new AddStudents(repository);
-    const removeStudents = new RemoveStudents(repository);
-    const addDay = new AddDay(repository);
-    const removeDay = new RemoveDay(repository);
-    const addTime = new AddTime(repository);
-    const removeTime = new RemoveTime(repository);
+    const createLesson = new CreateLesson(repository, policiesService);
+    const deleteLesson = new DeleteLesson(repository, policiesService);
+    const findAllLesson = new FindAllLesson(repository, policiesService);
+    const findLesson = new FindLesson(repository, policiesService);
+    const updateLesson = new UpdateLesson(repository, policiesService);
+    const addStudents = new AddStudents(repository, policiesService);
+    const removeStudents = new RemoveStudents(repository, policiesService);
+    const addDay = new AddDay(repository, policiesService);
+    const removeDay = new RemoveDay(repository, policiesService);
+    const addTime = new AddTime(repository, policiesService);
+    const removeTime = new RemoveTime(repository, policiesService);
 
     // Instantiate and return the facade with all required use cases
     const facade = new LessonFacade({
@@ -53,7 +53,6 @@ export default class LessonFacadeFactory {
       removeDay,
       addTime,
       removeTime,
-      policiesService,
     });
 
     return facade;

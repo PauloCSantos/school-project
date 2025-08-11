@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import CreateSubject from '@/modules/subject-curriculum-management/application/usecases/subject/create.usecase';
 import Subject from '@/modules/subject-curriculum-management/domain/entity/subject.entity';
@@ -26,7 +27,7 @@ describe('createSubject usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -44,13 +45,12 @@ describe('createSubject usecase unit test', () => {
     it('should throw an error if the subject already exists', async () => {
       const subjectRepository = MockRepository();
       subjectRepository.find.mockResolvedValue(subject);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new CreateSubject(subjectRepository);
+      const usecase = new CreateSubject(subjectRepository, policieService);
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Subject already exists');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Subject already exists'
+      );
       expect(subjectRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(subjectRepository.create).not.toHaveBeenCalled();
     });
@@ -59,11 +59,10 @@ describe('createSubject usecase unit test', () => {
   describe('On success', () => {
     it('should create a subject', async () => {
       const subjectRepository = MockRepository();
-      subjectRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
+      subjectRepository.find.mockResolvedValue(null);
 
-      const usecase = new CreateSubject(subjectRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new CreateSubject(subjectRepository, policieService);
+      const result = await usecase.execute(input, token);
 
       expect(subjectRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(subjectRepository.create).toHaveBeenCalled();

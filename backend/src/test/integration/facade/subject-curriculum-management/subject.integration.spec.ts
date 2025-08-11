@@ -1,3 +1,4 @@
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import SubjectFacadeFactory from '@/modules/subject-curriculum-management/application/factory/subject.factory';
 
@@ -17,7 +18,7 @@ describe('Subject facade integration test', () => {
   const token: TokenData = {
     email: 'teste@teste.com.br',
     masterId: 'validID',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
   };
 
   it('should create an Subject using the facade', async () => {

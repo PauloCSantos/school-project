@@ -1,5 +1,5 @@
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
-import CurriculumGateway from '../../gateway/curriculum.gateway';
+import CurriculumGateway from '../../../application/gateway/curriculum.gateway';
 
 export default class MemoryCurriculumRepository implements CurriculumGateway {
   private _curriculums: Curriculum[];

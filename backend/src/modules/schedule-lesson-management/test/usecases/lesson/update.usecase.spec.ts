@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import UpdateLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/update.usecase';
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
@@ -32,7 +33,7 @@ describe('updateLesson usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -54,10 +55,9 @@ describe('updateLesson usecase unit test', () => {
   describe('On fail', () => {
     it('should throw an error if the lesson does not exist', async () => {
       const lessonRepository = MockRepository();
-      lessonRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
+      lessonRepository.find.mockResolvedValue(null);
 
-      const usecase = new UpdateLesson(lessonRepository);
+      const usecase = new UpdateLesson(lessonRepository, policieService);
 
       await expect(
         usecase.execute(
@@ -65,7 +65,6 @@ describe('updateLesson usecase unit test', () => {
             ...input,
             id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
           },
-          policieService,
           token
         )
       ).rejects.toThrow('Lesson not found');
@@ -75,11 +74,10 @@ describe('updateLesson usecase unit test', () => {
     it('should update a lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new UpdateLesson(lessonRepository);
+      const usecase = new UpdateLesson(lessonRepository, policieService);
 
-      const result = await usecase.execute(input, policieService, token);
+      const result = await usecase.execute(input, token);
 
       expect(lessonRepository.update).toHaveBeenCalled();
       expect(lessonRepository.find).toHaveBeenCalled();

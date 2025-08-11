@@ -1,4 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import LessonFacadeFactory from '@/modules/schedule-lesson-management/application/factory/lesson.factory';
 
@@ -36,7 +37,7 @@ describe('Lesson facade integration test', () => {
   const token: TokenData = {
     email: 'teste@teste.com.br',
     masterId: 'validID',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
   };
 
   it('should create an Lesson using the facade', async () => {

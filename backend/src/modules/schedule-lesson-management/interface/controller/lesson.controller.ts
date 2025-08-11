@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateLessonInputDto,
   AddDayInputDto,
@@ -66,8 +65,7 @@ export class LessonController {
     private readonly addDaytoLesson: AddDay,
     private readonly removeDaytoLesson: RemoveDay,
     private readonly addTimetoLesson: AddTime,
-    private readonly removeTimetoLesson: RemoveTime,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly removeTimetoLesson: RemoveTime
   ) {}
 
   /**
@@ -79,11 +77,7 @@ export class LessonController {
     input: CreateLessonInputDto,
     token: TokenData
   ): Promise<CreateLessonOutputDto> {
-    const response = await this.createLesson.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createLesson.execute(input, token);
     return response;
   }
 
@@ -96,11 +90,7 @@ export class LessonController {
     input: FindLessonInputDto,
     token: TokenData
   ): Promise<FindLessonOutputDto | null> {
-    const response = await this.findLesson.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findLesson.execute(input, token);
     return response;
   }
 
@@ -113,11 +103,7 @@ export class LessonController {
     input: FindAllLessonInputDto,
     token: TokenData
   ): Promise<FindAllLessonOutputDto> {
-    const response = await this.findAllLesson.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAllLesson.execute(input, token);
     return response;
   }
 
@@ -130,11 +116,7 @@ export class LessonController {
     input: DeleteLessonInputDto,
     token: TokenData
   ): Promise<DeleteLessonOutputDto> {
-    const response = await this.deleteLesson.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.deleteLesson.execute(input, token);
     return response;
   }
 
@@ -147,11 +129,7 @@ export class LessonController {
     input: UpdateLessonInputDto,
     token: TokenData
   ): Promise<UpdateLessonOutputDto> {
-    const response = await this.updateLesson.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateLesson.execute(input, token);
     return response;
   }
 
@@ -164,11 +142,7 @@ export class LessonController {
     input: AddStudentsInputDto,
     token: TokenData
   ): Promise<AddStudentsOutputDto> {
-    const response = await this.addStudentstoLesson.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.addStudentstoLesson.execute(input, token);
     return response;
   }
 
@@ -181,11 +155,7 @@ export class LessonController {
     input: RemoveStudentsInputDto,
     token: TokenData
   ): Promise<RemoveStudentsOutputDto> {
-    const response = await this.removeStudentstoLesson.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.removeStudentstoLesson.execute(input, token);
     return response;
   }
 
@@ -198,11 +168,7 @@ export class LessonController {
     input: AddTimeInputDto,
     token: TokenData
   ): Promise<AddTimeOutputDto> {
-    const response = await this.addTimetoLesson.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.addTimetoLesson.execute(input, token);
     return response;
   }
 
@@ -215,11 +181,7 @@ export class LessonController {
     input: RemoveTimeInputDto,
     token: TokenData
   ): Promise<RemoveTimeOutputDto> {
-    const response = await this.removeTimetoLesson.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.removeTimetoLesson.execute(input, token);
     return response;
   }
 
@@ -232,11 +194,7 @@ export class LessonController {
     input: AddDayInputDto,
     token: TokenData
   ): Promise<AddDayOutputDto> {
-    const response = await this.addDaytoLesson.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.addDaytoLesson.execute(input, token);
     return response;
   }
 
@@ -249,11 +207,7 @@ export class LessonController {
     input: RemoveDayInputDto,
     token: TokenData
   ): Promise<RemoveDayOutputDto> {
-    const response = await this.removeDaytoLesson.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.removeDaytoLesson.execute(input, token);
     return response;
   }
 }

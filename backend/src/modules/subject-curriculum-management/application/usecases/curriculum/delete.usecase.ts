@@ -3,14 +3,13 @@ import {
   DeleteCurriculumInputDto,
   DeleteCurriculumOutputDto,
 } from '../../dto/curriculum-usecase.dto';
-import CurriculumGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/curriculum.gateway';
+import CurriculumGateway from '@/modules/subject-curriculum-management/application/gateway/curriculum.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class DeleteCurriculum
   implements
@@ -18,23 +17,21 @@ export default class DeleteCurriculum
 {
   private _curriculumRepository: CurriculumGateway;
 
-  constructor(curriculumRepository: CurriculumGateway) {
+  constructor(
+    curriculumRepository: CurriculumGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._curriculumRepository = curriculumRepository;
   }
   async execute(
     { id }: DeleteCurriculumInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<DeleteCurriculumOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.CURRICULUM,
-        FunctionCalledEnum.DELETE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.CURRICULUM,
+      FunctionCalledEnum.DELETE,
+      token
+    );
 
     const curriculumVerification = await this._curriculumRepository.find(id);
     if (!curriculumVerification) throw new Error('Curriculum not found');

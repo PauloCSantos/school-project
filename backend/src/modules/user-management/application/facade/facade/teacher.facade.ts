@@ -16,7 +16,6 @@ import {
   UpdateUserTeacherInputDto,
   UpdateUserTeacherOutputDto,
 } from '../../dto/teacher-facade.dto';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 type TeacherFacadeProps = {
@@ -25,7 +24,6 @@ type TeacherFacadeProps = {
   readonly findAllUserTeacher: FindAllUserTeacher;
   readonly findUserTeacher: FindUserTeacher;
   readonly updateUserTeacher: UpdateUserTeacher;
-  readonly policiesService: PoliciesServiceInterface;
 };
 export default class TeacherFacade implements TeacherFacadeInterface {
   private readonly _createUserTeacher: CreateUserTeacher;
@@ -33,7 +31,6 @@ export default class TeacherFacade implements TeacherFacadeInterface {
   private readonly _findAllUserTeacher: FindAllUserTeacher;
   private readonly _findUserTeacher: FindUserTeacher;
   private readonly _updateUserTeacher: UpdateUserTeacher;
-  private readonly _policiesService: PoliciesServiceInterface;
 
   constructor(input: TeacherFacadeProps) {
     this._createUserTeacher = input.createUserTeacher;
@@ -41,57 +38,36 @@ export default class TeacherFacade implements TeacherFacadeInterface {
     this._findAllUserTeacher = input.findAllUserTeacher;
     this._findUserTeacher = input.findUserTeacher;
     this._updateUserTeacher = input.updateUserTeacher;
-    this._policiesService = input.policiesService;
   }
 
   async create(
     input: CreateUserTeacherInputDto,
     token: TokenData
   ): Promise<CreateUserTeacherOutputDto> {
-    return await this._createUserTeacher.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._createUserTeacher.execute(input, token);
   }
   async find(
     input: FindUserTeacherInputDto,
     token: TokenData
   ): Promise<FindUserTeacherOutputDto | null> {
-    return await this._findUserTeacher.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._findUserTeacher.execute(input, token);
   }
   async findAll(
     input: FindAllUserTeacherInputDto,
     token: TokenData
   ): Promise<FindAllUserTeacherOutputDto> {
-    return await this._findAllUserTeacher.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._findAllUserTeacher.execute(input, token);
   }
   async delete(
     input: DeleteUserTeacherInputDto,
     token: TokenData
   ): Promise<DeleteUserTeacherOutputDto> {
-    return await this._deleteUserTeacher.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._deleteUserTeacher.execute(input, token);
   }
   async update(
     input: UpdateUserTeacherInputDto,
     token: TokenData
   ): Promise<UpdateUserTeacherOutputDto> {
-    return await this._updateUserTeacher.execute(
-      input,
-      this._policiesService,
-      token
-    );
+    return await this._updateUserTeacher.execute(input, token);
   }
 }

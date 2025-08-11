@@ -6,38 +6,35 @@ import {
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
-import CurriculumGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/curriculum.gateway';
+import CurriculumGateway from '@/modules/subject-curriculum-management/application/gateway/curriculum.gateway';
 import CurriculumMapper from '../../mapper/curriculum.mapper';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class RemoveSubjects
   implements UseCaseInterface<RemoveSubjectsInputDto, RemoveSubjectsOutputDto>
 {
   private _curriculumRepository: CurriculumGateway;
 
-  constructor(curriculumRepository: CurriculumGateway) {
+  constructor(
+    curriculumRepository: CurriculumGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._curriculumRepository = curriculumRepository;
   }
   async execute(
     { id, subjectsListToRemove }: RemoveSubjectsInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<RemoveSubjectsOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.CURRICULUM,
-        FunctionCalledEnum.REMOVE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.CURRICULUM,
+      FunctionCalledEnum.REMOVE,
+      token
+    );
 
     const curriculumVerification = await this._curriculumRepository.find(id);
     if (!curriculumVerification) throw new Error('Curriculum not found');

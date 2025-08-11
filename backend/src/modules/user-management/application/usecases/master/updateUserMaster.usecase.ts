@@ -3,14 +3,13 @@ import {
   UpdateUserMasterInputDto,
   UpdateUserMasterOutputDto,
 } from '../../dto/master-usecase.dto';
-import UserMasterGateway from '@/modules/user-management/infrastructure/gateway/master.gateway';
+import UserMasterGateway from '@/modules/user-management/application/gateway/master.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class UpdateUserMaster
   implements
@@ -18,23 +17,21 @@ export default class UpdateUserMaster
 {
   private _userMasterRepository: UserMasterGateway;
 
-  constructor(userMasterRepository: UserMasterGateway) {
+  constructor(
+    userMasterRepository: UserMasterGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._userMasterRepository = userMasterRepository;
   }
   async execute(
     { id, name, address, email, birthday, cnpj }: UpdateUserMasterInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<UpdateUserMasterOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.MASTER,
-        FunctionCalledEnum.UPDATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.MASTER,
+      FunctionCalledEnum.UPDATE,
+      token
+    );
 
     const userMaster = await this._userMasterRepository.find(id);
     if (!userMaster) throw new Error('User not found');

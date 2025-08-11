@@ -1,14 +1,11 @@
 import bcrypt from 'bcrypt';
+import { AuthUserServiceInterface } from '../../domain/service/interface/user-entity-service.interface';
 
-export interface AuthUserServiceInterface {
-  generateHash(password: string): Promise<string>;
-  comparePassword(password: string, hash: string): Promise<boolean>;
-}
 /**
  * Service responsible for user authentication,
  * including password hash generation and comparison.
  */
-export class AuthUserService {
+export class AuthUserService implements AuthUserServiceInterface {
   /**
    * Number of salt rounds used by bcrypt.
    * Higher values increase security but also processing time.

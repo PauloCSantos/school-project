@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import RemoveLessons from '@/modules/schedule-lesson-management/application/usecases/schedule/remove-lessons.usecase';
 import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
@@ -34,7 +35,7 @@ describe('RemoveLessons use case unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -52,27 +53,24 @@ describe('RemoveLessons use case unit test', () => {
     it('should throw an error if the schedule is not found', async () => {
       const scheduleRepository = MockRepository();
       scheduleRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new RemoveLessons(scheduleRepository);
+      const usecase = new RemoveLessons(scheduleRepository, policieService);
 
-      await expect(
-        usecase.execute(input, policieService, token)
-      ).rejects.toThrow('Schedule not found');
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Schedule not found'
+      );
       expect(scheduleRepository.find).toHaveBeenCalledWith(input.id);
       expect(scheduleRepository.removeLessons).not.toHaveBeenCalled();
     });
     it('should throw an error if the lesson is not found in the schedule', async () => {
       const scheduleRepository = MockRepository();
       scheduleRepository.find.mockResolvedValue(schedule);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new RemoveLessons(scheduleRepository);
+      const usecase = new RemoveLessons(scheduleRepository, policieService);
 
       await expect(
         usecase.execute(
           { ...input, lessonsListToRemove: [new Id().value] },
-          policieService,
           token
         )
       ).rejects.toThrow('This lesson is not included in the schedule');
@@ -85,10 +83,9 @@ describe('RemoveLessons use case unit test', () => {
     it('should remove lessons from the schedule', async () => {
       const scheduleRepository = MockRepository();
       scheduleRepository.find.mockResolvedValue(schedule);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new RemoveLessons(scheduleRepository);
-      const result = await usecase.execute(input, policieService, token);
+      const usecase = new RemoveLessons(scheduleRepository, policieService);
+      const result = await usecase.execute(input, token);
 
       expect(scheduleRepository.find).toHaveBeenCalledWith(input.id);
       expect(scheduleRepository.removeLessons).toHaveBeenCalledWith(

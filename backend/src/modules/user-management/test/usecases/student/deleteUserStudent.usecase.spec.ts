@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import DeleteUserStudent from '@/modules/user-management/application/usecases/student/deleteUserStudent.usecase';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
@@ -29,7 +30,7 @@ describe('deleteUserStudent usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -63,16 +64,14 @@ describe('deleteUserStudent usecase unit test', () => {
     it('should return an error if the user does not exist', async () => {
       const userStudentRepository = MockRepository();
       userStudentRepository.find.mockResolvedValue(undefined);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new DeleteUserStudent(userStudentRepository);
+      const usecase = new DeleteUserStudent(
+        userStudentRepository,
+        policieService
+      );
 
       await expect(
-        usecase.execute(
-          { id: '75c791ca-7a40-4217-8b99-2cf22c01d543' },
-          policieService,
-          token
-        )
+        usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
       ).rejects.toThrow('User not found');
     });
   });
@@ -80,13 +79,14 @@ describe('deleteUserStudent usecase unit test', () => {
     it('should delete a user student', async () => {
       const userStudentRepository = MockRepository();
       userStudentRepository.find.mockResolvedValue(userStudent);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
-      const usecase = new DeleteUserStudent(userStudentRepository);
+      const usecase = new DeleteUserStudent(
+        userStudentRepository,
+        policieService
+      );
       const result = await usecase.execute(
         {
           id: userStudent.id.value,
         },
-        policieService,
         token
       );
 

@@ -3,14 +3,13 @@ import {
   DeleteUserWorkerInputDto,
   DeleteUserWorkerOutputDto,
 } from '../../dto/worker-usecase.dto';
-import UserWorkerGateway from '@/modules/user-management/infrastructure/gateway/worker.gateway';
+import UserWorkerGateway from '@/modules/user-management/application/gateway/worker.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class DeleteUserWorker
   implements
@@ -18,23 +17,21 @@ export default class DeleteUserWorker
 {
   private _userWorkerRepository: UserWorkerGateway;
 
-  constructor(userWorkerRepository: UserWorkerGateway) {
+  constructor(
+    userWorkerRepository: UserWorkerGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._userWorkerRepository = userWorkerRepository;
   }
   async execute(
     { id }: DeleteUserWorkerInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<DeleteUserWorkerOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.WORKER,
-        FunctionCalledEnum.DELETE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.WORKER,
+      FunctionCalledEnum.DELETE,
+      token
+    );
 
     const userVerification = await this._userWorkerRepository.find(id);
     if (!userVerification) throw new Error('User not found');

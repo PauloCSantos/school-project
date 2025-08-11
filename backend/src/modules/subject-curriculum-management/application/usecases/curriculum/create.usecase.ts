@@ -4,14 +4,13 @@ import {
   CreateCurriculumOutputDto,
 } from '../../dto/curriculum-usecase.dto';
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
-import CurriculumGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/curriculum.gateway';
+import CurriculumGateway from '@/modules/subject-curriculum-management/application/gateway/curriculum.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class CreateCurriculum
   implements
@@ -19,23 +18,21 @@ export default class CreateCurriculum
 {
   private _curriculumRepository: CurriculumGateway;
 
-  constructor(curriculumRepository: CurriculumGateway) {
+  constructor(
+    curriculumRepository: CurriculumGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._curriculumRepository = curriculumRepository;
   }
   async execute(
     { name, subjectsList, yearsToComplete }: CreateCurriculumInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<CreateCurriculumOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.CURRICULUM,
-        FunctionCalledEnum.CREATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.CURRICULUM,
+      FunctionCalledEnum.CREATE,
+      token
+    );
 
     const curriculum = new Curriculum({
       name,

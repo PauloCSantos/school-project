@@ -1,5 +1,5 @@
 import Subject from '@/modules/subject-curriculum-management/domain/entity/subject.entity';
-import SubjectGateway from '../../gateway/subject.gateway';
+import SubjectGateway from '../../../application/gateway/subject.gateway';
 
 export default class MemorySubjectRepository implements SubjectGateway {
   private _subjects: Subject[];

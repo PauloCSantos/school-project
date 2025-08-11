@@ -3,14 +3,13 @@ import {
   FindAllCurriculumInputDto,
   FindAllCurriculumOutputDto,
 } from '../../dto/curriculum-usecase.dto';
-import CurriculumGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/curriculum.gateway';
+import CurriculumGateway from '@/modules/subject-curriculum-management/application/gateway/curriculum.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class FindAllCurriculum
   implements
@@ -18,23 +17,21 @@ export default class FindAllCurriculum
 {
   private _curriculumRepository: CurriculumGateway;
 
-  constructor(curriculumRepository: CurriculumGateway) {
+  constructor(
+    curriculumRepository: CurriculumGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._curriculumRepository = curriculumRepository;
   }
   async execute(
     { offset, quantity }: FindAllCurriculumInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<FindAllCurriculumOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.CURRICULUM,
-        FunctionCalledEnum.FIND_ALL,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.CURRICULUM,
+      FunctionCalledEnum.FIND_ALL,
+      token
+    );
 
     const results = await this._curriculumRepository.findAll(quantity, offset);
 

@@ -7,11 +7,10 @@ import UpdateCurriculum from '../../application/usecases/curriculum/update.useca
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import AddSubjects from '../../application/usecases/curriculum/add-subjects.usecase';
 import { CurriculumController } from '../../interface/controller/curriculum.controller';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('CurriculumController unit test', () => {
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
 
   const mockCreateCurriculum = jest.fn(() => {
@@ -74,12 +73,9 @@ describe('CurriculumController unit test', () => {
         .mockResolvedValue({ message: '2 values were removed' }),
     } as unknown as RemoveSubjects;
   });
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -90,7 +86,6 @@ describe('CurriculumController unit test', () => {
   const updateCurriculum = mockUpdateCurriculum();
   const addSubjects = mockAddSubjects();
   const removeSubjects = mockRemoveSubjects();
-  policieService = MockPolicyService();
 
   const controller = new CurriculumController(
     createCurriculum,
@@ -99,8 +94,7 @@ describe('CurriculumController unit test', () => {
     updateCurriculum,
     deleteCurriculum,
     addSubjects,
-    removeSubjects,
-    policieService
+    removeSubjects
   );
 
   it('should return a id for the new curriculum created', async () => {

@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateEventInputDto,
   CreateEventOutputDto,
@@ -36,8 +35,7 @@ export default class EventController {
     private readonly findEvent: FindEvent,
     private readonly findAllEvent: FindAllEvent,
     private readonly updateEvent: UpdateEvent,
-    private readonly deleteEvent: DeleteEvent,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly deleteEvent: DeleteEvent
   ) {}
 
   /**
@@ -49,11 +47,7 @@ export default class EventController {
     input: CreateEventInputDto,
     token: TokenData
   ): Promise<CreateEventOutputDto> {
-    const response = await this.createEvent.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createEvent.execute(input, token);
     return response;
   }
 
@@ -66,11 +60,7 @@ export default class EventController {
     input: FindEventInputDto,
     token: TokenData
   ): Promise<FindEventOutputDto | null> {
-    const response = await this.findEvent.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findEvent.execute(input, token);
     return response;
   }
 
@@ -83,11 +73,7 @@ export default class EventController {
     input: FindAllEventInputDto,
     token: TokenData
   ): Promise<FindAllEventOutputDto> {
-    const response = await this.findAllEvent.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAllEvent.execute(input, token);
     return response;
   }
 
@@ -100,11 +86,7 @@ export default class EventController {
     input: DeleteEventInputDto,
     token: TokenData
   ): Promise<DeleteEventOutputDto> {
-    const response = await this.deleteEvent.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.deleteEvent.execute(input, token);
     return response;
   }
 
@@ -117,11 +99,7 @@ export default class EventController {
     input: UpdateEventInputDto,
     token: TokenData
   ): Promise<UpdateEventOutputDto> {
-    const response = await this.updateEvent.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateEvent.execute(input, token);
     return response;
   }
 }

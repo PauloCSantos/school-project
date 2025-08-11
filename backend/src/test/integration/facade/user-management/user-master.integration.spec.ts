@@ -4,10 +4,7 @@ import { RoleUsers, TokenData } from '@/modules/@shared/type/sharedTypes';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import MemoryMasterRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/master.repository';
 
-import {
-  AuthUserService,
-  AuthUserServiceInterface,
-} from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
 
 import CreateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/create-user.usecase';
 import DeleteAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/delete-user.usecase';
@@ -22,18 +19,30 @@ import FindUserMaster from '@/modules/user-management/application/usecases/maste
 import UpdateUserMaster from '@/modules/user-management/application/usecases/master/updateUserMaster.usecase';
 import MasterFacade from '@/modules/user-management/application/facade/facade/master.facade';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
-import TokenService from '@/modules/@shared/infraestructure/services/token.service';
-import TokenServiceInterface from '@/modules/@shared/infraestructure/services/token.service';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import TokenServiceInterface from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
 import {
   PoliciesService,
   PoliciesServiceInterface,
 } from '@/modules/@shared/application/services/policies.service';
+import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
+import TenantGateway from '@/modules/authentication-authorization-management/application/gateway/tenant.gateway';
+import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
+import UserMasterGateway from '@/modules/user-management/application/gateway/master.gateway';
+import {
+  TenantService,
+  TenantServiceInterface,
+} from '@/modules/authentication-authorization-management/domain/service/tenant.service';
+import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.gateway';
 
 describe('User master facade integration test', () => {
-  let authUserRepository: MemoryAuthUserRepository;
-  let masterRepository: MemoryMasterRepository;
+  let authUserRepository: AuthUserGateway;
+  let tenantRepository: TenantGateway;
+  let masterRepository: UserMasterGateway;
   let emailAuthValidator: EmailAuthValidatorService;
   let authUserService: AuthUserServiceInterface;
+  let tenantService: TenantServiceInterface;
   let tokenService: TokenServiceInterface;
   let createAuthUser: CreateAuthUser;
   let deleteAuthUser: DeleteAuthUser;
@@ -69,7 +78,7 @@ describe('User master facade integration test', () => {
   const token: TokenData = {
     email: 'teste@teste.com.br',
     masterId: 'validID',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
   };
 
   async function createAuthUserFor(email: string) {
@@ -77,8 +86,8 @@ describe('User master facade integration test', () => {
       {
         email,
         password: 'XpA2Jjd4',
-        masterId: new Id().value,
         role: 'master' as RoleUsers,
+        cnpj: '12345678000195',
       },
       token
     );
@@ -87,19 +96,35 @@ describe('User master facade integration test', () => {
   beforeEach(() => {
     authUserRepository = new MemoryAuthUserRepository();
     masterRepository = new MemoryMasterRepository();
-    emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
+    tenantRepository = new MemoryTenantRepository();
 
+    emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
     authUserService = new AuthUserService();
+    tenantService = new TenantService(tenantRepository);
     tokenService = new TokenService('PxHf3H7');
 
-    createAuthUser = new CreateAuthUser(authUserRepository, authUserService);
-    deleteAuthUser = new DeleteAuthUser(authUserRepository);
-    findAuthUser = new FindAuthUser(authUserRepository);
-    updateAuthUser = new UpdateAuthUser(authUserRepository, authUserService);
+    policiesService = new PoliciesService();
+    createAuthUser = new CreateAuthUser(
+      authUserRepository,
+      tenantRepository,
+      authUserService,
+      tenantService,
+      policiesService
+    );
+    deleteAuthUser = new DeleteAuthUser(authUserRepository, policiesService);
+    findAuthUser = new FindAuthUser(authUserRepository, policiesService);
+    updateAuthUser = new UpdateAuthUser(
+      authUserRepository,
+      tenantRepository,
+      authUserService,
+      tenantService,
+      policiesService
+    );
     loginAuthUser = new LoginAuthUser(
       authUserRepository,
       authUserService,
-      tokenService
+      tokenService,
+      tenantService
     );
     policiesService = new PoliciesService();
 
@@ -109,21 +134,20 @@ describe('User master facade integration test', () => {
       updateAuthUser,
       deleteAuthUser,
       loginAuthUser,
-      policiesService,
     });
 
     createUserMaster = new CreateUserMaster(
       masterRepository,
-      emailAuthValidator
+      emailAuthValidator,
+      policiesService
     );
-    findUserMaster = new FindUserMaster(masterRepository);
-    updateUserMaster = new UpdateUserMaster(masterRepository);
+    findUserMaster = new FindUserMaster(masterRepository, policiesService);
+    updateUserMaster = new UpdateUserMaster(masterRepository, policiesService);
 
     facadeMaster = new MasterFacade({
       createUserMaster,
       findUserMaster,
       updateUserMaster,
-      policiesService,
     });
   });
 

@@ -3,14 +3,13 @@ import {
   FindAllUserTeacherInputDto,
   FindAllUserTeacherOutputDto,
 } from '../../dto/teacher-usecase.dto';
-import UserTeacherGateway from '@/modules/user-management/infrastructure/gateway/teacher.gateway';
+import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class FindAllUserTeacher
   implements
@@ -18,23 +17,21 @@ export default class FindAllUserTeacher
 {
   private _userTeacherRepository: UserTeacherGateway;
 
-  constructor(userTeacherRepository: UserTeacherGateway) {
+  constructor(
+    userTeacherRepository: UserTeacherGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._userTeacherRepository = userTeacherRepository;
   }
   async execute(
     { offset, quantity }: FindAllUserTeacherInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<FindAllUserTeacherOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.TEACHER,
-        FunctionCalledEnum.FIND_ALL,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.TEACHER,
+      FunctionCalledEnum.FIND_ALL,
+      token
+    );
 
     const results = await this._userTeacherRepository.findAll(quantity, offset);
 

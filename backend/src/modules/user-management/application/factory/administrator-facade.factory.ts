@@ -7,6 +7,7 @@ import FindAllUserAdministrator from '../usecases/administrator/findAllUserAdmin
 import FindUserAdministrator from '../usecases/administrator/findUserAdministrator.usecase';
 import UpdateUserAdministrator from '../usecases/administrator/updateUserAdministrator.usecase';
 import { EmailAuthValidatorService } from '../services/email-auth-validator.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 export default class AdministratorFacadeFactory {
   static create(): AdministratorFacade {
@@ -15,14 +16,28 @@ export default class AdministratorFacadeFactory {
     const emailValidatorService = new EmailAuthValidatorService(
       authUserRepository
     );
+    const policiesService = new PoliciesService();
     const createUserAdministrator = new CreateUserAdministrator(
       repository,
-      emailValidatorService
+      emailValidatorService,
+      policiesService
     );
-    const deleteUserAdministrator = new DeleteUserAdministrator(repository);
-    const findAllUserAdministrator = new FindAllUserAdministrator(repository);
-    const findUserAdministrator = new FindUserAdministrator(repository);
-    const updateUserAdministrator = new UpdateUserAdministrator(repository);
+    const deleteUserAdministrator = new DeleteUserAdministrator(
+      repository,
+      policiesService
+    );
+    const findAllUserAdministrator = new FindAllUserAdministrator(
+      repository,
+      policiesService
+    );
+    const findUserAdministrator = new FindUserAdministrator(
+      repository,
+      policiesService
+    );
+    const updateUserAdministrator = new UpdateUserAdministrator(
+      repository,
+      policiesService
+    );
     const facade = new AdministratorFacade({
       createUserAdministrator,
       deleteUserAdministrator,

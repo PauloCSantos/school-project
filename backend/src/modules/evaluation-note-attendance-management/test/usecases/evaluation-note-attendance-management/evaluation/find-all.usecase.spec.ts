@@ -3,7 +3,8 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import FindAllEvaluation from '@/modules/evaluation-note-attendance-management/application/usecases/evaluation/find-all.usecase';
 import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
-import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
+import EvaluationGateway from '@/modules/evaluation-note-attendance-management/application/gateway/evaluation.gateway';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('findAllEvaluation usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -27,7 +28,7 @@ describe('findAllEvaluation usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -51,11 +52,13 @@ describe('findAllEvaluation usecase unit test', () => {
         evaluation1,
         evaluation2,
       ]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindAllEvaluation(evaluationRepository);
+      const usecase = new FindAllEvaluation(
+        evaluationRepository,
+        policieService
+      );
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(evaluationRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(2);
@@ -64,11 +67,13 @@ describe('findAllEvaluation usecase unit test', () => {
     it('should return an empty array when the repository is empty', async () => {
       const evaluationRepository = MockRepository();
       evaluationRepository.findAll.mockResolvedValue([]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindAllEvaluation(evaluationRepository);
+      const usecase = new FindAllEvaluation(
+        evaluationRepository,
+        policieService
+      );
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(evaluationRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(0);

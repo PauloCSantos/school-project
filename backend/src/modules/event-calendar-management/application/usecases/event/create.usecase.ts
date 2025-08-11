@@ -3,15 +3,14 @@ import {
   CreateEventInputDto,
   CreateEventOutputDto,
 } from '../../dto/event-usecase.dto';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
+import EventGateway from '@/modules/event-calendar-management/application/gateway/event.gateway';
 import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for creating a new calendar event.
@@ -29,7 +28,10 @@ export default class CreateEvent
    *
    * @param eventRepository - Gateway implementation for event data persistence
    */
-  constructor(eventRepository: EventGateway) {
+  constructor(
+    eventRepository: EventGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._eventRepository = eventRepository;
   }
 
@@ -43,18 +45,13 @@ export default class CreateEvent
    */
   async execute(
     { creator, date, day, hour, name, place, type }: CreateEventInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<CreateEventOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.EVENT,
-        FunctionCalledEnum.CREATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.EVENT,
+      FunctionCalledEnum.CREATE,
+      token
+    );
     // Create event entity with provided input
     const event = new Event({
       creator,

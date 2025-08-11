@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateNoteInputDto,
   CreateNoteOutputDto,
@@ -36,8 +35,7 @@ export default class NoteController {
     private readonly findNote: FindNote,
     private readonly findAllNote: FindAllNote,
     private readonly updateNote: UpdateNote,
-    private readonly deleteNote: DeleteNote,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly deleteNote: DeleteNote
   ) {}
 
   /**
@@ -49,11 +47,7 @@ export default class NoteController {
     input: CreateNoteInputDto,
     token: TokenData
   ): Promise<CreateNoteOutputDto> {
-    const response = await this.createNote.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createNote.execute(input, token);
     return response;
   }
 
@@ -66,11 +60,7 @@ export default class NoteController {
     input: FindNoteInputDto,
     token: TokenData
   ): Promise<FindNoteOutputDto | null> {
-    const response = await this.findNote.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findNote.execute(input, token);
     return response;
   }
 
@@ -83,11 +73,7 @@ export default class NoteController {
     input: FindAllNoteInputDto,
     token: TokenData
   ): Promise<FindAllNoteOutputDto> {
-    const response = await this.findAllNote.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAllNote.execute(input, token);
     return response;
   }
 
@@ -100,11 +86,7 @@ export default class NoteController {
     input: UpdateNoteInputDto,
     token: TokenData
   ): Promise<UpdateNoteOutputDto> {
-    const response = await this.updateNote.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateNote.execute(input, token);
     return response;
   }
 
@@ -117,11 +99,7 @@ export default class NoteController {
     input: DeleteNoteInputDto,
     token: TokenData
   ): Promise<DeleteNoteOutputDto> {
-    const response = await this.deleteNote.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.deleteNote.execute(input, token);
     return response;
   }
 }

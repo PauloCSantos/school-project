@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateCurriculumInputDto,
   AddSubjectsInputDto,
@@ -32,74 +31,49 @@ export class CurriculumController {
     private readonly updateCurriculum: UpdateCurriculum,
     private readonly deleteCurriculum: DeleteCurriculum,
     private readonly addSubjectstoCurriculum: AddSubjects,
-    private readonly removeSubjectstoCurriculum: RemoveSubjects,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly removeSubjectstoCurriculum: RemoveSubjects
   ) {}
 
   async create(
     input: CreateCurriculumInputDto,
     token: TokenData
   ): Promise<CreateCurriculumOutputDto> {
-    const response = await this.createCurriculum.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createCurriculum.execute(input, token);
     return response;
   }
   async find(
     input: FindCurriculumInputDto,
     token: TokenData
   ): Promise<FindCurriculumOutputDto | null> {
-    const response = await this.findCurriculum.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findCurriculum.execute(input, token);
     return response;
   }
   async findAll(
     input: FindAllCurriculumInputDto,
     token: TokenData
   ): Promise<FindAllCurriculumOutputDto> {
-    const response = await this.findAllCurriculum.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAllCurriculum.execute(input, token);
     return response;
   }
   async delete(
     input: DeleteCurriculumInputDto,
     token: TokenData
   ): Promise<DeleteCurriculumOutputDto> {
-    const response = await this.deleteCurriculum.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.deleteCurriculum.execute(input, token);
     return response;
   }
   async update(
     input: UpdateCurriculumInputDto,
     token: TokenData
   ): Promise<UpdateCurriculumOutputDto> {
-    const response = await this.updateCurriculum.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateCurriculum.execute(input, token);
     return response;
   }
   async addSubjects(
     input: AddSubjectsInputDto,
     token: TokenData
   ): Promise<AddSubjectsOutputDto> {
-    const response = await this.addSubjectstoCurriculum.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.addSubjectstoCurriculum.execute(input, token);
     return response;
   }
   async removeSubjects(
@@ -108,7 +82,6 @@ export class CurriculumController {
   ): Promise<RemoveSubjectsOutputDto> {
     const response = await this.removeSubjectstoCurriculum.execute(
       input,
-      this.policiesService,
       token
     );
     return response;

@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import DeleteLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/delete.usecase';
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
@@ -32,7 +33,7 @@ describe('deleteLesson usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -51,16 +52,11 @@ describe('deleteLesson usecase unit test', () => {
     it('should return an error if the lesson does not exist', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new DeleteLesson(lessonRepository);
+      const usecase = new DeleteLesson(lessonRepository, policieService);
 
       await expect(
-        usecase.execute(
-          { id: '75c791ca-7a40-4217-8b99-2cf22c01d543' },
-          policieService,
-          token
-        )
+        usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
       ).rejects.toThrow('Lesson not found');
     });
   });
@@ -68,14 +64,12 @@ describe('deleteLesson usecase unit test', () => {
     it('should delete a lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new DeleteLesson(lessonRepository);
+      const usecase = new DeleteLesson(lessonRepository, policieService);
       const result = await usecase.execute(
         {
           id: lesson.id.value,
         },
-        policieService,
         token
       );
 

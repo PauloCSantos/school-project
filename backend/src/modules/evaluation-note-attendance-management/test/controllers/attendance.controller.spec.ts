@@ -8,11 +8,10 @@ import RemoveStudents from '../../application/usecases/attendance/remove-student
 import UpdateAttendance from '../../application/usecases/attendance/update.usecase';
 import AttendanceController from '../../interface/controller/attendance.controller';
 import { UpdateAttendanceInputDto } from '../../application/dto/attendance-usecase.dto';
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('AttendanceController unit test', () => {
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
 
   const mockCreateAttendance: jest.Mocked<CreateAttendance> = {
@@ -62,13 +61,9 @@ describe('AttendanceController unit test', () => {
   const createOutput = { id: id };
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
-
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -96,7 +91,6 @@ describe('AttendanceController unit test', () => {
     mockRemoveStudents.execute.mockResolvedValue({
       message: '2 values were removed',
     });
-    policieService = MockPolicyService();
 
     controller = new AttendanceController(
       mockCreateAttendance,
@@ -105,8 +99,7 @@ describe('AttendanceController unit test', () => {
       mockUpdateAttendance,
       mockDeleteAttendance,
       mockAddStudents,
-      mockRemoveStudents,
-      policieService
+      mockRemoveStudents
     );
   });
 
@@ -124,7 +117,6 @@ describe('AttendanceController unit test', () => {
     expect(mockCreateAttendance.execute).toHaveBeenCalledTimes(1);
     expect(mockCreateAttendance.execute).toHaveBeenCalledWith(
       createInput,
-      policieService,
       token
     );
     expect(result).toBeDefined();
@@ -136,11 +128,7 @@ describe('AttendanceController unit test', () => {
     const result = await controller.find(findInput, token);
 
     expect(mockFindAttendance.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindAttendance.execute).toHaveBeenCalledWith(
-      findInput,
-      policieService,
-      token
-    );
+    expect(mockFindAttendance.execute).toHaveBeenCalledWith(findInput, token);
     expect(result).toEqual(attendanceData);
   });
 
@@ -151,7 +139,6 @@ describe('AttendanceController unit test', () => {
     expect(mockFindAllAttendance.execute).toHaveBeenCalledTimes(1);
     expect(mockFindAllAttendance.execute).toHaveBeenCalledWith(
       findAllInput,
-      policieService,
       token
     );
     expect(result).toBeDefined();
@@ -168,7 +155,6 @@ describe('AttendanceController unit test', () => {
     expect(mockUpdateAttendance.execute).toHaveBeenCalledTimes(1);
     expect(mockUpdateAttendance.execute).toHaveBeenCalledWith(
       updateInput,
-      policieService,
       token
     );
     expect(result).toEqual(attendanceData);
@@ -181,7 +167,6 @@ describe('AttendanceController unit test', () => {
     expect(mockDeleteAttendance.execute).toHaveBeenCalledTimes(1);
     expect(mockDeleteAttendance.execute).toHaveBeenCalledWith(
       deleteInput,
-      policieService,
       token
     );
     expect(result).toEqual({ message: 'Operação concluída com sucesso' });
@@ -197,7 +182,6 @@ describe('AttendanceController unit test', () => {
     expect(mockAddStudents.execute).toHaveBeenCalledTimes(1);
     expect(mockAddStudents.execute).toHaveBeenCalledWith(
       addStudentsInput,
-      policieService,
       token
     );
     expect(result).toEqual({ message: '1 value was entered' });
@@ -213,7 +197,6 @@ describe('AttendanceController unit test', () => {
     expect(mockRemoveStudents.execute).toHaveBeenCalledTimes(1);
     expect(mockRemoveStudents.execute).toHaveBeenCalledWith(
       removeStudentsInput,
-      policieService,
       token
     );
     expect(result).toEqual({ message: '2 values were removed' });

@@ -4,14 +4,13 @@ import {
   CreateEvaluationInputDto,
   CreateEvaluationOutputDto,
 } from '../../dto/evaluation-usecase.dto';
-import EvaluationGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/evaluation.gateway';
+import EvaluationGateway from '@/modules/evaluation-note-attendance-management/application/gateway/evaluation.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for creating a new evaluation record.
@@ -30,7 +29,10 @@ export default class CreateEvaluation
    *
    * @param evaluationRepository - Gateway implementation for data persistence
    */
-  constructor(evaluationRepository: EvaluationGateway) {
+  constructor(
+    evaluationRepository: EvaluationGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._evaluationRepository = evaluationRepository;
   }
 
@@ -44,18 +46,13 @@ export default class CreateEvaluation
    */
   async execute(
     { lesson, teacher, type, value }: CreateEvaluationInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<CreateEvaluationOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.EVALUATION,
-        FunctionCalledEnum.CREATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.EVALUATION,
+      FunctionCalledEnum.CREATE,
+      token
+    );
 
     const evaluation = new Evaluation({
       lesson,

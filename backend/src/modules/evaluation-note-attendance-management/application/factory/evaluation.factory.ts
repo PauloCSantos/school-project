@@ -23,11 +23,14 @@ export default class EvaluationFacadeFactory {
     const policiesService = new PoliciesService();
 
     // Create all required use cases
-    const createEvaluation = new CreateEvaluation(repository);
-    const deleteEvaluation = new DeleteEvaluation(repository);
-    const findAllEvaluation = new FindAllEvaluation(repository);
-    const findEvaluation = new FindEvaluation(repository);
-    const updateEvaluation = new UpdateEvaluation(repository);
+    const createEvaluation = new CreateEvaluation(repository, policiesService);
+    const deleteEvaluation = new DeleteEvaluation(repository, policiesService);
+    const findAllEvaluation = new FindAllEvaluation(
+      repository,
+      policiesService
+    );
+    const findEvaluation = new FindEvaluation(repository, policiesService);
+    const updateEvaluation = new UpdateEvaluation(repository, policiesService);
 
     // Instantiate and return the facade with all required use cases
     const facade = new EvaluationFacade({
@@ -36,7 +39,6 @@ export default class EvaluationFacadeFactory {
       findAllEvaluation,
       findEvaluation,
       updateEvaluation,
-      policiesService,
     });
 
     return facade;

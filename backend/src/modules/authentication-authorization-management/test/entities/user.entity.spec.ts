@@ -1,7 +1,5 @@
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
-import { AuthUserService } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
-import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
+import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
 
 describe('AuthUser unit test', () => {
   const authUserService = new AuthUserService();
@@ -9,8 +7,6 @@ describe('AuthUser unit test', () => {
   const baseUserData = {
     email: 'teste@teste.com.br',
     password: 'XpA2Jjd4',
-    masterId: new Id().value,
-    role: 'master' as RoleUsers,
     isHashed: false,
   };
 
@@ -44,14 +40,38 @@ describe('AuthUser unit test', () => {
         'Use the method to hash before comparing'
       );
     });
+
+    it('should throw an error when password is invalid during creation', () => {
+      expect(() => {
+        new AuthUser({ ...baseUserData, password: '' }, authUserService);
+      }).toThrow('Field password is not valid');
+    });
+
+    it('should throw an error when setting an invalid password after creation', () => {
+      expect(() => {
+        authUser.password = '';
+      }).toThrow('Field password is not valid');
+    });
+
+    it('should throw an error when isHashed flag is not a boolean', () => {
+      expect(() => {
+        //@ts-expect-error
+        new AuthUser({ ...baseUserData, isHashed: 'true' });
+      }).toThrow('The field isHashed must be a boolean');
+    });
+
+    it('should throw an error when isActive flag is not a boolean', () => {
+      expect(() => {
+        //@ts-expect-error
+        new AuthUser({ ...baseUserData, isActive: 'true' });
+      }).toThrow('The field isActive must be a boolean');
+    });
   });
 
   describe('Success cases', () => {
     it('should create a valid AuthUser instance', () => {
       expect(authUser).toBeInstanceOf(AuthUser);
       expect(authUser.email).toBe(baseUserData.email);
-      expect(authUser.masterId).toBe(baseUserData.masterId);
-      expect(authUser.role).toBe(baseUserData.role);
     });
 
     it('should allow updating user email with a valid value', () => {
@@ -95,6 +115,41 @@ describe('AuthUser unit test', () => {
       );
       await preHashedUser.hashPassword();
       expect(preHashedUser.password).toBe(hashedPassword);
+    });
+
+    it('should have isHashed false by default', () => {
+      expect(authUser.isHashed).toBe(false);
+    });
+
+    it('should set isHashed to true after hashing password', async () => {
+      await authUser.hashPassword();
+      expect(authUser.isHashed).toBe(true);
+    });
+
+    it('should allow setting a new password and reset isHashed flag', async () => {
+      await authUser.hashPassword();
+      expect(authUser.isHashed).toBe(true);
+
+      authUser.password = 'MyN3wP@ss';
+      expect(authUser.isHashed).toBe(false);
+
+      await authUser.hashPassword();
+      expect(authUser.isHashed).toBe(true);
+      const match = await authUser.comparePassword('MyN3wP@ss');
+      expect(match).toBe(true);
+    });
+
+    it('should report active status true by default', async () => {
+      const status = await authUser.getStatus();
+      expect(status).toBe(true);
+    });
+
+    it('should deactivate and activate the user correctly', async () => {
+      await authUser.deactivate();
+      expect(await authUser.getStatus()).toBe(false);
+
+      await authUser.activate();
+      expect(await authUser.getStatus()).toBe(true);
     });
   });
 });

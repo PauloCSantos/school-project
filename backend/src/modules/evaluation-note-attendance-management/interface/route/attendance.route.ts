@@ -19,7 +19,7 @@ import {
   FunctionCalledEnum,
   StatusCodeEnum,
   StatusMessageEnum,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class AttendanceRoute {
   constructor(
@@ -123,6 +123,7 @@ export default class AttendanceRoute {
 
       return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
+      console.log(error);
       return this.handleError(error);
     }
   }

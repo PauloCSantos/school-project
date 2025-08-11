@@ -1,4 +1,4 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import CreateUserTeacher from '../../application/usecases/teacher/createUserTeacher.usecase';
 import DeleteUserTeacher from '../../application/usecases/teacher/deleteUserTeacher.usecase';
 import FindAllUserTeacher from '../../application/usecases/teacher/findAllUserTeacher.usecase';
@@ -9,7 +9,6 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 describe('UserTeacherController unit test', () => {
-  let policieService: PoliciesServiceInterface;
   let token: TokenData;
 
   const mockCreateUserTeacher = jest.fn(() => {
@@ -103,12 +102,9 @@ describe('UserTeacherController unit test', () => {
     } as unknown as DeleteUserTeacher;
   });
 
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
-    verifyPolicies: jest.fn(),
-  });
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -117,15 +113,13 @@ describe('UserTeacherController unit test', () => {
   const findAllUserTeacher = mockFindAllUserTeacher();
   const findUserTeacher = mockFindUserTeacher();
   const updateUserTeacher = mockUpdateUserTeacher();
-  policieService = MockPolicyService();
 
   const controller = new UserTeacherController(
     createUserTeacher,
     findUserTeacher,
     findAllUserTeacher,
     updateUserTeacher,
-    deleteUserTeacher,
-    policieService
+    deleteUserTeacher
   );
 
   it('should return a id for the new user created', async () => {

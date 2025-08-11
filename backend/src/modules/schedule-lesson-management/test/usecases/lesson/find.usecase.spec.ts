@@ -1,5 +1,6 @@
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import FindLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/find.usecase';
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
@@ -32,7 +33,7 @@ describe('findLesson usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -51,15 +52,10 @@ describe('findLesson usecase unit test', () => {
     it('should find a lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson1);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindLesson(lessonRepository);
+      const usecase = new FindLesson(lessonRepository, policieService);
 
-      const result = await usecase.execute(
-        { id: lesson1.id.value },
-        policieService,
-        token
-      );
+      const result = await usecase.execute({ id: lesson1.id.value }, token);
 
       expect(lessonRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();
@@ -67,14 +63,12 @@ describe('findLesson usecase unit test', () => {
     it('should return null when id is not found', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(null);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindLesson(lessonRepository);
+      const usecase = new FindLesson(lessonRepository, policieService);
       const result = await usecase.execute(
         {
           id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
         },
-        policieService,
         token
       );
 

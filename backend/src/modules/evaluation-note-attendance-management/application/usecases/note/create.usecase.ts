@@ -4,14 +4,13 @@ import {
   CreateNoteInputDto,
   CreateNoteOutputDto,
 } from '../../dto/note-usecase.dto';
-import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
+import NoteGateway from '@/modules/evaluation-note-attendance-management/application/gateway/note.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for creating a new note.
@@ -29,7 +28,10 @@ export default class CreateNote
    *
    * @param noteRepository - Gateway implementation for data persistence
    */
-  constructor(noteRepository: NoteGateway) {
+  constructor(
+    noteRepository: NoteGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._noteRepository = noteRepository;
   }
 
@@ -42,18 +44,13 @@ export default class CreateNote
    */
   async execute(
     { evaluation, note, student }: CreateNoteInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<CreateNoteOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.NOTE,
-        FunctionCalledEnum.CREATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.NOTE,
+      FunctionCalledEnum.CREATE,
+      token
+    );
 
     const noteInstance = new Note({
       evaluation,

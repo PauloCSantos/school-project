@@ -4,14 +4,13 @@ import {
   CreateScheduleInputDto,
   CreateScheduleOutputDto,
 } from '../../dto/schedule-usecase.dto';
-import ScheduleGateway from '@/modules/schedule-lesson-management/infrastructure/gateway/schedule.gateway';
+import ScheduleGateway from '@/modules/schedule-lesson-management/application/gateway/schedule.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for schedule operation.
@@ -21,7 +20,10 @@ export default class CreateSchedule
 {
   private _scheduleRepository: ScheduleGateway;
 
-  constructor(scheduleRepository: ScheduleGateway) {
+  constructor(
+    scheduleRepository: ScheduleGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._scheduleRepository = scheduleRepository;
   }
   /**
@@ -29,18 +31,13 @@ export default class CreateSchedule
    */
   async execute(
     { curriculum, lessonsList, student }: CreateScheduleInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<CreateScheduleOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.SCHEDULE,
-        FunctionCalledEnum.CREATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.SCHEDULE,
+      FunctionCalledEnum.CREATE,
+      token
+    );
 
     const schedule = new Schedule({
       curriculum,

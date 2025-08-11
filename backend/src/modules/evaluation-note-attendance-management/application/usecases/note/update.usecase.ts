@@ -3,14 +3,13 @@ import {
   UpdateNoteInputDto,
   UpdateNoteOutputDto,
 } from '../../dto/note-usecase.dto';
-import NoteGateway from '@/modules/evaluation-note-attendance-management/infrastructure/gateway/note.gateway';
+import NoteGateway from '@/modules/evaluation-note-attendance-management/application/gateway/note.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for updating a note.
@@ -28,7 +27,10 @@ export default class UpdateNote
    *
    * @param noteRepository - Gateway implementation for data persistence
    */
-  constructor(noteRepository: NoteGateway) {
+  constructor(
+    noteRepository: NoteGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._noteRepository = noteRepository;
   }
 
@@ -41,18 +43,13 @@ export default class UpdateNote
    */
   async execute(
     { id, evaluation, note, student }: UpdateNoteInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<UpdateNoteOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.NOTE,
-        FunctionCalledEnum.DELETE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.NOTE,
+      FunctionCalledEnum.DELETE,
+      token
+    );
 
     const noteInstance = await this._noteRepository.find(id);
     if (!noteInstance) throw new Error('Note not found');

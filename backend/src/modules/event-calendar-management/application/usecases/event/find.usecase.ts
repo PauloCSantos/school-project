@@ -3,14 +3,13 @@ import {
   FindEventInputDto,
   FindEventOutputDto,
 } from '../../dto/event-usecase.dto';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
+import EventGateway from '@/modules/event-calendar-management/application/gateway/event.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for finding an event by ID.
@@ -28,7 +27,10 @@ export default class FindEvent
    *
    * @param eventRepository - Gateway implementation for data persistence
    */
-  constructor(eventRepository: EventGateway) {
+  constructor(
+    eventRepository: EventGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._eventRepository = eventRepository;
   }
 
@@ -40,18 +42,13 @@ export default class FindEvent
    */
   async execute(
     { id }: FindEventInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<FindEventOutputDto | null> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.EVENT,
-        FunctionCalledEnum.FIND,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.EVENT,
+      FunctionCalledEnum.FIND,
+      token
+    );
 
     const response = await this._eventRepository.find(id);
 

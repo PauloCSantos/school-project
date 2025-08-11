@@ -3,14 +3,13 @@ import {
   UpdateUserTeacherInputDto,
   UpdateUserTeacherOutputDto,
 } from '../../dto/teacher-usecase.dto';
-import UserTeacherGateway from '@/modules/user-management/infrastructure/gateway/teacher.gateway';
+import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class UpdateUserTeacher
   implements
@@ -18,7 +17,10 @@ export default class UpdateUserTeacher
 {
   private _userTeacherRepository: UserTeacherGateway;
 
-  constructor(userTeacherRepository: UserTeacherGateway) {
+  constructor(
+    userTeacherRepository: UserTeacherGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._userTeacherRepository = userTeacherRepository;
   }
   async execute(
@@ -32,18 +34,13 @@ export default class UpdateUserTeacher
       salary,
       academicDegrees,
     }: UpdateUserTeacherInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<UpdateUserTeacherOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.TEACHER,
-        FunctionCalledEnum.UPDATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.TEACHER,
+      FunctionCalledEnum.UPDATE,
+      token
+    );
 
     const userTeacher = await this._userTeacherRepository.find(id);
     if (!userTeacher) throw new Error('User not found');

@@ -10,56 +10,104 @@ import AuthUserController from '@/modules/authentication-authorization-managemen
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
 import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/user.route';
-import { AuthUserService } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
+import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
-import TokenService from '@/modules/@shared/infraestructure/services/token.service';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
 import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.gateway';
+import { TenantService } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
+
+async function registerAndLoginUser(app: any, userDataOverride = {}) {
+  const defaultUserData = {
+    email: 'teste@teste.com.br',
+    password: 'XpA2Jjd4',
+    role: 'master' as RoleUsers,
+    cnpj: '12345678000111',
+  };
+
+  const userData = { ...defaultUserData, ...userDataOverride };
+
+  const registerResponse = await supertest(app)
+    .post('/register')
+    .send(userData);
+
+  const loginResponse = await supertest(app).post('/login').send({
+    email: userData.email,
+    password: userData.password,
+    role: userData.role,
+    masterId: registerResponse.body.masterId,
+  });
+
+  return {
+    token: loginResponse.body.token,
+    email: userData.email,
+    masterId: registerResponse.body.masterId,
+    registerResponse,
+    loginResponse,
+  };
+}
 
 describe('Authentication authorization management module end to end test', () => {
   let authUserRepository = new MemoryAuthUserRepository();
   let authUserService = new AuthUserService();
+  let tenantRepository = new MemoryTenantRepository();
+  let tenantService = new TenantService(tenantRepository);
   const tokenService = new TokenService('PxHf3H7');
 
   let app: any;
+
   beforeEach(() => {
     authUserRepository = new MemoryAuthUserRepository();
+    tenantRepository = new MemoryTenantRepository();
+    tenantService = new TenantService(tenantRepository);
+    const policiesService = new PoliciesService();
 
     const createAuthUserUsecase = new CreateAuthUser(
       authUserRepository,
-      authUserService
+      tenantRepository,
+      authUserService,
+      tenantService,
+      policiesService
     );
-    const findAuthUserUsecase = new FindAuthUser(authUserRepository);
-    const updateAuthUserUsecase = new UpdateAuthUser(
+    const deleteAuthUserUsecase = new DeleteAuthUser(
       authUserRepository,
-      authUserService
+      policiesService
     );
-    const deleteAuthUserUsecase = new DeleteAuthUser(authUserRepository);
     const loginAuthUserUsecase = new LoginAuthUser(
       authUserRepository,
       authUserService,
-      tokenService
+      tokenService,
+      tenantService
     );
-
-    const policiesService = new PoliciesService();
 
     const authUserController = new AuthUserController(
       createAuthUserUsecase,
-      findAuthUserUsecase,
-      updateAuthUserUsecase,
+      new FindAuthUser(authUserRepository, policiesService),
+      new UpdateAuthUser(
+        authUserRepository,
+        tenantRepository,
+        authUserService,
+        tenantService,
+        policiesService
+      ),
       deleteAuthUserUsecase,
-      loginAuthUserUsecase,
-      policiesService
+      loginAuthUserUsecase
     );
 
     const expressHttp = new ExpressAdapter();
-    const tokerService = tokenInstance();
-    const authUserMiddlewareAuthUser = new AuthUserMiddleware(tokerService, [
-      'master',
-      'administrator',
-      'student',
-      'teacher',
-    ]);
+    const tokenServiceInstance = tokenInstance();
+    const authUserMiddlewareAuthUser = new AuthUserMiddleware(
+      tokenServiceInstance,
+      [
+        RoleUsersEnum.MASTER,
+        RoleUsersEnum.ADMINISTRATOR,
+        RoleUsersEnum.STUDENT,
+        RoleUsersEnum.TEACHER,
+        RoleUsersEnum.WORKER,
+      ]
+    );
     const authUserRoute = new AuthUserRoute(
       authUserController,
       expressHttp,
@@ -73,269 +121,237 @@ describe('Authentication authorization management module end to end test', () =>
     describe('On error', () => {
       describe('POST /register', () => {
         it('should throw an error when the data to create an authUser is wrong', async () => {
-          const response = await supertest(app)
-            .post('/register')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              email: 'teste@teste.com.br',
-              password: 'XpA2Jjd4',
-              masterId: new Id().value,
-              role: 'unknow',
-              isHashed: false,
-            });
+          const response = await supertest(app).post('/register').send({
+            email: 'teste@teste.com.br',
+            password: 'XpA2Jjd4',
+            masterId: new Id().value,
+            role: 'unknow',
+            isHashed: false,
+          });
+
           expect(response.status).toBe(400);
           expect(response.body.error).toBeDefined();
         });
       });
+
       describe('GET /authUser/:email', () => {
-        it('should return empty string when the ID is wrong or non-standard', async () => {
-          await supertest(app)
-            .post('/register')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              email: 'teste@teste.com.br',
-              password: 'XpA2Jjd4',
-              masterId: new Id().value,
-              role: 'master' as RoleUsers,
-              isHashed: false,
-            });
-          const authUser = await supertest(app)
-            .get(`/authUser/wrongemateste.com`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
-          expect(authUser.status).toBe(400);
-          expect(authUser.body.error).toBeDefined();
-        });
-      });
-      describe('PATCH /authUser', () => {
-        it('should throw an error when the data to update a authUser is wrong', async () => {
-          const response = await supertest(app)
-            .post('/register')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              email: 'teste@teste.com.br',
-              password: 'XpA2Jjd4',
-              masterId: new Id().value,
-              role: 'master' as RoleUsers,
-              isHashed: false,
-            });
-          const email = response.body.email;
-          const updatedAuthUser = await supertest(app)
-            .patch(`/authUser`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              email,
-              authUserDataToUpdate: {
-                password: '',
-              },
-            });
-          expect(updatedAuthUser.status).toBe(400);
-          expect(updatedAuthUser.body.error).toBeDefined();
-        });
-      });
-      describe('DELETE /authUser/:email', () => {
-        it('should throw an error when the email is wrong or non-standard', async () => {
-          await supertest(app)
-            .post('/authUser')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              email: 'teste@teste.com.br',
-              password: 'XpA2Jjd4',
-              masterId: new Id().value,
-              role: 'master' as RoleUsers,
-              isHashed: false,
-            });
+        it('should throw an error when the email to find an authUser is wrong', async () => {
+          const { token } = await registerAndLoginUser(app);
+
           const result = await supertest(app)
-            .delete(`/authUser/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .get(`/authUser/123`)
+            .set('authorization', `Bearer ${token}`);
           expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined();
         });
       });
+
+      describe('PATCH /authUser', () => {
+        it('should throw an error when the data to update an authUser is wrong', async () => {
+          const { token } = await registerAndLoginUser(app);
+
+          const result = await supertest(app)
+            .patch('/authUser')
+            .send({
+              email: 'teste@teste.com.br',
+              authUserDataToUpdate: { password: '' },
+            })
+            .set('authorization', token);
+
+          expect(result.status).toBe(400);
+          expect(result.body.error).toBeDefined();
+        });
+      });
+
+      describe('DELETE /authUser/:email', () => {
+        it('should throw an error when the email to delete an authUser is wrong', async () => {
+          const { token } = await registerAndLoginUser(app);
+
+          const result = await supertest(app)
+            .delete(`/authUser/123`)
+            .set('authorization', token);
+
+          expect(result.status).toBe(400);
+          expect(result.body.error).toBeDefined();
+        });
+      });
+
       describe('POST /login', () => {
         it('should throw an error when the data to login is wrong', async () => {
+          const { token } = await registerAndLoginUser(app);
+
           await supertest(app)
             .post('/register')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
             .send({
-              email: 'teste@teste.com.br',
+              email: 'teste2@teste.com.br',
               password: 'XpA2Jjd4',
-              masterId: new Id().value,
-              role: 'master',
-              isHashed: false,
-            });
-          const response = await supertest(app)
-            .post('/login')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+              cnpj: '12345678000111',
+              role: 'master' as RoleUsers,
+            })
+            .set('authorization', token);
+
+          const result = await supertest(app).post('/login').send({
+            email: 'teste2@teste.com.br',
+            password: 'wrongPassword',
+            role: 'master',
+          });
+
+          expect(result.status).toBe(400);
+          expect(result.body.error).toBeDefined();
+        });
+      });
+
+      describe('MIDDLEWARE /auth', () => {
+        it('should return 401 when authorization header is missing', async () => {
+          const result = await supertest(app).get(
+            '/authUser/not-exists@example.com'
+          );
+          expect(result.status).toBe(401);
+          expect(result.body.message).toBe('Missing Token');
+        });
+
+        it('should return 401 when token is invalid or malformed', async () => {
+          const result = await supertest(app)
+            .get('/authUser/not-exists@example.com')
+            .set('authorization', 'invalid-token');
+          expect(result.status).toBe(401);
+          expect(result.body.message).toBe('Invalid token');
+        });
+      });
+
+      describe('POST /register (more errors)', () => {
+        it('should return 400 when email already exists with different password', async () => {
+          await supertest(app)
+            .post('/register')
             .send({
-              email: 'teste@teste.com.br',
-              password: 'XpA2Jjd6',
-              role: 'master',
+              email: 'duplicate@teste.com.br',
+              password: 'FirstPass1',
+              cnpj: '12345678000111',
+              role: 'master' as RoleUsers,
             });
+
+          const response = await supertest(app)
+            .post('/register')
+            .send({
+              email: 'duplicate@teste.com.br',
+              password: 'OtherPass2',
+              cnpj: '12345678000111',
+              role: 'master' as RoleUsers,
+            });
+
           expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined();
+          expect(response.body.error).toBe('E-mail já utilizado');
+        });
+
+        it('should return 400 when neither cnpj is provided nor user is authenticated', async () => {
+          const response = await supertest(app)
+            .post('/register')
+            .send({
+              email: 'no-cnpj@teste.com.br',
+              password: 'XpA2Jjd4',
+              role: 'master' as RoleUsers,
+            });
+
+          expect(response.status).toBe(400);
+          expect(response.body.error).toBe(
+            'É necessário informar CNPJ ou estar autenticado'
+          );
+        });
+      });
+
+      describe('GET /authUser/:email (not found)', () => {
+        it('should return 404 when user does not exist', async () => {
+          const { token } = await registerAndLoginUser(app);
+          const result = await supertest(app)
+            .get('/authUser/not-found@teste.com.br')
+            .set('authorization', token);
+          expect(result.status).toBe(404);
+          expect(result.body.error).toBeDefined();
+        });
+      });
+
+      describe('POST /login (more errors)', () => {
+        it('should return 400 when email does not exist', async () => {
+          const result = await supertest(app)
+            .post('/login')
+            .send({
+              email: 'unknown@teste.com.br',
+              password: 'SomePass1',
+              role: 'master' as RoleUsers,
+              masterId: new Id().value,
+            });
+          expect(result.status).toBe(400);
+          expect(result.body.error).toBeDefined();
         });
       });
     });
-    describe('On sucess', () => {
+
+    describe('On success', () => {
       describe('POST /register', () => {
         it('should create an authUser', async () => {
           const response = await supertest(app)
             .post('/register')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
             .send({
               email: 'teste@teste.com.br',
               password: 'XpA2Jjd4',
-              masterId: new Id().value,
+              cnpj: '12345678000111',
               role: 'master' as RoleUsers,
-              isHashed: false,
             });
+
           expect(response.status).toBe(201);
           expect(response.body.email).toBeDefined();
           expect(response.body.masterId).toBeDefined();
         });
       });
+
       describe('GET /authUser/:email', () => {
-        it('should find a user by email', async () => {
-          const response = await supertest(app)
-            .post('/register')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              email: 'teste@teste.com.br',
-              password: 'XpA2Jjd4',
-              masterId: new Id().value,
-              role: 'master' as RoleUsers,
-              isHashed: false,
-            });
-          const email = response.body.email;
-          const authUser = await supertest(app)
+        it('should find a authUser', async () => {
+          const { token, email } = await registerAndLoginUser(app);
+
+          const result = await supertest(app)
             .get(`/authUser/${email}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
-          expect(authUser.status).toBe(200);
-          expect(authUser.body).toBeDefined();
+            .set('authorization', `Bearer ${token}`);
+
+          expect(result.status).toBe(200);
+          expect(result.body.email).toBeDefined();
         });
       });
-      describe('PATCH /authUser/:email', () => {
-        it('should update a user by email', async () => {
-          const response = await supertest(app)
-            .post('/register')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+
+      describe('PATCH /authUser', () => {
+        it('should update a authUser', async () => {
+          const { token } = await registerAndLoginUser(app);
+
+          const result = await supertest(app)
+            .patch('/authUser')
             .send({
               email: 'teste@teste.com.br',
-              password: 'XpA2Jjd4',
-              masterId: new Id().value,
-              role: 'master' as RoleUsers,
-              isHashed: false,
-            });
-          const email = response.body.email;
-          const updatedAuthUser = await supertest(app)
-            .patch(`/authUser`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              email: email,
-              authUserDataToUpdate: {
-                password: 'as5d4v67',
-              },
-            });
-          expect(updatedAuthUser.status).toBe(200);
-          expect(updatedAuthUser.body).toBeDefined();
+              authUserDataToUpdate: { password: 'XpA2Jjd4' },
+            })
+            .set('authorization', token);
+
+          expect(result.status).toBe(200);
+          expect(result.body.email).toBeDefined();
         });
       });
+
       describe('DELETE /authUser/:email', () => {
-        it('should delete a user by email', async () => {
-          const response = await supertest(app)
-            .post('/register')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              email: 'teste@teste.com.br',
-              password: 'XpA2Jjd4',
-              masterId: new Id().value,
-              role: 'master' as RoleUsers,
-              isHashed: false,
-            });
-          const email = response.body.email;
+        it('should delete a authUser', async () => {
+          const { token, email } = await registerAndLoginUser(app);
+
           const result = await supertest(app)
             .delete(`/authUser/${email}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set('authorization', token);
+
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
       });
+
       describe('POST /login', () => {
-        it('should login and received a token', async () => {
-          await supertest(app)
-            .post('/register')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              email: 'teste@teste.com.br',
-              password: 'XpA2Jjd4',
-              masterId: new Id().value,
-              role: 'master',
-              isHashed: false,
-            });
-          const response = await supertest(app)
-            .post('/login')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
-            .send({
-              email: 'teste@teste.com.br',
-              password: 'XpA2Jjd4',
-              role: 'master',
-            });
-          expect(response.status).toBe(200);
-          expect(response.body.token).toBeDefined();
+        it('should login and receive a token', async () => {
+          const { token } = await registerAndLoginUser(app);
+
+          expect(token).toBeDefined();
         });
       });
     });

@@ -1,4 +1,3 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import {
   CreateEvaluationInputDto,
   CreateEvaluationOutputDto,
@@ -36,8 +35,7 @@ export default class EvaluationController {
     private readonly findEvaluation: FindEvaluation,
     private readonly findAllEvaluation: FindAllEvaluation,
     private readonly updateEvaluation: UpdateEvaluation,
-    private readonly deleteEvaluation: DeleteEvaluation,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly deleteEvaluation: DeleteEvaluation
   ) {}
 
   /**
@@ -49,11 +47,7 @@ export default class EvaluationController {
     input: CreateEvaluationInputDto,
     token: TokenData
   ): Promise<CreateEvaluationOutputDto> {
-    const response = await this.createEvaluation.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.createEvaluation.execute(input, token);
     return response;
   }
 
@@ -66,11 +60,7 @@ export default class EvaluationController {
     input: FindEvaluationInputDto,
     token: TokenData
   ): Promise<FindEvaluationOutputDto | null> {
-    const response = await this.findEvaluation.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findEvaluation.execute(input, token);
     return response;
   }
 
@@ -83,11 +73,7 @@ export default class EvaluationController {
     input: FindAllEvaluationInputDto,
     token: TokenData
   ): Promise<FindAllEvaluationOutputDto> {
-    const response = await this.findAllEvaluation.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.findAllEvaluation.execute(input, token);
     return response;
   }
 
@@ -100,11 +86,7 @@ export default class EvaluationController {
     input: UpdateEvaluationInputDto,
     token: TokenData
   ): Promise<UpdateEvaluationOutputDto> {
-    const response = await this.updateEvaluation.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.updateEvaluation.execute(input, token);
     return response;
   }
 
@@ -117,11 +99,7 @@ export default class EvaluationController {
     input: DeleteEvaluationInputDto,
     token: TokenData
   ): Promise<DeleteEvaluationOutputDto> {
-    const response = await this.deleteEvaluation.execute(
-      input,
-      this.policiesService,
-      token
-    );
+    const response = await this.deleteEvaluation.execute(input, token);
     return response;
   }
 }

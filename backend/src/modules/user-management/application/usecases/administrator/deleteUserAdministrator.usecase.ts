@@ -3,14 +3,13 @@ import {
   DeleteUserAdministratorInputDto,
   DeleteUserAdministratorOutputDto,
 } from '../../dto/administrator-usecase.dto';
-import UserAdministratorGateway from '@/modules/user-management/infrastructure/gateway/administrator.gateway';
+import UserAdministratorGateway from '@/modules/user-management/application/gateway/administrator.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class DeleteUserAdministrator
   implements
@@ -21,23 +20,21 @@ export default class DeleteUserAdministrator
 {
   private _userAdministratorRepository: UserAdministratorGateway;
 
-  constructor(userAdministratorRepository: UserAdministratorGateway) {
+  constructor(
+    userAdministratorRepository: UserAdministratorGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._userAdministratorRepository = userAdministratorRepository;
   }
   async execute(
     { id }: DeleteUserAdministratorInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<DeleteUserAdministratorOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.ADMINISTRATOR,
-        FunctionCalledEnum.DELETE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.ADMINISTRATOR,
+      FunctionCalledEnum.DELETE,
+      token
+    );
 
     const userVerification = await this._userAdministratorRepository.find(id);
     if (!userVerification) throw new Error('User not found');

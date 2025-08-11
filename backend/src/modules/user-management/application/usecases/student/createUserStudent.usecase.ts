@@ -4,17 +4,16 @@ import {
   CreateUserStudentInputDto,
   CreateUserStudentOutputDto,
 } from '../../dto/student-usecase.dto';
-import UserStudentGateway from '@/modules/user-management/infrastructure/gateway/student.gateway';
+import UserStudentGateway from '@/modules/user-management/application/gateway/student.gateway';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import { EmailAuthValidator } from '../../services/email-auth-validator.service';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class CreateUserStudent
   implements
@@ -24,24 +23,20 @@ export default class CreateUserStudent
 
   constructor(
     userStudentRepository: UserStudentGateway,
-    readonly emailValidatorService: EmailAuthValidator
+    readonly emailValidatorService: EmailAuthValidator,
+    private readonly policiesService: PoliciesServiceInterface
   ) {
     this._userStudentRepository = userStudentRepository;
   }
   async execute(
     { name, address, email, birthday, paymentYear }: CreateUserStudentInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<CreateUserStudentOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.STUDENT,
-        FunctionCalledEnum.CREATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.STUDENT,
+      FunctionCalledEnum.CREATE,
+      token
+    );
 
     if (!(await this.emailValidatorService.validate(email))) {
       throw new Error('You must register this email before creating the user.');

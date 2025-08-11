@@ -1,12 +1,13 @@
-import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/application/service/user-entity.service';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
+import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
+import TokenServiceInterface from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
 import {
   LoginAuthUserInputDto,
   LoginAuthUserOutputDto,
 } from '../../dto/user-usecase.dto';
-import AuthUserGateway from '@/modules/authentication-authorization-management/infrastructure/gateway/user.gateway';
-import TokenServiceInterface from '@/modules/@shared/infraestructure/services/token.service';
+import { TenantServiceInterface } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
 
 /**
  * Use case responsible for user authentication.
@@ -16,15 +17,6 @@ import TokenServiceInterface from '@/modules/@shared/infraestructure/services/to
 export default class LoginAuthUser
   implements UseCaseInterface<LoginAuthUserInputDto, LoginAuthUserOutputDto>
 {
-  /** Repository for retrieving authenticated users */
-  private readonly _authUserRepository: AuthUserGateway;
-
-  /** Domain service containing business rules for the user entity */
-  private readonly _authUserService: AuthUserServiceInterface;
-
-  /** Service responsible for token generation and validation */
-  private readonly _tokenService: TokenServiceInterface;
-
   /**
    * Constructs a new instance of the LoginAuthUser use case.
    *
@@ -33,14 +25,11 @@ export default class LoginAuthUser
    * @param tokenService - Service for token generation and validation
    */
   constructor(
-    authUserRepository: AuthUserGateway,
-    authUserService: AuthUserServiceInterface,
-    tokenService: TokenServiceInterface
-  ) {
-    this._authUserRepository = authUserRepository;
-    this._authUserService = authUserService;
-    this._tokenService = tokenService;
-  }
+    private readonly authUserRepository: AuthUserGateway,
+    private readonly authUserService: AuthUserServiceInterface,
+    private readonly tokenService: TokenServiceInterface,
+    private readonly tenantService: TenantServiceInterface
+  ) {}
 
   /**
    * Executes the user authentication process.
@@ -52,9 +41,10 @@ export default class LoginAuthUser
   async execute({
     email,
     password,
+    masterId,
     role,
   }: LoginAuthUserInputDto): Promise<LoginAuthUserOutputDto> {
-    const authUserVerification = await this._authUserRepository.find(email);
+    const authUserVerification = await this.authUserRepository.find(email);
 
     if (!authUserVerification) {
       throw new Error(
@@ -66,23 +56,31 @@ export default class LoginAuthUser
       {
         email: authUserVerification.email,
         password: authUserVerification.password,
-        role: authUserVerification.role,
-        masterId: authUserVerification.masterId,
         isHashed: authUserVerification.isHashed,
       },
-      this._authUserService
+      this.authUserService
     );
 
-    const isValid = await authUser.comparePassword(password);
-
-    if (!isValid) {
+    if (!(await authUser.comparePassword(password))) {
       throw new Error(
         'Invalid credentials. Please check your email and password and try again'
       );
     }
 
-    const token = await this._tokenService.generateToken(authUser);
+    if (masterId && role) {
+      await this.tenantService.verifyTenantRole(masterId, authUser.email, role);
+      const token = await this.tokenService.generateToken(
+        authUser,
+        masterId,
+        role
+      );
+      return { token };
+    }
 
-    return { token };
+    const data = await this.tenantService.getAvailableTenantsAndRoles(
+      authUser.email
+    );
+
+    return { data };
   }
 }

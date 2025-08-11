@@ -3,15 +3,14 @@ import {
   UpdateEventInputDto,
   UpdateEventOutputDto,
 } from '../../dto/event-usecase.dto';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
+import EventGateway from '@/modules/event-calendar-management/application/gateway/event.gateway';
 import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for updating an event.
@@ -29,7 +28,10 @@ export default class UpdateEvent
    *
    * @param eventRepository - Gateway implementation for data persistence
    */
-  constructor(eventRepository: EventGateway) {
+  constructor(
+    eventRepository: EventGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._eventRepository = eventRepository;
   }
 
@@ -42,18 +44,13 @@ export default class UpdateEvent
    */
   async execute(
     { id, creator, date, day, hour, name, place, type }: UpdateEventInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<UpdateEventOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.EVENT,
-        FunctionCalledEnum.CREATE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.EVENT,
+      FunctionCalledEnum.CREATE,
+      token
+    );
     const existingEvent = await this._eventRepository.find(id);
 
     if (!existingEvent) {

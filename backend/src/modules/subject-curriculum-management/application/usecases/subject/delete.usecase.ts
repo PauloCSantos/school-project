@@ -3,37 +3,34 @@ import {
   DeleteSubjectInputDto,
   DeleteSubjectOutputDto,
 } from '../../dto/subject-usecase.dto';
-import SubjectGateway from '@/modules/subject-curriculum-management/infrastructure/gateway/subject.gateway';
+import SubjectGateway from '@/modules/subject-curriculum-management/application/gateway/subject.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
-  ErrorMessage,
   FunctionCalledEnum,
   ModulesNameEnum,
-  TokenData,
-} from '@/modules/@shared/type/sharedTypes';
+} from '@/modules/@shared/enums/enums';
 
 export default class DeleteSubject
   implements UseCaseInterface<DeleteSubjectInputDto, DeleteSubjectOutputDto>
 {
   private _subjectRepository: SubjectGateway;
 
-  constructor(subjectRepository: SubjectGateway) {
+  constructor(
+    subjectRepository: SubjectGateway,
+    private readonly policiesService: PoliciesServiceInterface
+  ) {
     this._subjectRepository = subjectRepository;
   }
   async execute(
     { id }: DeleteSubjectInputDto,
-    policiesService: PoliciesServiceInterface,
     token?: TokenData
   ): Promise<DeleteSubjectOutputDto> {
-    if (
-      !(await policiesService.verifyPolicies(
-        ModulesNameEnum.SUBJECT,
-        FunctionCalledEnum.DELETE,
-        token
-      ))
-    ) {
-      throw new Error(ErrorMessage.ACCESS_DENIED);
-    }
+    await this.policiesService.verifyPolicies(
+      ModulesNameEnum.SUBJECT,
+      FunctionCalledEnum.DELETE,
+      token
+    );
     const subjectVerification = await this._subjectRepository.find(id);
     if (!subjectVerification) throw new Error('Subject not found');
 

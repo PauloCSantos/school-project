@@ -1,4 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import NoteFacadeFactory from '@/modules/evaluation-note-attendance-management/application/factory/note.factory';
 
@@ -21,7 +22,7 @@ describe('Note facade integration test', () => {
   const token: TokenData = {
     email: 'teste@teste.com.br',
     masterId: 'validID',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
   };
 
   it('should create an Note using the facade', async () => {

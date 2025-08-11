@@ -1,4 +1,4 @@
-import UserMasterGateway from '../../gateway/master.gateway';
+import UserMasterGateway from '../../../application/gateway/master.gateway';
 import UserMaster from '@/modules/user-management/domain/entity/master.entity';
 
 export default class MemoryUserMasterRepository implements UserMasterGateway {

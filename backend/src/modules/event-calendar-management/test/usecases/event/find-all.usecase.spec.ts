@@ -3,7 +3,8 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import FindAllEvent from '@/modules/event-calendar-management/application/usecases/event/find-all.usecase';
 import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
-import EventGateway from '@/modules/event-calendar-management/infrastructure/gateway/event.gateway';
+import EventGateway from '@/modules/event-calendar-management/application/gateway/event.gateway';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('findAllEvent usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -44,7 +45,7 @@ describe('findAllEvent usecase unit test', () => {
   policieService = MockPolicyService();
   token = {
     email: 'caller@domain.com',
-    role: 'master',
+    role: RoleUsersEnum.MASTER,
     masterId: new Id().value,
   };
 
@@ -52,11 +53,10 @@ describe('findAllEvent usecase unit test', () => {
     it('should find all events', async () => {
       const eventRepository = MockRepository();
       eventRepository.findAll.mockResolvedValue([event1, event2]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindAllEvent(eventRepository);
+      const usecase = new FindAllEvent(eventRepository, policieService);
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(eventRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(2);
@@ -64,11 +64,10 @@ describe('findAllEvent usecase unit test', () => {
     it('should return an empty array when the repository is empty', async () => {
       const eventRepository = MockRepository();
       eventRepository.findAll.mockResolvedValue([]);
-      policieService.verifyPolicies.mockResolvedValueOnce(true);
 
-      const usecase = new FindAllEvent(eventRepository);
+      const usecase = new FindAllEvent(eventRepository, policieService);
 
-      const result = await usecase.execute({}, policieService, token);
+      const result = await usecase.execute({}, token);
 
       expect(eventRepository.findAll).toHaveBeenCalled();
       expect(result.length).toBe(0);
