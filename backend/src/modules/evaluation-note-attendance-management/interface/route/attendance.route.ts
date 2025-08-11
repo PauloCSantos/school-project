@@ -123,6 +123,7 @@ export default class AttendanceRoute {
 
       return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
+      console.log(error);
       return this.handleError(error);
     }
   }

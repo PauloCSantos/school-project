@@ -22,7 +22,6 @@ import DeleteUserWorker from '@/modules/user-management/application/usecases/wor
 import FindAllUserWorker from '@/modules/user-management/application/usecases/worker/findAllUserWorker.usecase';
 import FindUserWorker from '@/modules/user-management/application/usecases/worker/findUserWorker.usecase';
 import UpdateUserWorker from '@/modules/user-management/application/usecases/worker/updateUserWorker.usecase';
-import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import supertest from 'supertest';
@@ -45,6 +44,37 @@ import MemoryAuthUserRepository from '@/modules/authentication-authorization-man
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
+
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
+import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
+
+let tokenService: TokenService;
+
+async function makeToken(): Promise<string> {
+  const authService = new AuthUserService();
+  const authUser = new AuthUser(
+    {
+      email: 'usermanagement@example.com',
+      password: 'StrongPass1!',
+      isHashed: false,
+      isActive: true,
+    },
+    authService
+  );
+  const masterId = new Id().value;
+  return tokenService.generateToken(
+    authUser as any,
+    masterId,
+    RoleUsersEnum.MASTER,
+    '30m'
+  );
+}
+
+async function authHeader() {
+  const token = await makeToken();
+  return { authorization: token };
+}
 
 async function createAuthUserInMemory(
   email: string,
@@ -214,27 +244,27 @@ describe('User management module end to end test', () => {
       deleteUserWorkerUsecase
     );
     const expressHttp = new ExpressAdapter();
-    const tokerService = tokenInstance();
+    tokenService = new TokenService('e2e-secret');
 
-    const authUserMiddlewareMaster = new AuthUserMiddleware(tokerService, [
+    const authUserMiddlewareMaster = new AuthUserMiddleware(tokenService, [
       RoleUsersEnum.MASTER,
     ]);
     const authUserMiddlewareAdministrator = new AuthUserMiddleware(
-      tokerService,
+      tokenService,
       [RoleUsersEnum.MASTER, RoleUsersEnum.ADMINISTRATOR]
     );
-    const authUserMiddlewareTeacher = new AuthUserMiddleware(tokerService, [
+    const authUserMiddlewareTeacher = new AuthUserMiddleware(tokenService, [
       RoleUsersEnum.MASTER,
       RoleUsersEnum.ADMINISTRATOR,
       RoleUsersEnum.TEACHER,
     ]);
-    const authUserMiddlewareStudent = new AuthUserMiddleware(tokerService, [
+    const authUserMiddlewareStudent = new AuthUserMiddleware(tokenService, [
       RoleUsersEnum.MASTER,
       RoleUsersEnum.ADMINISTRATOR,
       RoleUsersEnum.STUDENT,
       RoleUsersEnum.TEACHER,
     ]);
-    const authUserMiddlewareWorker = new AuthUserMiddleware(tokerService, [
+    const authUserMiddlewareWorker = new AuthUserMiddleware(tokenService, [
       RoleUsersEnum.MASTER,
       RoleUsersEnum.ADMINISTRATOR,
       RoleUsersEnum.WORKER,
@@ -281,10 +311,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: '',
@@ -310,14 +337,34 @@ describe('User management module end to end test', () => {
         });
       });
       describe('GET /user-administrator/:id', () => {
+        it('should return 401 when authorization header is missing on /users-administrator', async () => {
+          const res = await supertest(app).get('/users-administrator');
+          expect(res.status).toBe(401);
+          expect(res.body).toBeDefined();
+        });
+
+        it('should return 401 when token is invalid on /users-administrator', async () => {
+          const res = await supertest(app)
+            .get('/users-administrator')
+            .set('authorization', 'invalid');
+          expect(res.status).toBe(401);
+          expect(res.body).toBeDefined();
+        });
+
+        it('should return 404 when GET /user-administrator/:id does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .get(`/user-administrator/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(404);
+          expect(res.body.error).toBeDefined();
+        });
+
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-administrator')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -340,23 +387,76 @@ describe('User management module end to end test', () => {
             });
           const userAdministrator = await supertest(app)
             .get(`/user-administrator/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(userAdministrator.status).toBe(400);
           expect(userAdministrator.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-administrator', () => {
+        it('should return 400 when PATCH /user-administrator is missing id', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-administrator')
+            .set(headers)
+            .send({
+              name: { firstName: 'No', lastName: 'Id' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-administrator has malformed id', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-administrator')
+            .set(headers)
+            .send({
+              id: '123',
+              name: { firstName: 'Bad', lastName: 'Id' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-administrator has invalid payload', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
+            .post('/user-administrator')
+            .set(headers)
+            .send({
+              email: 'valid_administrator@example.com',
+              password: 'StrongPass1!',
+              name: { firstName: 'Valid', lastName: 'administrator' },
+            });
+          const upd = await supertest(app)
+            .patch('/user-administrator')
+            .set(headers)
+            .send({
+              id: created.body.id,
+              name: 123,
+            });
+          expect(upd.status).toBe(400);
+          expect(upd.body.error).toBeDefined();
+        });
+
+        it('should return 404 when PATCH /user-administrator updates a non-existent user', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-administrator')
+            .set(headers)
+            .send({
+              id: new Id().value,
+              name: { firstName: 'John', lastName: 'Doe' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
         it('should throw an error when the data to update a user is wrong', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -380,10 +480,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-administrator`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               id,
               address: {
@@ -396,14 +493,20 @@ describe('User management module end to end test', () => {
         });
       });
       describe('DELETE /user-administrator/:id', () => {
+        it('should return 404 when DELETE /user-administrator/:id does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .delete(`/user-administrator/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
         it('should throw an error when the ID is wrong or non-standard', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-administrator')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -426,10 +529,7 @@ describe('User management module end to end test', () => {
             });
           const result = await supertest(app)
             .delete(`/user-administrator/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined();
         });
@@ -441,10 +541,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -475,10 +572,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste2@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -502,24 +596,27 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const userAdministrator = await supertest(app)
             .get(`/user-administrator/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(userAdministrator.status).toBe(200);
           expect(userAdministrator.body).toBeDefined();
         });
       });
       describe('GET /users-administrator', () => {
+        it('should return empty array on GET /users-administrator when there are no administrators', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .get('/users-administrator')
+            .set(headers);
+          expect(res.status).toBe(200);
+          expect(Array.isArray(res.body)).toBe(true);
+          expect(res.body.length).toBe(0);
+        });
         it('should find all users', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await createAuthUserInMemory('teste2@test.com', authUserRepository);
           await supertest(app)
             .post('/user-administrator')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -542,10 +639,7 @@ describe('User management module end to end test', () => {
             });
           await supertest(app)
             .post('/user-administrator')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'Marie',
@@ -568,10 +662,7 @@ describe('User management module end to end test', () => {
             });
           const response = await supertest(app)
             .get('/users-administrator')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -582,10 +673,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -609,10 +697,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-administrator`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               id,
               address: {
@@ -633,10 +718,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -660,10 +742,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .delete(`/user-administrator/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -677,10 +756,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -703,14 +779,36 @@ describe('User management module end to end test', () => {
         });
       });
       describe('GET /user-master/:id', () => {
+        it('should return 401 when authorization header is missing on GET /user-master/:id', async () => {
+          const res = await supertest(app).get(
+            `/user-master/${new Id().value}`
+          );
+          expect(res.status).toBe(401);
+          expect(res.body).toBeDefined();
+        });
+
+        it('should return 401 when token is invalid on GET /user-master/:id', async () => {
+          const res = await supertest(app)
+            .get(`/user-master/${new Id().value}`)
+            .set('authorization', 'invalid');
+          expect(res.status).toBe(401);
+          expect(res.body).toBeDefined();
+        });
+
+        it('should return 404 when GET /user-master/:id does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .get(`/user-master/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(404);
+          expect(res.body.error).toBeDefined();
+        });
+
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-master')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -730,23 +828,76 @@ describe('User management module end to end test', () => {
             });
           const response = await supertest(app)
             .get(`/user-master/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(response.status).toBe(400);
           expect(response.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-master', () => {
+        it('should return 400 when PATCH /user-master is missing id', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-master')
+            .set(headers)
+            .send({
+              name: { firstName: 'No', lastName: 'Id' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-master has malformed id', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-master')
+            .set(headers)
+            .send({
+              id: '123',
+              name: { firstName: 'Bad', lastName: 'Id' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when PATCH /user-master updates a non-existent user', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-master')
+            .set(headers)
+            .send({
+              id: new Id().value,
+              name: { firstName: 'Ghost', lastName: 'User' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-master has invalid payload', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
+            .post('/user-master')
+            .set(headers)
+            .send({
+              email: 'valid_master@example.com',
+              password: 'StrongPass1!',
+              name: { firstName: 'Valid', lastName: 'Master' },
+            });
+          const upd = await supertest(app)
+            .patch('/user-master')
+            .set(headers)
+            .send({
+              id: created.body.id,
+              name: 123,
+            });
+          expect(upd.status).toBe(400);
+          expect(upd.body.error).toBeDefined();
+        });
+
         it('should throw an error when the data to update a user is wrong', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -767,10 +918,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-master`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               id,
               cnpj: '142154654',
@@ -780,16 +928,13 @@ describe('User management module end to end test', () => {
         });
       });
     });
-    describe('On sucess', () => {
+    describe('On success', () => {
       describe('POST /user-master', () => {
         it('should create a user', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               id: new Id().value,
               name: {
@@ -817,10 +962,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               id: new Id().value,
               name: {
@@ -842,10 +984,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const userMaster = await supertest(app)
             .get(`/user-master/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(userMaster.status).toBe(200);
           expect(userMaster.body).toBeDefined();
         });
@@ -855,10 +994,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste2@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-master')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               id: new Id().value,
               name: {
@@ -880,10 +1016,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-master`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               id,
               cnpj: '35.845.901/0001-58',
@@ -902,10 +1035,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -928,14 +1058,25 @@ describe('User management module end to end test', () => {
         });
       });
       describe('GET /user-student/:id', () => {
+        it('should return 401 when authorization header is missing on /users-student', async () => {
+          const res = await supertest(app).get('/users-student');
+          expect(res.status).toBe(401);
+          expect(res.body).toBeDefined();
+        });
+
+        it('should return 401 when token is invalid on /users-student', async () => {
+          const res = await supertest(app)
+            .get('/users-student')
+            .set('authorization', 'invalid');
+          expect(res.status).toBe(401);
+          expect(res.body).toBeDefined();
+        });
+
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-student')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -955,23 +1096,94 @@ describe('User management module end to end test', () => {
             });
           const userStudent = await supertest(app)
             .get(`/user-student/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(userStudent.status).toBe(400);
           expect(userStudent.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-student', () => {
+        it('should return 404 when GET /user-student/:id does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .get(`/user-student/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(404);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when DELETE /user-student/:id does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .delete(`/user-student/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when PATCH /user-student updates a non-existent user', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-student')
+            .set(headers)
+            .send({
+              id: new Id().value,
+              name: { firstName: 'John', lastName: 'Doe' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-student is missing id', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-student')
+            .set(headers)
+            .send({
+              name: { firstName: 'No', lastName: 'Id' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-student has malformed id', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-student')
+            .set(headers)
+            .send({
+              id: '123',
+              name: { firstName: 'Bad', lastName: 'Id' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-student has invalid payload', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
+            .post('/user-student')
+            .set(headers)
+            .send({
+              email: 'valid_student@example.com',
+              password: 'StrongPass1!',
+              name: { firstName: 'Valid', lastName: 'student' },
+            });
+          const upd = await supertest(app)
+            .patch('/user-student')
+            .set(headers)
+            .send({
+              id: created.body.id,
+              name: 123,
+            });
+          expect(upd.status).toBe(400);
+          expect(upd.body.error).toBeDefined();
+        });
+
         it('should throw an error when the data to update a user is wrong', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -992,10 +1204,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-student`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               id,
               paymentYear: 0,
@@ -1009,10 +1218,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-student')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1032,25 +1238,19 @@ describe('User management module end to end test', () => {
             });
           const result = await supertest(app)
             .delete(`/user-student/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined();
         });
       });
     });
-    describe('On sucess', () => {
+    describe('On success', () => {
       describe('POST /user-student', () => {
         it('should create a user', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1077,10 +1277,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1101,24 +1298,25 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const userStudent = await supertest(app)
             .get(`/user-student/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(userStudent.status).toBe(200);
           expect(userStudent.body).toBeDefined();
         });
       });
       describe('GET /users-student', () => {
+        it('should return empty array on GET /users-student when there are no students', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app).get('/users-student').set(headers);
+          expect(res.status).toBe(200);
+          expect(Array.isArray(res.body)).toBe(true);
+          expect(res.body.length).toBe(0);
+        });
         it('should find all users', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await createAuthUserInMemory('teste2@test.com', authUserRepository);
           await supertest(app)
             .post('/user-student')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1138,10 +1336,7 @@ describe('User management module end to end test', () => {
             });
           await supertest(app)
             .post('/user-student')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1161,10 +1356,7 @@ describe('User management module end to end test', () => {
             });
           const response = await supertest(app)
             .get('/users-student')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -1175,10 +1367,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1199,10 +1388,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-student`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               id,
               name: {
@@ -1229,10 +1415,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-student')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1253,10 +1436,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .delete(`/user-student/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -1270,10 +1450,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1300,14 +1477,25 @@ describe('User management module end to end test', () => {
         });
       });
       describe('GET /user-teacher/:id', () => {
+        it('should return 401 when authorization header is missing on /users-teacher', async () => {
+          const res = await supertest(app).get('/users-teacher');
+          expect(res.status).toBe(401);
+          expect(res.body).toBeDefined();
+        });
+
+        it('should return 401 when token is invalid on /users-teacher', async () => {
+          const res = await supertest(app)
+            .get('/users-teacher')
+            .set('authorization', 'invalid');
+          expect(res.status).toBe(401);
+          expect(res.body).toBeDefined();
+        });
+
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-teacher')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1331,23 +1519,94 @@ describe('User management module end to end test', () => {
             });
           const userTeacher = await supertest(app)
             .get(`/user-teacher/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(userTeacher.status).toBe(400);
           expect(userTeacher.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-teacher', () => {
+        it('should return 404 when GET /user-teacher/:id does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .get(`/user-teacher/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(404);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when DELETE /user-teacher/:id does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .delete(`/user-teacher/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when PATCH /user-teacher updates a non-existent user', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-teacher')
+            .set(headers)
+            .send({
+              id: new Id().value,
+              name: { firstName: 'John', lastName: 'Doe' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-teacher is missing id', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-teacher')
+            .set(headers)
+            .send({
+              name: { firstName: 'No', lastName: 'Id' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-teacher has malformed id', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-teacher')
+            .set(headers)
+            .send({
+              id: '123',
+              name: { firstName: 'Bad', lastName: 'Id' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-teacher has invalid payload', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
+            .post('/user-teacher')
+            .set(headers)
+            .send({
+              email: 'valid_teacher@example.com',
+              password: 'StrongPass1!',
+              name: { firstName: 'Valid', lastName: 'teacher' },
+            });
+          const upd = await supertest(app)
+            .patch('/user-teacher')
+            .set(headers)
+            .send({
+              id: created.body.id,
+              name: 123,
+            });
+          expect(upd.status).toBe(400);
+          expect(upd.body.error).toBeDefined();
+        });
+
         it('should throw an error when the data to update a user is wrong', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1372,10 +1631,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-teacher`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               id,
               academicDegrees: 0,
@@ -1390,10 +1646,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-teacher')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1417,25 +1670,19 @@ describe('User management module end to end test', () => {
             });
           const result = await supertest(app)
             .delete(`/user-teacher/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined();
         });
       });
     });
-    describe('On sucess', () => {
+    describe('On success', () => {
       describe('POST /user-teacher', () => {
         it('should create a user', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1466,10 +1713,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1494,24 +1738,26 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const userTeacher = await supertest(app)
             .get(`/user-teacher/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(userTeacher.status).toBe(200);
           expect(userTeacher.body).toBeDefined();
         });
       });
       describe('GET /users-teacher', () => {
+        it('should return empty array on GET /users-teacher when there are no teachers', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app).get('/users-teacher').set(headers);
+          expect(res.status).toBe(200);
+          expect(Array.isArray(res.body)).toBe(true);
+          expect(res.body.length).toBe(0);
+        });
+
         it('should find all users', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await createAuthUserInMemory('teste2@test.com', authUserRepository);
           await supertest(app)
             .post('/user-teacher')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1535,10 +1781,7 @@ describe('User management module end to end test', () => {
             });
           await supertest(app)
             .post('/user-teacher')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1562,10 +1805,7 @@ describe('User management module end to end test', () => {
             });
           const response = await supertest(app)
             .get('/users-teacher')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -1576,10 +1816,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1604,10 +1841,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-teacher`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               id,
               name: {
@@ -1639,10 +1873,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-teacher')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1667,10 +1898,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .delete(`/user-teacher/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -1684,10 +1912,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1712,14 +1937,25 @@ describe('User management module end to end test', () => {
         });
       });
       describe('GET /user-worker/:id', () => {
+        it('should return 401 when authorization header is missing on /users-worker', async () => {
+          const res = await supertest(app).get('/users-worker');
+          expect(res.status).toBe(401);
+          expect(res.body).toBeDefined();
+        });
+
+        it('should return 401 when token is invalid on /users-worker', async () => {
+          const res = await supertest(app)
+            .get('/users-worker')
+            .set('authorization', 'invalid');
+          expect(res.status).toBe(401);
+          expect(res.body).toBeDefined();
+        });
+
         it('should return empty string when the ID is wrong or non-standard', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-worker')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1741,23 +1977,94 @@ describe('User management module end to end test', () => {
             });
           const userWorker = await supertest(app)
             .get(`/user-worker/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(userWorker.status).toBe(400);
           expect(userWorker.body.error).toBeDefined();
         });
       });
       describe('PATCH /user-worker', () => {
+        it('should return 404 when GET /user-worker/:id does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .get(`/user-worker/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(404);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when DELETE /user-worker/:id does not exist', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .delete(`/user-worker/${new Id().value}`)
+            .set(headers);
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 404 when PATCH /user-worker updates a non-existent user', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-worker')
+            .set(headers)
+            .send({
+              id: new Id().value,
+              name: { firstName: 'John', lastName: 'Doe' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-worker is missing id', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-worker')
+            .set(headers)
+            .send({
+              name: { firstName: 'No', lastName: 'Id' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-worker has malformed id', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app)
+            .patch('/user-worker')
+            .set(headers)
+            .send({
+              id: '123',
+              name: { firstName: 'Bad', lastName: 'Id' },
+            });
+          expect(res.status).toBe(400);
+          expect(res.body.error).toBeDefined();
+        });
+
+        it('should return 400 when PATCH /user-worker has invalid payload', async () => {
+          const headers = await authHeader();
+          const created = await supertest(app)
+            .post('/user-worker')
+            .set(headers)
+            .send({
+              email: 'valid_worker@example.com',
+              password: 'StrongPass1!',
+              name: { firstName: 'Valid', lastName: 'worker' },
+            });
+          const upd = await supertest(app)
+            .patch('/user-worker')
+            .set(headers)
+            .send({
+              id: created.body.id,
+              name: 123,
+            });
+          expect(upd.status).toBe(400);
+          expect(upd.body.error).toBeDefined();
+        });
+
         it('should throw an error when the data to update a user is wrong', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1780,10 +2087,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-worker`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               salary: {
                 id,
@@ -1799,10 +2103,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await supertest(app)
             .post('/user-worker')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1824,25 +2125,19 @@ describe('User management module end to end test', () => {
             });
           const result = await supertest(app)
             .delete(`/user-worker/123`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined();
         });
       });
     });
-    describe('On sucess', () => {
+    describe('On success', () => {
       describe('POST /user-worker', () => {
         it('should create a user', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1871,10 +2166,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1897,24 +2189,26 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const userWorker = await supertest(app)
             .get(`/user-worker/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(userWorker.status).toBe(200);
           expect(userWorker.body).toBeDefined();
         });
       });
       describe('GET /users-worker/', () => {
+        it('should return empty array on GET /users-worker when there are no workers', async () => {
+          const headers = await authHeader();
+          const res = await supertest(app).get('/users-worker').set(headers);
+          expect(res.status).toBe(200);
+          expect(Array.isArray(res.body)).toBe(true);
+          expect(res.body.length).toBe(0);
+        });
+
         it('should find all users', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           await createAuthUserInMemory('teste2@test.com', authUserRepository);
           await supertest(app)
             .post('/user-worker')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1936,10 +2230,7 @@ describe('User management module end to end test', () => {
             });
           await supertest(app)
             .post('/user-worker')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -1961,10 +2252,7 @@ describe('User management module end to end test', () => {
             });
           const response = await supertest(app)
             .get('/users-worker')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -1975,10 +2263,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -2001,10 +2286,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const updatedUser = await supertest(app)
             .patch(`/user-worker`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               id,
               name: {
@@ -2034,10 +2316,7 @@ describe('User management module end to end test', () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-worker')
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            )
+            .set(await authHeader())
             .send({
               name: {
                 firstName: 'John',
@@ -2060,10 +2339,7 @@ describe('User management module end to end test', () => {
           const id = response.body.id;
           const result = await supertest(app)
             .delete(`/user-worker/${id}`)
-            .set(
-              'authorization',
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYXN0ZXJJZCI6ImNlNjNiY2E1LWNlNGItNDVhOC1iMTg4LWJjNGZlYzdlNDc5YiIsImVtYWlsIjoidGVzdGVAdGVzdGUuY29tLmJyIiwicm9sZSI6Im1hc3RlciIsImlhdCI6MTcxMDUyMjQzMSwiZXhwIjoxNzUzNzIyNDMxfQ.FOtI4YnQibmm-x43349yuMF7T3YZ-ImedU_IhXYqwng'
-            );
+            .set(await authHeader());
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
