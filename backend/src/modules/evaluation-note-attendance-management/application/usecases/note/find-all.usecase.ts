@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { NoteMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/note.mapper';
 
 /**
  * Use case responsible for retrieving all notes with pagination.
@@ -42,22 +43,15 @@ export default class FindAllNote
    */
   async execute(
     { offset, quantity }: FindAllNoteInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindAllNoteOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.NOTE,
       FunctionCalledEnum.FIND_ALL,
       token
     );
-    const results = await this._noteRepository.findAll(quantity, offset);
+    const results = await this._noteRepository.findAll(token.masterId, quantity, offset);
 
-    const result = results.map(note => ({
-      id: note.id.value,
-      evaluation: note.evaluation,
-      note: note.note,
-      student: note.student,
-    }));
-
-    return result;
+    return NoteMapper.toObjList(results)
   }
 }

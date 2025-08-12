@@ -43,7 +43,7 @@ export default class DeleteNote
    */
   async execute(
     { id }: DeleteNoteInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<DeleteNoteOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.NOTE,
@@ -51,10 +51,10 @@ export default class DeleteNote
       token
     );
 
-    const noteVerification = await this._noteRepository.find(id);
+    const noteVerification = await this._noteRepository.find(token.masterId, id);
     if (!noteVerification) throw new Error('Note not found');
 
-    const result = await this._noteRepository.delete(id);
+    const result = await this._noteRepository.delete(token.masterId, id);
 
     return { message: result };
   }
