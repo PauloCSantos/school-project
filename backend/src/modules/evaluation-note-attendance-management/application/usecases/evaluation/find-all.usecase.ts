@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { EvaluationMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/evaluation.mapper';
 
 /**
  * Use case responsible for retrieving all evaluation records with pagination.
@@ -43,7 +44,7 @@ export default class FindAllEvaluation
    */
   async execute(
     { offset, quantity }: FindAllEvaluationInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindAllEvaluationOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.EVALUATION,
@@ -51,16 +52,8 @@ export default class FindAllEvaluation
       token
     );
 
-    const results = await this._evaluationRepository.findAll(quantity, offset);
+    const results = await this._evaluationRepository.findAll(token.masterId, quantity, offset);
 
-    const result = results.map(evaluation => ({
-      id: evaluation.id.value,
-      teacher: evaluation.teacher,
-      lesson: evaluation.lesson,
-      type: evaluation.type,
-      value: evaluation.value,
-    }));
-
-    return result;
+    return EvaluationMapper.toObjList(results)  
   }
 }

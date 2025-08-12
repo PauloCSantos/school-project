@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { EvaluationMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/evaluation.mapper';
 
 /**
  * Use case responsible for finding an evaluation record by id.
@@ -43,7 +44,7 @@ export default class FindEvaluation
    */
   async execute(
     { id }: FindEvaluationInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindEvaluationOutputDto | null> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.EVALUATION,
@@ -51,16 +52,10 @@ export default class FindEvaluation
       token
     );
 
-    const response = await this._evaluationRepository.find(id);
+    const response = await this._evaluationRepository.find(token.masterId, id);
 
     if (response) {
-      return {
-        id: response.id.value,
-        teacher: response.teacher,
-        lesson: response.lesson,
-        type: response.type,
-        value: response.value,
-      };
+      return EvaluationMapper.toObj(response)
     }
 
     return null;
