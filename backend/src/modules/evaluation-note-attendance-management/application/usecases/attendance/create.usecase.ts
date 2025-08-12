@@ -46,7 +46,7 @@ export default class CreateAttendance
    */
   async execute(
     { date, day, hour, lesson, studentsPresent }: CreateAttendanceInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateAttendanceOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.ATTENDANCE,
@@ -61,15 +61,10 @@ export default class CreateAttendance
       studentsPresent,
     });
 
-    const attendanceVerification = await this._attendanceRepository.find(
-      attendance.id.value
+    const result = await this._attendanceRepository.create(
+      token.masterId,
+      attendance
     );
-
-    if (attendanceVerification) {
-      throw new Error('Attendance already exists');
-    }
-
-    const result = await this._attendanceRepository.create(attendance);
 
     return { id: result };
   }
