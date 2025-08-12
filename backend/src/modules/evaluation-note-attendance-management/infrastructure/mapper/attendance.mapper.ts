@@ -1,18 +1,15 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
-import { FindAttendanceOutputDto } from '../dto/attendance-usecase.dto';
+import type { IFindAttendanceOutput as AttendanceMapperProps } from '../../application/dto/base-attendance.dto';
 
 /**
  * Interface that defines the data structure for mapping Attendance entities
  */
-export interface AttendanceMapperProps extends FindAttendanceOutputDto {
-  id: string;
-}
-
+export type { AttendanceMapperProps };
 /**
  * Mapper responsible for converting between Attendance entity and DTOs
  */
-export default class AttendanceMapper {
+export class AttendanceMapper {
   /**
    * Converts an Attendance entity into a plain object (DTO)
    * @param input Attendance entity to be converted
@@ -50,7 +47,7 @@ export default class AttendanceMapper {
       day: input.day as DayOfWeek,
       hour: input.hour as Hour,
       lesson: input.lesson,
-      studentsPresent: input.studentsPresent || [], // Prevent null/undefined
+      studentsPresent: input.studentsPresent || [],
     });
   }
 
