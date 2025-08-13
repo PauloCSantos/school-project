@@ -19,9 +19,7 @@ describe('DeleteEvent usecase unit test', () => {
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
-      delete: jest.fn((_id: string) =>
-        Promise.resolve('Operação concluída com sucesso')
-      ),
+      delete: jest.fn(),
     } as jest.Mocked<EventGateway>;
   };
 
@@ -75,6 +73,7 @@ describe('DeleteEvent usecase unit test', () => {
       ).rejects.toThrow('Event not found');
 
       expect(repository.find).toHaveBeenCalledWith(
+        token.masterId,
         '75c791ca-7a40-4217-8b99-2cf22c01d543'
       );
       expect(repository.delete).not.toHaveBeenCalled();
@@ -84,7 +83,7 @@ describe('DeleteEvent usecase unit test', () => {
   describe('On success', () => {
     it('should delete an event', async () => {
       repository.find.mockResolvedValue(event);
-
+      repository.delete.mockResolvedValue('Operação concluída com sucesso');
       const result = await usecase.execute(
         {
           id: event.id.value,
@@ -92,8 +91,14 @@ describe('DeleteEvent usecase unit test', () => {
         token
       );
 
-      expect(repository.find).toHaveBeenCalledWith(event.id.value);
-      expect(repository.delete).toHaveBeenCalledWith(event.id.value);
+      expect(repository.find).toHaveBeenCalledWith(
+        token.masterId,
+        event.id.value
+      );
+      expect(repository.delete).toHaveBeenCalledWith(
+        token.masterId,
+        event.id.value
+      );
       expect(result).toBeDefined();
       expect(result.message).toBe('Operação concluída com sucesso');
     });

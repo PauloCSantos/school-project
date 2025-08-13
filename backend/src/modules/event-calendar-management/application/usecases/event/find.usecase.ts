@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { EventMapper } from '@/modules/event-calendar-management/infrastructure/mapper/event.mapper';
 
 /**
  * Use case responsible for finding an event by ID.
@@ -42,7 +43,7 @@ export default class FindEvent
    */
   async execute(
     { id }: FindEventInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindEventOutputDto | null> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.EVENT,
@@ -50,19 +51,10 @@ export default class FindEvent
       token
     );
 
-    const response = await this._eventRepository.find(id);
+    const response = await this._eventRepository.find(token.masterId, id);
 
     if (response) {
-      return {
-        id: response.id.value,
-        creator: response.creator,
-        name: response.name,
-        date: response.date,
-        hour: response.hour,
-        day: response.day,
-        type: response.type,
-        place: response.place,
-      };
+      return EventMapper.toObj(response);
     }
 
     return null;

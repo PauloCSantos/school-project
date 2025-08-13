@@ -5,6 +5,7 @@ import MemoryEventRepository from '@/modules/event-calendar-management/infrastru
 describe('MemoryEventRepository unit test', () => {
   let repository: MemoryEventRepository;
 
+  const masterId = new Id().value;
   const event1 = new Event({
     creator: new Id().value,
     name: 'Event',
@@ -36,13 +37,15 @@ describe('MemoryEventRepository unit test', () => {
   });
 
   beforeEach(() => {
-    repository = new MemoryEventRepository([event1, event2]);
+    repository = new MemoryEventRepository([
+      { masterId, records: [event1, event2] },
+    ]);
   });
 
   describe('On fail', () => {
     it('should return null if event not found', async () => {
       const eventId = new Id().value;
-      const eventFound = await repository.find(eventId);
+      const eventFound = await repository.find(masterId, eventId);
 
       expect(eventFound).toBeNull();
     });
@@ -59,13 +62,13 @@ describe('MemoryEventRepository unit test', () => {
         place: event3.place,
       });
 
-      await expect(repository.update(newEvent)).rejects.toThrow(
+      await expect(repository.update(masterId, newEvent)).rejects.toThrow(
         'Event not found'
       );
     });
 
     it('should throw an error when trying to delete a non-existent event', async () => {
-      await expect(repository.delete(new Id().value)).rejects.toThrow(
+      await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
         'Event not found'
       );
     });
@@ -74,7 +77,7 @@ describe('MemoryEventRepository unit test', () => {
   describe('On success', () => {
     it('should find an existing event by id', async () => {
       const eventId = event1.id.value;
-      const eventFound = await repository.find(eventId);
+      const eventFound = await repository.find(masterId, eventId);
 
       expect(eventFound).toBeDefined();
       expect(eventFound!.id).toBeDefined();
@@ -87,7 +90,7 @@ describe('MemoryEventRepository unit test', () => {
     });
 
     it('should create a new event and return its id', async () => {
-      const result = await repository.create(event3);
+      const result = await repository.create(masterId, event3);
 
       expect(result).toBe(event3.id.value);
     });
@@ -97,12 +100,12 @@ describe('MemoryEventRepository unit test', () => {
       updatedEvent.name = 'Happy hour';
       updatedEvent.day = 'mon';
 
-      const result = await repository.update(updatedEvent);
+      const result = await repository.update(masterId, updatedEvent);
       expect(result).toEqual(updatedEvent);
     });
 
     it('should find all events', async () => {
-      const allEvents = await repository.findAll();
+      const allEvents = await repository.findAll(masterId);
 
       expect(allEvents.length).toBe(2);
       expect(allEvents[0].name).toBe(event1.name);
@@ -114,7 +117,7 @@ describe('MemoryEventRepository unit test', () => {
     });
 
     it('should delete an existing event', async () => {
-      const response = await repository.delete(event1.id.value);
+      const response = await repository.delete(masterId, event1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });
