@@ -15,7 +15,7 @@ describe('updateNote usecase unit test', () => {
       find: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
-      update: jest.fn(note => Promise.resolve(note)),
+      update: jest.fn(),
       delete: jest.fn(),
     };
   };
@@ -64,6 +64,7 @@ describe('updateNote usecase unit test', () => {
     it('should update a note', async () => {
       const noteRepository = MockRepository();
       noteRepository.find.mockResolvedValue(note1);
+      noteRepository.update.mockResolvedValue(note1);
 
       const usecase = new UpdateNote(noteRepository, policieService);
 

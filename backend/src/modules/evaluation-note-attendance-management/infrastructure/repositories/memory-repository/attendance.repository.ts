@@ -132,9 +132,10 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
       throw new Error('Attendance not found');
     }
     attendances!.set(id, AttendanceMapper.toObj(attendance));
-
-    return `${attendance.studentsPresent.length} ${
-      attendance.studentsPresent.length === 1 ? 'value was' : 'values were'
+    const totalStudents =
+      attendance.studentsPresent.length - obj.studentsPresent.length;
+    return `${totalStudents} ${
+      totalStudents === 1 ? 'value was' : 'values were'
     } entered`;
   }
 
@@ -159,8 +160,10 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
 
     attendances!.set(id, AttendanceMapper.toObj(attendance));
 
-    return `${attendance.studentsPresent.length} ${
-      attendance.studentsPresent.length === 1 ? 'value was' : 'values were'
+    const totalStudents =
+      obj.studentsPresent.length - attendance.studentsPresent.length;
+    return `${totalStudents} ${
+      totalStudents === 1 ? 'value was' : 'values were'
     } removed`;
   }
 

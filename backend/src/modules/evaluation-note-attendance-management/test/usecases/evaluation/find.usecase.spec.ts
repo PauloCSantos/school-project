@@ -48,6 +48,7 @@ describe('findEvaluation usecase unit test', () => {
       const result = await usecase.execute({ id: evaluation1.id.value }, token);
 
       expect(evaluationRepository.find).toHaveBeenCalledWith(
+        token.masterId,
         evaluation1.id.value
       );
       expect(result).toBeDefined();
@@ -60,7 +61,7 @@ describe('findEvaluation usecase unit test', () => {
       });
     });
 
-    it('should return undefined when id is not found', async () => {
+    it('should return null when id is not found', async () => {
       const evaluationRepository = MockRepository();
       evaluationRepository.find.mockResolvedValue(null);
 
@@ -73,6 +74,7 @@ describe('findEvaluation usecase unit test', () => {
       );
 
       expect(evaluationRepository.find).toHaveBeenCalledWith(
+        token.masterId,
         '75c791ca-7a40-4217-8b99-2cf22c01d543'
       );
       expect(result).toBeNull();

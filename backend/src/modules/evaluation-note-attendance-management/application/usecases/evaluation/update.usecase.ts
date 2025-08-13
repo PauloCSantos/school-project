@@ -72,6 +72,6 @@ export default class UpdateEvaluation
       evaluation
     );
 
-    return EvaluationMapper.toObj(result)
+    return EvaluationMapper.toObj(result);
   }
 }
