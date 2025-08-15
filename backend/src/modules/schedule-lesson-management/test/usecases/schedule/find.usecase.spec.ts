@@ -50,9 +50,9 @@ describe('findSchedule usecase unit test', () => {
       expect(scheduleRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
-    it('should return undefined when id is not found', async () => {
+    it('should return null when id is not found', async () => {
       const scheduleRepository = MockRepository();
-      scheduleRepository.find.mockResolvedValue(undefined);
+      scheduleRepository.find.mockResolvedValue(null);
 
       const usecase = new FindSchedule(scheduleRepository, policieService);
       const result = await usecase.execute(
@@ -62,7 +62,7 @@ describe('findSchedule usecase unit test', () => {
         token
       );
 
-      expect(result).toBe(undefined);
+      expect(result).toBe(null);
     });
   });
 });

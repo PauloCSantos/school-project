@@ -1,272 +1,265 @@
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
 import LessonGateway from '../../../application/gateway/lesson.gateway';
+import { LessonMapper, LessonMapperProps } from '../../mapper/lesson.mapper';
 
 /**
  * In-memory implementation of LessonGateway.
- * Stores and manipulates lessons in memory.
- * Useful for testing and development purposes.
+ * Stores and manipulates lesson records in memory.
  */
 export default class MemoryLessonRepository implements LessonGateway {
-  private _lessons: Lesson[];
+  private _lessons: Map<string, Map<string, LessonMapperProps>> = new Map();
 
   /**
    * Creates a new in-memory repository.
-   * @param lessons - Optional initial array of lessons
+   * @param lessonsRecords - Optional initial array of lesson records
+   *  Ex.: new MemoryLessonRepository([{ masterId, records: [a1, a2] }])
    */
-  constructor(lessons?: Lesson[]) {
-    lessons ? (this._lessons = lessons) : (this._lessons = []);
-  }
-
-  /**
-   * Finds a lesson by its ID.
-   * @param id - The ID of the lesson to search for
-   * @returns Promise resolving to the found Lesson or null if not found
-   */
-  async find(id: string): Promise<Lesson | null> {
-    const lesson = this._lessons.find(lesson => lesson.id.value === id);
-    if (lesson) {
-      return lesson;
-    } else {
-      return null;
+  constructor(lessonsRecords?: Array<{ masterId: string; records: Lesson[] }>) {
+    if (lessonsRecords && lessonsRecords.length > 0) {
+      for (const bucket of lessonsRecords) {
+        const map = this.getOrCreateBucket(bucket.masterId);
+        for (const lesson of bucket.records) {
+          map.set(lesson.id.value, LessonMapper.toObj(lesson));
+        }
+      }
     }
   }
 
   /**
-   * Retrieves a list of lessons with optional pagination.
-   * @param quantity - Optional limit for the number of lessons to retrieve
-   * @param offSet - Optional number of lessons to skip before starting to collect
-   * @returns Promise resolving to an array of Lesson entities
+   * Finds an lesson record by its unique identifier.
+   * @param masterId - The tenant unique identifier
+   * @param id - The unique identifier to search for
+   * @returns Promise resolving to the found Lesson or null if not found
    */
-  async findAll(
-    quantity?: number | undefined,
-    offSet?: number | undefined
-  ): Promise<Lesson[]> {
-    const offS = offSet ? offSet : 0;
-    const qtd = quantity ? quantity : 10;
-    const lessons = this._lessons.slice(offS, qtd);
-
-    return lessons;
+  async find(masterId: string, id: string): Promise<Lesson | null> {
+    const obj = this._lessons.get(masterId)?.get(id);
+    return obj ? LessonMapper.toInstance(obj) : null;
   }
 
   /**
-   * Creates a new lesson in memory.
-   * @param lesson - The lesson entity to be created
-   * @returns Promise resolving to the ID of the created lesson
+   * Retrieves a collection of lesson records with pagination support.
+   * @param masterId - The tenant unique identifier
+   * @param quantity - Optional limit on the number of records to return (defaults to 10)
+   * @param offSet - Optional number of records to skip for pagination (defaults to 0)
+   * @returns Promise resolving to an array of Lesson entities
    */
-  async create(lesson: Lesson): Promise<string> {
-    this._lessons.push(lesson);
+  async findAll(
+    masterId: string,
+    quantity?: number,
+    offSet?: number
+  ): Promise<Lesson[]> {
+    const offS = offSet ? offSet : 0;
+    const qtd = quantity ? quantity : 10;
+    const lessons = this._lessons.get(masterId);
+    if (!lessons) return [];
+    const page = Array.from(lessons.values()).slice(offS, offS + qtd);
+    return LessonMapper.toInstanceList(page);
+  }
+
+  /**
+   * Creates a new lesson record in memory.
+   * @param masterId - The tenant unique identifier
+   * @param lesson - The lesson entity to be created
+   * @returns Promise resolving to the created lesson id
+   */
+  async create(masterId: string, lesson: Lesson): Promise<string> {
+    const lessons = this.getOrCreateBucket(masterId);
+    lessons.set(lesson.id.value, LessonMapper.toObj(lesson));
     return lesson.id.value;
   }
 
   /**
    * Updates an existing lesson identified by ID.
-   * @param lesson - The lesson entity with updated information
+   * @param masterId - The tenant unique identifier
+   * @param id - The unique identifier of the lesson record to update
+   * @param lesson - The updated lesson entity data
    * @returns Promise resolving to the updated Lesson entity
    * @throws Error if the lesson is not found
    */
-  async update(lesson: Lesson): Promise<Lesson> {
-    const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.value === lesson.id.value
-    );
-    if (lessonIndex !== -1) {
-      return (this._lessons[lessonIndex] = lesson);
-    } else {
+  async update(masterId: string, id: string, lesson: Lesson): Promise<Lesson> {
+    const lessons = this._lessons.get(masterId);
+    if (!lessons || !lessons.has(id)) {
       throw new Error('Lesson not found');
     }
+    lessons.set(id, LessonMapper.toObj(lesson));
+    return lesson;
   }
 
   /**
-   * Deletes a lesson by its ID.
-   * @param id - The ID of the lesson to delete
+   * Deletes an lesson record by its unique identifier.
+   * @param masterId - The tenant unique identifier
+   * @param id - The unique identifier of the lesson record to delete
    * @returns Promise resolving to a success message
-   * @throws Error if the lesson is not found
+   * @throws Error if the lesson record is not found
    */
-  async delete(id: string): Promise<string> {
-    const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.value === id
-    );
-    if (lessonIndex !== -1) {
-      this._lessons.splice(lessonIndex, 1);
-      return 'Operação concluída com sucesso';
-    } else {
+  async delete(masterId: string, id: string): Promise<string> {
+    const lessons = this._lessons.get(masterId);
+    if (!lessons || !lessons.has(id)) {
       throw new Error('Lesson not found');
     }
+    lessons.delete(id);
+    return 'Operação concluída com sucesso';
   }
 
   /**
    * Adds students to a lesson.
+   * @param masterId - The tenant unique identifier
    * @param id - The ID of the lesson to update
-   * @param newStudentsList - Array of student IDs to add
+   * @param lesson - The lesson entity with updated students
    * @returns Promise resolving to a success message
    * @throws Error if the lesson is not found or if adding students fails
    */
-  async addStudents(id: string, newStudentsList: string[]): Promise<string> {
-    const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.value === id
-    );
-    if (lessonIndex !== -1) {
-      try {
-        const updatedLesson = this._lessons[lessonIndex];
-        newStudentsList.forEach(id => {
-          updatedLesson.addStudent(id);
-        });
-        this._lessons[lessonIndex] = updatedLesson;
-        return `${newStudentsList.length} ${
-          newStudentsList.length === 1 ? 'value was' : 'values were'
-        } entered`;
-      } catch (error) {
-        throw error;
-      }
-    } else {
+  async addStudents(
+    masterId: string,
+    id: string,
+    lesson: Lesson
+  ): Promise<string> {
+    const lessons = this._lessons.get(masterId);
+    const obj = lessons?.get(id);
+    if (!obj) {
       throw new Error('Lesson not found');
     }
+
+    lessons!.set(id, LessonMapper.toObj(lesson));
+
+    const totalStudents = lesson.studentsList.length - obj.studentsList.length;
+    return `${totalStudents} ${
+      totalStudents === 1 ? 'value was' : 'values were'
+    } entered`;
   }
 
   /**
    * Removes students from a lesson.
+   * @param masterId - The tenant unique identifier
    * @param id - The ID of the lesson to update
-   * @param studentsListToRemove - Array of student IDs to remove
+   * @param lesson - The lesson entity with updated students
    * @returns Promise resolving to a success message
    * @throws Error if the lesson is not found or if removing students fails
    */
   async removeStudents(
+    masterId: string,
     id: string,
-    studentsListToRemove: string[]
+    lesson: Lesson
   ): Promise<string> {
-    const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.value === id
-    );
-    if (lessonIndex !== -1) {
-      try {
-        const updatedLesson = this._lessons[lessonIndex];
-        studentsListToRemove.forEach(id => {
-          updatedLesson.removeStudent(id);
-        });
-        this._lessons[lessonIndex] = updatedLesson;
-        return `${studentsListToRemove.length} ${
-          studentsListToRemove.length === 1 ? 'value was' : 'values were'
-        } removed`;
-      } catch (error) {
-        throw error;
-      }
-    } else {
+    const lessons = this._lessons.get(masterId);
+    const obj = lessons?.get(id);
+    if (!obj) {
       throw new Error('Lesson not found');
     }
+
+    lessons!.set(id, LessonMapper.toObj(lesson));
+
+    const totalStudents = obj.studentsList.length - lesson.studentsList.length;
+    return `${totalStudents} ${
+      totalStudents === 1 ? 'value was' : 'values were'
+    } removed`;
   }
 
   /**
    * Adds days to a lesson schedule.
+   * @param masterId - The tenant unique identifier
    * @param id - The ID of the lesson to update
-   * @param newDaysList - Array of day values to add
+   * @param lesson - The lesson entity with updated days
    * @returns Promise resolving to a success message
    * @throws Error if the lesson is not found or if adding days fails
    */
-  async addDay(id: string, newDaysList: string[]): Promise<string> {
-    const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.value === id
-    );
-    if (lessonIndex !== -1) {
-      try {
-        const updatedLesson = this._lessons[lessonIndex];
-        newDaysList.forEach(day => {
-          updatedLesson.addDay(day as DayOfWeek);
-        });
-        this._lessons[lessonIndex] = updatedLesson;
-        return `${newDaysList.length} ${
-          newDaysList.length === 1 ? 'value was' : 'values were'
-        } entered`;
-      } catch (error) {
-        throw error;
-      }
-    } else {
+  async addDay(masterId: string, id: string, lesson: Lesson): Promise<string> {
+    const lessons = this._lessons.get(masterId);
+    const obj = lessons?.get(id);
+    if (!obj) {
       throw new Error('Lesson not found');
     }
+    lessons!.set(id, LessonMapper.toObj(lesson));
+
+    const totalStudents = lesson.days.length - obj.days.length;
+    return `${totalStudents} ${
+      totalStudents === 1 ? 'value was' : 'values were'
+    } entered`;
   }
 
   /**
    * Removes days from a lesson schedule.
+   * @param masterId - The tenant unique identifier
    * @param id - The ID of the lesson to update
-   * @param daysListToRemove - Array of day values to remove
+   * @param lesson - The lesson entity with updated days
    * @returns Promise resolving to a success message
    * @throws Error if the lesson is not found or if removing days fails
    */
-  async removeDay(id: string, daysListToRemove: string[]): Promise<string> {
-    const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.value === id
-    );
-    if (lessonIndex !== -1) {
-      try {
-        const updatedLesson = this._lessons[lessonIndex];
-        daysListToRemove.forEach(day => {
-          updatedLesson.removeDay(day as DayOfWeek);
-        });
-        this._lessons[lessonIndex] = updatedLesson;
-        return `${daysListToRemove.length} ${
-          daysListToRemove.length === 1 ? 'value was' : 'values were'
-        } removed`;
-      } catch (error) {
-        throw error;
-      }
-    } else {
+  async removeDay(
+    masterId: string,
+    id: string,
+    lesson: Lesson
+  ): Promise<string> {
+    const lessons = this._lessons.get(masterId);
+    const obj = lessons?.get(id);
+    if (!obj) {
       throw new Error('Lesson not found');
     }
+
+    lessons!.set(id, LessonMapper.toObj(lesson));
+
+    const totalStudents = obj.days.length - lesson.days.length;
+    return `${totalStudents} ${
+      totalStudents === 1 ? 'value was' : 'values were'
+    } removed`;
   }
 
   /**
    * Adds time slots to a lesson schedule.
+   * @param masterId - The tenant unique identifier
    * @param id - The ID of the lesson to update
-   * @param newTimesList - Array of time values to add
+   * @param lesson - The lesson entity with updated times
    * @returns Promise resolving to a success message
    * @throws Error if the lesson is not found or if adding times fails
    */
-  async addTime(id: string, newTimesList: string[]): Promise<string> {
-    const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.value === id
-    );
-    if (lessonIndex !== -1) {
-      try {
-        const updatedLesson = this._lessons[lessonIndex];
-        newTimesList.forEach(time => {
-          updatedLesson.addTime(time as Hour);
-        });
-        this._lessons[lessonIndex] = updatedLesson;
-        return `${newTimesList.length} ${
-          newTimesList.length === 1 ? 'value was' : 'values were'
-        } entered`;
-      } catch (error) {
-        throw error;
-      }
-    } else {
+  async addTime(masterId: string, id: string, lesson: Lesson): Promise<string> {
+    const lessons = this._lessons.get(masterId);
+    const obj = lessons?.get(id);
+    if (!obj) {
       throw new Error('Lesson not found');
     }
+
+    lessons!.set(id, LessonMapper.toObj(lesson));
+
+    const totalStudents = lesson.times.length - obj.times.length;
+    return `${totalStudents} ${
+      totalStudents === 1 ? 'value was' : 'values were'
+    } entered`;
   }
 
   /**
    * Removes time slots from a lesson schedule.
+   * @param masterId - The tenant unique identifier
    * @param id - The ID of the lesson to update
-   * @param timesListToRemove - Array of time values to remove
+   * @param lesson - The lesson entity with updated days
    * @returns Promise resolving to a success message
    * @throws Error if the lesson is not found or if removing times fails
    */
-  async removeTime(id: string, timesListToRemove: string[]): Promise<string> {
-    const lessonIndex = this._lessons.findIndex(
-      dbLesson => dbLesson.id.value === id
-    );
-    if (lessonIndex !== -1) {
-      try {
-        const updatedLesson = this._lessons[lessonIndex];
-        timesListToRemove.forEach(time => {
-          updatedLesson.removeTime(time as Hour);
-        });
-        this._lessons[lessonIndex] = updatedLesson;
-        return `${timesListToRemove.length} ${
-          timesListToRemove.length === 1 ? 'value was' : 'values were'
-        } removed`;
-      } catch (error) {
-        throw error;
-      }
-    } else {
+  async removeTime(
+    masterId: string,
+    id: string,
+    lesson: Lesson
+  ): Promise<string> {
+    const lessons = this._lessons.get(masterId);
+    const obj = lessons?.get(id);
+    if (!obj) {
       throw new Error('Lesson not found');
     }
+
+    lessons!.set(id, LessonMapper.toObj(lesson));
+
+    const totalStudents = obj.times.length - lesson.times.length;
+    return `${totalStudents} ${
+      totalStudents === 1 ? 'value was' : 'values were'
+    } removed`;
+  }
+
+  private getOrCreateBucket(masterId: string): Map<string, LessonMapperProps> {
+    let lessons = this._lessons.get(masterId);
+    if (!lessons) {
+      lessons = new Map<string, LessonMapperProps>();
+      this._lessons.set(masterId, lessons);
+    }
+    return lessons;
   }
 }

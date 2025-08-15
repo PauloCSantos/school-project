@@ -16,13 +16,7 @@ describe('AddStudents use case unit test', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
-      addStudents: jest.fn((_, newStudentsList) =>
-        Promise.resolve(
-          `${newStudentsList.length} ${
-            newStudentsList.length === 1 ? 'value was' : 'values were'
-          } entered`
-        )
-      ),
+      addStudents: jest.fn(),
       removeStudents: jest.fn(),
       addDay: jest.fn(),
       removeDay: jest.fn(),
@@ -68,7 +62,10 @@ describe('AddStudents use case unit test', () => {
       await expect(usecase.execute(input, token)).rejects.toThrow(
         'Lesson not found'
       );
-      expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
+      expect(lessonRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(lessonRepository.addDay).not.toHaveBeenCalled();
     });
     it('should throw an error if the student already exists in the lesson', async () => {
@@ -86,7 +83,10 @@ describe('AddStudents use case unit test', () => {
           token
         )
       ).rejects.toThrow(`This student is already on the lesson`);
-      expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
+      expect(lessonRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(lessonRepository.addDay).not.toHaveBeenCalled();
     });
   });
@@ -95,16 +95,26 @@ describe('AddStudents use case unit test', () => {
     it('should add students to the lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
+      lessonRepository.addStudents.mockResolvedValue('2 values were entered');
 
       const usecase = new AddStudents(lessonRepository, policieService);
       const result = await usecase.execute(input, token);
 
-      expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
-      expect(lessonRepository.addStudents).toHaveBeenCalledWith(
-        input.id,
-        input.newStudentsList
+      expect(lessonRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
       );
-      expect(result.message).toBe(`2 values were entered`);
+      expect(lessonRepository.addStudents).toHaveBeenCalledWith(
+        token.masterId,
+        input.id,
+        expect.objectContaining({
+          studentsList: expect.arrayContaining([
+            ...lesson.studentsList,
+            ...input.newStudentsList,
+          ]),
+        })
+      );
+      expect(result.message).toBe('2 values were entered');
     });
   });
 });

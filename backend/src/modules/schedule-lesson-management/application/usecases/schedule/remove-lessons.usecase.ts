@@ -1,12 +1,9 @@
-import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
 import {
   RemoveLessonsInputDto,
   RemoveLessonsOutputDto,
 } from '../../dto/schedule-usecase.dto';
 import ScheduleGateway from '@/modules/schedule-lesson-management/application/gateway/schedule.gateway';
-import ScheduleMapper from '../../mapper/schedule.mapper';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
@@ -33,7 +30,7 @@ export default class RemoveLessons
    */
   async execute(
     { id, lessonsListToRemove }: RemoveLessonsInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<RemoveLessonsOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.SCHEDULE,
@@ -41,26 +38,18 @@ export default class RemoveLessons
       token
     );
 
-    const scheduleVerification = await this._scheduleRepository.find(id);
-    if (!scheduleVerification) throw new Error('Schedule not found');
-    const scheduleObj = ScheduleMapper.toObj(scheduleVerification);
-    const newSchedule = JSON.parse(JSON.stringify(scheduleObj));
-    const schedule = new Schedule({
-      ...newSchedule,
-      id: new Id(newSchedule.id),
-    });
-    try {
-      lessonsListToRemove.forEach(lessonId => {
-        schedule.removeLesson(lessonId);
-      });
-      const result = await this._scheduleRepository.removeLessons(
-        id,
-        lessonsListToRemove
-      );
+    const schedule = await this._scheduleRepository.find(token.masterId, id);
+    if (!schedule) throw new Error('Schedule not found');
 
-      return { message: result };
-    } catch (error) {
-      throw error;
-    }
+    lessonsListToRemove.forEach(lessonId => {
+      schedule.removeLesson(lessonId);
+    });
+    const result = await this._scheduleRepository.removeLessons(
+      token.masterId,
+      id,
+      schedule
+    );
+
+    return { message: result };
   }
 }

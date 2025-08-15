@@ -1,12 +1,9 @@
-import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
 import {
   RemoveTimeInputDto,
   RemoveTimeOutputDto,
 } from '../../dto/lesson-usecase.dto';
 import LessonGateway from '@/modules/schedule-lesson-management/application/gateway/lesson.gateway';
-import LessonMapper from '../../mapper/lesson-usecase.mapper';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
@@ -34,7 +31,7 @@ export default class RemoveTime
    */
   async execute(
     { id, timesListToRemove }: RemoveTimeInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<RemoveTimeOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.LESSON,
@@ -42,21 +39,16 @@ export default class RemoveTime
       token
     );
 
-    const lessonVerification = await this._lessonRepository.find(id);
-    if (!lessonVerification) throw new Error('Lesson not found');
-    const lessonObj = LessonMapper.toObj(lessonVerification);
-    const newLesson = JSON.parse(JSON.stringify(lessonObj));
-    const lesson = new Lesson({
-      ...newLesson,
-      id: new Id(newLesson.id),
-    });
+    const lesson = await this._lessonRepository.find(token.masterId, id);
+    if (!lesson) throw new Error('Lesson not found');
 
     timesListToRemove.forEach(time => {
       lesson.removeTime(time as Hour);
     });
     const result = await this._lessonRepository.removeTime(
+      token.masterId,
       id,
-      timesListToRemove
+      lesson
     );
 
     return { message: result };

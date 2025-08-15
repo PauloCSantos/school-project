@@ -14,7 +14,7 @@ describe('updateLesson usecase unit test', () => {
       find: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
-      update: jest.fn(lesson => Promise.resolve(lesson)),
+      update: jest.fn(),
       delete: jest.fn(),
       addStudents: jest.fn(),
       removeStudents: jest.fn(),
@@ -74,13 +74,14 @@ describe('updateLesson usecase unit test', () => {
     it('should update a lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
+      lessonRepository.update.mockResolvedValue(lesson);
 
       const usecase = new UpdateLesson(lessonRepository, policieService);
 
       const result = await usecase.execute(input, token);
 
-      expect(lessonRepository.update).toHaveBeenCalled();
       expect(lessonRepository.find).toHaveBeenCalled();
+      expect(lessonRepository.update).toHaveBeenCalled();
       expect(result).toStrictEqual({
         id: input.id,
         name: lesson.name,
@@ -88,6 +89,9 @@ describe('updateLesson usecase unit test', () => {
         teacher: lesson.teacher,
         subject: lesson.subject,
         semester: lesson.semester,
+        days: lesson.days,
+        times: lesson.times,
+        studentsList: lesson.studentsList,
       });
     });
   });

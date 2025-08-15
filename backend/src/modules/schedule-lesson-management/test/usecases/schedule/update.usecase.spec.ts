@@ -14,7 +14,7 @@ describe('updateSchedule usecase unit test', () => {
       find: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
-      update: jest.fn(schedule => Promise.resolve(schedule)),
+      update: jest.fn(),
       delete: jest.fn(),
       addLessons: jest.fn(),
       removeLessons: jest.fn(),
@@ -64,6 +64,7 @@ describe('updateSchedule usecase unit test', () => {
     it('should update a schedule', async () => {
       const scheduleRepository = MockRepository();
       scheduleRepository.find.mockResolvedValue(schedule);
+      scheduleRepository.update.mockResolvedValue(schedule);
       const usecase = new UpdateSchedule(scheduleRepository, policieService);
 
       const result = await usecase.execute(

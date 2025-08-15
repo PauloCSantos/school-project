@@ -30,7 +30,7 @@ export default class UpdateSchedule
    */
   async execute(
     { id, curriculum }: UpdateScheduleInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<UpdateScheduleOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.SCHEDULE,
@@ -38,19 +38,18 @@ export default class UpdateSchedule
       token
     );
 
-    const schedule = await this._scheduleRepository.find(id);
+    const schedule = await this._scheduleRepository.find(token.masterId, id);
     if (!schedule) throw new Error('Schedule not found');
-    try {
-      curriculum !== undefined && (schedule.curriculum = curriculum);
+    curriculum !== undefined && (schedule.curriculum = curriculum);
 
-      const result = await this._scheduleRepository.update(schedule);
+    const result = await this._scheduleRepository.update(
+      token.masterId,
+      schedule
+    );
 
-      return {
-        id: result.id.value,
-        curriculum: result.curriculum,
-      };
-    } catch (error) {
-      throw error;
-    }
+    return {
+      id: result.id.value,
+      curriculum: result.curriculum,
+    };
   }
 }
