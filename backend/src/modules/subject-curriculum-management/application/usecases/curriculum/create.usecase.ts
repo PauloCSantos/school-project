@@ -26,7 +26,7 @@ export default class CreateCurriculum
   }
   async execute(
     { name, subjectsList, yearsToComplete }: CreateCurriculumInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateCurriculumOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.CURRICULUM,
@@ -40,12 +40,10 @@ export default class CreateCurriculum
       yearsToComplete,
     });
 
-    const curriculumVerification = await this._curriculumRepository.find(
-      curriculum.id.value
+    const result = await this._curriculumRepository.create(
+      token.masterId,
+      curriculum
     );
-    if (curriculumVerification) throw new Error('Curriculum already exists');
-
-    const result = await this._curriculumRepository.create(curriculum);
 
     return { id: result };
   }

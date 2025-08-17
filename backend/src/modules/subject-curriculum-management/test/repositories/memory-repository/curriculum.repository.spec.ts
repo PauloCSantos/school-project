@@ -1,10 +1,12 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
+import { CurriculumMapper } from '@/modules/subject-curriculum-management/infrastructure/mapper/curriculum.mapper';
 import MemoryCurriculumRepository from '@/modules/subject-curriculum-management/infrastructure/repositories/memory-repository/curriculum.repository';
 
 describe('MemoryCurriculumRepository unit test', () => {
   let repository: MemoryCurriculumRepository;
 
+  const masterId = new Id().value;
   const name1 = 'Software Engineering';
   const name2 = 'Medicine School';
   const name3 = 'Chemistry';
@@ -32,13 +34,15 @@ describe('MemoryCurriculumRepository unit test', () => {
   });
 
   beforeEach(() => {
-    repository = new MemoryCurriculumRepository([curriculum1, curriculum2]);
+    repository = new MemoryCurriculumRepository([
+      { masterId, records: [curriculum1, curriculum2] },
+    ]);
   });
 
   describe('On fail', () => {
     it('should received an null', async () => {
       const curriculumId = new Id().value;
-      const curriculumFound = await repository.find(curriculumId);
+      const curriculumFound = await repository.find(masterId, curriculumId);
 
       expect(curriculumFound).toBeNull();
     });
@@ -50,37 +54,21 @@ describe('MemoryCurriculumRepository unit test', () => {
         subjectsList: subjectsList3,
       });
 
-      await expect(repository.update(curriculum)).rejects.toThrow(
+      await expect(repository.update(masterId, curriculum)).rejects.toThrow(
         'Curriculum not found'
       );
     });
     it('should generate an error when trying to remove the curriculum with the wrong ID', async () => {
-      await expect(repository.delete(new Id().value)).rejects.toThrow(
+      await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
         'Curriculum not found'
       );
-    });
-    it('should generate an error when trying to remove the subject from curriculum with the wrong curriculum ID', async () => {
-      await expect(
-        repository.removeSubjects(new Id().value, [new Id().value])
-      ).rejects.toThrow('Curriculum not found');
-    });
-    it('should generate an error when trying to remove the subject from curriculum with the wrong subject ID', async () => {
-      await expect(
-        repository.removeSubjects(curriculum1.id.value, [new Id().value])
-      ).rejects.toThrow('This subject is not included in the curriculum');
-    });
-
-    it('should generate an error when trying to add the subject to the curriculum with the wrong subject ID', async () => {
-      await expect(
-        repository.addSubjects(curriculum1.id.value, ['asdasd'])
-      ).rejects.toThrow('This subject id is invalid');
     });
   });
 
   describe('On success', () => {
     it('should find a curriculum', async () => {
       const curriculumId = curriculum1.id.value;
-      const curriculumFound = await repository.find(curriculumId);
+      const curriculumFound = await repository.find(masterId, curriculumId);
 
       expect(curriculumFound).toBeDefined();
       expect(curriculumFound!.id).toBeDefined();
@@ -92,7 +80,7 @@ describe('MemoryCurriculumRepository unit test', () => {
     });
 
     it('should create a new curriculum and return its id', async () => {
-      const result = await repository.create(curriculum3);
+      const result = await repository.create(masterId, curriculum3);
 
       expect(result).toBe(curriculum3.id.value);
     });
@@ -100,12 +88,12 @@ describe('MemoryCurriculumRepository unit test', () => {
       const updatedCurriculum: Curriculum = curriculum2;
       updatedCurriculum.name = 'Medicine Vet';
 
-      const result = await repository.update(updatedCurriculum);
+      const result = await repository.update(masterId, updatedCurriculum);
 
       expect(result).toEqual(updatedCurriculum);
     });
     it('should find all the curriculums', async () => {
-      const allCurriculums = await repository.findAll();
+      const allCurriculums = await repository.findAll(masterId);
 
       expect(allCurriculums.length).toBe(2);
       expect(allCurriculums[0].name).toBe(curriculum1.name);
@@ -114,38 +102,42 @@ describe('MemoryCurriculumRepository unit test', () => {
       expect(allCurriculums[1].subjectList).toBe(curriculum2.subjectList);
     });
     it('should remove the curriculum', async () => {
-      const response = await repository.delete(curriculum1.id.value);
+      const response = await repository.delete(masterId, curriculum1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });
 
     it('should add a new subject to the curriculum', async () => {
-      const response = await repository.addSubjects(curriculum1.id.value, [
-        new Id().value,
-      ]);
+      const curriculumObj = CurriculumMapper.toObj(curriculum1);
+      const updatedCurriculum = new Curriculum({
+        ...curriculumObj,
+        id: new Id(curriculumObj.id),
+        subjectsList: [...curriculumObj.subjectsList],
+      });
+      updatedCurriculum.addSubject(new Id().value);
+      const response = await repository.addSubjects(
+        masterId,
+        curriculum1.id.value,
+        updatedCurriculum
+      );
 
       expect(response).toBe('1 value was entered');
     });
     it('should remove a subject from the curriculum', async () => {
-      const response = await repository.removeSubjects(curriculum1.id.value, [
-        curriculum1.subjectList[0],
-      ]);
-
-      expect(response).toBe('1 value was removed');
-    });
-
-    it('should add a new subject to the curriculum', async () => {
-      const response = await repository.addSubjects(curriculum1.id.value, []);
-
-      expect(response).toBe('0 values were entered');
-    });
-    it('should remove a subject from the curriculum', async () => {
+      const curriculumObj = CurriculumMapper.toObj(curriculum1);
+      const updatedCurriculum = new Curriculum({
+        ...curriculumObj,
+        id: new Id(curriculumObj.id),
+        subjectsList: [...curriculumObj.subjectsList],
+      });
+      updatedCurriculum.removeSubject(curriculum1.subjectList[0]);
       const response = await repository.removeSubjects(
+        masterId,
         curriculum1.id.value,
-        []
+        updatedCurriculum
       );
 
-      expect(response).toBe('0 values were removed');
+      expect(response).toBe('1 value was removed');
     });
   });
 });

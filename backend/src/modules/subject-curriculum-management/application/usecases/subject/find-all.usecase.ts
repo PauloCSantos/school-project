@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { SubjectMapper } from '@/modules/subject-curriculum-management/infrastructure/mapper/subject.mapper';
 
 export default class FindAllSubject
   implements UseCaseInterface<FindAllSubjectInputDto, FindAllSubjectOutputDto>
@@ -24,7 +25,7 @@ export default class FindAllSubject
   }
   async execute(
     { offset, quantity }: FindAllSubjectInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindAllSubjectOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.SUBJECT,
@@ -32,14 +33,12 @@ export default class FindAllSubject
       token
     );
 
-    const results = await this._subjectRepository.findAll(quantity, offset);
+    const results = await this._subjectRepository.findAll(
+      token.masterId,
+      quantity,
+      offset
+    );
 
-    const result = results.map(subject => ({
-      id: subject.id.value,
-      name: subject.name,
-      description: subject.description,
-    }));
-
-    return result;
+    return SubjectMapper.toObjList(results);
   }
 }

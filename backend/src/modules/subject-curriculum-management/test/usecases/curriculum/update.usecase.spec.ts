@@ -14,7 +14,7 @@ describe('updateCurriculum usecase unit test', () => {
       find: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
-      update: jest.fn(curriculum => Promise.resolve(curriculum)),
+      update: jest.fn(),
       delete: jest.fn(),
       addSubjects: jest.fn(),
       removeSubjects: jest.fn(),
@@ -68,6 +68,7 @@ describe('updateCurriculum usecase unit test', () => {
     it('should update a curriculum', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(curriculum1);
+      curriculumRepository.update.mockResolvedValue(curriculum1);
       const usecase = new UpdateCurriculum(
         curriculumRepository,
         policieService

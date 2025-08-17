@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { CurriculumMapper } from '@/modules/subject-curriculum-management/infrastructure/mapper/curriculum.mapper';
 
 export default class FindCurriculum
   implements
@@ -25,7 +26,7 @@ export default class FindCurriculum
   }
   async execute(
     { id }: FindCurriculumInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindCurriculumOutputDto | null> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.CURRICULUM,
@@ -33,16 +34,10 @@ export default class FindCurriculum
       token
     );
 
-    const response = await this._curriculumRepository.find(id);
+    const response = await this._curriculumRepository.find(token.masterId, id);
     if (response) {
-      return {
-        id: response.id.value,
-        name: response.name,
-        subjectsList: response.subjectList,
-        yearsToComplete: response.yearsToComplete,
-      };
-    } else {
-      return response;
+      return CurriculumMapper.toObj(response);
     }
+    return null;
   }
 }

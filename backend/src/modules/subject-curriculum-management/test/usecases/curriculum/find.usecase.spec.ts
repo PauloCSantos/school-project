@@ -50,9 +50,9 @@ describe('findCurriculum usecase unit test', () => {
       expect(curriculumRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
-    it('should return undefined when id is not found', async () => {
+    it('should return null when id is not found', async () => {
       const curriculumRepository = MockRepository();
-      curriculumRepository.find.mockResolvedValue(undefined);
+      curriculumRepository.find.mockResolvedValue(null);
 
       const usecase = new FindCurriculum(curriculumRepository, policieService);
       const result = await usecase.execute(
@@ -62,7 +62,7 @@ describe('findCurriculum usecase unit test', () => {
         token
       );
 
-      expect(result).toBe(undefined);
+      expect(result).toBeNull();
     });
   });
 });

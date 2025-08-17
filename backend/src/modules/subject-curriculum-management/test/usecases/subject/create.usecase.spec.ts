@@ -13,7 +13,7 @@ describe('createSubject usecase unit test', () => {
     return {
       find: jest.fn(),
       findAll: jest.fn(),
-      create: jest.fn(subject => Promise.resolve(subject.id.value)),
+      create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     };
@@ -41,30 +41,14 @@ describe('createSubject usecase unit test', () => {
     description: input.description,
   });
 
-  describe('On fail', () => {
-    it('should throw an error if the subject already exists', async () => {
-      const subjectRepository = MockRepository();
-      subjectRepository.find.mockResolvedValue(subject);
-
-      const usecase = new CreateSubject(subjectRepository, policieService);
-
-      await expect(usecase.execute(input, token)).rejects.toThrow(
-        'Subject already exists'
-      );
-      expect(subjectRepository.find).toHaveBeenCalledWith(expect.any(String));
-      expect(subjectRepository.create).not.toHaveBeenCalled();
-    });
-  });
-
   describe('On success', () => {
     it('should create a subject', async () => {
       const subjectRepository = MockRepository();
-      subjectRepository.find.mockResolvedValue(null);
+      subjectRepository.create.mockResolvedValue({ id: subject.id.value });
 
       const usecase = new CreateSubject(subjectRepository, policieService);
       const result = await usecase.execute(input, token);
 
-      expect(subjectRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(subjectRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
     });

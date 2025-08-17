@@ -25,7 +25,7 @@ export default class DeleteCurriculum
   }
   async execute(
     { id }: DeleteCurriculumInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<DeleteCurriculumOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.CURRICULUM,
@@ -33,10 +33,13 @@ export default class DeleteCurriculum
       token
     );
 
-    const curriculumVerification = await this._curriculumRepository.find(id);
+    const curriculumVerification = await this._curriculumRepository.find(
+      token.masterId,
+      id
+    );
     if (!curriculumVerification) throw new Error('Curriculum not found');
 
-    const result = await this._curriculumRepository.delete(id);
+    const result = await this._curriculumRepository.delete(token.masterId, id);
 
     return { message: result };
   }

@@ -24,7 +24,7 @@ export default class UpdateSubject
   }
   async execute(
     { id, name, description }: UpdateSubjectInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<UpdateSubjectOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.SUBJECT,
@@ -32,22 +32,21 @@ export default class UpdateSubject
       token
     );
 
-    const subject = await this._subjectRepository.find(id);
+    const subject = await this._subjectRepository.find(token.masterId, id);
     if (!subject) throw new Error('Subject not found');
 
-    try {
-      name !== undefined && (subject.name = name);
-      description !== undefined && (subject.description = description);
+    name !== undefined && (subject.name = name);
+    description !== undefined && (subject.description = description);
 
-      const result = await this._subjectRepository.update(subject);
+    const result = await this._subjectRepository.update(
+      token.masterId,
+      subject
+    );
 
-      return {
-        id: result.id.value,
-        name: result.name,
-        description: result.description,
-      };
-    } catch (error) {
-      throw error;
-    }
+    return {
+      id: result.id.value,
+      name: result.name,
+      description: result.description,
+    };
   }
 }
