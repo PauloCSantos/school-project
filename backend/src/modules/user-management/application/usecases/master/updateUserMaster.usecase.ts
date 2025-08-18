@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { MasterMapper } from '@/modules/user-management/infrastructure/mapper/master.mapper';
 
 export default class UpdateUserMaster
   implements
@@ -25,7 +26,7 @@ export default class UpdateUserMaster
   }
   async execute(
     { id, name, address, email, birthday, cnpj }: UpdateUserMasterInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<UpdateUserMasterOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.MASTER,
@@ -33,52 +34,35 @@ export default class UpdateUserMaster
       token
     );
 
-    const userMaster = await this._userMasterRepository.find(id);
+    const userMaster = await this._userMasterRepository.find(
+      token.masterId,
+      id
+    );
     if (!userMaster) throw new Error('User not found');
 
-    try {
-      name?.firstName !== undefined &&
-        (userMaster.name.firstName = name.firstName);
-      name?.middleName !== undefined &&
-        (userMaster.name.middleName = name.middleName);
-      name?.lastName !== undefined &&
-        (userMaster.name.lastName = name.lastName);
-      address?.street !== undefined &&
-        (userMaster.address.street = address.street);
-      address?.city !== undefined && (userMaster.address.city = address.city);
-      address?.zip !== undefined && (userMaster.address.zip = address.zip);
-      address?.number !== undefined &&
-        (userMaster.address.number = address.number);
-      address?.avenue !== undefined &&
-        (userMaster.address.avenue = address.avenue);
-      address?.state !== undefined &&
-        (userMaster.address.state = address.state);
-      email !== undefined && (userMaster.email = email);
-      birthday !== undefined && (userMaster.birthday = new Date(birthday));
-      cnpj !== undefined && (userMaster.cnpj = cnpj);
+    name?.firstName !== undefined &&
+      (userMaster.name.firstName = name.firstName);
+    name?.middleName !== undefined &&
+      (userMaster.name.middleName = name.middleName);
+    name?.lastName !== undefined && (userMaster.name.lastName = name.lastName);
+    address?.street !== undefined &&
+      (userMaster.address.street = address.street);
+    address?.city !== undefined && (userMaster.address.city = address.city);
+    address?.zip !== undefined && (userMaster.address.zip = address.zip);
+    address?.number !== undefined &&
+      (userMaster.address.number = address.number);
+    address?.avenue !== undefined &&
+      (userMaster.address.avenue = address.avenue);
+    address?.state !== undefined && (userMaster.address.state = address.state);
+    email !== undefined && (userMaster.email = email);
+    birthday !== undefined && (userMaster.birthday = new Date(birthday));
+    cnpj !== undefined && (userMaster.cnpj = cnpj);
 
-      const result = await this._userMasterRepository.update(userMaster);
+    const result = await this._userMasterRepository.update(
+      token.masterId,
+      userMaster
+    );
 
-      return {
-        id: result.id.value,
-        name: {
-          fullName: result.name.fullName(),
-          shortName: result.name.shortName(),
-        },
-        address: {
-          street: result.address.street,
-          city: result.address.city,
-          zip: result.address.zip,
-          number: result.address.number,
-          avenue: result.address.avenue,
-          state: result.address.state,
-        },
-        email: result.email,
-        birthday: result.birthday,
-        cnpj: result.cnpj,
-      };
-    } catch (error) {
-      throw error;
-    }
+    return MasterMapper.toObj(result);
   }
 }

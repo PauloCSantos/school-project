@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { WorkerMapper } from '@/modules/user-management/infrastructure/mapper/worker.mapper';
 
 export default class FindUserWorker
   implements
@@ -25,7 +26,7 @@ export default class FindUserWorker
   }
   async execute(
     { id }: FindUserWorkerInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindUserWorkerOutputDto | null> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.WORKER,
@@ -33,28 +34,10 @@ export default class FindUserWorker
       token
     );
 
-    const response = await this._userWorkerRepository.find(id);
+    const response = await this._userWorkerRepository.find(token.masterId, id);
     if (response) {
-      return {
-        id: response.id.value,
-        name: {
-          fullName: response.name.fullName(),
-          shortName: response.name.shortName(),
-        },
-        address: {
-          street: response.address.street,
-          city: response.address.city,
-          zip: response.address.zip,
-          number: response.address.number,
-          avenue: response.address.avenue,
-          state: response.address.state,
-        },
-        email: response.email,
-        birthday: response.birthday,
-        salary: response.salary.calculateTotalIncome(),
-      };
-    } else {
-      return response;
+      return WorkerMapper.toDTO(response);
     }
+    return null;
   }
 }

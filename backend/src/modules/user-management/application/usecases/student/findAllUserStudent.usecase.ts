@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { StudentMapper } from '@/modules/user-management/infrastructure/mapper/student.mapper';
 
 export default class FindAllUserStudent
   implements
@@ -25,7 +26,7 @@ export default class FindAllUserStudent
   }
   async execute(
     { offset, quantity }: FindAllUserStudentInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindAllUserStudentOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.STUDENT,
@@ -33,27 +34,12 @@ export default class FindAllUserStudent
       token
     );
 
-    const results = await this._userStudentRepository.findAll(quantity, offset);
+    const results = await this._userStudentRepository.findAll(
+      token.masterId,
+      quantity,
+      offset
+    );
 
-    const result = results.map(userStudent => ({
-      id: userStudent.id.value,
-      name: {
-        fullName: userStudent.name.fullName(),
-        shortName: userStudent.name.shortName(),
-      },
-      address: {
-        street: userStudent.address.street,
-        city: userStudent.address.city,
-        zip: userStudent.address.zip,
-        number: userStudent.address.number,
-        avenue: userStudent.address.avenue,
-        state: userStudent.address.state,
-      },
-      email: userStudent.email,
-      birthday: userStudent.birthday,
-      paymentYear: userStudent.paymentWithCurrencyBR(),
-    }));
-
-    return result;
+    return StudentMapper.toObjList(results);
   }
 }

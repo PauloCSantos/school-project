@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { WorkerMapper } from '@/modules/user-management/infrastructure/mapper/worker.mapper';
 
 export default class FindAllUserWorker
   implements
@@ -25,34 +26,19 @@ export default class FindAllUserWorker
   }
   async execute(
     { offset, quantity }: FindAllUserWorkerInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindAllUserWorkerOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.WORKER,
       FunctionCalledEnum.FIND_ALL,
       token
     );
-    const results = await this._userWorkerRepository.findAll(quantity, offset);
+    const results = await this._userWorkerRepository.findAll(
+      token.masterId,
+      quantity,
+      offset
+    );
 
-    const result = results.map(userWorker => ({
-      id: userWorker.id.value,
-      name: {
-        fullName: userWorker.name.fullName(),
-        shortName: userWorker.name.shortName(),
-      },
-      address: {
-        street: userWorker.address.street,
-        city: userWorker.address.city,
-        zip: userWorker.address.zip,
-        number: userWorker.address.number,
-        avenue: userWorker.address.avenue,
-        state: userWorker.address.state,
-      },
-      email: userWorker.email,
-      birthday: userWorker.birthday,
-      salary: userWorker.salary.calculateTotalIncome(),
-    }));
-
-    return result;
+    return WorkerMapper.toDTOList(results);
   }
 }

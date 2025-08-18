@@ -17,7 +17,7 @@ describe('updateUserStudent usecase unit test', () => {
       findByEmail: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
-      update: jest.fn(userStudent => Promise.resolve(userStudent)),
+      update: jest.fn(),
       delete: jest.fn(),
     };
   };
@@ -95,6 +95,7 @@ describe('updateUserStudent usecase unit test', () => {
     it('should update an user student', async () => {
       const userStudentRepository = MockRepository();
       userStudentRepository.find.mockResolvedValue(userStudent1);
+      userStudentRepository.update.mockResolvedValue(userStudent1);
       const usecase = new UpdateUserStudent(
         userStudentRepository,
         policieService
@@ -134,7 +135,7 @@ describe('updateUserStudent usecase unit test', () => {
         },
         birthday: new Date('11-12-1995'),
         email: 'teste1@test.com',
-        paymentYear: 'R$ 25000',
+        paymentYear: 25000,
       });
     });
   });

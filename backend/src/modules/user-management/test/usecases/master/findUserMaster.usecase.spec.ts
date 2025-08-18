@@ -62,9 +62,9 @@ describe('findUserMaster usecase unit test', () => {
       expect(userMasterRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
-    it('should return undefined when id is not found', async () => {
+    it('should return null when id is not found', async () => {
       const userMasterRepository = MockRepository();
-      userMasterRepository.find.mockResolvedValue(undefined);
+      userMasterRepository.find.mockResolvedValue(null);
 
       const usecase = new FindUserMaster(userMasterRepository, policieService);
       const result = await usecase.execute(
@@ -74,7 +74,7 @@ describe('findUserMaster usecase unit test', () => {
         token
       );
 
-      expect(result).toBe(undefined);
+      expect(result).toBeNull();
     });
   });
 });

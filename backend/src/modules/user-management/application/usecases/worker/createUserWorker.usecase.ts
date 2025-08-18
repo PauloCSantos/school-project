@@ -31,7 +31,7 @@ export default class CreateUserWorker
   }
   async execute(
     { name, address, email, birthday, salary }: CreateUserWorkerInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateUserWorkerOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.WORKER,
@@ -51,11 +51,15 @@ export default class CreateUserWorker
     });
 
     const userVerification = await this._userWorkerRepository.findByEmail(
+      token.masterId,
       userWorker.email
     );
     if (userVerification) throw new Error('User already exists');
 
-    const result = await this._userWorkerRepository.create(userWorker);
+    const result = await this._userWorkerRepository.create(
+      token.masterId,
+      userWorker
+    );
 
     return { id: result };
   }

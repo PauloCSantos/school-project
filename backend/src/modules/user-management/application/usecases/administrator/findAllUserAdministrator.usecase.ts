@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { AdministratorMapper } from '@/modules/user-management/infrastructure/mapper/administrator.mapper';
 
 export default class FindAllUserAdministrator
   implements
@@ -28,7 +29,7 @@ export default class FindAllUserAdministrator
   }
   async execute(
     { offset, quantity }: FindAllUserAdministratorInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindAllUserAdministratorOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.ADMINISTRATOR,
@@ -37,30 +38,11 @@ export default class FindAllUserAdministrator
     );
 
     const results = await this._userAdministratorRepository.findAll(
+      token.masterId,
       offset,
       quantity
     );
 
-    const result = results.map(userAdministrator => ({
-      id: userAdministrator.id.value,
-      name: {
-        fullName: userAdministrator.name.fullName(),
-        shortName: userAdministrator.name.shortName(),
-      },
-      address: {
-        street: userAdministrator.address.street,
-        city: userAdministrator.address.city,
-        zip: userAdministrator.address.zip,
-        number: userAdministrator.address.number,
-        avenue: userAdministrator.address.avenue,
-        state: userAdministrator.address.state,
-      },
-      email: userAdministrator.email,
-      birthday: userAdministrator.birthday,
-      salary: userAdministrator.salary.calculateTotalIncome(),
-      graduation: userAdministrator.graduation,
-    }));
-
-    return result;
+    return AdministratorMapper.toDTOList(results);
   }
 }

@@ -71,9 +71,9 @@ describe('findUserAdministrator usecase unit test', () => {
       expect(userAdministratorRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
-    it('should return undefined when id is not found', async () => {
+    it('should return null when id is not found', async () => {
       const userAdministratorRepository = MockRepository();
-      userAdministratorRepository.find.mockResolvedValue(undefined);
+      userAdministratorRepository.find.mockResolvedValue(null);
 
       const usecase = new FindUserAdministrator(
         userAdministratorRepository,
@@ -86,7 +86,7 @@ describe('findUserAdministrator usecase unit test', () => {
         token
       );
 
-      expect(result).toBe(undefined);
+      expect(result).toBeNull();
     });
   });
 });

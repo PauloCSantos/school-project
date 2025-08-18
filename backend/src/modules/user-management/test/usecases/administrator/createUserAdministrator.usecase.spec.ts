@@ -17,9 +17,7 @@ describe('createUserAdministrator usecase unit test', () => {
       find: jest.fn(),
       findByEmail: jest.fn(),
       findAll: jest.fn(),
-      create: jest.fn(userAdministrator =>
-        Promise.resolve(userAdministrator.id.value)
-      ),
+      create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     };
@@ -90,6 +88,7 @@ describe('createUserAdministrator usecase unit test', () => {
         'User already exists'
       );
       expect(userAdministratorRepository.findByEmail).toHaveBeenCalledWith(
+        token.masterId,
         expect.any(String)
       );
       expect(userAdministratorRepository.create).not.toHaveBeenCalled();
@@ -102,6 +101,7 @@ describe('createUserAdministrator usecase unit test', () => {
   describe('On success', () => {
     it('should create a user administrator', async () => {
       const userAdministratorRepository = MockRepository();
+      userAdministratorRepository.create.mockResolvedValue(userAdministrator);
       const emailAuthValidatorService = MockEmailAuthValidatorService();
 
       userAdministratorRepository.findByEmail.mockResolvedValue(null);
@@ -114,6 +114,7 @@ describe('createUserAdministrator usecase unit test', () => {
       const result = await usecase.execute(input, token);
 
       expect(userAdministratorRepository.findByEmail).toHaveBeenCalledWith(
+        token.masterId,
         expect.any(String)
       );
       expect(userAdministratorRepository.create).toHaveBeenCalled();

@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { MasterMapper } from '@/modules/user-management/infrastructure/mapper/master.mapper';
 
 export default class FindUserMaster
   implements
@@ -25,7 +26,7 @@ export default class FindUserMaster
   }
   async execute(
     { id }: FindUserMasterInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindUserMasterOutputDto | null> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.MASTER,
@@ -33,28 +34,10 @@ export default class FindUserMaster
       token
     );
 
-    const response = await this._userMasterRepository.find(id);
+    const response = await this._userMasterRepository.find(token.masterId, id);
     if (response) {
-      return {
-        id: response.id.value,
-        name: {
-          fullName: response.name.fullName(),
-          shortName: response.name.shortName(),
-        },
-        address: {
-          street: response.address.street,
-          city: response.address.city,
-          zip: response.address.zip,
-          number: response.address.number,
-          avenue: response.address.avenue,
-          state: response.address.state,
-        },
-        email: response.email,
-        birthday: response.birthday,
-        cnpj: response.cnpj,
-      };
-    } else {
-      return response;
+      return MasterMapper.toObj(response);
     }
+    return null;
   }
 }
