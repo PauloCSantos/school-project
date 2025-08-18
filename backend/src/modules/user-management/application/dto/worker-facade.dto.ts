@@ -1,95 +1,27 @@
-export interface FindUserWorkerInputDto {
-  id: string;
-}
-export interface FindUserWorkerOutputDto {
-  id: string;
-  name: { fullName: string; shortName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  salary: string;
-}
+import {
+  ICreateUserWorkerInput,
+  ICreateUserWorkerOutput,
+  IDeleteUserWorkerInput,
+  IDeleteUserWorkerOutput,
+  IFindAllUserWorkerInput,
+  IFindAllUserWorkerOutput,
+  IFindUserWorkerInput,
+  IFindUserWorkerOutput,
+  IUpdateUserWorkerInput,
+  IUpdateUserWorkerOutput,
+} from './base-worker.dto';
 
-export interface FindAllUserWorkerInputDto {
-  quantity?: number;
-  offset?: number;
-}
-export interface FindAllUserWorkerOutputDto
-  extends Array<{
-    id: string;
-    name: { fullName: string; shortName: string };
-    address: {
-      street: string;
-      city: string;
-      zip: string;
-      number: number;
-      avenue: string;
-      state: string;
-    };
-    email: string;
-    birthday: Date;
-    salary: string;
-  }> {}
+export type FindUserWorkerInputDto = IFindUserWorkerInput;
+export type FindUserWorkerOutputDto = IFindUserWorkerOutput;
 
-export interface CreateUserWorkerInputDto {
-  name: { firstName: string; middleName?: string; lastName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  salary: { salary: number; currency?: 'R$' | '€' | '$' };
-}
-export interface CreateUserWorkerOutputDto {
-  id: string;
-}
+export type FindAllUserWorkerInputDto = IFindAllUserWorkerInput;
+export type FindAllUserWorkerOutputDto = IFindAllUserWorkerOutput;
 
-export interface UpdateUserWorkerInputDto {
-  id: string;
-  name?: { firstName?: string; middleName?: string; lastName?: string };
-  address?: {
-    street?: string;
-    city?: string;
-    zip?: string;
-    number?: number;
-    avenue?: string;
-    state?: string;
-  };
-  email?: string;
-  birthday?: Date;
-  salary?: { salary?: number; currency?: 'R$' | '€' | '$' };
-}
-export interface UpdateUserWorkerOutputDto {
-  id: string;
-  name: { fullName: string; shortName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  salary: string;
-}
+export type CreateUserWorkerInputDto = ICreateUserWorkerInput;
+export type CreateUserWorkerOutputDto = ICreateUserWorkerOutput;
 
-export interface DeleteUserWorkerInputDto {
-  id: string;
-}
-export interface DeleteUserWorkerOutputDto {
-  message: string;
-}
+export type UpdateUserWorkerInputDto = IUpdateUserWorkerInput;
+export type UpdateUserWorkerOutputDto = IUpdateUserWorkerOutput;
+
+export type DeleteUserWorkerInputDto = IDeleteUserWorkerInput;
+export type DeleteUserWorkerOutputDto = IDeleteUserWorkerOutput;

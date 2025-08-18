@@ -17,7 +17,7 @@ describe('UpdateEvent usecase unit test', () => {
       find: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
-      update: jest.fn(event => Promise.resolve(event)),
+      update: jest.fn(),
       delete: jest.fn(),
     } as jest.Mocked<EventGateway>;
   };
@@ -93,7 +93,7 @@ describe('UpdateEvent usecase unit test', () => {
         )
       ).rejects.toThrow('Event not found');
 
-      expect(repository.find).toHaveBeenCalledWith(notFoundId);
+      expect(repository.find).toHaveBeenCalledWith(token.masterId, notFoundId);
       expect(repository.update).not.toHaveBeenCalled();
     });
   });
@@ -101,6 +101,7 @@ describe('UpdateEvent usecase unit test', () => {
   describe('On success', () => {
     it('should update an event', async () => {
       repository.find.mockResolvedValue(event);
+      repository.update.mockResolvedValue(event);
 
       const result = await usecase.execute(
         {
@@ -110,7 +111,10 @@ describe('UpdateEvent usecase unit test', () => {
         token
       );
 
-      expect(repository.find).toHaveBeenCalledWith(event.id.value);
+      expect(repository.find).toHaveBeenCalledWith(
+        token.masterId,
+        event.id.value
+      );
       expect(repository.update).toHaveBeenCalled();
       expect(result).toStrictEqual({
         id: event.id.value,
@@ -126,6 +130,7 @@ describe('UpdateEvent usecase unit test', () => {
 
     it('should only update the provided fields', async () => {
       repository.find.mockResolvedValue(event);
+      repository.update.mockResolvedValue(event);
 
       const partialUpdate = { hour: '10:00' as Hour };
 
@@ -138,6 +143,7 @@ describe('UpdateEvent usecase unit test', () => {
       );
 
       expect(repository.update).toHaveBeenCalledWith(
+        token.masterId,
         expect.objectContaining({
           id: expect.objectContaining({ value: event.id.value }),
           hour: partialUpdate.hour,

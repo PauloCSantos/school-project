@@ -53,7 +53,7 @@ export default class CreateLesson
       teacher,
       times,
     }: CreateLessonInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateLessonOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.LESSON,
@@ -72,15 +72,7 @@ export default class CreateLesson
       times,
     });
 
-    const lessonVerification = await this._lessonRepository.find(
-      lesson.id.value
-    );
-
-    if (lessonVerification) {
-      throw new Error('Lesson already exists');
-    }
-
-    const result = await this._lessonRepository.create(lesson);
+    const result = await this._lessonRepository.create(token.masterId, lesson);
 
     return { id: result };
   }

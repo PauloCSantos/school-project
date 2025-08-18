@@ -26,7 +26,7 @@ export default class CreateSubject
   }
   async execute(
     { name, description }: CreateSubjectInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateSubjectOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.SUBJECT,
@@ -39,12 +39,10 @@ export default class CreateSubject
       description,
     });
 
-    const subjectVerification = await this._subjectRepository.find(
-      subject.id.value
+    const result = await this._subjectRepository.create(
+      token.masterId,
+      subject
     );
-    if (subjectVerification) throw new Error('Subject already exists');
-
-    const result = await this._subjectRepository.create(subject);
 
     return { id: result };
   }

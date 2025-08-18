@@ -1,10 +1,12 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
+import { LessonMapper } from '@/modules/schedule-lesson-management/infrastructure/mapper/lesson.mapper';
 import MemoryLessonRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/lesson.repository';
 
 describe('MemoryLessonRepository unit test', () => {
   let repository: MemoryLessonRepository;
 
+  const masterId = new Id().value;
   const name1 = 'Math 01';
   const name2 = 'English 01';
   const name3 = 'Chemistry 01';
@@ -62,13 +64,15 @@ describe('MemoryLessonRepository unit test', () => {
   });
 
   beforeEach(() => {
-    repository = new MemoryLessonRepository([lesson1, lesson2]);
+    repository = new MemoryLessonRepository([
+      { masterId, records: [lesson1, lesson2] },
+    ]);
   });
 
   describe('On fail', () => {
     it('should received an null', async () => {
       const lessonId = new Id().value;
-      const lessonFound = await repository.find(lessonId);
+      const lessonFound = await repository.find(masterId, lessonId);
 
       expect(lessonFound).toBeNull();
     });
@@ -85,37 +89,21 @@ describe('MemoryLessonRepository unit test', () => {
         semester: semester3,
       });
 
-      await expect(repository.update(lesson)).rejects.toThrow(
-        'Lesson not found'
-      );
-    });
-    it('should generate an error when trying to remove the lesson with the wrong ID', async () => {
-      await expect(repository.delete(new Id().value)).rejects.toThrow(
-        'Lesson not found'
-      );
-    });
-    it('should generate an error when trying to remove the student from lesson with the wrong lesson ID', async () => {
       await expect(
-        repository.removeStudents(new Id().value, [new Id().value])
+        repository.update(masterId, lesson.id.value, lesson)
       ).rejects.toThrow('Lesson not found');
     });
-    it('should generate an error when trying to remove the student from lesson with the wrong student ID', async () => {
-      await expect(
-        repository.removeStudents(lesson1.id.value, [new Id().value])
-      ).rejects.toThrow('This student is not included in the lesson');
-    });
-
-    it('should generate an error when trying to add the student to the lesson with the wrong student ID', async () => {
-      await expect(
-        repository.addStudents(lesson1.id.value, ['asdasd'])
-      ).rejects.toThrow('Student id is not valid');
+    it('should generate an error when trying to remove the lesson with the wrong ID', async () => {
+      await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
+        'Lesson not found'
+      );
     });
   });
 
   describe('On success', () => {
     it('should find a lesson', async () => {
       const lessonId = lesson1.id.value;
-      const lessonFound = await repository.find(lessonId);
+      const lessonFound = await repository.find(masterId, lessonId);
 
       expect(lessonFound).toBeDefined();
       expect(lessonFound!.id).toBeDefined();
@@ -126,7 +114,7 @@ describe('MemoryLessonRepository unit test', () => {
       expect(lessonFound!.studentsList).toBe(lesson1.studentsList);
     });
     it('should create a new lesson and return its id', async () => {
-      const result = await repository.create(lesson3);
+      const result = await repository.create(masterId, lesson3);
 
       expect(result).toBe(lesson3.id.value);
     });
@@ -134,12 +122,16 @@ describe('MemoryLessonRepository unit test', () => {
       const updatedLesson: Lesson = lesson2;
       updatedLesson.name = 'Math advanced';
 
-      const result = await repository.update(updatedLesson);
+      const result = await repository.update(
+        masterId,
+        lesson2.id.value,
+        updatedLesson
+      );
 
       expect(result).toEqual(updatedLesson);
     });
     it('should find all the lessons', async () => {
-      const allLessons = await repository.findAll();
+      const allLessons = await repository.findAll(masterId);
 
       expect(allLessons.length).toBe(2);
       expect(allLessons[0].name).toBe(lesson1.name);
@@ -148,47 +140,129 @@ describe('MemoryLessonRepository unit test', () => {
       expect(allLessons[1].studentsList).toBe(lesson2.studentsList);
     });
     it('should remove the lesson', async () => {
-      const response = await repository.delete(lesson1.id.value);
+      const response = await repository.delete(masterId, lesson1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });
 
     it('should add a new student to the lesson', async () => {
-      const response = await repository.addStudents(lesson1.id.value, [
-        new Id().value,
-      ]);
+      const lessonObj = LessonMapper.toObj(lesson1);
+      const updatedLesson = new Lesson({
+        ...lessonObj,
+        id: new Id(lessonObj.id),
+        days: [...lessonObj.days] as DayOfWeek[],
+        times: [...lessonObj.times] as Hour[],
+        semester: lessonObj.semester as 1 | 2,
+        studentsList: [...lessonObj.studentsList],
+      });
+      updatedLesson.addStudent(new Id().value);
+      const response = await repository.addStudents(
+        masterId,
+        lesson1.id.value,
+        updatedLesson
+      );
 
       expect(response).toBe('1 value was entered');
     });
     it('should remove a student from the lesson', async () => {
-      const response = await repository.removeStudents(lesson1.id.value, [
-        lesson1.studentsList[0],
-      ]);
+      const lessonObj = LessonMapper.toObj(lesson1);
+      const updatedLesson = new Lesson({
+        ...lessonObj,
+        id: new Id(lessonObj.id),
+        days: [...lessonObj.days] as DayOfWeek[],
+        times: [...lessonObj.times] as Hour[],
+        semester: lessonObj.semester as 1 | 2,
+        studentsList: [...lessonObj.studentsList],
+      });
+      updatedLesson.removeStudent(lesson1.studentsList[0]);
+      const response = await repository.removeStudents(
+        masterId,
+        lesson1.id.value,
+        updatedLesson
+      );
 
       expect(response).toBe('1 value was removed');
     });
 
     it('should add a new day to the lesson', async () => {
-      const response = await repository.addDay(lesson1.id.value, ['sun']);
+      const lessonObj = LessonMapper.toObj(lesson1);
+      const updatedLesson = new Lesson({
+        ...lessonObj,
+        id: new Id(lessonObj.id),
+        days: [...lessonObj.days] as DayOfWeek[],
+        times: [...lessonObj.times] as Hour[],
+        semester: lessonObj.semester as 1 | 2,
+        studentsList: [...lessonObj.studentsList],
+      });
+      updatedLesson.addDay('sun');
+      const response = await repository.addDay(
+        masterId,
+        lesson1.id.value,
+        updatedLesson
+      );
 
       expect(response).toBe('1 value was entered');
     });
+
     it('should remove a day from the lesson', async () => {
-      const response = await repository.removeDay(lesson1.id.value, ['mon']);
+      const lessonObj = LessonMapper.toObj(lesson1);
+      const updatedLesson = new Lesson({
+        ...lessonObj,
+        id: new Id(lessonObj.id),
+        days: [...lessonObj.days] as DayOfWeek[],
+        times: [...lessonObj.times] as Hour[],
+        semester: lessonObj.semester as 1 | 2,
+        studentsList: [...lessonObj.studentsList],
+      });
+      updatedLesson.removeDay('mon');
+
+      const response = await repository.removeDay(
+        masterId,
+        lesson1.id.value,
+        updatedLesson
+      );
 
       expect(response).toBe('1 value was removed');
     });
 
     it('should add a new hour to the lesson', async () => {
-      const response = await repository.addTime(lesson1.id.value, [
-        '10:00',
-        '20:00',
-      ]);
+      const lessonObj = LessonMapper.toObj(lesson1);
+      const updatedLesson = new Lesson({
+        ...lessonObj,
+        id: new Id(lessonObj.id),
+        days: [...lessonObj.days] as DayOfWeek[],
+        times: [...lessonObj.times] as Hour[],
+        semester: lessonObj.semester as 1 | 2,
+        studentsList: [...lessonObj.studentsList],
+      });
+      updatedLesson.addTime('10:00');
+      updatedLesson.addTime('20:00');
+
+      const response = await repository.addTime(
+        masterId,
+        lesson1.id.value,
+        updatedLesson
+      );
 
       expect(response).toBe('2 values were entered');
     });
     it('should remove a hour from the lesson', async () => {
-      const response = await repository.removeTime(lesson1.id.value, ['07:00']);
+      const lessonObj = LessonMapper.toObj(lesson1);
+      const updatedLesson = new Lesson({
+        ...lessonObj,
+        id: new Id(lessonObj.id),
+        days: [...lessonObj.days] as DayOfWeek[],
+        times: [...lessonObj.times] as Hour[],
+        semester: lessonObj.semester as 1 | 2,
+        studentsList: [...lessonObj.studentsList],
+      });
+      updatedLesson.removeTime('07:00');
+
+      const response = await repository.removeTime(
+        masterId,
+        lesson1.id.value,
+        updatedLesson
+      );
 
       expect(response).toBe('1 value was removed');
     });

@@ -17,7 +17,7 @@ describe('CreateEvent usecase unit test', () => {
     return {
       find: jest.fn(),
       findAll: jest.fn(),
-      create: jest.fn(event => Promise.resolve(event.id.value)),
+      create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     } as jest.Mocked<EventGateway>;
@@ -64,25 +64,11 @@ describe('CreateEvent usecase unit test', () => {
     jest.clearAllMocks();
   });
 
-  describe('On fail', () => {
-    it('should throw an error if the event already exists', async () => {
-      repository.find.mockResolvedValue(event);
-
-      await expect(usecase.execute(input, token)).rejects.toThrow(
-        'Event already exists'
-      );
-      expect(repository.find).toHaveBeenCalledWith(expect.any(String));
-      expect(repository.create).not.toHaveBeenCalled();
-    });
-  });
-
   describe('On success', () => {
     it('should create an event', async () => {
-      repository.find.mockResolvedValue(null);
-
+      repository.create.mockResolvedValue(new Id().value);
       const result = await usecase.execute(input, token);
 
-      expect(repository.find).toHaveBeenCalledWith(expect.any(String));
       expect(repository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
     });

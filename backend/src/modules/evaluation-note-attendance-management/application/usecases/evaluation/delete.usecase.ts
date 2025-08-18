@@ -44,20 +44,20 @@ export default class DeleteEvaluation
    */
   async execute(
     { id }: DeleteEvaluationInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<DeleteEvaluationOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.EVALUATION,
       FunctionCalledEnum.DELETE,
       token
     );
-    const evaluationVerification = await this._evaluationRepository.find(id);
+    const evaluationVerification = await this._evaluationRepository.find(token.masterId, id);
 
     if (!evaluationVerification) {
       throw new Error('Evaluation not found');
     }
 
-    const result = await this._evaluationRepository.delete(id);
+    const result = await this._evaluationRepository.delete(token.masterId, id);
 
     return { message: result };
   }

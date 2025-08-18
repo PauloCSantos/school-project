@@ -15,7 +15,7 @@ describe('updateEvaluation usecase unit test', () => {
       find: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
-      update: jest.fn(evaluation => Promise.resolve(evaluation)),
+      update: jest.fn(),
       delete: jest.fn(),
     };
   };
@@ -66,6 +66,7 @@ describe('updateEvaluation usecase unit test', () => {
       ).rejects.toThrow('Evaluation not found');
 
       expect(evaluationRepository.find).toHaveBeenCalledWith(
+        token.masterId,
         '75c791ca-7a40-4217-8b99-2cf22c01d543'
       );
       expect(evaluationRepository.update).not.toHaveBeenCalled();
@@ -76,6 +77,7 @@ describe('updateEvaluation usecase unit test', () => {
     it('should update an evaluation', async () => {
       const evaluationRepository = MockRepository();
       evaluationRepository.find.mockResolvedValue(evaluation1);
+      evaluationRepository.update.mockResolvedValue(evaluation1);
 
       const usecase = new UpdateEvaluation(
         evaluationRepository,
@@ -91,9 +93,11 @@ describe('updateEvaluation usecase unit test', () => {
       );
 
       expect(evaluationRepository.find).toHaveBeenCalledWith(
+        token.masterId,
         evaluation1.id.value
       );
       expect(evaluationRepository.update).toHaveBeenCalledWith(
+        token.masterId,
         expect.objectContaining({
           id: evaluation1.id,
           lesson: input.lesson,

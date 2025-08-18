@@ -15,7 +15,7 @@ describe('createUserMaster usecase unit test', () => {
     return {
       find: jest.fn(),
       findByEmail: jest.fn(),
-      create: jest.fn(userMaster => Promise.resolve(userMaster.id.value)),
+      create: jest.fn(),
       update: jest.fn(),
     };
   };
@@ -86,6 +86,7 @@ describe('createUserMaster usecase unit test', () => {
         )
       ).rejects.toThrow('User already exists');
       expect(userMasterRepository.findByEmail).toHaveBeenCalledWith(
+        token.masterId,
         expect.any(String)
       );
       expect(userMasterRepository.create).not.toHaveBeenCalled();
@@ -98,6 +99,9 @@ describe('createUserMaster usecase unit test', () => {
   describe('On success', () => {
     it('should create a user master', async () => {
       const userMasterRepository = MockRepository();
+      userMasterRepository.create.mockResolvedValue({
+        id: userMaster.id.value,
+      });
       const emailAuthValidatorService = MockEmailAuthValidatorService();
 
       userMasterRepository.findByEmail.mockResolvedValue(null);
@@ -110,6 +114,7 @@ describe('createUserMaster usecase unit test', () => {
       const result = await usecase.execute({ ...input }, token);
 
       expect(userMasterRepository.findByEmail).toHaveBeenCalledWith(
+        token.masterId,
         expect.any(String)
       );
       expect(userMasterRepository.create).toHaveBeenCalled();

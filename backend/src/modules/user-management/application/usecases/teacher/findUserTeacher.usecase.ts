@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { TeacherMapper } from '@/modules/user-management/infrastructure/mapper/teacher.mapper';
 
 export default class FindUserTeacher
   implements
@@ -25,7 +26,7 @@ export default class FindUserTeacher
   }
   async execute(
     { id }: FindUserTeacherInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindUserTeacherOutputDto | null> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.TEACHER,
@@ -33,30 +34,10 @@ export default class FindUserTeacher
       token
     );
 
-    const response = await this._userTeacherRepository.find(id);
+    const response = await this._userTeacherRepository.find(token.masterId, id);
     if (response) {
-      return {
-        id: response.id.value,
-        name: {
-          fullName: response.name.fullName(),
-          shortName: response.name.shortName(),
-        },
-        address: {
-          street: response.address.street,
-          city: response.address.city,
-          zip: response.address.zip,
-          number: response.address.number,
-          avenue: response.address.avenue,
-          state: response.address.state,
-        },
-        email: response.email,
-        birthday: response.birthday,
-        salary: response.salary.calculateTotalIncome(),
-        graduation: response.graduation,
-        academicDegrees: response.academicDegrees,
-      };
-    } else {
-      return response;
+      return TeacherMapper.toDTO(response);
     }
+    return null;
   }
 }

@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import LessonMapper from '../../mapper/lesson-usecase.mapper';
 
 /**
  * Use case responsible for retrieving a lesson by ID.
@@ -31,28 +32,17 @@ export default class FindLesson
    */
   async execute(
     { id }: FindLessonInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindLessonOutputDto | null> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.LESSON,
       FunctionCalledEnum.FIND,
       token
     );
-    const response = await this._lessonRepository.find(id);
+    const response = await this._lessonRepository.find(token.masterId, id);
     if (response) {
-      return {
-        id: response.id.value,
-        name: response.name,
-        duration: response.duration,
-        teacher: response.teacher,
-        studentsList: response.studentsList,
-        subject: response.subject,
-        days: response.days,
-        times: response.times,
-        semester: response.semester,
-      };
-    } else {
-      return response;
+      return LessonMapper.toObj(response);
     }
+    return null;
   }
 }

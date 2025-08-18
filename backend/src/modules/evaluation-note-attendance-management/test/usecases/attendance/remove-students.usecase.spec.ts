@@ -22,13 +22,7 @@ describe('RemoveStudents usecase unit test', () => {
       update: jest.fn(),
       delete: jest.fn(),
       addStudent: jest.fn(),
-      removeStudent: jest.fn((_, studentsListToRemove) =>
-        Promise.resolve(
-          `${studentsListToRemove.length} ${
-            studentsListToRemove.length === 1 ? 'value was' : 'values were'
-          } removed`
-        )
-      ),
+      removeStudent: jest.fn(),
     };
   };
 
@@ -73,7 +67,10 @@ describe('RemoveStudents usecase unit test', () => {
       await expect(usecase.execute(input, token)).rejects.toThrow(
         'Attendance not found'
       );
-      expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
+      expect(attendanceRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(attendanceRepository.removeStudent).not.toHaveBeenCalled();
     });
 
@@ -89,7 +86,10 @@ describe('RemoveStudents usecase unit test', () => {
           token
         )
       ).rejects.toThrow('This student is not included in the attendance');
-      expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
+      expect(attendanceRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(attendanceRepository.removeStudent).not.toHaveBeenCalled();
     });
   });
@@ -97,13 +97,22 @@ describe('RemoveStudents usecase unit test', () => {
   describe('On success', () => {
     it('should remove students from the attendance', async () => {
       attendanceRepository.find.mockResolvedValue(attendance);
+      attendanceRepository.removeStudent.mockResolvedValue(
+        '2 values were removed'
+      );
 
       const result = await usecase.execute(input, token);
 
-      expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
+      expect(attendanceRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(attendanceRepository.removeStudent).toHaveBeenCalledWith(
+        token.masterId,
         input.id,
-        input.studentsListToRemove
+        expect.objectContaining({
+          studentsPresent: expect.arrayContaining(attendance.studentsPresent),
+        })
       );
       expect(result.message).toBe('2 values were removed');
     });

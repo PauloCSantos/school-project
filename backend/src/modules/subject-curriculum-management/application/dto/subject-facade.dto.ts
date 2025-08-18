@@ -1,45 +1,27 @@
-export interface FindSubjectInputDto {
-  id: string;
-}
-export interface FindSubjectOutputDto {
-  id: string;
-  name: string;
-  description: string;
-}
+import {
+  IFindAllSubjectInput,
+  IFindAllSubjectOutput,
+  IFindSubjectInput,
+  IFindSubjectOutput,
+  ICreateSubjectInput,
+  ICreateSubjectOutput,
+  IDeleteSubjectInput,
+  IDeleteSubjectOutput,
+  IUpdateSubjectInput,
+  IUpdateSubjectOutput,
+} from './base-subject.dto';
 
-export interface FindAllSubjectInputDto {
-  quantity?: number;
-  offset?: number;
-}
-export interface FindAllSubjectOutputDto
-  extends Array<{
-    id: string;
-    name: string;
-    description: string;
-  }> {}
+export type FindSubjectInputDto = IFindSubjectInput;
+export type FindSubjectOutputDto = IFindSubjectOutput;
 
-export interface CreateSubjectInputDto {
-  name: string;
-  description: string;
-}
-export interface CreateSubjectOutputDto {
-  id: string;
-}
+export type FindAllSubjectInputDto = IFindAllSubjectInput;
+export type FindAllSubjectOutputDto = Array<IFindAllSubjectOutput>;
 
-export interface UpdateSubjectInputDto {
-  id: string;
-  name?: string;
-  description?: string;
-}
-export interface UpdateSubjectOutputDto {
-  id: string;
-  name: string;
-  description: string;
-}
+export type CreateSubjectInputDto = ICreateSubjectInput;
+export type CreateSubjectOutputDto = ICreateSubjectOutput;
 
-export interface DeleteSubjectInputDto {
-  id: string;
-}
-export interface DeleteSubjectOutputDto {
-  message: string;
-}
+export type UpdateSubjectInputDto = IUpdateSubjectInput;
+export type UpdateSubjectOutputDto = IUpdateSubjectOutput;
+
+export type DeleteSubjectInputDto = IDeleteSubjectInput;
+export type DeleteSubjectOutputDto = IDeleteSubjectOutput;

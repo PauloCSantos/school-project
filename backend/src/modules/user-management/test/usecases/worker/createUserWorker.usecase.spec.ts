@@ -16,7 +16,7 @@ describe('createUserWorker usecase unit test', () => {
     find: jest.fn(),
     findByEmail: jest.fn(),
     findAll: jest.fn(),
-    create: jest.fn(userWorker => Promise.resolve(userWorker.id.value)),
+    create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
   });
@@ -82,6 +82,7 @@ describe('createUserWorker usecase unit test', () => {
         'User already exists'
       );
       expect(userWorkerRepository.findByEmail).toHaveBeenCalledWith(
+        token.masterId,
         expect.any(String)
       );
       expect(userWorkerRepository.create).not.toHaveBeenCalled();
@@ -94,6 +95,9 @@ describe('createUserWorker usecase unit test', () => {
   describe('On success', () => {
     it('should create a user worker', async () => {
       const userWorkerRepository = MockRepository();
+      userWorkerRepository.create.mockResolvedValue({
+        id: userWorker.id.value,
+      });
       const emailAuthValidatorService = MockEmailAuthValidatorService();
 
       userWorkerRepository.findByEmail.mockResolvedValue(null);
@@ -106,6 +110,7 @@ describe('createUserWorker usecase unit test', () => {
       const result = await usecase.execute(input, token);
 
       expect(userWorkerRepository.findByEmail).toHaveBeenCalledWith(
+        token.masterId,
         expect.any(String)
       );
       expect(userWorkerRepository.create).toHaveBeenCalled();

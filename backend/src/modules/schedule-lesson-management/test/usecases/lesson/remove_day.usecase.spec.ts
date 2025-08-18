@@ -19,13 +19,7 @@ describe('RemoveDay use case unit test', () => {
       addStudents: jest.fn(),
       removeStudents: jest.fn(),
       addDay: jest.fn(),
-      removeDay: jest.fn((_, daysListToRemove) =>
-        Promise.resolve(
-          `${daysListToRemove.length} ${
-            daysListToRemove.length === 1 ? 'value was' : 'values were'
-          } removed`
-        )
-      ),
+      removeDay: jest.fn(),
       addTime: jest.fn(),
       removeTime: jest.fn(),
     };
@@ -68,7 +62,10 @@ describe('RemoveDay use case unit test', () => {
       await expect(usecase.execute(input, token)).rejects.toThrow(
         'Lesson not found'
       );
-      expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
+      expect(lessonRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(lessonRepository.removeDay).not.toHaveBeenCalled();
     });
     it('should throw an error if the day does not exists in the lesson', async () => {
@@ -86,7 +83,10 @@ describe('RemoveDay use case unit test', () => {
           token
         )
       ).rejects.toThrow(`Day tue is not included in the lesson`);
-      expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
+      expect(lessonRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(lessonRepository.removeDay).not.toHaveBeenCalled();
     });
   });
@@ -95,16 +95,23 @@ describe('RemoveDay use case unit test', () => {
     it('should remove days to the lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
+      lessonRepository.removeDay.mockResolvedValue('1 value was removed');
 
       const usecase = new RemoveDay(lessonRepository, policieService);
       const result = await usecase.execute(input, token);
 
-      expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
-      expect(lessonRepository.removeDay).toHaveBeenCalledWith(
-        input.id,
-        input.daysListToRemove
+      expect(lessonRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
       );
-      expect(result.message).toBe(`1 value was removed`);
+      expect(lessonRepository.removeDay).toHaveBeenCalledWith(
+        token.masterId,
+        input.id,
+        expect.objectContaining({
+          days: expect.arrayContaining(lesson.days),
+        })
+      );
+      expect(result.message).toBe('1 value was removed');
     });
   });
 });

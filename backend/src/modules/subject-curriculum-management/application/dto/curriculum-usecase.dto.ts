@@ -1,64 +1,37 @@
-export interface FindCurriculumInputDto {
-  id: string;
-}
-export interface FindCurriculumOutputDto {
-  id: string;
-  name: string;
-  yearsToComplete: number;
-  subjectsList: string[];
-}
+import {
+  IAddSubjectsInput,
+  IAddSubjectsOutput,
+  ICreateCurriculumInput,
+  ICreateCurriculumOutput,
+  IDeleteCurriculumInput,
+  IDeleteCurriculumOutput,
+  IFindAllCurriculumInput,
+  IFindAllCurriculumOutput,
+  IFindCurriculumInput,
+  IFindCurriculumOutput,
+  IRemoveSubjectsInput,
+  IRemoveSubjectsOutput,
+  IUpdateCurriculumInput,
+  IUpdateCurriculumOutput,
+} from './base-curriculum.dto';
 
-export interface FindAllCurriculumInputDto {
-  quantity?: number;
-  offset?: number;
-}
-export interface FindAllCurriculumOutputDto
-  extends Array<{
-    id: string;
-    name: string;
-    yearsToComplete: number;
-    subjectsList: string[];
-  }> {}
+export type FindCurriculumInputDto = IFindCurriculumInput;
+export type FindCurriculumOutputDto = IFindCurriculumOutput;
 
-export interface CreateCurriculumInputDto {
-  name: string;
-  yearsToComplete: number;
-  subjectsList: string[];
-}
-export interface CreateCurriculumOutputDto {
-  id: string;
-}
+export type FindAllCurriculumInputDto = IFindAllCurriculumInput;
+export type FindAllCurriculumOutputDto = Array<IFindAllCurriculumOutput>;
 
-export interface UpdateCurriculumInputDto {
-  id: string;
-  name?: string;
-  yearsToComplete?: number;
-}
-export interface UpdateCurriculumOutputDto {
-  id: string;
-  name: string;
-  yearsToComplete: number;
-}
+export type CreateCurriculumInputDto = ICreateCurriculumInput;
+export type CreateCurriculumOutputDto = ICreateCurriculumOutput;
 
-export interface DeleteCurriculumInputDto {
-  id: string;
-}
-export interface DeleteCurriculumOutputDto {
-  message: string;
-}
+export type UpdateCurriculumInputDto = IUpdateCurriculumInput;
+export type UpdateCurriculumOutputDto = IUpdateCurriculumOutput;
 
-export interface AddSubjectsInputDto {
-  id: string;
-  newSubjectsList: string[];
-}
-export interface AddSubjectsOutputDto {
-  message: string;
-}
+export type DeleteCurriculumInputDto = IDeleteCurriculumInput;
+export type DeleteCurriculumOutputDto = IDeleteCurriculumOutput;
 
-export interface RemoveSubjectsInputDto {
-  id: string;
-  subjectsListToRemove: string[];
-}
-export interface RemoveSubjectsOutputDto {
-  message: string;
-}
+export type AddSubjectsInputDto = IAddSubjectsInput;
+export type AddSubjectsOutputDto = IAddSubjectsOutput;
+
+export type RemoveSubjectsInputDto = IRemoveSubjectsInput;
+export type RemoveSubjectsOutputDto = IRemoveSubjectsOutput;

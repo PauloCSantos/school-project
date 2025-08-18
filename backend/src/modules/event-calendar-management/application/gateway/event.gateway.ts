@@ -10,7 +10,7 @@ export default interface EventGateway {
    * @param id - The unique identifier of the event to search for
    * @returns Promise resolving to the found Event or undefined if not found
    */
-  find(id: string): Promise<Event | null>;
+  find(masterId: string, id: string): Promise<Event | null>;
 
   /**
    * Retrieves a collection of events with optional pagination.
@@ -18,26 +18,26 @@ export default interface EventGateway {
    * @param offSet - Optional number of events to skip
    * @returns Promise resolving to an array of Event entities
    */
-  findAll(quantity?: number, offSet?: number): Promise<Event[]>;
+  findAll(masterId: string, quantity?: number, offSet?: number): Promise<Event[]>;
 
   /**
    * Creates a new calendar event.
    * @param event - The event entity to be created
    * @returns Promise resolving to the unique identifier of the created event
    */
-  create(event: Event): Promise<string>;
+  create(masterId: string, event: Event): Promise<string>;
 
   /**
    * Updates an existing event.
    * @param event - The event entity with updated information
    * @returns Promise resolving to the updated Event entity
    */
-  update(event: Event): Promise<Event>;
+  update(masterId: string, event: Event): Promise<Event>;
 
   /**
    * Deletes an event by its unique identifier.
    * @param id - The unique identifier of the event to delete
    * @returns Promise resolving to a success message
    */
-  delete(id: string): Promise<string>;
+  delete(masterId: string, id: string): Promise<string>;
 }

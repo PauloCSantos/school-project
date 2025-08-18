@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { TeacherMapper } from '@/modules/user-management/infrastructure/mapper/teacher.mapper';
 
 export default class FindAllUserTeacher
   implements
@@ -25,7 +26,7 @@ export default class FindAllUserTeacher
   }
   async execute(
     { offset, quantity }: FindAllUserTeacherInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindAllUserTeacherOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.TEACHER,
@@ -33,29 +34,12 @@ export default class FindAllUserTeacher
       token
     );
 
-    const results = await this._userTeacherRepository.findAll(quantity, offset);
+    const results = await this._userTeacherRepository.findAll(
+      token.masterId,
+      quantity,
+      offset
+    );
 
-    const result = results.map(userTeacher => ({
-      id: userTeacher.id.value,
-      name: {
-        fullName: userTeacher.name.fullName(),
-        shortName: userTeacher.name.shortName(),
-      },
-      address: {
-        street: userTeacher.address.street,
-        city: userTeacher.address.city,
-        zip: userTeacher.address.zip,
-        number: userTeacher.address.number,
-        avenue: userTeacher.address.avenue,
-        state: userTeacher.address.state,
-      },
-      email: userTeacher.email,
-      birthday: userTeacher.birthday,
-      salary: userTeacher.salary.calculateTotalIncome(),
-      graduation: userTeacher.graduation,
-      academicDegrees: userTeacher.academicDegrees,
-    }));
-
-    return result;
+    return TeacherMapper.toDTOList(results);
   }
 }

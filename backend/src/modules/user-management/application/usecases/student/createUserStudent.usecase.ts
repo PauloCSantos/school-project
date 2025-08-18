@@ -30,7 +30,7 @@ export default class CreateUserStudent
   }
   async execute(
     { name, address, email, birthday, paymentYear }: CreateUserStudentInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateUserStudentOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.STUDENT,
@@ -51,11 +51,15 @@ export default class CreateUserStudent
     });
 
     const userVerification = await this._userStudentRepository.findByEmail(
+      token.masterId,
       userStudent.email
     );
     if (userVerification) throw new Error('User already exists');
 
-    const result = await this._userStudentRepository.create(userStudent);
+    const result = await this._userStudentRepository.create(
+      token.masterId,
+      userStudent
+    );
 
     return { id: result };
   }

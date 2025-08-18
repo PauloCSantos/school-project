@@ -1,105 +1,27 @@
-export interface FindUserTeacherInputDto {
-  id: string;
-}
-export interface FindUserTeacherOutputDto {
-  id: string;
-  name: { fullName: string; shortName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  salary: string;
-  graduation: string;
-  academicDegrees: string;
-}
+import {
+  ICreateUserTeacherInput,
+  ICreateUserTeacherOutput,
+  IDeleteUserTeacherInput,
+  IDeleteUserTeacherOutput,
+  IFindAllUserTeacherInput,
+  IFindAllUserTeacherOutput,
+  IFindUserTeacherInput,
+  IFindUserTeacherOutput,
+  IUpdateUserTeacherInput,
+  IUpdateUserTeacherOutput,
+} from './base-teacher.dto';
 
-export interface FindAllUserTeacherInputDto {
-  quantity?: number;
-  offset?: number;
-}
-export interface FindAllUserTeacherOutputDto
-  extends Array<{
-    id: string;
-    name: { fullName: string; shortName: string };
-    address: {
-      street: string;
-      city: string;
-      zip: string;
-      number: number;
-      avenue: string;
-      state: string;
-    };
-    email: string;
-    birthday: Date;
-    salary: string;
-    graduation: string;
-    academicDegrees: string;
-  }> {}
+export type FindUserTeacherInputDto = IFindUserTeacherInput;
+export type FindUserTeacherOutputDto = IFindUserTeacherOutput;
 
-export interface CreateUserTeacherInputDto {
-  name: { firstName: string; middleName?: string; lastName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  salary: { salary: number; currency?: 'R$' | '€' | '$' };
-  graduation: string;
-  academicDegrees: string;
-}
-export interface CreateUserTeacherOutputDto {
-  id: string;
-}
+export type FindAllUserTeacherInputDto = IFindAllUserTeacherInput;
+export type FindAllUserTeacherOutputDto = IFindAllUserTeacherOutput;
 
-export interface UpdateUserTeacherInputDto {
-  id: string;
-  name?: { firstName?: string; middleName?: string; lastName?: string };
-  address?: {
-    street?: string;
-    city?: string;
-    zip?: string;
-    number?: number;
-    avenue?: string;
-    state?: string;
-  };
-  email?: string;
-  birthday?: Date;
-  salary?: { salary?: number; currency?: 'R$' | '€' | '$' };
-  graduation?: string;
-  academicDegrees?: string;
-}
-export interface UpdateUserTeacherOutputDto {
-  id: string;
-  name: { fullName: string; shortName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  salary: string;
-  graduation: string;
-  academicDegrees: string;
-}
+export type CreateUserTeacherInputDto = ICreateUserTeacherInput;
+export type CreateUserTeacherOutputDto = ICreateUserTeacherOutput;
 
-export interface DeleteUserTeacherInputDto {
-  id: string;
-}
-export interface DeleteUserTeacherOutputDto {
-  message: string;
-}
+export type UpdateUserTeacherInputDto = IUpdateUserTeacherInput;
+export type UpdateUserTeacherOutputDto = IUpdateUserTeacherOutput;
+
+export type DeleteUserTeacherInputDto = IDeleteUserTeacherInput;
+export type DeleteUserTeacherOutputDto = IDeleteUserTeacherOutput;

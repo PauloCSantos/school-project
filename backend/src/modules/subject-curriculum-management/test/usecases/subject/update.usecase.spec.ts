@@ -14,7 +14,7 @@ describe('updateSubject usecase unit test', () => {
       find: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
-      update: jest.fn(subject => Promise.resolve(subject)),
+      update: jest.fn(),
       delete: jest.fn(),
     };
   };
@@ -62,6 +62,7 @@ describe('updateSubject usecase unit test', () => {
     it('should update a subject', async () => {
       const subjectRepository = MockRepository();
       subjectRepository.find.mockResolvedValue(subject1);
+      subjectRepository.update.mockResolvedValue(subject1);
       const usecase = new UpdateSubject(subjectRepository, policieService);
 
       const result = await usecase.execute(

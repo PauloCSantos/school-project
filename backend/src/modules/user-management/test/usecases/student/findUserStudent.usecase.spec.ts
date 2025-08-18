@@ -69,9 +69,9 @@ describe('findUserStudent usecase unit test', () => {
       expect(userStudentRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
-    it('should return undefined when id is not found', async () => {
+    it('should return null when id is not found', async () => {
       const userStudentRepository = MockRepository();
-      userStudentRepository.find.mockResolvedValue(undefined);
+      userStudentRepository.find.mockResolvedValue(null);
 
       const usecase = new FindUserStudent(
         userStudentRepository,
@@ -84,7 +84,7 @@ describe('findUserStudent usecase unit test', () => {
         token
       );
 
-      expect(result).toBe(undefined);
+      expect(result).toBeNull();
     });
   });
 });

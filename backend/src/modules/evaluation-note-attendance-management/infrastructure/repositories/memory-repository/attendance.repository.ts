@@ -1,158 +1,180 @@
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
 import AttendanceGateway from '../../../application/gateway/attendance.gateway';
+import {
+  AttendanceMapper,
+  AttendanceMapperProps,
+} from '../../mapper/attendance.mapper';
 
 /**
  * In-memory implementation of AttendanceGateway.
  * Stores and manipulates attendance records in memory.
- * Useful for testing and development purposes.
  */
 export default class MemoryAttendanceRepository implements AttendanceGateway {
-  private _attendance: Attendance[];
+  private _attendances: Map<string, Map<string, AttendanceMapperProps>> =
+    new Map();
 
   /**
-   * Creates a new in-memory repository.
-   * @param attendances - Optional initial array of attendance records
-   */
-  constructor(attendances?: Attendance[]) {
-    attendances ? (this._attendance = attendances) : (this._attendance = []);
-  }
-
-  /**
-   * Finds an attendance record by its unique identifier.
-   * @param id - The unique identifier to search for
-   * @returns Promise resolving to the found Attendance or null if not found
-   */
-  async find(id: string): Promise<Attendance | null> {
-    const attendance = this._attendance.find(
-      attendance => attendance.id.value === id
-    );
-    if (attendance) {
-      return attendance;
-    } else {
-      return null;
+ * Creates a new in-memory repository.
+ * @param attendancesRecords - Optional initial array of attendance records
+  Ex.: new MemoryAttendanceRepository([{ masterId, records: [a1, a2] }])
+ */
+  constructor(
+    attendancesRecords?: Array<{ masterId: string; records: Attendance[] }>
+  ) {
+    if (attendancesRecords) {
+      for (const { masterId, records } of attendancesRecords) {
+        let attendances = this._attendances.get(masterId);
+        if (!attendances) {
+          attendances = new Map<string, AttendanceMapperProps>();
+          this._attendances.set(masterId, attendances);
+        }
+        for (const attendance of records) {
+          attendances.set(
+            attendance.id.value,
+            AttendanceMapper.toObj(attendance)
+          );
+        }
+      }
     }
   }
 
   /**
+   * Finds an attendance record by its unique identifier.
+   * @param masterId - The tenant unique identifier
+   * @param id - The unique identifier to search for
+   * @returns Promise resolving to the found Attendance or null if not found
+   */
+  async find(masterId: string, id: string): Promise<Attendance | null> {
+    const obj = this._attendances.get(masterId)?.get(id);
+    return obj ? AttendanceMapper.toInstance(obj) : null;
+  }
+
+  /**
    * Retrieves a collection of attendance records with pagination support.
+   * @param masterId - The tenant unique identifier
    * @param quantity - Optional limit on the number of records to return (defaults to 10)
    * @param offSet - Optional number of records to skip for pagination (defaults to 0)
    * @returns Promise resolving to an array of Attendance entities
    */
   async findAll(
-    quantity?: number | undefined,
-    offSet?: number | undefined
+    masterId: string,
+    quantity?: number,
+    offSet?: number
   ): Promise<Attendance[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity : 10;
-    const attendances = this._attendance.slice(offS, qtd);
-
-    return attendances;
+    const attendances = this._attendances.get(masterId);
+    if (!attendances) return [];
+    const page = Array.from(attendances.values()).slice(offS, offS + qtd);
+    return AttendanceMapper.toInstanceList(page);
   }
 
   /**
    * Creates a new attendance record in memory.
+   * @param masterId - The tenant unique identifier
    * @param attendance - The attendance entity to be created
-   * @returns Promise resolving to the unique identifier of the created attendance record
+   * @returns Promise resolving to the created attendance id
    */
-  async create(attendance: Attendance): Promise<string> {
-    this._attendance.push(attendance);
+  async create(masterId: string, attendance: Attendance): Promise<string> {
+    const attendances = this.getOrCreateBucket(masterId);
+    attendances.set(attendance.id.value, AttendanceMapper.toObj(attendance));
     return attendance.id.value;
   }
 
   /**
-   * Updates an existing attendance record identified by its ID.
+   * Updates an existing attendance.
+   * @param masterId - The tenant unique identifier
    * @param attendance - The attendance entity with updated information
    * @returns Promise resolving to the updated Attendance entity
    * @throws Error if the attendance record is not found
    */
-  async update(attendance: Attendance): Promise<Attendance> {
-    const attendanceIndex = this._attendance.findIndex(
-      dbAttendance => dbAttendance.id.value === attendance.id.value
-    );
-    if (attendanceIndex !== -1) {
-      return (this._attendance[attendanceIndex] = attendance);
-    } else {
+  async update(masterId: string, attendance: Attendance): Promise<Attendance> {
+    const attendances = this._attendances.get(masterId);
+    if (!attendances || !attendances.has(attendance.id.value)) {
       throw new Error('Attendance not found');
     }
+    attendances.set(attendance.id.value, AttendanceMapper.toObj(attendance));
+    return attendance;
   }
 
   /**
    * Deletes an attendance record by its unique identifier.
+   * @param masterId - The tenant unique identifier
    * @param id - The unique identifier of the attendance record to delete
    * @returns Promise resolving to a success message
    * @throws Error if the attendance record is not found
    */
-  async delete(id: string): Promise<string> {
-    const attendanceIndex = this._attendance.findIndex(
-      dbAttendance => dbAttendance.id.value === id
-    );
-    if (attendanceIndex !== -1) {
-      this._attendance.splice(attendanceIndex, 1);
-      return 'Operação concluída com sucesso';
-    } else {
+  async delete(masterId: string, id: string): Promise<string> {
+    const attendances = this._attendances.get(masterId);
+    if (!attendances || !attendances.has(id)) {
       throw new Error('Attendance not found');
     }
+    attendances.delete(id);
+    return 'Operação concluída com sucesso';
   }
 
   /**
    * Adds multiple students to an existing attendance record.
+   * @param masterId - The tenant unique identifier
    * @param id - The unique identifier of the attendance record
-   * @param newAttendancesList - Array of student IDs to be added to the attendance
+   * @param attendance - The attendance entity with updated students
    * @returns Promise resolving to a success message indicating number of students added
    * @throws Error if the attendance record is not found or student addition fails
    */
-  async addStudent(id: string, newAttendancesList: string[]): Promise<string> {
-    const attendanceIndex = this._attendance.findIndex(
-      dbAttendance => dbAttendance.id.value === id
-    );
-    if (attendanceIndex !== -1) {
-      try {
-        const updatedAttendance = this._attendance[attendanceIndex];
-        newAttendancesList.forEach(id => {
-          updatedAttendance.addStudent(id);
-        });
-        this._attendance[attendanceIndex] = updatedAttendance;
-        return `${newAttendancesList.length} ${
-          newAttendancesList.length === 1 ? 'value was' : 'values were'
-        } entered`;
-      } catch (error) {
-        throw error;
-      }
-    } else {
+  async addStudent(
+    masterId: string,
+    id: string,
+    attendance: Attendance
+  ): Promise<string> {
+    const attendances = this._attendances.get(masterId);
+    const obj = attendances?.get(id);
+    if (!obj) {
       throw new Error('Attendance not found');
     }
+    attendances!.set(id, AttendanceMapper.toObj(attendance));
+    const totalStudents =
+      attendance.studentsPresent.length - obj.studentsPresent.length;
+    return `${totalStudents} ${
+      totalStudents === 1 ? 'value was' : 'values were'
+    } entered`;
   }
 
   /**
    * Removes multiple students from an existing attendance record.
+   * @param masterId - The tenant unique identifier
    * @param id - The unique identifier of the attendance record
-   * @param attendancesListToRemove - Array of student IDs to be removed from the attendance
+   * @param attendance - The attendance entity with updated students
    * @returns Promise resolving to a success message indicating number of students removed
    * @throws Error if the attendance record is not found or student removal fails
    */
   async removeStudent(
+    masterId: string,
     id: string,
-    attendancesListToRemove: string[]
+    attendance: Attendance
   ): Promise<string> {
-    const attendanceIndex = this._attendance.findIndex(
-      dbAttendance => dbAttendance.id.value === id
-    );
-    if (attendanceIndex !== -1) {
-      try {
-        const updatedAttendance = this._attendance[attendanceIndex];
-        attendancesListToRemove.forEach(id => {
-          updatedAttendance.removeStudent(id);
-        });
-        this._attendance[attendanceIndex] = updatedAttendance;
-        return `${attendancesListToRemove.length} ${
-          attendancesListToRemove.length === 1 ? 'value was' : 'values were'
-        } removed`;
-      } catch (error) {
-        throw error;
-      }
-    } else {
+    const attendances = this._attendances.get(masterId);
+    const obj = attendances?.get(id);
+    if (!obj) {
       throw new Error('Attendance not found');
     }
+
+    attendances!.set(id, AttendanceMapper.toObj(attendance));
+
+    const totalStudents =
+      obj.studentsPresent.length - attendance.studentsPresent.length;
+    return `${totalStudents} ${
+      totalStudents === 1 ? 'value was' : 'values were'
+    } removed`;
+  }
+
+  private getOrCreateBucket(
+    masterId: string
+  ): Map<string, AttendanceMapperProps> {
+    let attendances = this._attendances.get(masterId);
+    if (!attendances) {
+      attendances = new Map<string, AttendanceMapperProps>();
+      this._attendances.set(masterId, attendances);
+    }
+    return attendances;
   }
 }

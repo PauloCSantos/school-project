@@ -4,13 +4,13 @@ import {
   UpdateEventOutputDto,
 } from '../../dto/event-usecase.dto';
 import EventGateway from '@/modules/event-calendar-management/application/gateway/event.gateway';
-import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { EventMapper } from '@/modules/event-calendar-management/infrastructure/mapper/event.mapper';
 
 /**
  * Use case responsible for updating an event.
@@ -44,29 +44,18 @@ export default class UpdateEvent
    */
   async execute(
     { id, creator, date, day, hour, name, place, type }: UpdateEventInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<UpdateEventOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.EVENT,
       FunctionCalledEnum.CREATE,
       token
     );
-    const existingEvent = await this._eventRepository.find(id);
+    const event = await this._eventRepository.find(token.masterId, id);
 
-    if (!existingEvent) {
+    if (!event) {
       throw new Error('Event not found');
     }
-
-    const event = new Event({
-      id: existingEvent.id,
-      creator: existingEvent.creator,
-      name: existingEvent.name,
-      date: existingEvent.date,
-      hour: existingEvent.hour,
-      day: existingEvent.day,
-      type: existingEvent.type,
-      place: existingEvent.place,
-    });
 
     if (name !== undefined) {
       event.name = name;
@@ -96,17 +85,8 @@ export default class UpdateEvent
       event.type = type;
     }
 
-    const result = await this._eventRepository.update(event);
+    const result = await this._eventRepository.update(token.masterId, event);
 
-    return {
-      id: result.id.value,
-      creator: result.creator,
-      name: result.name,
-      date: result.date,
-      hour: result.hour,
-      day: result.day,
-      type: result.type,
-      place: result.place,
-    };
+    return EventMapper.toObj(result);
   }
 }

@@ -19,13 +19,7 @@ describe('AddStudents use case unit test', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
-      addStudent: jest.fn((_, newStudentsList) =>
-        Promise.resolve(
-          `${newStudentsList.length} ${
-            newStudentsList.length === 1 ? 'value was' : 'values were'
-          } entered`
-        )
-      ),
+      addStudent: jest.fn(),
       removeStudent: jest.fn(),
     };
   };
@@ -68,7 +62,10 @@ describe('AddStudents use case unit test', () => {
       await expect(usecase.execute(input, token)).rejects.toThrow(
         'Attendance not found'
       );
-      expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
+      expect(attendanceRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(attendanceRepository.addStudent).not.toHaveBeenCalled();
     });
 
@@ -87,7 +84,10 @@ describe('AddStudents use case unit test', () => {
           token
         )
       ).rejects.toThrow(`This student is already on the attendance`);
-      expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
+      expect(attendanceRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(attendanceRepository.addStudent).not.toHaveBeenCalled();
     });
   });
@@ -96,21 +96,34 @@ describe('AddStudents use case unit test', () => {
     it('should add students to the attendance', async () => {
       const attendanceRepository = MockRepository();
       attendanceRepository.find.mockResolvedValue(attendance);
+      attendanceRepository.addStudent.mockResolvedValue(
+        '2 values were entered'
+      );
 
       const usecase = new AddStudents(attendanceRepository, policiesService);
       const result = await usecase.execute(input, token);
 
-      expect(attendanceRepository.find).toHaveBeenCalledWith(input.id);
-      expect(attendanceRepository.addStudent).toHaveBeenCalledWith(
-        input.id,
-        input.newStudentsList
+      expect(attendanceRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
       );
-      expect(result.message).toBe(`2 values were entered`);
+      expect(attendanceRepository.addStudent).toHaveBeenCalledWith(
+        token.masterId,
+        input.id,
+        expect.objectContaining({
+          studentsPresent: expect.arrayContaining([
+            ...attendance.studentsPresent,
+            ...input.newStudentsList,
+          ]),
+        })
+      );
+      expect(result.message).toBe('2 values were entered');
     });
 
     it('should handle adding a single student correctly', async () => {
       const attendanceRepository = MockRepository();
       attendanceRepository.find.mockResolvedValue(attendance);
+      attendanceRepository.addStudent.mockResolvedValue('1 value was entered');
 
       const usecase = new AddStudents(attendanceRepository, policiesService);
       const singleStudentInput = {
@@ -120,13 +133,20 @@ describe('AddStudents use case unit test', () => {
       const result = await usecase.execute(singleStudentInput, token);
 
       expect(attendanceRepository.find).toHaveBeenCalledWith(
+        token.masterId,
         singleStudentInput.id
       );
       expect(attendanceRepository.addStudent).toHaveBeenCalledWith(
+        token.masterId,
         singleStudentInput.id,
-        singleStudentInput.newStudentsList
+        expect.objectContaining({
+          studentsPresent: expect.arrayContaining([
+            ...attendance.studentsPresent,
+            ...singleStudentInput.newStudentsList,
+          ]),
+        })
       );
-      expect(result.message).toBe(`1 value was entered`);
+      expect(result.message).toBe('1 value was entered');
     });
   });
 });

@@ -45,14 +45,13 @@ export default class CreateEvent
    */
   async execute(
     { creator, date, day, hour, name, place, type }: CreateEventInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateEventOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.EVENT,
       FunctionCalledEnum.CREATE,
       token
     );
-    // Create event entity with provided input
     const event = new Event({
       creator,
       date: new Date(date),
@@ -63,14 +62,7 @@ export default class CreateEvent
       type,
     });
 
-    // Check if event already exists
-    const existingEvent = await this._eventRepository.find(event.id.value);
-    if (existingEvent) {
-      throw new Error('Event already exists');
-    }
-
-    // Persist the event
-    const result = await this._eventRepository.create(event);
+    const result = await this._eventRepository.create(token.masterId, event);
 
     return { id: result };
   }

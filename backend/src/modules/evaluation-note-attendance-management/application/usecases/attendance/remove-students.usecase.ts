@@ -1,12 +1,9 @@
-import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
 import {
   RemoveStudentsInputDto,
   RemoveStudentsOutputDto,
 } from '../../dto/attendance-usecase.dto';
 import AttendanceGateway from '@/modules/evaluation-note-attendance-management/application/gateway/attendance.gateway';
-import AttendanceMapper from '../../mapper/attendance.mapper';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import {
@@ -47,7 +44,7 @@ export default class RemoveStudents
    */
   async execute(
     { id, studentsListToRemove }: RemoveStudentsInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<RemoveStudentsOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.ATTENDANCE,
@@ -55,36 +52,25 @@ export default class RemoveStudents
       token
     );
 
-    const attendanceVerification = await this._attendanceRepository.find(id);
+    const attendance = await this._attendanceRepository.find(
+      token.masterId,
+      id
+    );
 
-    if (!attendanceVerification) {
+    if (!attendance) {
       throw new Error('Attendance not found');
     }
 
-    const attendanceObj = AttendanceMapper.toObj(attendanceVerification);
-    const newAttendance = JSON.parse(JSON.stringify(attendanceObj));
-
-    const attendance = new Attendance({
-      ...newAttendance,
-      id: new Id(newAttendance.id),
-      date: new Date(newAttendance.date),
-      hour: newAttendance.hour as Hour,
-      day: newAttendance.day as DayOfWeek,
+    studentsListToRemove.forEach(studentId => {
+      attendance.removeStudent(studentId);
     });
 
-    try {
-      studentsListToRemove.forEach(studentId => {
-        attendance.removeStudent(studentId);
-      });
+    const result = await this._attendanceRepository.removeStudent(
+      token.masterId,
+      id,
+      attendance
+    );
 
-      const result = await this._attendanceRepository.removeStudent(
-        id,
-        studentsListToRemove
-      );
-
-      return { message: result };
-    } catch (error) {
-      throw error;
-    }
+    return { message: result };
   }
 }

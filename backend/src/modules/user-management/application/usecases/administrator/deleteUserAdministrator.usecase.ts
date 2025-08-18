@@ -28,7 +28,7 @@ export default class DeleteUserAdministrator
   }
   async execute(
     { id }: DeleteUserAdministratorInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<DeleteUserAdministratorOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.ADMINISTRATOR,
@@ -36,10 +36,16 @@ export default class DeleteUserAdministrator
       token
     );
 
-    const userVerification = await this._userAdministratorRepository.find(id);
+    const userVerification = await this._userAdministratorRepository.find(
+      token.masterId,
+      id
+    );
     if (!userVerification) throw new Error('User not found');
 
-    const result = await this._userAdministratorRepository.delete(id);
+    const result = await this._userAdministratorRepository.delete(
+      token.masterId,
+      id
+    );
 
     return { message: result };
   }

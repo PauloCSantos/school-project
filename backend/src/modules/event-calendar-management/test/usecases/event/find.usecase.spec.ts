@@ -70,7 +70,10 @@ describe('FindEvent usecase unit test', () => {
 
       const result = await usecase.execute({ id: event.id.value }, token);
 
-      expect(repository.find).toHaveBeenCalledWith(event.id.value);
+      expect(repository.find).toHaveBeenCalledWith(
+        token.masterId,
+        event.id.value
+      );
       expect(repository.find).toHaveBeenCalledTimes(1);
       expect(result).toBeDefined();
       expect(result).toEqual({
@@ -97,7 +100,7 @@ describe('FindEvent usecase unit test', () => {
         token
       );
 
-      expect(repository.find).toHaveBeenCalledWith(notFoundId);
+      expect(repository.find).toHaveBeenCalledWith(token.masterId, notFoundId);
       expect(repository.find).toHaveBeenCalledTimes(1);
       expect(result).toBeNull();
     });

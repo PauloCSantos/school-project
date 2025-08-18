@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import ScheduleMapper from '../../mapper/schedule.mapper';
 
 /**
  * Use case responsible for retrieving a schedule by ID.
@@ -31,7 +32,7 @@ export default class FindAllSchedule
    */
   async execute(
     { quantity, offset }: FindAllScheduleInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindAllScheduleOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.SCHEDULE,
@@ -39,15 +40,12 @@ export default class FindAllSchedule
       token
     );
 
-    const results = await this._scheduleRepository.findAll(quantity, offset);
+    const results = await this._scheduleRepository.findAll(
+      token.masterId,
+      quantity,
+      offset
+    );
 
-    const result = results.map(schedule => ({
-      id: schedule.id.value,
-      student: schedule.student,
-      curriculum: schedule.curriculum,
-      lessonsList: schedule.lessonsList,
-    }));
-
-    return result;
+    return ScheduleMapper.toObjList(results);
   }
 }

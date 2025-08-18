@@ -25,30 +25,32 @@ export default class UpdateCurriculum
   }
   async execute(
     { id, name, yearsToComplete }: UpdateCurriculumInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<UpdateCurriculumOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.CURRICULUM,
-      FunctionCalledEnum.ADD,
+      FunctionCalledEnum.UPDATE,
       token
     );
 
-    const curriculum = await this._curriculumRepository.find(id);
+    const curriculum = await this._curriculumRepository.find(
+      token.masterId,
+      id
+    );
     if (!curriculum) throw new Error('Curriculum not found');
 
-    try {
-      name !== undefined && (curriculum.name = name);
-      yearsToComplete !== undefined && (curriculum.year = yearsToComplete);
+    name !== undefined && (curriculum.name = name);
+    yearsToComplete !== undefined && (curriculum.year = yearsToComplete);
 
-      const result = await this._curriculumRepository.update(curriculum);
+    const result = await this._curriculumRepository.update(
+      token.masterId,
+      curriculum
+    );
 
-      return {
-        id: result.id.value,
-        name: result.name,
-        yearsToComplete: result.yearsToComplete,
-      };
-    } catch (error) {
-      throw error;
-    }
+    return {
+      id: result.id.value,
+      name: result.name,
+      yearsToComplete: result.yearsToComplete,
+    };
   }
 }

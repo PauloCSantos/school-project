@@ -20,13 +20,7 @@ describe('AddTime use case unit test', () => {
       removeStudents: jest.fn(),
       addDay: jest.fn(),
       removeDay: jest.fn(),
-      addTime: jest.fn((_, newTimesList) =>
-        Promise.resolve(
-          `${newTimesList.length} ${
-            newTimesList.length === 1 ? 'value was' : 'values were'
-          } entered`
-        )
-      ),
+      addTime: jest.fn(),
       removeTime: jest.fn(),
     };
   };
@@ -68,7 +62,10 @@ describe('AddTime use case unit test', () => {
       await expect(usecase.execute(input, token)).rejects.toThrow(
         'Lesson not found'
       );
-      expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
+      expect(lessonRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(lessonRepository.addDay).not.toHaveBeenCalled();
     });
     it('should throw an error if the time already exists in the lesson', async () => {
@@ -86,7 +83,10 @@ describe('AddTime use case unit test', () => {
           token
         )
       ).rejects.toThrow(`Time 15:55 is already added to the lesson`);
-      expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
+      expect(lessonRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(lessonRepository.addDay).not.toHaveBeenCalled();
     });
   });
@@ -95,16 +95,26 @@ describe('AddTime use case unit test', () => {
     it('should add times to the lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
+      lessonRepository.addTime.mockResolvedValue('2 values were entered');
 
       const usecase = new AddTime(lessonRepository, policieService);
       const result = await usecase.execute(input, token);
 
-      expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
-      expect(lessonRepository.addTime).toHaveBeenCalledWith(
-        input.id,
-        input.newTimesList
+      expect(lessonRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
       );
-      expect(result.message).toBe(`2 values were entered`);
+      expect(lessonRepository.addTime).toHaveBeenCalledWith(
+        token.masterId,
+        input.id,
+        expect.objectContaining({
+          times: expect.arrayContaining([
+            ...lesson.times,
+            ...input.newTimesList,
+          ]),
+        })
+      );
+      expect(result.message).toBe('2 values were entered');
     });
   });
 });

@@ -1,93 +1,117 @@
 import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
 import NoteGateway from '../../../application/gateway/note.gateway';
+import { NoteMapper, NoteMapperProps } from '../../mapper/note.mapper';
 
 /**
  * In-memory implementation of NoteGateway.
- * Stores and manipulates student notes in memory.
- * Useful for testing and development purposes.
+ * Stores and manipulates note records in memory.
  */
 export default class MemoryNoteRepository implements NoteGateway {
-  private _note: Note[];
+  private _notes: Map<string, Map<string, NoteMapperProps>> = new Map();
 
-  /**
-   * Creates a new in-memory repository.
-   * @param notes - Optional initial array of student notes
-   */
-  constructor(notes?: Note[]) {
-    notes ? (this._note = notes) : (this._note = []);
+/**
+ * Creates a new in-memory repository.
+ * @param notesRecords - Optional initial array of note records
+  Ex.: new MemoryNoteRepository([{ masterId, records: [n1, n2] }])
+ */
+constructor(
+  notesRecords?: Array<{ masterId: string; records: Note[] }>
+) {
+  if (notesRecords) {
+    for (const { masterId, records } of notesRecords) {
+      let notes = this._notes.get(masterId);
+      if (!notes) {
+        notes = new Map<string, NoteMapperProps>();
+        this._notes.set(masterId, notes);
+      }
+      for (const note of records) {
+        notes.set(note.id.value, NoteMapper.toObj(note));
+      }
+    }
   }
+}
 
   /**
-   * Finds a note by its unique identifier.
+   * Finds a note record by its unique identifier.
+   * @param masterId - The tenant unique identifier
    * @param id - The unique identifier to search for
    * @returns Promise resolving to the found Note or null if not found
    */
-  async find(id: string): Promise<Note | null> {
-    const note = this._note.find(note => note.id.value === id);
-    if (note) {
-      return note;
-    } else {
-      return null;
-    }
+  async find(masterId: string, id: string): Promise<Note | null> {
+    const obj = this._notes.get(masterId)?.get(id);
+    return obj ? NoteMapper.toInstance(obj) : null;
   }
 
   /**
-   * Retrieves a collection of notes with pagination support.
+   * Retrieves a collection of note records with pagination support.
+   * @param masterId - The tenant unique identifier
    * @param quantity - Optional limit on the number of records to return (defaults to 10)
    * @param offSet - Optional number of records to skip for pagination (defaults to 0)
    * @returns Promise resolving to an array of Note entities
    */
   async findAll(
+    masterId: string,
     quantity?: number | undefined,
     offSet?: number | undefined
   ): Promise<Note[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity : 10;
-    const notes = this._note.slice(offS, qtd);
-
-    return notes;
+    const notes = this._notes.get(masterId);
+    if (!notes) return [];
+    const page = Array.from(notes.values()).slice(offS, offS + qtd);
+    return NoteMapper.toInstanceList(page);
   }
 
   /**
-   * Creates a new note in memory.
+   * Creates a new note record in memory.
+   * @param masterId - The tenant unique identifier
    * @param note - The note entity to be created
-   * @returns Promise resolving to the unique identifier of the created note
+   * @returns Promise resolving to the unique identifier of the created note record
    */
-  async create(note: Note): Promise<string> {
-    this._note.push(note);
+  async create(masterId: string, note: Note): Promise<string> {
+    const notes = this.getOrCreateBucket(masterId);
+    notes.set(note.id.value, NoteMapper.toObj(note));
     return note.id.value;
   }
 
   /**
-   * Updates an existing note identified by its ID.
+   * Updates an existing note record identified by its ID.
+   * @param masterId - The tenant unique identifier
    * @param note - The note entity with updated information
    * @returns Promise resolving to the updated Note entity
-   * @throws Error if the note is not found
+   * @throws Error if the note record is not found
    */
-  async update(note: Note): Promise<Note> {
-    const noteIndex = this._note.findIndex(
-      dbNote => dbNote.id.value === note.id.value
-    );
-    if (noteIndex !== -1) {
-      return (this._note[noteIndex] = note);
-    } else {
+  async update(masterId: string, note: Note): Promise<Note> {
+    const notes = this._notes.get(masterId);
+    if (!notes || !notes.has(note.id.value)) {
       throw new Error('Note not found');
     }
+    notes.set(note.id.value, NoteMapper.toObj(note));
+    return note;
   }
 
   /**
-   * Deletes a note by its unique identifier.
-   * @param id - The unique identifier of the note to delete
+   * Deletes a note record by its unique identifier.
+   * @param masterId - The tenant unique identifier
+   * @param id - The unique identifier of the note record to delete
    * @returns Promise resolving to a success message
-   * @throws Error if the note is not found
+   * @throws Error if the note record is not found
    */
-  async delete(id: string): Promise<string> {
-    const noteIndex = this._note.findIndex(dbNote => dbNote.id.value === id);
-    if (noteIndex !== -1) {
-      this._note.splice(noteIndex, 1);
-      return 'Operação concluída com sucesso';
-    } else {
+  async delete(masterId: string, id: string): Promise<string> {
+    const notes = this._notes.get(masterId);
+    if (!notes || !notes.has(id)) {
       throw new Error('Note not found');
     }
+    notes.delete(id);
+    return 'Operação concluída com sucesso';
+  }
+
+  private getOrCreateBucket(masterId: string): Map<string, NoteMapperProps> {
+    let notes = this._notes.get(masterId);
+    if (!notes) {
+      notes = new Map<string, NoteMapperProps>();
+      this._notes.set(masterId, notes);
+    }
+    return notes;
   }
 }

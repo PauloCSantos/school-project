@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { NoteMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/note.mapper';
 
 /**
  * Use case responsible for finding a note by id.
@@ -42,7 +43,7 @@ export default class FindNote
    */
   async execute(
     { id }: FindNoteInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindNoteOutputDto | null> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.NOTE,
@@ -50,15 +51,10 @@ export default class FindNote
       token
     );
 
-    const response = await this._noteRepository.find(id);
+    const response = await this._noteRepository.find(token.masterId, id);
 
     if (response) {
-      return {
-        id: response.id.value,
-        evaluation: response.evaluation,
-        note: response.note,
-        student: response.student,
-      };
+      return NoteMapper.toObj(response)
     }
 
     return null;

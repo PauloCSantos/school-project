@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { EventMapper } from '@/modules/event-calendar-management/infrastructure/mapper/event.mapper';
 
 /**
  * Use case responsible for finding all events with pagination.
@@ -42,24 +43,19 @@ export default class FindAllEvent
    */
   async execute(
     { offset, quantity }: FindAllEventInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindAllEventOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.EVENT,
       FunctionCalledEnum.FIND_ALL,
       token
     );
-    const results = await this._eventRepository.findAll(quantity, offset);
+    const results = await this._eventRepository.findAll(
+      token.masterId,
+      quantity,
+      offset
+    );
 
-    return results.map(event => ({
-      id: event.id.value,
-      creator: event.creator,
-      name: event.name,
-      date: event.date,
-      hour: event.hour,
-      day: event.day,
-      type: event.type,
-      place: event.place,
-    }));
+    return EventMapper.toObjList(results);
   }
 }
