@@ -46,9 +46,9 @@ describe('findSubject usecase unit test', () => {
       expect(subjectRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
-    it('should return undefined when id is not found', async () => {
+    it('should return null when id is not found', async () => {
       const subjectRepository = MockRepository();
-      subjectRepository.find.mockResolvedValue(undefined);
+      subjectRepository.find.mockResolvedValue(null);
 
       const usecase = new FindSubject(subjectRepository, policieService);
       const result = await usecase.execute(
@@ -58,7 +58,7 @@ describe('findSubject usecase unit test', () => {
         token
       );
 
-      expect(result).toBe(undefined);
+      expect(result).toBeNull();
     });
   });
 });

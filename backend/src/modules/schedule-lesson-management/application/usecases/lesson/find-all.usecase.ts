@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import LessonMapper from '../../mapper/lesson-usecase.mapper';
 
 /**
  * Use case responsible for retrieving all lessons with pagination.
@@ -31,27 +32,19 @@ export default class FindAllLesson
    */
   async execute(
     { offset, quantity }: FindAllLessonInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindAllLessonOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.LESSON,
       FunctionCalledEnum.FIND_ALL,
       token
     );
-    const results = await this._lessonRepository.findAll(quantity, offset);
+    const results = await this._lessonRepository.findAll(
+      token.masterId,
+      quantity,
+      offset
+    );
 
-    const result = results.map(lesson => ({
-      id: lesson.id.value,
-      name: lesson.name,
-      duration: lesson.duration,
-      teacher: lesson.teacher,
-      studentsList: lesson.studentsList,
-      subject: lesson.subject,
-      days: lesson.days,
-      times: lesson.times,
-      semester: lesson.semester,
-    }));
-
-    return result;
+    return LessonMapper.toObjList(results);
   }
 }

@@ -7,6 +7,7 @@ import MemoryUserMasterRepository from '@/modules/user-management/infrastructure
 describe('MemoryUserMasterRepository unit test', () => {
   let repository: MemoryUserMasterRepository;
 
+  const masterId = new Id().value;
   const id1 = new Id();
   const id2 = new Id();
   const id3 = new Id();
@@ -77,13 +78,15 @@ describe('MemoryUserMasterRepository unit test', () => {
   });
 
   beforeEach(() => {
-    repository = new MemoryUserMasterRepository([userMaster1, userMaster2]);
+    repository = new MemoryUserMasterRepository([
+      { masterId, records: [userMaster1, userMaster2] },
+    ]);
   });
 
   describe('On fail', () => {
     it('should received an null', async () => {
       const userId = new Id().value;
-      const userMasterFound = await repository.find(userId);
+      const userMasterFound = await repository.find(masterId, userId);
 
       expect(userMasterFound).toBeNull();
     });
@@ -97,7 +100,7 @@ describe('MemoryUserMasterRepository unit test', () => {
         email: email3,
       });
 
-      await expect(repository.update(userMaster)).rejects.toThrow(
+      await expect(repository.update(masterId, userMaster)).rejects.toThrow(
         'User not found'
       );
     });
@@ -105,15 +108,15 @@ describe('MemoryUserMasterRepository unit test', () => {
   describe('On success', () => {
     it('should find a user master', async () => {
       const userId = userMaster1.id.value;
-      const userMasterFound = await repository.find(userId);
+      const userMasterFound = await repository.find(masterId, userId);
 
       expect(userMasterFound).toBeDefined();
       expect(userMasterFound!.id).toBeDefined();
-      expect(userMasterFound!.name).toBe(userMaster1.name);
-      expect(userMasterFound!.address).toBe(userMaster1.address);
-      expect(userMasterFound!.email).toBe(userMaster1.email);
-      expect(userMasterFound!.cnpj).toBe(userMaster1.cnpj);
-      expect(userMasterFound!.birthday).toBe(userMaster1.birthday);
+      expect(userMasterFound!.name).toStrictEqual(userMaster1.name);
+      expect(userMasterFound!.address).toStrictEqual(userMaster1.address);
+      expect(userMasterFound!.email).toStrictEqual(userMaster1.email);
+      expect(userMasterFound!.cnpj).toStrictEqual(userMaster1.cnpj);
+      expect(userMasterFound!.birthday).toStrictEqual(userMaster1.birthday);
     });
     it('should create a new user and return its id', async () => {
       const userMaster = new UserMaster({
@@ -124,7 +127,7 @@ describe('MemoryUserMasterRepository unit test', () => {
         cnpj: cnpj3,
         email: email3,
       });
-      const result = await repository.create(userMaster);
+      const result = await repository.create(masterId, userMaster);
 
       expect(result).toBe(userMaster.id.value);
     });
@@ -140,7 +143,7 @@ describe('MemoryUserMasterRepository unit test', () => {
       updatedUserMaster.address.zip = address3.zip;
       updatedUserMaster.address.street = address3.street;
 
-      const result = await repository.update(updatedUserMaster);
+      const result = await repository.update(masterId, updatedUserMaster);
 
       expect(result).toEqual(updatedUserMaster);
     });

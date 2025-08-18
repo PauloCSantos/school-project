@@ -44,7 +44,7 @@ export default class DeleteAttendance
    */
   async execute(
     { id }: DeleteAttendanceInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<DeleteAttendanceOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.ATTENDANCE,
@@ -52,13 +52,16 @@ export default class DeleteAttendance
       token
     );
 
-    const attendanceVerification = await this._attendanceRepository.find(id);
+    const attendanceVerification = await this._attendanceRepository.find(
+      token.masterId,
+      id
+    );
 
     if (!attendanceVerification) {
       throw new Error('Attendance not found');
     }
 
-    const result = await this._attendanceRepository.delete(id);
+    const result = await this._attendanceRepository.delete(token.masterId, id);
 
     return { message: result };
   }

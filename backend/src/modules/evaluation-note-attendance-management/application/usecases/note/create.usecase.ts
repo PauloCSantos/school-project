@@ -44,7 +44,7 @@ export default class CreateNote
    */
   async execute(
     { evaluation, note, student }: CreateNoteInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateNoteOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.NOTE,
@@ -58,12 +58,7 @@ export default class CreateNote
       student,
     });
 
-    const noteVerification = await this._noteRepository.find(
-      noteInstance.id.value
-    );
-    if (noteVerification) throw new Error('Note already exists');
-
-    const result = await this._noteRepository.create(noteInstance);
+    const result = await this._noteRepository.create(token.masterId, noteInstance);
 
     return { id: result };
   }

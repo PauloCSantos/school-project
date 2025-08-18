@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { AttendanceMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/attendance.mapper';
 
 /**
  * Use case responsible for updating an attendance record.
@@ -45,7 +46,7 @@ export default class UpdateAttendance
    */
   async execute(
     { id, date, day, hour, lesson }: UpdateAttendanceInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<UpdateAttendanceOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.ATTENDANCE,
@@ -53,29 +54,25 @@ export default class UpdateAttendance
       token
     );
 
-    const attendance = await this._attendanceRepository.find(id);
+    const attendance = await this._attendanceRepository.find(
+      token.masterId,
+      id
+    );
 
     if (!attendance) {
       throw new Error('Attendance not found');
     }
 
-    try {
-      date !== undefined && (attendance.date = date);
-      day !== undefined && (attendance.day = day);
-      hour !== undefined && (attendance.hour = hour);
-      lesson !== undefined && (attendance.lesson = lesson);
+    date !== undefined && (attendance.date = date);
+    day !== undefined && (attendance.day = day);
+    hour !== undefined && (attendance.hour = hour);
+    lesson !== undefined && (attendance.lesson = lesson);
 
-      const result = await this._attendanceRepository.update(attendance);
+    const result = await this._attendanceRepository.update(
+      token.masterId,
+      attendance
+    );
 
-      return {
-        id: result.id.value,
-        lesson: result.lesson,
-        date: result.date,
-        hour: result.hour,
-        day: result.day,
-      };
-    } catch (error) {
-      throw error;
-    }
+    return AttendanceMapper.toObj(result)
   }
 }

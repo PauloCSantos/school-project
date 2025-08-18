@@ -46,7 +46,7 @@ export default class CreateEvaluation
    */
   async execute(
     { lesson, teacher, type, value }: CreateEvaluationInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateEvaluationOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.EVALUATION,
@@ -61,15 +61,7 @@ export default class CreateEvaluation
       value,
     });
 
-    const evaluationVerification = await this._evaluationRepository.find(
-      evaluation.id.value
-    );
-
-    if (evaluationVerification) {
-      throw new Error('Evaluation already exists');
-    }
-
-    const result = await this._evaluationRepository.create(evaluation);
+    const result = await this._evaluationRepository.create(token.masterId, evaluation);
 
     return { id: result };
   }

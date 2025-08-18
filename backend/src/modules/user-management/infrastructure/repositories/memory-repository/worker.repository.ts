@@ -1,62 +1,139 @@
 import UserWorkerGateway from '../../../application/gateway/worker.gateway';
 import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
+import { WorkerMapper, WorkerMapperProps } from '../../mapper/worker.mapper';
 
+/**
+ * In-memory implementation of WorkerGateway.
+ * Stores and manipulates worker records in memory.
+ */
 export default class MemoryUserWorkerRepository implements UserWorkerGateway {
-  private _workerUsers: UserWorker[];
+  private _workerUsers: Map<string, Map<string, WorkerMapperProps>> = new Map();
 
-  constructor(workerUsers?: UserWorker[]) {
-    workerUsers ? (this._workerUsers = workerUsers) : (this._workerUsers = []);
-  }
-
-  async find(id: string): Promise<UserWorker | null> {
-    const user = this._workerUsers.find(user => user.id.value === id);
-    if (user) {
-      return user;
-    } else {
-      return null;
+  /**
+   * Creates a new in-memory repository.
+   * @param workerRecords - Optional initial array of worker records
+   * Ex.: new MemoryUserWorkerRepository([{ masterId, records: [w1, w2] }])
+   */
+  constructor(
+    workerRecords?: Array<{
+      masterId: string;
+      records: UserWorker[];
+    }>
+  ) {
+    if (workerRecords) {
+      for (const { masterId, records } of workerRecords) {
+        let workerUsers = this._workerUsers.get(masterId);
+        if (!workerUsers) {
+          workerUsers = new Map<string, WorkerMapperProps>();
+          this._workerUsers.set(masterId, workerUsers);
+        }
+        for (const userWorker of records) {
+          workerUsers.set(userWorker.id.value, WorkerMapper.toObj(userWorker));
+        }
+      }
     }
   }
-  async findByEmail(email: string): Promise<UserWorker | null> {
-    const user = this._workerUsers.find(user => user.email === email);
-    if (user) {
-      return user;
-    } else {
-      return null;
-    }
+
+  /**
+   * Finds a worker record by its unique identifier.
+   * @param masterId - The tenant unique identifier
+   * @param id - The unique identifier to search for
+   * @returns Promise resolving to the found worker or null if not found
+   */
+  async find(masterId: string, id: string): Promise<UserWorker | null> {
+    const obj = this._workerUsers.get(masterId)?.get(id);
+    return obj ? WorkerMapper.toInstance(obj) : null;
   }
+
+  /**
+   * Retrieves a collection of worker records with pagination support.
+   * @param masterId - The tenant unique identifier
+   * @param quantity - Optional limit on the number of records to return (defaults to 10)
+   * @param offSet - Optional number of records to skip for pagination (defaults to 0)
+   * @returns Promise resolving to an array of UserWorker entities
+   */
   async findAll(
+    masterId: string,
     quantity?: number | undefined,
     offSet?: number | undefined
   ): Promise<UserWorker[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity : 10;
-    const users = this._workerUsers.slice(offS, qtd);
+    const workerUsers = this._workerUsers.get(masterId);
+    if (!workerUsers) return [];
+    const page = Array.from(workerUsers.values()).slice(offS, offS + qtd);
+    return WorkerMapper.toInstanceList(page);
+  }
 
-    return users;
+  /**
+   * Finds a worker record by email.
+   * @param masterId - The tenant unique identifier
+   * @param email - The email to search for
+   * @returns Promise resolving to the found worker or null if not found
+   */
+  async findByEmail(
+    masterId: string,
+    email: string
+  ): Promise<UserWorker | null> {
+    const workerUsers = this._workerUsers.get(masterId);
+    if (!workerUsers) return null;
+    for (const userWorker of workerUsers.values()) {
+      if (userWorker.email === email)
+        return WorkerMapper.toInstance(userWorker);
+    }
+    return null;
   }
-  async create(UserWorker: UserWorker): Promise<string> {
-    this._workerUsers.push(UserWorker);
-    return UserWorker.id.value;
+
+  /**
+   * Creates a new worker record in memory.
+   * @param masterId - The tenant unique identifier
+   * @param userWorker - The worker entity to be created
+   * @returns Promise resolving to the unique identifier of the created worker record
+   */
+  async create(masterId: string, userWorker: UserWorker): Promise<string> {
+    const workerUsers = this.getOrCreateBucket(masterId);
+    workerUsers.set(userWorker.id.value, WorkerMapper.toObj(userWorker));
+    return userWorker.id.value;
   }
-  async update(UserWorker: UserWorker): Promise<UserWorker> {
-    const workerUserIndex = this._workerUsers.findIndex(
-      user => user.id.value === UserWorker.id?.value
-    );
-    if (workerUserIndex !== -1) {
-      return (this._workerUsers[workerUserIndex] = UserWorker);
-    } else {
+
+  /**
+   * Updates an existing worker record identified by its ID.
+   * @param masterId - The tenant unique identifier
+   * @param userWorker - The worker entity with updated information
+   * @returns Promise resolving to the updated UserWorker entity
+   * @throws Error if the worker record is not found
+   */
+  async update(masterId: string, userWorker: UserWorker): Promise<UserWorker> {
+    const workerUsers = this._workerUsers.get(masterId);
+    if (!workerUsers || !workerUsers.has(userWorker.id.value)) {
       throw new Error('User not found');
     }
+    workerUsers.set(userWorker.id.value, WorkerMapper.toObj(userWorker));
+    return userWorker;
   }
-  async delete(id: string): Promise<string> {
-    const workerUserIndex = this._workerUsers.findIndex(
-      user => user.id.value === id
-    );
-    if (workerUserIndex !== -1) {
-      this._workerUsers.splice(workerUserIndex, 1);
-      return 'Operação concluída com sucesso';
-    } else {
+
+  /**
+   * Deletes a worker record by its unique identifier.
+   * @param masterId - The tenant unique identifier
+   * @param id - The unique identifier of the worker record to delete
+   * @returns Promise resolving to a success message
+   * @throws Error if the worker record is not found
+   */
+  async delete(masterId: string, id: string): Promise<string> {
+    const workerUsers = this._workerUsers.get(masterId);
+    if (!workerUsers || !workerUsers.has(id)) {
       throw new Error('User not found');
     }
+    workerUsers.delete(id);
+    return 'Operação concluída com sucesso';
+  }
+
+  private getOrCreateBucket(masterId: string): Map<string, WorkerMapperProps> {
+    let workerUsers = this._workerUsers.get(masterId);
+    if (!workerUsers) {
+      workerUsers = new Map<string, WorkerMapperProps>();
+      this._workerUsers.set(masterId, workerUsers);
+    }
+    return workerUsers;
   }
 }

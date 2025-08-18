@@ -16,13 +16,7 @@ describe('AddLessons use case unit test', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
-      addLessons: jest.fn((_, newLessonsList) =>
-        Promise.resolve(
-          `${newLessonsList.length} ${
-            newLessonsList.length === 1 ? 'value was' : 'values were'
-          } entered`
-        )
-      ),
+      addLessons: jest.fn(),
       removeLessons: jest.fn(),
     };
   };
@@ -59,7 +53,10 @@ describe('AddLessons use case unit test', () => {
       await expect(usecase.execute(input, token)).rejects.toThrow(
         'Schedule not found'
       );
-      expect(scheduleRepository.find).toHaveBeenCalledWith(input.id);
+      expect(scheduleRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(scheduleRepository.addLessons).not.toHaveBeenCalled();
     });
     it('should throw an error if the lesson`s id is already on the schedule', async () => {
@@ -77,7 +74,10 @@ describe('AddLessons use case unit test', () => {
           token
         )
       ).rejects.toThrow('This lesson is already on the schedule');
-      expect(scheduleRepository.find).toHaveBeenCalledWith(input.id);
+      expect(scheduleRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(scheduleRepository.addLessons).not.toHaveBeenCalled();
     });
   });
@@ -86,16 +86,26 @@ describe('AddLessons use case unit test', () => {
     it('should add lessons to the schedule', async () => {
       const scheduleRepository = MockRepository();
       scheduleRepository.find.mockResolvedValue(schedule);
+      scheduleRepository.addLessons.mockResolvedValue('3 values were entered');
 
       const usecase = new AddLessons(scheduleRepository, policieService);
       const result = await usecase.execute(input, token);
 
-      expect(scheduleRepository.find).toHaveBeenCalledWith(input.id);
-      expect(scheduleRepository.addLessons).toHaveBeenCalledWith(
-        input.id,
-        input.newLessonsList
+      expect(scheduleRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
       );
-      expect(result.message).toBe(`3 values were entered`);
+      expect(scheduleRepository.addLessons).toHaveBeenCalledWith(
+        token.masterId,
+        input.id,
+        expect.objectContaining({
+          lessonsList: expect.arrayContaining([
+            ...schedule.lessonsList,
+            ...input.newLessonsList,
+          ]),
+        })
+      );
+      expect(result.message).toBe('3 values were entered');
     });
   });
 });

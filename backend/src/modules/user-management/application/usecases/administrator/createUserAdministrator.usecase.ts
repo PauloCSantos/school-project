@@ -41,7 +41,7 @@ export default class CreateUserAdministrator
       graduation,
       salary,
     }: CreateUserAdministratorInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateUserAdministratorOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.ADMINISTRATOR,
@@ -64,12 +64,15 @@ export default class CreateUserAdministrator
 
     const userVerification =
       await this._userAdministratorRepository.findByEmail(
+        token.masterId,
         userAdministrator.email
       );
     if (userVerification) throw new Error('User already exists');
 
-    const result =
-      await this._userAdministratorRepository.create(userAdministrator);
+    const result = await this._userAdministratorRepository.create(
+      token.masterId,
+      userAdministrator
+    );
 
     return { id: result };
   }

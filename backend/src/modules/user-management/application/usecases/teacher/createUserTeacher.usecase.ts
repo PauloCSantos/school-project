@@ -39,7 +39,7 @@ export default class CreateUserTeacher
       salary,
       academicDegrees,
     }: CreateUserTeacherInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateUserTeacherOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.TEACHER,
@@ -62,11 +62,15 @@ export default class CreateUserTeacher
     });
 
     const userVerification = await this._userTeacherRepository.findByEmail(
+      token.masterId,
       userTeacher.email
     );
     if (userVerification) throw new Error('User already exists');
 
-    const result = await this._userTeacherRepository.create(userTeacher);
+    const result = await this._userTeacherRepository.create(
+      token.masterId,
+      userTeacher
+    );
 
     return { id: result };
   }

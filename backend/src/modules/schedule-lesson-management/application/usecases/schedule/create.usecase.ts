@@ -31,7 +31,7 @@ export default class CreateSchedule
    */
   async execute(
     { curriculum, lessonsList, student }: CreateScheduleInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateScheduleOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.SCHEDULE,
@@ -45,12 +45,10 @@ export default class CreateSchedule
       student,
     });
 
-    const scheduleVerification = await this._scheduleRepository.find(
-      schedule.id.value
+    const result = await this._scheduleRepository.create(
+      token.masterId,
+      schedule
     );
-    if (scheduleVerification) throw new Error('Schedule already exists');
-
-    const result = await this._scheduleRepository.create(schedule);
 
     return { id: result };
   }

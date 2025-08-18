@@ -13,7 +13,7 @@ describe('createSchedule usecase unit test', () => {
     return {
       find: jest.fn(),
       findAll: jest.fn(),
-      create: jest.fn(schedule => Promise.resolve(schedule.id.value)),
+      create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
       addLessons: jest.fn(),
@@ -33,41 +33,22 @@ describe('createSchedule usecase unit test', () => {
     masterId: new Id().value,
   };
 
-  const schedule = new Schedule({
-    student: new Id().value,
-    curriculum: new Id().value,
-    lessonsList: [new Id().value, new Id().value, new Id().value],
-  });
   const input = {
     student: new Id().value,
     curriculum: new Id().value,
     lessonsList: [new Id().value, new Id().value, new Id().value],
   };
 
-  describe('On fail', () => {
-    it('should throw an error if the schedule already exists', async () => {
-      const scheduleRepository = MockRepository();
-      scheduleRepository.find.mockResolvedValue(schedule);
-
-      const usecase = new CreateSchedule(scheduleRepository, policieService);
-
-      await expect(usecase.execute(input, token)).rejects.toThrow(
-        'Schedule already exists'
-      );
-      expect(scheduleRepository.find).toHaveBeenCalledWith(expect.any(String));
-      expect(scheduleRepository.create).not.toHaveBeenCalled();
-    });
-  });
+  const schedule = new Schedule(input);
 
   describe('On success', () => {
     it('should create a schedule', async () => {
       const scheduleRepository = MockRepository();
-      scheduleRepository.find.mockResolvedValue(null);
+      scheduleRepository.create.mockResolvedValue(schedule);
 
       const usecase = new CreateSchedule(scheduleRepository, policieService);
       const result = await usecase.execute(input, token);
 
-      expect(scheduleRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(scheduleRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
     });

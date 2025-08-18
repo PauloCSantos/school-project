@@ -2,35 +2,34 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import CurriculumGateway from '@/modules/subject-curriculum-management/application/gateway/curriculum.gateway';
 import AddSubjects from '@/modules/subject-curriculum-management/application/usecases/curriculum/add-subjects.usecase';
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 
 describe('AddSubjects use case unit test', () => {
-  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let curriculum: Curriculum;
   let token: TokenData;
+  let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let input: {
+    id: string;
+    newSubjectsList: string[];
+  };
 
-  const MockRepository = () => {
+  const MockRepository = (): jest.Mocked<CurriculumGateway> => {
     return {
       find: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
-      addSubjects: jest.fn((_, newSubjectsList) =>
-        Promise.resolve(
-          `${newSubjectsList.length} ${
-            newSubjectsList.length === 1 ? 'value was' : 'values were'
-          } entered`
-        )
-      ),
+      addSubjects: jest.fn(),
       removeSubjects: jest.fn(),
     };
   };
 
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
-    ({
-      verifyPolicies: jest.fn(),
-    }) as jest.Mocked<PoliciesServiceInterface>;
+  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> => ({
+    verifyPolicies: jest.fn(),
+  });
 
   policieService = MockPolicyService();
   token = {
@@ -39,30 +38,35 @@ describe('AddSubjects use case unit test', () => {
     masterId: new Id().value,
   };
 
-  const curriculum = new Curriculum({
-    name: 'Math',
-    subjectsList: [new Id().value, new Id().value],
-    yearsToComplete: 5,
+  beforeEach(() => {
+    curriculum = new Curriculum({
+      name: 'Math',
+      subjectsList: [new Id().value, new Id().value],
+      yearsToComplete: 5,
+    });
+    input = {
+      id: curriculum.id.value,
+      newSubjectsList: [new Id().value, new Id().value, new Id().value],
+    };
   });
-  const input = {
-    id: curriculum.id.value,
-    newSubjectsList: [new Id().value, new Id().value, new Id().value],
-  };
 
   describe('On fail', () => {
     it('should throw an error if the curriculum does not exist', async () => {
       const curriculumRepository = MockRepository();
-      curriculumRepository.find.mockResolvedValue(undefined);
+      curriculumRepository.find.mockResolvedValue(null);
 
       const usecase = new AddSubjects(curriculumRepository, policieService);
 
       await expect(usecase.execute(input, token)).rejects.toThrow(
         'Curriculum not found'
       );
-      expect(curriculumRepository.find).toHaveBeenCalledWith(input.id);
+      expect(curriculumRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(curriculumRepository.addSubjects).not.toHaveBeenCalled();
     });
-    it('should throw an error if the subject`s id does not exist in curriculum', async () => {
+    it('should throw an error if the subject`s id is already on the curriculum', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(curriculum);
 
@@ -77,7 +81,10 @@ describe('AddSubjects use case unit test', () => {
           token
         )
       ).rejects.toThrow('This subject is already on the curriculum');
-      expect(curriculumRepository.find).toHaveBeenCalledWith(input.id);
+      expect(curriculumRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(curriculumRepository.addSubjects).not.toHaveBeenCalled();
     });
   });
@@ -86,16 +93,25 @@ describe('AddSubjects use case unit test', () => {
     it('should add subjects to the curriculum', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(curriculum);
+      curriculumRepository.addSubjects.mockResolvedValue(
+        '3 values were entered'
+      );
 
       const usecase = new AddSubjects(curriculumRepository, policieService);
       const result = await usecase.execute(input, token);
 
-      expect(curriculumRepository.find).toHaveBeenCalledWith(input.id);
-      expect(curriculumRepository.addSubjects).toHaveBeenCalledWith(
-        input.id,
-        input.newSubjectsList
+      expect(curriculumRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
       );
-      expect(result.message).toBe(`3 values were entered`);
+      expect(curriculumRepository.addSubjects).toHaveBeenCalledWith(
+        token.masterId,
+        input.id,
+        expect.objectContaining({
+          subjectList: expect.arrayContaining(curriculum.subjectList),
+        })
+      );
+      expect(result.message).toBe('3 values were entered');
     });
   });
 });

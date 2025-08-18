@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { TeacherMapper } from '@/modules/user-management/infrastructure/mapper/teacher.mapper';
 
 export default class UpdateUserTeacher
   implements
@@ -34,7 +35,7 @@ export default class UpdateUserTeacher
       salary,
       academicDegrees,
     }: UpdateUserTeacherInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<UpdateUserTeacherOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.TEACHER,
@@ -42,60 +43,40 @@ export default class UpdateUserTeacher
       token
     );
 
-    const userTeacher = await this._userTeacherRepository.find(id);
+    const userTeacher = await this._userTeacherRepository.find(
+      token.masterId,
+      id
+    );
     if (!userTeacher) throw new Error('User not found');
 
-    try {
-      name?.firstName !== undefined &&
-        (userTeacher.name.firstName = name.firstName);
-      name?.middleName !== undefined &&
-        (userTeacher.name.middleName = name.middleName);
-      name?.lastName !== undefined &&
-        (userTeacher.name.lastName = name.lastName);
-      address?.street !== undefined &&
-        (userTeacher.address.street = address.street);
-      address?.city !== undefined && (userTeacher.address.city = address.city);
-      address?.zip !== undefined && (userTeacher.address.zip = address.zip);
-      address?.number !== undefined &&
-        (userTeacher.address.number = address.number);
-      address?.avenue !== undefined &&
-        (userTeacher.address.avenue = address.avenue);
-      address?.state !== undefined &&
-        (userTeacher.address.state = address.state);
-      email !== undefined && (userTeacher.email = email);
-      birthday !== undefined && (userTeacher.birthday = new Date(birthday));
-      graduation !== undefined && (userTeacher.graduation = graduation);
-      salary?.currency !== undefined &&
-        (userTeacher.salary.currency = salary.currency);
-      salary?.salary !== undefined &&
-        (userTeacher.salary.salary = salary.salary);
-      academicDegrees !== undefined &&
-        (userTeacher.academicDegrees = academicDegrees);
+    name?.firstName !== undefined &&
+      (userTeacher.name.firstName = name.firstName);
+    name?.middleName !== undefined &&
+      (userTeacher.name.middleName = name.middleName);
+    name?.lastName !== undefined && (userTeacher.name.lastName = name.lastName);
+    address?.street !== undefined &&
+      (userTeacher.address.street = address.street);
+    address?.city !== undefined && (userTeacher.address.city = address.city);
+    address?.zip !== undefined && (userTeacher.address.zip = address.zip);
+    address?.number !== undefined &&
+      (userTeacher.address.number = address.number);
+    address?.avenue !== undefined &&
+      (userTeacher.address.avenue = address.avenue);
+    address?.state !== undefined && (userTeacher.address.state = address.state);
+    email !== undefined && (userTeacher.email = email);
+    birthday !== undefined && (userTeacher.birthday = new Date(birthday));
+    graduation !== undefined && (userTeacher.graduation = graduation);
+    salary?.currency !== undefined &&
+      (userTeacher.salary.currency = salary.currency);
+    salary?.salary !== undefined && (userTeacher.salary.salary = salary.salary);
+    academicDegrees !== undefined &&
+      (userTeacher.academicDegrees = academicDegrees);
 
-      const result = await this._userTeacherRepository.update(userTeacher);
+    const result = await this._userTeacherRepository.update(
+      token.masterId,
+      userTeacher
+    );
 
-      return {
-        id: result.id.value,
-        name: {
-          fullName: result.name.fullName(),
-          shortName: result.name.shortName(),
-        },
-        address: {
-          street: result.address.street,
-          city: result.address.city,
-          zip: result.address.zip,
-          number: result.address.number,
-          avenue: result.address.avenue,
-          state: result.address.state,
-        },
-        email: result.email,
-        birthday: result.birthday,
-        salary: result.salary.calculateTotalIncome(),
-        graduation: result.graduation,
-        academicDegrees: result.academicDegrees,
-      };
-    } catch (error) {
-      throw error;
-    }
+    return TeacherMapper.toDTO(result);
   }
 }

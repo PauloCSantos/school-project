@@ -24,17 +24,20 @@ export default class DeleteSubject
   }
   async execute(
     { id }: DeleteSubjectInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<DeleteSubjectOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.SUBJECT,
       FunctionCalledEnum.DELETE,
       token
     );
-    const subjectVerification = await this._subjectRepository.find(id);
+    const subjectVerification = await this._subjectRepository.find(
+      token.masterId,
+      id
+    );
     if (!subjectVerification) throw new Error('Subject not found');
 
-    const result = await this._subjectRepository.delete(id);
+    const result = await this._subjectRepository.delete(token.masterId, id);
 
     return { message: result };
   }

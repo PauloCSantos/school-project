@@ -7,6 +7,7 @@ import MemoryUserStudentRepository from '@/modules/user-management/infrastructur
 describe('MemoryUserStudentRepository unit test', () => {
   let repository: MemoryUserStudentRepository;
 
+  const masterId = new Id().value;
   const address1 = new Address({
     street: 'Street A',
     city: 'City A',
@@ -72,13 +73,15 @@ describe('MemoryUserStudentRepository unit test', () => {
   });
 
   beforeEach(() => {
-    repository = new MemoryUserStudentRepository([userStudent1, userStudent2]);
+    repository = new MemoryUserStudentRepository([
+      { masterId, records: [userStudent1, userStudent2] },
+    ]);
   });
 
   describe('On fail', () => {
     it('should received an null', async () => {
       const userId = new Id().value;
-      const userStudentFound = await repository.find(userId);
+      const userStudentFound = await repository.find(masterId, userId);
 
       expect(userStudentFound).toBeNull();
     });
@@ -92,12 +95,12 @@ describe('MemoryUserStudentRepository unit test', () => {
         paymentYear: paymentYear3,
       });
 
-      await expect(repository.update(userStudent)).rejects.toThrow(
+      await expect(repository.update(masterId, userStudent)).rejects.toThrow(
         'User not found'
       );
     });
     it('should generate an error when trying to remove the user with the wrong ID', async () => {
-      await expect(repository.delete(new Id().value)).rejects.toThrow(
+      await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
         'User not found'
       );
     });
@@ -105,15 +108,17 @@ describe('MemoryUserStudentRepository unit test', () => {
   describe('On success', () => {
     it('should find a user student', async () => {
       const userId = userStudent1.id.value;
-      const userStudentFound = await repository.find(userId);
+      const userStudentFound = await repository.find(masterId, userId);
 
       expect(userStudentFound).toBeDefined();
       expect(userStudentFound!.id).toBeDefined();
-      expect(userStudentFound!.name).toBe(userStudent1.name);
-      expect(userStudentFound!.address).toBe(userStudent1.address);
-      expect(userStudentFound!.email).toBe(userStudent1.email);
-      expect(userStudentFound!.birthday).toBe(userStudent1.birthday);
-      expect(userStudentFound!.paymentYear).toBe(userStudent1.paymentYear);
+      expect(userStudentFound!.name).toStrictEqual(userStudent1.name);
+      expect(userStudentFound!.address).toStrictEqual(userStudent1.address);
+      expect(userStudentFound!.email).toStrictEqual(userStudent1.email);
+      expect(userStudentFound!.birthday).toStrictEqual(userStudent1.birthday);
+      expect(userStudentFound!.paymentYear).toStrictEqual(
+        userStudent1.paymentYear
+      );
     });
     it('should create a new user and return its id', async () => {
       const userStudent = new UserStudent({
@@ -123,7 +128,7 @@ describe('MemoryUserStudentRepository unit test', () => {
         email: email3,
         paymentYear: paymentYear3,
       });
-      const result = await repository.create(userStudent);
+      const result = await repository.create(masterId, userStudent);
 
       expect(result).toBe(userStudent.id.value);
     });
@@ -139,23 +144,27 @@ describe('MemoryUserStudentRepository unit test', () => {
       updateduserStudent.address.zip = address3.zip;
       updateduserStudent.address.street = address3.street;
 
-      const result = await repository.update(updateduserStudent);
+      const result = await repository.update(masterId, updateduserStudent);
 
       expect(result).toEqual(updateduserStudent);
     });
     it('should find all the student users', async () => {
-      const allStudentUsers = await repository.findAll();
+      const allStudentUsers = await repository.findAll(masterId);
 
       expect(allStudentUsers.length).toBe(2);
-      expect(allStudentUsers[0].name).toBe(userStudent1.name);
-      expect(allStudentUsers[1].name).toBe(userStudent2.name);
-      expect(allStudentUsers[0].email).toBe(userStudent1.email);
-      expect(allStudentUsers[1].email).toBe(userStudent2.email);
-      expect(allStudentUsers[0].paymentYear).toBe(userStudent1.paymentYear);
-      expect(allStudentUsers[1].paymentYear).toBe(userStudent2.paymentYear);
+      expect(allStudentUsers[0].name).toStrictEqual(userStudent1.name);
+      expect(allStudentUsers[1].name).toStrictEqual(userStudent2.name);
+      expect(allStudentUsers[0].email).toStrictEqual(userStudent1.email);
+      expect(allStudentUsers[1].email).toStrictEqual(userStudent2.email);
+      expect(allStudentUsers[0].paymentYear).toStrictEqual(
+        userStudent1.paymentYear
+      );
+      expect(allStudentUsers[1].paymentYear).toStrictEqual(
+        userStudent2.paymentYear
+      );
     });
     it('should remove the user', async () => {
-      const response = await repository.delete(userStudent1.id.value);
+      const response = await repository.delete(masterId, userStudent1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });

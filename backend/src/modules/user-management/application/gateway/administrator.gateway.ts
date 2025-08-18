@@ -1,10 +1,23 @@
 import UserAdministrator from '@/modules/user-management/domain/entity/administrator.entity';
 
 export default interface UserAdministratorGateway {
-  find(id: string): Promise<UserAdministrator | null>;
-  findByEmail(email: string): Promise<UserAdministrator | null>;
-  findAll(quantity?: number, offSet?: number): Promise<UserAdministrator[]>;
-  create(userAdministrator: UserAdministrator): Promise<string>;
-  update(userAdministrator: UserAdministrator): Promise<UserAdministrator>;
-  delete(id: string): Promise<string>;
+  find(masterId: string, id: string): Promise<UserAdministrator | null>;
+  findByEmail(
+    masterId: string,
+    email: string
+  ): Promise<UserAdministrator | null>;
+  findAll(
+    masterId: string,
+    quantity?: number,
+    offSet?: number
+  ): Promise<UserAdministrator[]>;
+  create(
+    masterId: string,
+    userAdministrator: UserAdministrator
+  ): Promise<string>;
+  update(
+    masterId: string,
+    userAdministrator: UserAdministrator
+  ): Promise<UserAdministrator>;
+  delete(masterId: string, id: string): Promise<string>;
 }

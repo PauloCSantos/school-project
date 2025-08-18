@@ -43,7 +43,7 @@ export default class DeleteEvent
    */
   async execute(
     { id }: DeleteEventInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<DeleteEventOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.EVENT,
@@ -51,10 +51,10 @@ export default class DeleteEvent
       token
     );
 
-    const existingEvent = await this._eventRepository.find(id);
+    const existingEvent = await this._eventRepository.find(token.masterId, id);
     if (!existingEvent) throw new Error('Event not found');
 
-    const result = await this._eventRepository.delete(id);
+    const result = await this._eventRepository.delete(token.masterId, id);
 
     return { message: result };
   }

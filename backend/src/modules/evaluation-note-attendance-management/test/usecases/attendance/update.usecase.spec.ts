@@ -1,4 +1,4 @@
-import FindAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/find.usecase';
+import UpdateAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/update.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
 import AttendanceGateway from '@/modules/evaluation-note-attendance-management/application/gateway/attendance.gateway';
@@ -6,12 +6,13 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
-describe('FindAttendance usecase unit test', () => {
+describe('UpdateAttendance usecase unit test', () => {
   let attendance: Attendance;
   let attendanceRepository: jest.Mocked<AttendanceGateway>;
-  let usecase: FindAttendance;
-  let token: TokenData;
+  let usecase: UpdateAttendance;
+  let input: { id: string; day: DayOfWeek; hour: Hour };
   let policieService: jest.Mocked<PoliciesServiceInterface>;
+  let token: TokenData;
 
   const MockRepository = (): jest.Mocked<AttendanceGateway> => {
     return {
@@ -38,9 +39,14 @@ describe('FindAttendance usecase unit test', () => {
       lesson: new Id().value,
       studentsPresent: [new Id().value, new Id().value, new Id().value],
     });
+    input = {
+      id: attendance.id.value,
+      day: 'thu' as DayOfWeek,
+      hour: '13:40' as Hour,
+    };
     attendanceRepository = MockRepository();
     policieService = MockPolicyService();
-    usecase = new FindAttendance(attendanceRepository, policieService);
+    usecase = new UpdateAttendance(attendanceRepository, policieService);
     token = {
       email: 'caller@domain.com',
       role: RoleUsersEnum.MASTER,
@@ -52,32 +58,33 @@ describe('FindAttendance usecase unit test', () => {
     jest.clearAllMocks();
   });
 
-  describe('On success', () => {
-    it('should find an attendance', async () => {
-      attendanceRepository.find.mockResolvedValue(attendance);
+  describe('On fail', () => {
+    it('should throw an error if the attendance does not exist', async () => {
+      attendanceRepository.find.mockResolvedValue(null);
 
-      const result = await usecase.execute({ id: attendance.id.value }, token);
+      await expect(usecase.execute(input, token)).rejects.toThrow(
+        'Attendance not found'
+      );
+      expect(attendanceRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
+    });
+  });
+
+  describe('On success', () => {
+    it('should update an attendance', async () => {
+      attendanceRepository.find.mockResolvedValue(attendance);
+      attendanceRepository.update.mockResolvedValue(attendance);
+      const result = await usecase.execute(input, token);
 
       expect(attendanceRepository.find).toHaveBeenCalledWith(
-        attendance.id.value
+        token.masterId,
+        input.id
       );
-      expect(result).toBeDefined();
-      expect(result).toMatchObject({
-        id: attendance.id.value,
-        date: attendance.date,
-        day: attendance.day,
-        hour: attendance.hour,
-        lesson: attendance.lesson,
-        studentsPresent: attendance.studentsPresent,
-      });
-    });
+      expect(attendanceRepository.update).toHaveBeenCalledTimes(1);
 
-    it('should return null when id is not found', async () => {
-      attendanceRepository.find.mockResolvedValue(null);
-      const result = await usecase.execute({ id: 'non-existent-id' }, token);
-
-      expect(attendanceRepository.find).toHaveBeenCalledWith('non-existent-id');
-      expect(result).toBeNull();
+      expect(result).toEqual(expect.objectContaining(input));
     });
   });
 });

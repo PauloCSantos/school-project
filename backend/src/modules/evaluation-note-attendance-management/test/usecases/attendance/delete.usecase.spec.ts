@@ -19,9 +19,7 @@ describe('DeleteAttendance usecase unit test', () => {
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
-      delete: jest.fn((_id: string) =>
-        Promise.resolve('Operação concluída com sucesso')
-      ),
+      delete: jest.fn(),
       addStudent: jest.fn(),
       removeStudent: jest.fn(),
     };
@@ -65,6 +63,7 @@ describe('DeleteAttendance usecase unit test', () => {
       ).rejects.toThrow('Attendance not found');
 
       expect(repository.find).toHaveBeenCalledWith(
+        token.masterId,
         '75c791ca-7a40-4217-8b99-2cf22c01d543'
       );
       expect(repository.delete).not.toHaveBeenCalled();
@@ -78,18 +77,31 @@ describe('DeleteAttendance usecase unit test', () => {
         usecase.execute({ id: attendance.id.value }, token)
       ).rejects.toThrow('Database error');
 
-      expect(repository.find).toHaveBeenCalledWith(attendance.id.value);
-      expect(repository.delete).toHaveBeenCalledWith(attendance.id.value);
+      expect(repository.find).toHaveBeenCalledWith(
+        token.masterId,
+        attendance.id.value
+      );
+      expect(repository.delete).toHaveBeenCalledWith(
+        token.masterId,
+        attendance.id.value
+      );
     });
   });
 
   describe('On success', () => {
     it('should delete an attendance', async () => {
       repository.find.mockResolvedValue(attendance);
+      repository.delete.mockResolvedValue('Operação concluída com sucesso');
       const result = await usecase.execute({ id: attendance.id.value }, token);
 
-      expect(repository.find).toHaveBeenCalledWith(attendance.id.value);
-      expect(repository.delete).toHaveBeenCalledWith(attendance.id.value);
+      expect(repository.find).toHaveBeenCalledWith(
+        token.masterId,
+        attendance.id.value
+      );
+      expect(repository.delete).toHaveBeenCalledWith(
+        token.masterId,
+        attendance.id.value
+      );
       expect(result).toBeDefined();
       expect(result.message).toBe('Operação concluída com sucesso');
     });

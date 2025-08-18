@@ -5,6 +5,7 @@ import MemoryEvaluationRepository from '@/modules/evaluation-note-attendance-man
 describe('MemoryEvaluationRepository unit test', () => {
   let repository: MemoryEvaluationRepository;
 
+  const masterId = new Id().value;
   const teacher1 = new Id().value;
   const teacher2 = new Id().value;
   const teacher3 = new Id().value;
@@ -38,13 +39,15 @@ describe('MemoryEvaluationRepository unit test', () => {
   });
 
   beforeEach(() => {
-    repository = new MemoryEvaluationRepository([evaluation1, evaluation2]);
+    repository = new MemoryEvaluationRepository([
+      { masterId, records: [evaluation1, evaluation2] },
+    ]);
   });
 
   describe('On fail', () => {
     it('should return null if evaluation not found', async () => {
       const evaluationId = new Id().value;
-      const evaluationFound = await repository.find(evaluationId);
+      const evaluationFound = await repository.find(masterId, evaluationId);
 
       expect(evaluationFound).toBeNull();
     });
@@ -59,7 +62,7 @@ describe('MemoryEvaluationRepository unit test', () => {
         value: value3,
       });
 
-      await expect(repository.update(evaluation)).rejects.toThrow(
+      await expect(repository.update(masterId, evaluation)).rejects.toThrow(
         'Evaluation not found'
       );
     });
@@ -67,7 +70,7 @@ describe('MemoryEvaluationRepository unit test', () => {
     it('should throw an error when trying to delete a non-existent evaluation', async () => {
       const nonExistentId = new Id().value;
 
-      await expect(repository.delete(nonExistentId)).rejects.toThrow(
+      await expect(repository.delete(masterId, nonExistentId)).rejects.toThrow(
         'Evaluation not found'
       );
     });
@@ -76,7 +79,7 @@ describe('MemoryEvaluationRepository unit test', () => {
   describe('On success', () => {
     it('should find an existing evaluation by id', async () => {
       const evaluationId = evaluation1.id.value;
-      const evaluationFound = await repository.find(evaluationId);
+      const evaluationFound = await repository.find(masterId, evaluationId);
 
       expect(evaluationFound).toBeDefined();
       expect(evaluationFound!.id.value).toBe(evaluation1.id.value);
@@ -87,18 +90,21 @@ describe('MemoryEvaluationRepository unit test', () => {
     });
 
     it('should create a new evaluation and return its id', async () => {
-      const result = await repository.create(evaluation3);
+      const result = await repository.create(masterId, evaluation3);
 
       expect(result).toBe(evaluation3.id.value);
 
       // Verify evaluation was added to repository
-      const evaluationFound = await repository.find(evaluation3.id.value);
+      const evaluationFound = await repository.find(
+        masterId,
+        evaluation3.id.value
+      );
       expect(evaluationFound).toBeDefined();
       expect(evaluationFound!.teacher).toBe(evaluation3.teacher);
       expect(evaluationFound!.lesson).toBe(evaluation3.lesson);
 
       // Verify repository state
-      const allEvaluations = await repository.findAll();
+      const allEvaluations = await repository.findAll(masterId);
       expect(allEvaluations.length).toBe(3);
     });
 
@@ -111,12 +117,12 @@ describe('MemoryEvaluationRepository unit test', () => {
         value: 7, // Changed from 5
       });
 
-      const result = await repository.update(updatedEvaluation);
+      const result = await repository.update(masterId, updatedEvaluation);
 
       expect(result).toEqual(updatedEvaluation);
 
       // Verify changes were persisted
-      const persisted = await repository.find(evaluation2.id.value);
+      const persisted = await repository.find(masterId, evaluation2.id.value);
       expect(persisted).toBeDefined();
       expect(persisted!.teacher).toBe(updatedEvaluation.teacher);
       expect(persisted!.type).toBe('exam');
@@ -124,7 +130,7 @@ describe('MemoryEvaluationRepository unit test', () => {
     });
 
     it('should find all the evaluations', async () => {
-      const allEvaluations = await repository.findAll();
+      const allEvaluations = await repository.findAll(masterId);
 
       expect(allEvaluations.length).toBe(2);
       expect(allEvaluations[0].teacher).toBe(evaluation1.teacher);
@@ -138,16 +144,19 @@ describe('MemoryEvaluationRepository unit test', () => {
     });
 
     it('should delete an existing evaluation and update repository state', async () => {
-      const response = await repository.delete(evaluation1.id.value);
+      const response = await repository.delete(masterId, evaluation1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
 
       // Verify evaluation was removed from repository
-      const deletedEvaluation = await repository.find(evaluation1.id.value);
+      const deletedEvaluation = await repository.find(
+        masterId,
+        evaluation1.id.value
+      );
       expect(deletedEvaluation).toBeNull();
 
       // Verify repository state
-      const allEvaluations = await repository.findAll();
+      const allEvaluations = await repository.findAll(masterId);
       expect(allEvaluations.length).toBe(1);
       expect(allEvaluations[0].id.value).toBe(evaluation2.id.value);
     });

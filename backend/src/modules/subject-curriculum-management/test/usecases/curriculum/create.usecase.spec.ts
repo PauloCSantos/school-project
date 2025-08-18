@@ -13,7 +13,7 @@ describe('createCurriculum usecase unit test', () => {
     return {
       find: jest.fn(),
       findAll: jest.fn(),
-      create: jest.fn(curriculum => Promise.resolve(curriculum.id.value)),
+      create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
       addSubjects: jest.fn(),
@@ -45,30 +45,12 @@ describe('createCurriculum usecase unit test', () => {
     yearsToComplete: input.yearsToComplete,
   });
 
-  describe('On fail', () => {
-    it('should throw an error if the curriculum already exists', async () => {
-      const curriculumRepository = MockRepository();
-      curriculumRepository.find.mockResolvedValue(curriculum);
-
-      const usecase = new CreateCurriculum(
-        curriculumRepository,
-        policieService
-      );
-
-      await expect(usecase.execute(input, token)).rejects.toThrow(
-        'Curriculum already exists'
-      );
-      expect(curriculumRepository.find).toHaveBeenCalledWith(
-        expect.any(String)
-      );
-      expect(curriculumRepository.create).not.toHaveBeenCalled();
-    });
-  });
-
   describe('On success', () => {
     it('should create a curriculum', async () => {
       const curriculumRepository = MockRepository();
-      curriculumRepository.find.mockResolvedValue(undefined);
+      curriculumRepository.create.mockResolvedValue({
+        id: curriculum.id.value,
+      });
 
       const usecase = new CreateCurriculum(
         curriculumRepository,
@@ -76,9 +58,6 @@ describe('createCurriculum usecase unit test', () => {
       );
       const result = await usecase.execute(input, token);
 
-      expect(curriculumRepository.find).toHaveBeenCalledWith(
-        expect.any(String)
-      );
       expect(curriculumRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
     });

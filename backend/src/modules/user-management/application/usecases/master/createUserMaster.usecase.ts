@@ -31,7 +31,7 @@ export default class CreateUserMaster
   }
   async execute(
     { id, name, address, email, birthday, cnpj }: CreateUserMasterInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateUserMasterOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.MASTER,
@@ -53,11 +53,15 @@ export default class CreateUserMaster
     });
 
     const userVerification = await this._userMasterRepository.findByEmail(
+      token.masterId,
       userMaster.email
     );
     if (userVerification) throw new Error('User already exists');
 
-    const result = await this._userMasterRepository.create(userMaster);
+    const result = await this._userMasterRepository.create(
+      token.masterId,
+      userMaster
+    );
 
     return { id: result };
   }

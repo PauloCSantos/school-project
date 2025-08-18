@@ -1,95 +1,27 @@
-export interface FindUserStudentInputDto {
-  id: string;
-}
-export interface FindUserStudentOutputDto {
-  id: string;
-  name: { fullName: string; shortName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  paymentYear: string;
-}
+import {
+  ICreateUserStudentInput,
+  ICreateUserStudentOutput,
+  IDeleteUserStudentInput,
+  IDeleteUserStudentOutput,
+  IFindAllUserStudentInput,
+  IFindAllUserStudentOutput,
+  IFindUserStudentInput,
+  IFindUserStudentOutput,
+  IUpdateUserStudentInput,
+  IUpdateUserStudentOutput,
+} from './base-student.dto';
 
-export interface FindAllUserStudentInputDto {
-  quantity?: number;
-  offset?: number;
-}
-export interface FindAllUserStudentOutputDto
-  extends Array<{
-    id: string;
-    name: { fullName: string; shortName: string };
-    address: {
-      street: string;
-      city: string;
-      zip: string;
-      number: number;
-      avenue: string;
-      state: string;
-    };
-    email: string;
-    birthday: Date;
-    paymentYear: string;
-  }> {}
+export type FindUserStudentInputDto = IFindUserStudentInput;
+export type FindUserStudentOutputDto = IFindUserStudentOutput;
 
-export interface CreateUserStudentInputDto {
-  name: { firstName: string; middleName?: string; lastName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  paymentYear: number;
-}
-export interface CreateUserStudentOutputDto {
-  id: string;
-}
+export type FindAllUserStudentInputDto = IFindAllUserStudentInput;
+export type FindAllUserStudentOutputDto = IFindAllUserStudentOutput;
 
-export interface UpdateUserStudentInputDto {
-  id: string;
-  name?: { firstName?: string; middleName?: string; lastName?: string };
-  address?: {
-    street?: string;
-    city?: string;
-    zip?: string;
-    number?: number;
-    avenue?: string;
-    state?: string;
-  };
-  email?: string;
-  birthday?: Date;
-  paymentYear?: number;
-}
-export interface UpdateUserStudentOutputDto {
-  id: string;
-  name: { fullName: string; shortName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  paymentYear: string;
-}
+export type CreateUserStudentInputDto = ICreateUserStudentInput;
+export type CreateUserStudentOutputDto = ICreateUserStudentOutput;
 
-export interface DeleteUserStudentInputDto {
-  id: string;
-}
-export interface DeleteUserStudentOutputDto {
-  message: string;
-}
+export type UpdateUserStudentInputDto = IUpdateUserStudentInput;
+export type UpdateUserStudentOutputDto = IUpdateUserStudentOutput;
+
+export type DeleteUserStudentInputDto = IDeleteUserStudentInput;
+export type DeleteUserStudentOutputDto = IDeleteUserStudentOutput;

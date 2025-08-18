@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import LessonMapper from '../../mapper/lesson-usecase.mapper';
 
 /**
  * Use case responsible for updating an existing lesson.
@@ -31,7 +32,7 @@ export default class UpdateLesson
    */
   async execute(
     { id, duration, name, semester, subject, teacher }: UpdateLessonInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<UpdateLessonOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.LESSON,
@@ -39,28 +40,21 @@ export default class UpdateLesson
       token
     );
 
-    const lesson = await this._lessonRepository.find(id);
+    const lesson = await this._lessonRepository.find(token.masterId, id);
     if (!lesson) throw new Error('Lesson not found');
 
-    try {
-      duration !== undefined && (lesson.duration = duration);
-      name !== undefined && (lesson.name = name);
-      semester !== undefined && (lesson.semester = semester);
-      subject !== undefined && (lesson.subject = subject);
-      teacher !== undefined && (lesson.teacher = teacher);
+    duration !== undefined && (lesson.duration = duration);
+    name !== undefined && (lesson.name = name);
+    semester !== undefined && (lesson.semester = semester);
+    subject !== undefined && (lesson.subject = subject);
+    teacher !== undefined && (lesson.teacher = teacher);
 
-      const result = await this._lessonRepository.update(lesson);
+    const result = await this._lessonRepository.update(
+      token.masterId,
+      lesson.id.value,
+      lesson
+    );
 
-      return {
-        id: result.id.value,
-        name: result.name,
-        duration: result.duration,
-        teacher: result.teacher,
-        subject: result.subject,
-        semester: result.semester,
-      };
-    } catch (error) {
-      throw error;
-    }
+    return LessonMapper.toObj(result);
   }
 }

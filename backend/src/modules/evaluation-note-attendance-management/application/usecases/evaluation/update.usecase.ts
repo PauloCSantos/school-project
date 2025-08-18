@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { EvaluationMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/evaluation.mapper';
 
 /**
  * Use case responsible for updating an evaluation record.
@@ -45,36 +46,32 @@ export default class UpdateEvaluation
    */
   async execute(
     { id, lesson, teacher, type, value }: UpdateEvaluationInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<UpdateEvaluationOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.EVALUATION,
       FunctionCalledEnum.CREATE,
       token
     );
-    const evaluation = await this._evaluationRepository.find(id);
+    const evaluation = await this._evaluationRepository.find(
+      token.masterId,
+      id
+    );
 
     if (!evaluation) {
       throw new Error('Evaluation not found');
     }
 
-    try {
-      lesson !== undefined && (evaluation.lesson = lesson);
-      teacher !== undefined && (evaluation.teacher = teacher);
-      type !== undefined && (evaluation.type = type);
-      value !== undefined && (evaluation.value = value);
+    lesson !== undefined && (evaluation.lesson = lesson);
+    teacher !== undefined && (evaluation.teacher = teacher);
+    type !== undefined && (evaluation.type = type);
+    value !== undefined && (evaluation.value = value);
 
-      const result = await this._evaluationRepository.update(evaluation);
+    const result = await this._evaluationRepository.update(
+      token.masterId,
+      evaluation
+    );
 
-      return {
-        id: result.id.value,
-        teacher: result.teacher,
-        lesson: result.lesson,
-        type: result.type,
-        value: result.value,
-      };
-    } catch (error) {
-      throw error;
-    }
+    return EvaluationMapper.toObj(result);
   }
 }

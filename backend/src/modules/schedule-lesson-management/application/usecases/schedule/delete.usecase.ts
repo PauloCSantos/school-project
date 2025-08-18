@@ -30,7 +30,7 @@ export default class DeleteSchedule
    */
   async execute(
     { id }: DeleteScheduleInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<DeleteScheduleOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.SCHEDULE,
@@ -38,10 +38,13 @@ export default class DeleteSchedule
       token
     );
 
-    const scheduleVerification = await this._scheduleRepository.find(id);
+    const scheduleVerification = await this._scheduleRepository.find(
+      token.masterId,
+      id
+    );
     if (!scheduleVerification) throw new Error('Schedule not found');
 
-    const result = await this._scheduleRepository.delete(id);
+    const result = await this._scheduleRepository.delete(token.masterId, id);
 
     return { message: result };
   }

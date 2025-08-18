@@ -18,13 +18,7 @@ describe('AddDay use case unit test', () => {
       delete: jest.fn(),
       addStudents: jest.fn(),
       removeStudents: jest.fn(),
-      addDay: jest.fn((_, newDaysList) =>
-        Promise.resolve(
-          `${newDaysList.length} ${
-            newDaysList.length === 1 ? 'value was' : 'values were'
-          } entered`
-        )
-      ),
+      addDay: jest.fn(),
       removeDay: jest.fn(),
       addTime: jest.fn(),
       removeTime: jest.fn(),
@@ -68,7 +62,10 @@ describe('AddDay use case unit test', () => {
       await expect(usecase.execute(input, token)).rejects.toThrow(
         'Lesson not found'
       );
-      expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
+      expect(lessonRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(lessonRepository.addDay).not.toHaveBeenCalled();
     });
     it('should throw an error if the day already exists in the lesson', async () => {
@@ -86,7 +83,10 @@ describe('AddDay use case unit test', () => {
           token
         )
       ).rejects.toThrow(`Day mon is already added to the lesson`);
-      expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
+      expect(lessonRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
+      );
       expect(lessonRepository.addDay).not.toHaveBeenCalled();
     });
   });
@@ -95,16 +95,23 @@ describe('AddDay use case unit test', () => {
     it('should add days to the lesson', async () => {
       const lessonRepository = MockRepository();
       lessonRepository.find.mockResolvedValue(lesson);
+      lessonRepository.addDay.mockResolvedValue('1 value was entered');
 
       const usecase = new AddDay(lessonRepository, policieService);
       const result = await usecase.execute(input, token);
 
-      expect(lessonRepository.find).toHaveBeenCalledWith(input.id);
-      expect(lessonRepository.addDay).toHaveBeenCalledWith(
-        input.id,
-        input.newDaysList
+      expect(lessonRepository.find).toHaveBeenCalledWith(
+        token.masterId,
+        input.id
       );
-      expect(result.message).toBe(`1 value was entered`);
+      expect(lessonRepository.addDay).toHaveBeenCalledWith(
+        token.masterId,
+        input.id,
+        expect.objectContaining({
+          days: expect.arrayContaining([...lesson.days, ...input.newDaysList]),
+        })
+      );
+      expect(result.message).toBe('1 value was entered');
     });
   });
 });

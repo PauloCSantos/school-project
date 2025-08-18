@@ -31,7 +31,7 @@ export default class DeleteLesson
    */
   async execute(
     { id }: DeleteLessonInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<DeleteLessonOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.LESSON,
@@ -39,10 +39,13 @@ export default class DeleteLesson
       token
     );
 
-    const lessonVerification = await this._lessonRepository.find(id);
+    const lessonVerification = await this._lessonRepository.find(
+      token.masterId,
+      id
+    );
     if (!lessonVerification) throw new Error('Lesson not found');
 
-    const result = await this._lessonRepository.delete(id);
+    const result = await this._lessonRepository.delete(token.masterId, id);
 
     return { message: result };
   }

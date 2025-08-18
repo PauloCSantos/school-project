@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { AttendanceMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/attendance.mapper';
 
 /**
  * Use case responsible for finding an attendance record by id.
@@ -43,7 +44,7 @@ export default class FindAttendance
    */
   async execute(
     { id }: FindAttendanceInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindAttendanceOutputDto | null> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.ATTENDANCE,
@@ -51,17 +52,10 @@ export default class FindAttendance
       token
     );
 
-    const response = await this._attendanceRepository.find(id);
+    const response = await this._attendanceRepository.find(token.masterId, id);
 
     if (response) {
-      return {
-        id: response.id.value,
-        lesson: response.lesson,
-        date: response.date,
-        hour: response.hour,
-        day: response.day,
-        studentsPresent: response.studentsPresent,
-      };
+      return AttendanceMapper.toObj(response)
     }
 
     return null;

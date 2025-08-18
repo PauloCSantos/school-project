@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { AttendanceMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/attendance.mapper';
 
 /**
  * Use case responsible for retrieving all attendance records with pagination.
@@ -43,7 +44,7 @@ export default class FindAllAttendance
    */
   async execute(
     { offset, quantity }: FindAllAttendanceInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindAllAttendanceOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.ATTENDANCE,
@@ -51,17 +52,12 @@ export default class FindAllAttendance
       token
     );
 
-    const results = await this._attendanceRepository.findAll(quantity, offset);
+    const results = await this._attendanceRepository.findAll(
+      token.masterId,
+      quantity,
+      offset
+    );
 
-    const result = results.map(attendance => ({
-      id: attendance.id.value,
-      lesson: attendance.lesson,
-      date: attendance.date,
-      hour: attendance.hour,
-      day: attendance.day,
-      studentsPresent: attendance.studentsPresent,
-    }));
-
-    return result;
+    return AttendanceMapper.toObjList(results)
   }
 }

@@ -25,7 +25,7 @@ export default class DeleteUserTeacher
   }
   async execute(
     { id }: DeleteUserTeacherInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<DeleteUserTeacherOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.TEACHER,
@@ -33,10 +33,13 @@ export default class DeleteUserTeacher
       token
     );
 
-    const userVerification = await this._userTeacherRepository.find(id);
+    const userVerification = await this._userTeacherRepository.find(
+      token.masterId,
+      id
+    );
     if (!userVerification) throw new Error('User not found');
 
-    const result = await this._userTeacherRepository.delete(id);
+    const result = await this._userTeacherRepository.delete(token.masterId, id);
 
     return { message: result };
   }

@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import ScheduleMapper from '../../mapper/schedule.mapper';
 
 /**
  * Use case responsible for schedule operation.
@@ -31,7 +32,7 @@ export default class FindSchedule
    */
   async execute(
     { id }: FindScheduleInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<FindScheduleOutputDto | null> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.SCHEDULE,
@@ -39,16 +40,10 @@ export default class FindSchedule
       token
     );
 
-    const response = await this._scheduleRepository.find(id);
+    const response = await this._scheduleRepository.find(token.masterId, id);
     if (response) {
-      return {
-        id: response.id.value,
-        student: response.student,
-        curriculum: response.curriculum,
-        lessonsList: response.lessonsList,
-      };
-    } else {
-      return response;
+      return ScheduleMapper.toObj(response);
     }
+    return null;
   }
 }

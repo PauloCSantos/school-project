@@ -1,42 +1,139 @@
 import UserMasterGateway from '../../../application/gateway/master.gateway';
 import UserMaster from '@/modules/user-management/domain/entity/master.entity';
+import { MasterMapper, MasterMapperProps } from '../../mapper/master.mapper';
 
+/**
+ * In-memory implementation of MasterGateway.
+ * Stores and manipulates master records in memory.
+ */
 export default class MemoryUserMasterRepository implements UserMasterGateway {
-  private _masterUsers: UserMaster[];
+  private _masterUsers: Map<string, Map<string, MasterMapperProps>> = new Map();
 
-  constructor(masterUsers?: UserMaster[]) {
-    masterUsers ? (this._masterUsers = masterUsers) : (this._masterUsers = []);
-  }
-
-  async find(id: string): Promise<UserMaster | null> {
-    const user = this._masterUsers.find(user => user.id.value === id);
-    if (user) {
-      return user;
-    } else {
-      return null;
+  /**
+   * Creates a new in-memory repository.
+   * @param masterRecords - Optional initial array of master records
+    Ex.: new MemoryUserMasterRepository([{ masterId, records: [m1, m2] }])
+   */
+  constructor(
+    masterRecords?: Array<{
+      masterId: string;
+      records: UserMaster[];
+    }>
+  ) {
+    if (masterRecords) {
+      for (const { masterId, records } of masterRecords) {
+        let masterUsers = this._masterUsers.get(masterId);
+        if (!masterUsers) {
+          masterUsers = new Map<string, MasterMapperProps>();
+          this._masterUsers.set(masterId, masterUsers);
+        }
+        for (const userMaster of records) {
+          masterUsers.set(userMaster.id.value, MasterMapper.toObj(userMaster));
+        }
+      }
     }
   }
-  async findByEmail(email: string): Promise<UserMaster | null> {
-    const user = this._masterUsers.find(user => user.email === email);
-    if (user) {
-      return user;
-    } else {
-      return null;
-    }
+
+  /**
+   * Finds a master record by its unique identifier.
+   * @param masterId - The tenant unique identifier
+   * @param id - The unique identifier to search for
+   * @returns Promise resolving to the found master or null if not found
+   */
+  async find(masterId: string, id: string): Promise<UserMaster | null> {
+    const obj = this._masterUsers.get(masterId)?.get(id);
+    return obj ? MasterMapper.toInstance(obj) : null;
   }
-  async create(userMaster: UserMaster): Promise<string> {
-    this._masterUsers.push(userMaster);
+
+  /**
+   * Retrieves a collection of master records with pagination support.
+   * @param masterId - The tenant unique identifier
+   * @param quantity - Optional limit on the number of records to return (defaults to 10)
+   * @param offSet - Optional number of records to skip for pagination (defaults to 0)
+   * @returns Promise resolving to an array of UserMaster entities
+   */
+  async findAll(
+    masterId: string,
+    quantity?: number | undefined,
+    offSet?: number | undefined
+  ): Promise<UserMaster[]> {
+    const offS = offSet ? offSet : 0;
+    const qtd = quantity ? quantity : 10;
+    const masterUsers = this._masterUsers.get(masterId);
+    if (!masterUsers) return [];
+    const page = Array.from(masterUsers.values()).slice(offS, offS + qtd);
+    return MasterMapper.toInstanceList(page);
+  }
+
+  /**
+   * Finds a master record by email.
+   * @param masterId - The tenant unique identifier
+   * @param email - The email to search for
+   * @returns Promise resolving to the found master or null if not found
+   */
+  async findByEmail(
+    masterId: string,
+    email: string
+  ): Promise<UserMaster | null> {
+    const masterUsers = this._masterUsers.get(masterId);
+    if (!masterUsers) return null;
+    for (const userMaster of masterUsers.values()) {
+      if ((userMaster as any).email === email)
+        return MasterMapper.toInstance(userMaster);
+    }
+    return null;
+  }
+
+  /**
+   * Creates a new master record in memory.
+   * @param masterId - The tenant unique identifier
+   * @param userMaster - The master entity to be created
+   * @returns Promise resolving to the unique identifier of the created master record
+   */
+  async create(masterId: string, userMaster: UserMaster): Promise<string> {
+    const masterUsers = this.getOrCreateBucket(masterId);
+    masterUsers.set(userMaster.id.value, MasterMapper.toObj(userMaster));
     return userMaster.id.value;
   }
-  async update(userMaster: UserMaster): Promise<UserMaster> {
-    const masterUserIndex = this._masterUsers.findIndex(
-      user => user.id.value === userMaster.id.value
-    );
-    if (masterUserIndex !== -1) {
-      this._masterUsers[masterUserIndex] = userMaster;
-      return this._masterUsers[masterUserIndex];
-    } else {
+
+  /**
+   * Updates an existing master record identified by its ID.
+   * @param masterId - The tenant unique identifier
+   * @param userMaster - The master entity with updated information
+   * @returns Promise resolving to the updated UserMaster entity
+   * @throws Error if the master record is not found
+   */
+  async update(masterId: string, userMaster: UserMaster): Promise<UserMaster> {
+    const masterUsers = this._masterUsers.get(masterId);
+    if (!masterUsers || !masterUsers.has(userMaster.id.value)) {
       throw new Error('User not found');
     }
+    masterUsers.set(userMaster.id.value, MasterMapper.toObj(userMaster));
+    return userMaster;
+  }
+
+  /**
+   * Deletes a master record by its unique identifier.
+   * @param masterId - The tenant unique identifier
+   * @param id - The unique identifier of the master record to delete
+   * @returns Promise resolving to a success message
+   * @throws Error if the master record is not found
+   */
+  async delete(masterId: string, id: string): Promise<string> {
+    const masterUsers = this._masterUsers.get(masterId);
+    if (!masterUsers || !masterUsers.has(id)) {
+      throw new Error('User not found');
+    }
+    masterUsers.delete(id);
+    return 'Operação concluída com sucesso';
+  }
+
+  private getOrCreateBucket(masterId: string): Map<string, MasterMapperProps> {
+    let masterUsers = this._masterUsers.get(masterId);
+    if (!masterUsers) {
+      masterUsers = new Map<string, MasterMapperProps>();
+      this._masterUsers.set(masterId, masterUsers);
+    }
+    return masterUsers;
   }
 }

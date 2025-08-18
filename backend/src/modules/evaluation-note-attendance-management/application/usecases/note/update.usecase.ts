@@ -10,6 +10,7 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
+import { NoteMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/note.mapper';
 
 /**
  * Use case responsible for updating a note.
@@ -43,7 +44,7 @@ export default class UpdateNote
    */
   async execute(
     { id, evaluation, note, student }: UpdateNoteInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<UpdateNoteOutputDto> {
     await this.policiesService.verifyPolicies(
       ModulesNameEnum.NOTE,
@@ -51,24 +52,15 @@ export default class UpdateNote
       token
     );
 
-    const noteInstance = await this._noteRepository.find(id);
+    const noteInstance = await this._noteRepository.find(token.masterId, id);
     if (!noteInstance) throw new Error('Note not found');
 
-    try {
-      evaluation !== undefined && (noteInstance.evaluation = evaluation);
-      note !== undefined && (noteInstance.note = note);
-      student !== undefined && (noteInstance.student = student);
+    evaluation !== undefined && (noteInstance.evaluation = evaluation);
+    note !== undefined && (noteInstance.note = note);
+    student !== undefined && (noteInstance.student = student);
 
-      const result = await this._noteRepository.update(noteInstance);
+    const result = await this._noteRepository.update(token.masterId, noteInstance);
 
-      return {
-        id: result.id.value,
-        evaluation: result.evaluation,
-        note: result.note,
-        student: result.student,
-      };
-    } catch (error) {
-      throw error;
-    }
+    return NoteMapper.toObj(result)
   }
 }

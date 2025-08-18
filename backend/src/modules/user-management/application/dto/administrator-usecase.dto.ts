@@ -1,100 +1,27 @@
-export interface FindUserAdministratorInputDto {
-  id: string;
-}
-export interface FindUserAdministratorOutputDto {
-  id: string;
-  name: { fullName: string; shortName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  salary: string;
-  graduation: string;
-}
+import {
+  ICreateUserAdministratorInput,
+  ICreateUserAdministratorOutput,
+  IDeleteUserAdministratorInput,
+  IDeleteUserAdministratorOutput,
+  IFindAllUserAdministratorInput,
+  IFindAllUserAdministratorOutput,
+  IFindUserAdministratorInput,
+  IFindUserAdministratorOutput,
+  IUpdateUserAdministratorInput,
+  IUpdateUserAdministratorOutput,
+} from './base-administrator.dto';
 
-export interface FindAllUserAdministratorInputDto {
-  quantity?: number;
-  offset?: number;
-}
-export interface FindAllUserAdministratorOutputDto
-  extends Array<{
-    id: string;
-    name: { fullName: string; shortName: string };
-    address: {
-      street: string;
-      city: string;
-      zip: string;
-      number: number;
-      avenue: string;
-      state: string;
-    };
-    email: string;
-    birthday: Date;
-    salary: string;
-    graduation: string;
-  }> {}
+export type FindUserAdministratorInputDto = IFindUserAdministratorInput;
+export type FindUserAdministratorOutputDto = IFindUserAdministratorOutput;
 
-export interface CreateUserAdministratorInputDto {
-  name: { firstName: string; middleName?: string; lastName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  salary: { salary: number; currency?: 'R$' | '€' | '$' };
-  graduation: string;
-}
-export interface CreateUserAdministratorOutputDto {
-  id: string;
-}
+export type FindAllUserAdministratorInputDto = IFindAllUserAdministratorInput;
+export type FindAllUserAdministratorOutputDto = IFindAllUserAdministratorOutput;
 
-export interface UpdateUserAdministratorInputDto {
-  id: string;
-  name?: { firstName?: string; middleName?: string; lastName?: string };
-  address?: {
-    street?: string;
-    city?: string;
-    zip?: string;
-    number?: number;
-    avenue?: string;
-    state?: string;
-  };
-  email?: string;
-  birthday?: Date;
-  salary?: { salary?: number; currency?: 'R$' | '€' | '$' };
-  graduation?: string;
-}
-export interface UpdateUserAdministratorOutputDto {
-  id: string;
-  name: { fullName: string; shortName: string };
-  address: {
-    street: string;
-    city: string;
-    zip: string;
-    number: number;
-    avenue: string;
-    state: string;
-  };
-  email: string;
-  birthday: Date;
-  salary: string;
-  graduation: string;
-}
+export type CreateUserAdministratorInputDto = ICreateUserAdministratorInput;
+export type CreateUserAdministratorOutputDto = ICreateUserAdministratorOutput;
 
-export interface DeleteUserAdministratorInputDto {
-  id: string;
-}
-export interface DeleteUserAdministratorOutputDto {
-  message: string;
-}
+export type UpdateUserAdministratorInputDto = IUpdateUserAdministratorInput;
+export type UpdateUserAdministratorOutputDto = IUpdateUserAdministratorOutput;
+
+export type DeleteUserAdministratorInputDto = IDeleteUserAdministratorInput;
+export type DeleteUserAdministratorOutputDto = IDeleteUserAdministratorOutput;

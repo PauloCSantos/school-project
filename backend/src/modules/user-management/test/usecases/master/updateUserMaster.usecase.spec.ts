@@ -16,7 +16,7 @@ describe('updateUserMaster usecase unit test', () => {
       find: jest.fn(),
       findByEmail: jest.fn(),
       create: jest.fn(),
-      update: jest.fn(userMaster => Promise.resolve(userMaster)),
+      update: jest.fn(),
     };
   };
 
@@ -98,6 +98,7 @@ describe('updateUserMaster usecase unit test', () => {
     it('should update an user administrator', async () => {
       const userMasterRepository = MockRepository();
       userMasterRepository.find.mockResolvedValue(userMaster1);
+      userMasterRepository.update.mockResolvedValue(userMaster1);
       const usecase = new UpdateUserMaster(
         userMasterRepository,
         policieService

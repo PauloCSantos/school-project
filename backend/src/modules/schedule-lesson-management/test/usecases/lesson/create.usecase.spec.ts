@@ -13,7 +13,7 @@ describe('createLesson usecase unit test', () => {
     return {
       find: jest.fn(),
       findAll: jest.fn(),
-      create: jest.fn(lesson => Promise.resolve(lesson.id.value)),
+      create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
       addStudents: jest.fn(),
@@ -47,32 +47,17 @@ describe('createLesson usecase unit test', () => {
     times: ['15:55', '19:00'] as Hour[],
     semester: 2 as 1 | 2,
   };
+
   const lesson = new Lesson(input);
-
-  describe('On fail', () => {
-    it('should throw an error if the lesson already exists', async () => {
-      const lessonRepository = MockRepository();
-      lessonRepository.find.mockResolvedValue(lesson);
-
-      const usecase = new CreateLesson(lessonRepository, policieService);
-
-      await expect(usecase.execute(input, token)).rejects.toThrow(
-        'Lesson already exists'
-      );
-      expect(lessonRepository.find).toHaveBeenCalledWith(expect.any(String));
-      expect(lessonRepository.create).not.toHaveBeenCalled();
-    });
-  });
 
   describe('On success', () => {
     it('should create a lesson', async () => {
       const lessonRepository = MockRepository();
-      lessonRepository.find.mockResolvedValue(null);
+      lessonRepository.create.mockResolvedValue(lesson);
 
       const usecase = new CreateLesson(lessonRepository, policieService);
       const result = await usecase.execute(input, token);
 
-      expect(lessonRepository.find).toHaveBeenCalledWith(expect.any(String));
       expect(lessonRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
     });

@@ -8,6 +8,7 @@ import MemoryUserWorkerRepository from '@/modules/user-management/infrastructure
 describe('MemoryUserWorkerRepository unit test', () => {
   let repository: MemoryUserWorkerRepository;
 
+  const masterId = new Id().value;
   const address1 = new Address({
     street: 'Street A',
     city: 'City A',
@@ -73,13 +74,15 @@ describe('MemoryUserWorkerRepository unit test', () => {
   });
 
   beforeEach(() => {
-    repository = new MemoryUserWorkerRepository([userWorker1, userWorker2]);
+    repository = new MemoryUserWorkerRepository([
+      { masterId, records: [userWorker1, userWorker2] },
+    ]);
   });
 
   describe('On fail', () => {
     it('should received an null', async () => {
       const userId = new Id().value;
-      const userWorkerFound = await repository.find(userId);
+      const userWorkerFound = await repository.find(masterId, userId);
 
       expect(userWorkerFound).toBeNull();
     });
@@ -93,12 +96,12 @@ describe('MemoryUserWorkerRepository unit test', () => {
         salary: salary3,
       });
 
-      await expect(repository.update(userWorker)).rejects.toThrow(
+      await expect(repository.update(masterId, userWorker)).rejects.toThrow(
         'User not found'
       );
     });
     it('should generate an error when trying to remove the user with the wrong ID', async () => {
-      await expect(repository.delete(new Id().value)).rejects.toThrow(
+      await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
         'User not found'
       );
     });
@@ -106,15 +109,15 @@ describe('MemoryUserWorkerRepository unit test', () => {
   describe('On success', () => {
     it('should find a user worker', async () => {
       const userId = userWorker1.id.value;
-      const userWorkerFound = await repository.find(userId);
+      const userWorkerFound = await repository.find(masterId, userId);
 
       expect(userWorkerFound).toBeDefined();
       expect(userWorkerFound!.id).toBeDefined();
-      expect(userWorkerFound!.name).toBe(userWorker1.name);
-      expect(userWorkerFound!.address).toBe(userWorker1.address);
-      expect(userWorkerFound!.email).toBe(userWorker1.email);
-      expect(userWorkerFound!.birthday).toBe(userWorker1.birthday);
-      expect(userWorkerFound!.salary).toBe(userWorker1.salary);
+      expect(userWorkerFound!.name).toStrictEqual(userWorker1.name);
+      expect(userWorkerFound!.address).toStrictEqual(userWorker1.address);
+      expect(userWorkerFound!.email).toStrictEqual(userWorker1.email);
+      expect(userWorkerFound!.birthday).toStrictEqual(userWorker1.birthday);
+      expect(userWorkerFound!.salary).toStrictEqual(userWorker1.salary);
     });
     it('should create a new user and return its id', async () => {
       const userWorker = new UserWorker({
@@ -124,7 +127,7 @@ describe('MemoryUserWorkerRepository unit test', () => {
         email: email3,
         salary: salary3,
       });
-      const result = await repository.create(userWorker);
+      const result = await repository.create(masterId, userWorker);
 
       expect(result).toBe(userWorker.id.value);
     });
@@ -140,23 +143,23 @@ describe('MemoryUserWorkerRepository unit test', () => {
       updateduserWorker.address.zip = address3.zip;
       updateduserWorker.address.street = address3.street;
 
-      const result = await repository.update(updateduserWorker);
+      const result = await repository.update(masterId, updateduserWorker);
 
       expect(result).toEqual(updateduserWorker);
     });
     it('should find all the workers users', async () => {
-      const allworkerUsers = await repository.findAll();
+      const allworkerUsers = await repository.findAll(masterId);
 
       expect(allworkerUsers.length).toBe(2);
-      expect(allworkerUsers[0].name).toBe(userWorker1.name);
-      expect(allworkerUsers[1].name).toBe(userWorker2.name);
-      expect(allworkerUsers[0].email).toBe(userWorker1.email);
-      expect(allworkerUsers[1].email).toBe(userWorker2.email);
-      expect(allworkerUsers[0].salary).toBe(userWorker1.salary);
-      expect(allworkerUsers[1].salary).toBe(userWorker2.salary);
+      expect(allworkerUsers[0].name).toStrictEqual(userWorker1.name);
+      expect(allworkerUsers[1].name).toStrictEqual(userWorker2.name);
+      expect(allworkerUsers[0].email).toStrictEqual(userWorker1.email);
+      expect(allworkerUsers[1].email).toStrictEqual(userWorker2.email);
+      expect(allworkerUsers[0].salary).toStrictEqual(userWorker1.salary);
+      expect(allworkerUsers[1].salary).toStrictEqual(userWorker2.salary);
     });
     it('should remove the user', async () => {
-      const response = await repository.delete(userWorker1.id.value);
+      const response = await repository.delete(masterId, userWorker1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });
