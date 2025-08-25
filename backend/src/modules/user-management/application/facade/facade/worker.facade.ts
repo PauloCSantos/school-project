@@ -15,7 +15,7 @@ import {
   FindUserWorkerOutputDto,
   UpdateUserWorkerInputDto,
   UpdateUserWorkerOutputDto,
-} from '../../dto/worker-facade.dto';
+} from '../../../application/dto/worker-facade.dto';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 type WorkerFacadeProps = {

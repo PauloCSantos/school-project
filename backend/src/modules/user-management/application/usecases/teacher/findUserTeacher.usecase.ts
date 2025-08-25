@@ -2,25 +2,23 @@ import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.in
 import {
   FindUserTeacherInputDto,
   FindUserTeacherOutputDto,
-} from '../../dto/teacher-usecase.dto';
+} from '../../../application/dto/teacher-usecase.dto';
 import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
-import { TeacherMapper } from '@/modules/user-management/infrastructure/mapper/teacher.mapper';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
+import { TeacherAssembler } from '../../assemblers/teacher.assembler';
 
 export default class FindUserTeacher
-  implements
-    UseCaseInterface<FindUserTeacherInputDto, FindUserTeacherOutputDto | null>
+  implements UseCaseInterface<FindUserTeacherInputDto, FindUserTeacherOutputDto | null>
 {
   private _userTeacherRepository: UserTeacherGateway;
 
   constructor(
     userTeacherRepository: UserTeacherGateway,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly policiesService: PoliciesServiceInterface,
+    private readonly userService: UserServiceInterface
   ) {
     this._userTeacherRepository = userTeacherRepository;
   }
@@ -36,7 +34,8 @@ export default class FindUserTeacher
 
     const response = await this._userTeacherRepository.find(token.masterId, id);
     if (response) {
-      return TeacherMapper.toDTO(response);
+      const baseUser = await this.userService.findBaseUser(response.userId);
+      return TeacherAssembler.toObj(baseUser!, response);
     }
     return null;
   }

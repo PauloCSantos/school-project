@@ -12,10 +12,8 @@ import {
 export default class MemoryUserAdministratorRepository
   implements UserAdministratorGateway
 {
-  private _administratorUsers: Map<
-    string,
-    Map<string, AdministratorMapperProps>
-  > = new Map();
+  private _administratorUsers: Map<string, Map<string, AdministratorMapperProps>> =
+    new Map();
 
   /**
    * Creates a new in-memory repository.
@@ -72,27 +70,24 @@ export default class MemoryUserAdministratorRepository
     const qtd = quantity ? quantity : 10;
     const administratorUsers = this._administratorUsers.get(masterId);
     if (!administratorUsers) return [];
-    const page = Array.from(administratorUsers.values()).slice(
-      offS,
-      offS + qtd
-    );
+    const page = Array.from(administratorUsers.values()).slice(offS, offS + qtd);
     return AdministratorMapper.toInstanceList(page);
   }
 
   /**
-   * Finds an administrator record by email.
+   * Finds an administrator record by user id.
    * @param masterId - The tenant unique identifier
-   * @param email - The email to search for
+   * @param userId - The user id to search for
    * @returns Promise resolving to the found administrator or null if not found
    */
-  async findByEmail(
+  async findByBaseUserId(
     masterId: string,
-    email: string
+    userId: string
   ): Promise<UserAdministrator | null> {
     const administratorUsers = this._administratorUsers.get(masterId);
     if (!administratorUsers) return null;
     for (const userAdministrator of administratorUsers.values()) {
-      if (userAdministrator.email === email)
+      if (userAdministrator.userId === userId)
         return AdministratorMapper.toInstance(userAdministrator);
     }
     return null;
@@ -104,10 +99,7 @@ export default class MemoryUserAdministratorRepository
    * @param userAdministrator - The administrator entity to be created
    * @returns Promise resolving to the unique identifier of the created administrator record
    */
-  async create(
-    masterId: string,
-    userAdministrator: UserAdministrator
-  ): Promise<string> {
+  async create(masterId: string, userAdministrator: UserAdministrator): Promise<string> {
     const administratorUsers = this.getOrCreateBucket(masterId);
     administratorUsers.set(
       userAdministrator.id.value,
@@ -128,10 +120,7 @@ export default class MemoryUserAdministratorRepository
     userAdministrator: UserAdministrator
   ): Promise<UserAdministrator> {
     const administratorUsers = this._administratorUsers.get(masterId);
-    if (
-      !administratorUsers ||
-      !administratorUsers.has(userAdministrator.id.value)
-    ) {
+    if (!administratorUsers || !administratorUsers.has(userAdministrator.id.value)) {
       throw new Error('User not found');
     }
     administratorUsers.set(
@@ -157,9 +146,7 @@ export default class MemoryUserAdministratorRepository
     return 'Operação concluída com sucesso';
   }
 
-  private getOrCreateBucket(
-    masterId: string
-  ): Map<string, AdministratorMapperProps> {
+  private getOrCreateBucket(masterId: string): Map<string, AdministratorMapperProps> {
     let administratorUsers = this._administratorUsers.get(masterId);
     if (!administratorUsers) {
       administratorUsers = new Map<string, AdministratorMapperProps>();

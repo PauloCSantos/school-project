@@ -10,7 +10,7 @@ import {
   FindUserStudentOutputDto,
   UpdateUserStudentInputDto,
   UpdateUserStudentOutputDto,
-} from '../../dto/student-facade.dto';
+} from '../../../application/dto/student-facade.dto';
 
 export default interface StudentFacadeInterface {
   create(

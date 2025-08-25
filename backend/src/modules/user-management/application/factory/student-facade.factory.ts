@@ -8,33 +8,35 @@ import FindUserStudent from '../usecases/student/findUserStudent.usecase';
 import UpdateUserStudent from '../usecases/student/updateUserStudent.usecase';
 import { EmailAuthValidatorService } from '../services/email-auth-validator.service';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import MemoryUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
+import { UserService } from '../../domain/services/user.service';
 
 export default class StudentFacadeFactory {
   static create(): StudentFacade {
     const repository = new MemoryUserStudentRepository();
     const authUserRepository = new MemoryAuthUserRepository();
-    const emailValidatorService = new EmailAuthValidatorService(
-      authUserRepository
-    );
+    const userRepository = new MemoryUserRepository();
+    const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
     const policiesService = new PoliciesService();
+    const userService = new UserService(userRepository);
 
     const createUserStudent = new CreateUserStudent(
       repository,
       emailValidatorService,
-      policiesService
+      policiesService,
+      userService
     );
-    const deleteUserStudent = new DeleteUserStudent(
-      repository,
-      policiesService
-    );
+    const deleteUserStudent = new DeleteUserStudent(repository, policiesService);
     const findAllUserStudent = new FindAllUserStudent(
       repository,
-      policiesService
+      policiesService,
+      userService
     );
-    const findUserStudent = new FindUserStudent(repository, policiesService);
+    const findUserStudent = new FindUserStudent(repository, policiesService, userService);
     const updateUserStudent = new UpdateUserStudent(
       repository,
-      policiesService
+      policiesService,
+      userService
     );
     const facade = new StudentFacade({
       createUserStudent,

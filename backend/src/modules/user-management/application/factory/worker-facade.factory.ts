@@ -8,28 +8,36 @@ import FindUserWorker from '../usecases/worker/findUserWorker.usecase';
 import UpdateUserWorker from '../usecases/worker/updateUserWorker.usecase';
 import { EmailAuthValidatorService } from '../services/email-auth-validator.service';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import MemoryUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
+import { UserService } from '../../domain/services/user.service';
 
 export default class WorkerFacadeFactory {
   static create(): WorkerFacade {
     const repository = new MemoryUserWorkerRepository();
     const authUserRepository = new MemoryAuthUserRepository();
-    const emailValidatorService = new EmailAuthValidatorService(
-      authUserRepository
-    );
+    const userRepository = new MemoryUserRepository();
+    const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
     const policiesService = new PoliciesService();
+    const userService = new UserService(userRepository);
 
     const createUserWorker = new CreateUserWorker(
       repository,
       emailValidatorService,
-      policiesService
+      policiesService,
+      userService
     );
     const deleteUserWorker = new DeleteUserWorker(repository, policiesService);
     const findAllUserWorker = new FindAllUserWorker(
       repository,
-      policiesService
+      policiesService,
+      userService
     );
-    const findUserWorker = new FindUserWorker(repository, policiesService);
-    const updateUserWorker = new UpdateUserWorker(repository, policiesService);
+    const findUserWorker = new FindUserWorker(repository, policiesService, userService);
+    const updateUserWorker = new UpdateUserWorker(
+      repository,
+      policiesService,
+      userService
+    );
     const facade = new WorkerFacade({
       createUserWorker,
       deleteUserWorker,

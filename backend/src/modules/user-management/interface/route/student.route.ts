@@ -28,26 +28,13 @@ export class UserStudentRoute {
 
   public routes(): void {
     const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
-    const REQUIRED_FIELDS = [
-      'name',
-      'address',
-      'email',
-      'birthday',
-      'paymentYear',
-    ];
+    const REQUIRED_FIELDS = ['name', 'address', 'email', 'birthday', 'paymentYear'];
     const REQUIRED_FIELD = ['id'];
 
-    this.httpGateway.get(
-      '/users-student',
-      this.findAllUserStudents.bind(this),
-      [
-        this.authMiddleware,
-        createRequestMiddleware(
-          FunctionCalledEnum.FIND_ALL,
-          REQUIRED_FIELDS_ALL
-        ),
-      ]
-    );
+    this.httpGateway.get('/users-student', this.findAllUserStudents.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.FIND_ALL, REQUIRED_FIELDS_ALL),
+    ]);
 
     this.httpGateway.post('/user-student', this.createUserStudent.bind(this), [
       this.authMiddleware,
@@ -64,14 +51,10 @@ export class UserStudentRoute {
       createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
     ]);
 
-    this.httpGateway.delete(
-      '/user-student/:id',
-      this.deleteUserStudent.bind(this),
-      [
-        this.authMiddleware,
-        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
-      ]
-    );
+    this.httpGateway.delete('/user-student/:id', this.deleteUserStudent.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
+    ]);
   }
 
   private async findAllUserStudents(
@@ -97,10 +80,7 @@ export class UserStudentRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userStudentController.find(
-        { id },
-        req.tokenData!
-      );
+      const response = await this.userStudentController.find({ id }, req.tokenData!);
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
@@ -118,10 +98,7 @@ export class UserStudentRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.userStudentController.create(
-        input,
-        req.tokenData!
-      );
+      const response = await this.userStudentController.create(input, req.tokenData!);
       return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -133,10 +110,7 @@ export class UserStudentRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.userStudentController.update(
-        input,
-        req.tokenData!
-      );
+      const response = await this.userStudentController.update(input, req.tokenData!);
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -148,10 +122,7 @@ export class UserStudentRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userStudentController.delete(
-        { id },
-        req.tokenData!
-      );
+      const response = await this.userStudentController.delete({ id }, req.tokenData!);
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);

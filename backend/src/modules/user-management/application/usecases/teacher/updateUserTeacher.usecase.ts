@@ -2,25 +2,23 @@ import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.in
 import {
   UpdateUserTeacherInputDto,
   UpdateUserTeacherOutputDto,
-} from '../../dto/teacher-usecase.dto';
+} from '../../../application/dto/teacher-usecase.dto';
 import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
-import { TeacherMapper } from '@/modules/user-management/infrastructure/mapper/teacher.mapper';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
+import { TeacherAssembler } from '../../assemblers/teacher.assembler';
 
 export default class UpdateUserTeacher
-  implements
-    UseCaseInterface<UpdateUserTeacherInputDto, UpdateUserTeacherOutputDto>
+  implements UseCaseInterface<UpdateUserTeacherInputDto, UpdateUserTeacherOutputDto>
 {
   private _userTeacherRepository: UserTeacherGateway;
 
   constructor(
     userTeacherRepository: UserTeacherGateway,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly policiesService: PoliciesServiceInterface,
+    private readonly userService: UserServiceInterface
   ) {
     this._userTeacherRepository = userTeacherRepository;
   }
@@ -43,40 +41,29 @@ export default class UpdateUserTeacher
       token
     );
 
-    const userTeacher = await this._userTeacherRepository.find(
-      token.masterId,
-      id
-    );
+    const userTeacher = await this._userTeacherRepository.find(token.masterId, id);
     if (!userTeacher) throw new Error('User not found');
+    const baseUser = await this.userService.findBaseUser(userTeacher.userId);
 
-    name?.firstName !== undefined &&
-      (userTeacher.name.firstName = name.firstName);
-    name?.middleName !== undefined &&
-      (userTeacher.name.middleName = name.middleName);
-    name?.lastName !== undefined && (userTeacher.name.lastName = name.lastName);
-    address?.street !== undefined &&
-      (userTeacher.address.street = address.street);
-    address?.city !== undefined && (userTeacher.address.city = address.city);
-    address?.zip !== undefined && (userTeacher.address.zip = address.zip);
-    address?.number !== undefined &&
-      (userTeacher.address.number = address.number);
-    address?.avenue !== undefined &&
-      (userTeacher.address.avenue = address.avenue);
-    address?.state !== undefined && (userTeacher.address.state = address.state);
-    email !== undefined && (userTeacher.email = email);
-    birthday !== undefined && (userTeacher.birthday = new Date(birthday));
+    name?.firstName !== undefined && (baseUser!.name.firstName = name.firstName);
+    name?.middleName !== undefined && (baseUser!.name.middleName = name.middleName);
+    name?.lastName !== undefined && (baseUser!.name.lastName = name.lastName);
+    address?.street !== undefined && (baseUser!.address.street = address.street);
+    address?.city !== undefined && (baseUser!.address.city = address.city);
+    address?.zip !== undefined && (baseUser!.address.zip = address.zip);
+    address?.number !== undefined && (baseUser!.address.number = address.number);
+    address?.avenue !== undefined && (baseUser!.address.avenue = address.avenue);
+    address?.state !== undefined && (baseUser!.address.state = address.state);
+    email !== undefined && (baseUser!.email = email);
+    birthday !== undefined && (baseUser!.birthday = new Date(birthday));
     graduation !== undefined && (userTeacher.graduation = graduation);
-    salary?.currency !== undefined &&
-      (userTeacher.salary.currency = salary.currency);
+    salary?.currency !== undefined && (userTeacher.salary.currency = salary.currency);
     salary?.salary !== undefined && (userTeacher.salary.salary = salary.salary);
-    academicDegrees !== undefined &&
-      (userTeacher.academicDegrees = academicDegrees);
+    academicDegrees !== undefined && (userTeacher.academicDegrees = academicDegrees);
 
-    const result = await this._userTeacherRepository.update(
-      token.masterId,
-      userTeacher
-    );
+    const baseUserUpdated = await this.userService.update(baseUser!);
+    const result = await this._userTeacherRepository.update(token.masterId, userTeacher);
 
-    return TeacherMapper.toDTO(result);
+    return TeacherAssembler.toObj(baseUserUpdated, result);
   }
 }

@@ -7,8 +7,7 @@ import { TeacherMapper, TeacherMapperProps } from '../../mapper/teacher.mapper';
  * Stores and manipulates teacher records in memory.
  */
 export default class MemoryUserTeacherRepository implements UserTeacherGateway {
-  private _teacherUsers: Map<string, Map<string, TeacherMapperProps>> =
-    new Map();
+  private _teacherUsers: Map<string, Map<string, TeacherMapperProps>> = new Map();
 
   /**
    * Creates a new in-memory repository.
@@ -29,10 +28,7 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
           this._teacherUsers.set(masterId, teacherUsers);
         }
         for (const userTeacher of records) {
-          teacherUsers.set(
-            userTeacher.id.value,
-            TeacherMapper.toObj(userTeacher)
-          );
+          teacherUsers.set(userTeacher.id.value, TeacherMapper.toObj(userTeacher));
         }
       }
     }
@@ -72,18 +68,14 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
   /**
    * Finds a teacher record by email.
    * @param masterId - The tenant unique identifier
-   * @param email - The email to search for
+   * @param userId - The user id to search for
    * @returns Promise resolving to the found teacher or null if not found
    */
-  async findByEmail(
-    masterId: string,
-    email: string
-  ): Promise<UserTeacher | null> {
+  async findByBaseUserId(masterId: string, userId: string): Promise<UserTeacher | null> {
     const teacherUsers = this._teacherUsers.get(masterId);
     if (!teacherUsers) return null;
     for (const userTeacher of teacherUsers.values()) {
-      if (userTeacher.email === email)
-        return TeacherMapper.toInstance(userTeacher);
+      if (userTeacher.userId === userId) return TeacherMapper.toInstance(userTeacher);
     }
     return null;
   }
@@ -107,10 +99,7 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
    * @returns Promise resolving to the updated UserTeacher entity
    * @throws Error if the teacher record is not found
    */
-  async update(
-    masterId: string,
-    userTeacher: UserTeacher
-  ): Promise<UserTeacher> {
+  async update(masterId: string, userTeacher: UserTeacher): Promise<UserTeacher> {
     const teacherUsers = this._teacherUsers.get(masterId);
     if (!teacherUsers || !teacherUsers.has(userTeacher.id.value)) {
       throw new Error('User not found');

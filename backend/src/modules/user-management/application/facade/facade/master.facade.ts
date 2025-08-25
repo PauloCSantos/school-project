@@ -9,7 +9,7 @@ import {
   FindUserMasterOutputDto,
   UpdateUserMasterInputDto,
   UpdateUserMasterOutputDto,
-} from '../../dto/master-facade.dto';
+} from '../../../application/dto/master-facade.dto';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 type MasterFacadeProps = {

@@ -4,9 +4,9 @@ import {
   validDate,
   validEmail,
 } from '@/modules/@shared/utils/validations';
-import Address from '../value-object/address.value-object';
+import Address from '../@shared/value-object/address.value-object';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Name from '../value-object/name.value-object';
+import Name from '../@shared/value-object/name.value-object';
 
 export type UserBaseProps = {
   id?: Id;
@@ -16,7 +16,7 @@ export type UserBaseProps = {
   birthday: Date;
 };
 
-export default abstract class UserBase {
+export class UserBase {
   private _id;
   private _name;
   private _address;
@@ -36,8 +36,7 @@ export default abstract class UserBase {
     if (!(input.address instanceof Address)) throw new Error('Invalid address');
     if (!this.validateBirthday(input.birthday))
       throw new Error('Field birthday is not valid');
-    if (!this.validateEmail(input.email))
-      throw new Error('Field email is not valid');
+    if (!this.validateEmail(input.email)) throw new Error('Field email is not valid');
     if (input.id) {
       if (!(input.id instanceof Id)) throw new Error('Invalid id');
       this._id = input.id;
@@ -72,8 +71,7 @@ export default abstract class UserBase {
   }
 
   set birthday(input: Date) {
-    if (!this.validateBirthday(input))
-      throw new Error('Field birthday is not valid');
+    if (!this.validateBirthday(input)) throw new Error('Field birthday is not valid');
     this._birthday = input;
   }
 

@@ -4,38 +4,59 @@ import {
   isString,
   maxLengthInclusive,
   minLength,
+  validId,
 } from '@/modules/@shared/utils/validations';
-import UserBase, { UserBaseProps } from '../@shared/entity/base-user.entity';
 import Salary from '../@shared/value-object/salary.value-object';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
-type TeacherUserProps = UserBaseProps & {
+type TeacherUserProps = {
+  id?: string;
+  userId: string;
   salary: Salary;
   graduation: string;
   academicDegrees: string;
 };
 
-export default class UserTeacher extends UserBase {
+export default class UserTeacher {
+  private _id;
+  private _userId;
   private _salary;
   private _graduation;
   private _academicDegrees;
 
-  constructor(input: TeacherUserProps) {
-    super(input);
+  constructor({ id, userId, salary, graduation, academicDegrees }: TeacherUserProps) {
     if (
-      input.salary === undefined ||
-      input.graduation === undefined ||
-      input.academicDegrees === undefined
+      userId === undefined ||
+      salary === undefined ||
+      graduation === undefined ||
+      academicDegrees === undefined
     )
-      throw new Error('Salary, graduation and academic degrees are mandatory');
-    if (!this.validateGraduation(input.graduation))
+      throw new Error('User Id, salary, graduation and academic degrees are mandatory');
+    if (userId === undefined) throw new Error('Master user needs id');
+    if (!validId(userId)) throw new Error('Invalid id');
+    if (!this.validateGraduation(graduation))
       throw new Error('Field graduation is not valid');
-    if (!this.validateAcademicDegrees(input.academicDegrees))
+    if (!this.validateAcademicDegrees(academicDegrees))
       throw new Error('Field academic degrees is not valid');
-    if (!(input.salary instanceof Salary)) throw new Error('Invalid salary');
+    if (!(salary instanceof Salary)) throw new Error('Invalid salary');
+    if (id) {
+      if (!validId(id)) throw new Error('Invalid id');
+      this._id = new Id(id);
+    } else {
+      this._id = new Id();
+    }
+    this._userId = userId;
+    this._salary = salary;
+    this._graduation = graduation;
+    this._academicDegrees = academicDegrees;
+  }
 
-    this._salary = input.salary;
-    this._graduation = input.graduation;
-    this._academicDegrees = input.academicDegrees;
+  get id(): Id {
+    return this._id;
+  }
+
+  get userId(): string {
+    return this._userId;
   }
 
   get salary(): Salary {
@@ -51,8 +72,7 @@ export default class UserTeacher extends UserBase {
   }
 
   set graduation(input: string) {
-    if (!this.validateGraduation(input))
-      throw new Error('Field graduation is not valid');
+    if (!this.validateGraduation(input)) throw new Error('Field graduation is not valid');
     this._graduation = input;
   }
 

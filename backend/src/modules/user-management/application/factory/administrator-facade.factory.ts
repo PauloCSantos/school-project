@@ -8,19 +8,22 @@ import FindUserAdministrator from '../usecases/administrator/findUserAdministrat
 import UpdateUserAdministrator from '../usecases/administrator/updateUserAdministrator.usecase';
 import { EmailAuthValidatorService } from '../services/email-auth-validator.service';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { UserService } from '../../domain/services/user.service';
+import MemoryUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
 
 export default class AdministratorFacadeFactory {
   static create(): AdministratorFacade {
     const repository = new MemoryUserAdministratorRepository();
     const authUserRepository = new MemoryAuthUserRepository();
-    const emailValidatorService = new EmailAuthValidatorService(
-      authUserRepository
-    );
+    const userRepository = new MemoryUserRepository();
+    const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
     const policiesService = new PoliciesService();
+    const userService = new UserService(userRepository);
     const createUserAdministrator = new CreateUserAdministrator(
       repository,
       emailValidatorService,
-      policiesService
+      policiesService,
+      userService
     );
     const deleteUserAdministrator = new DeleteUserAdministrator(
       repository,
@@ -28,15 +31,18 @@ export default class AdministratorFacadeFactory {
     );
     const findAllUserAdministrator = new FindAllUserAdministrator(
       repository,
-      policiesService
+      policiesService,
+      userService
     );
     const findUserAdministrator = new FindUserAdministrator(
       repository,
-      policiesService
+      policiesService,
+      userService
     );
     const updateUserAdministrator = new UpdateUserAdministrator(
       repository,
-      policiesService
+      policiesService,
+      userService
     );
     const facade = new AdministratorFacade({
       createUserAdministrator,

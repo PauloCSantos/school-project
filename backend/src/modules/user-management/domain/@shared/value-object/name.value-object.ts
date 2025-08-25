@@ -102,9 +102,7 @@ export default class Name {
   }
 
   private shortNameWithMiddle(): string {
-    return `${this._firstName} ${this._middleName.charAt(
-      0
-    )} ${this._lastName.charAt(0)}`;
+    return `${this._firstName} ${this._middleName.charAt(0)} ${this._lastName.charAt(0)}`;
   }
 
   private fullNameWithoutMiddle(): string {

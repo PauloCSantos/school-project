@@ -39,17 +39,10 @@ export class UserTeacherRoute {
     ];
     const REQUIRED_FIELD = ['id'];
 
-    this.httpGateway.get(
-      '/users-teacher',
-      this.findAllUserTeachers.bind(this),
-      [
-        this.authMiddleware,
-        createRequestMiddleware(
-          FunctionCalledEnum.FIND_ALL,
-          REQUIRED_FIELDS_ALL
-        ),
-      ]
-    );
+    this.httpGateway.get('/users-teacher', this.findAllUserTeachers.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.FIND_ALL, REQUIRED_FIELDS_ALL),
+    ]);
 
     this.httpGateway.post('/user-teacher', this.createUserTeacher.bind(this), [
       this.authMiddleware,
@@ -66,14 +59,10 @@ export class UserTeacherRoute {
       createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
     ]);
 
-    this.httpGateway.delete(
-      '/user-teacher/:id',
-      this.deleteUserTeacher.bind(this),
-      [
-        this.authMiddleware,
-        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
-      ]
-    );
+    this.httpGateway.delete('/user-teacher/:id', this.deleteUserTeacher.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
+    ]);
   }
 
   private async findAllUserTeachers(
@@ -99,10 +88,7 @@ export class UserTeacherRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const resolve = await this.userTeacherController.create(
-        input,
-        req.tokenData!
-      );
+      const resolve = await this.userTeacherController.create(input, req.tokenData!);
       return { statusCode: StatusCodeEnum.CREATED, body: resolve };
     } catch (error) {
       return this.handleError(error);
@@ -114,10 +100,7 @@ export class UserTeacherRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userTeacherController.find(
-        { id },
-        req.tokenData!
-      );
+      const response = await this.userTeacherController.find({ id }, req.tokenData!);
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
@@ -135,10 +118,7 @@ export class UserTeacherRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const resolve = await this.userTeacherController.update(
-        input,
-        req.tokenData!
-      );
+      const resolve = await this.userTeacherController.update(input, req.tokenData!);
       return { statusCode: StatusCodeEnum.OK, body: resolve };
     } catch (error) {
       return this.handleError(error);
@@ -150,10 +130,7 @@ export class UserTeacherRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userTeacherController.delete(
-        { id },
-        req.tokenData!
-      );
+      const response = await this.userTeacherController.delete({ id }, req.tokenData!);
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);

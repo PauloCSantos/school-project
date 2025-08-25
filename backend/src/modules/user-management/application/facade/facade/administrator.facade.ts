@@ -9,7 +9,7 @@ import {
   DeleteUserAdministratorOutputDto,
   UpdateUserAdministratorInputDto,
   UpdateUserAdministratorOutputDto,
-} from '../../dto/administrator-facade.dto';
+} from '../../../application/dto/administrator-facade.dto';
 import AdministratorFacadeInterface from '../interface/administrator-facade.interface';
 import CreateUserAdministrator from '../../usecases/administrator/createUserAdministrator.usecase';
 import DeleteUserAdministrator from '../../usecases/administrator/deleteUserAdministrator.usecase';
@@ -25,9 +25,7 @@ type AdministratorFacadeProps = {
   readonly findUserAdministrator: FindUserAdministrator;
   readonly updateUserAdministrator: UpdateUserAdministrator;
 };
-export default class AdministratorFacade
-  implements AdministratorFacadeInterface
-{
+export default class AdministratorFacade implements AdministratorFacadeInterface {
   private readonly _createUserAdministrator: CreateUserAdministrator;
   private readonly _deleteUserAdministrator: DeleteUserAdministrator;
   private readonly _findAllUserAdministrator: FindAllUserAdministrator;

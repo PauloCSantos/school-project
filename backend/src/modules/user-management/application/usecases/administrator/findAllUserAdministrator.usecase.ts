@@ -6,24 +6,20 @@ import {
 import UserAdministratorGateway from '@/modules/user-management/application/gateway/administrator.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
-import { AdministratorMapper } from '@/modules/user-management/infrastructure/mapper/administrator.mapper';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
+import { AdministratorAssembler } from '../../assemblers/administrator.assembler';
 
 export default class FindAllUserAdministrator
   implements
-    UseCaseInterface<
-      FindAllUserAdministratorInputDto,
-      FindAllUserAdministratorOutputDto
-    >
+    UseCaseInterface<FindAllUserAdministratorInputDto, FindAllUserAdministratorOutputDto>
 {
   private _userAdministratorRepository: UserAdministratorGateway;
 
   constructor(
     userAdministratorRepository: UserAdministratorGateway,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly policiesService: PoliciesServiceInterface,
+    private readonly userService: UserServiceInterface
   ) {
     this._userAdministratorRepository = userAdministratorRepository;
   }
@@ -37,12 +33,14 @@ export default class FindAllUserAdministrator
       token
     );
 
-    const results = await this._userAdministratorRepository.findAll(
+    const administrators = await this._userAdministratorRepository.findAll(
       token.masterId,
       offset,
       quantity
     );
 
-    return AdministratorMapper.toDTOList(results);
+    const results = await this.userService.findBaseUsers(administrators);
+
+    return AdministratorAssembler.toObjList(results);
   }
 }

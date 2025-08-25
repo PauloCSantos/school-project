@@ -39,7 +39,6 @@ export interface IFindAllUserMasterOutput
   }> {}
 
 export interface ICreateUserMasterInput {
-  id?: string;
   name: { firstName: string; middleName?: string; lastName: string };
   address: {
     street: string;

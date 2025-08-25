@@ -1,36 +1,33 @@
 import UserMaster from '@/modules/user-management/domain/entity/master.entity';
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
 import {
   CreateUserMasterInputDto,
   CreateUserMasterOutputDto,
-} from '../../dto/master-usecase.dto';
+} from '../../../application/dto/master-usecase.dto';
 import UserMasterGateway from '@/modules/user-management/application/gateway/master.gateway';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import { EmailAuthValidator } from '../../services/email-auth-validator.service';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
 
 export default class CreateUserMaster
-  implements
-    UseCaseInterface<CreateUserMasterInputDto, CreateUserMasterOutputDto>
+  implements UseCaseInterface<CreateUserMasterInputDto, CreateUserMasterOutputDto>
 {
   private _userMasterRepository: UserMasterGateway;
 
   constructor(
     userMasterRepository: UserMasterGateway,
     readonly emailValidatorService: EmailAuthValidator,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly policiesService: PoliciesServiceInterface,
+    private readonly userService: UserServiceInterface
   ) {
     this._userMasterRepository = userMasterRepository;
   }
   async execute(
-    { id, name, address, email, birthday, cnpj }: CreateUserMasterInputDto,
+    { name, address, email, birthday, cnpj }: CreateUserMasterInputDto,
     token: TokenData
   ): Promise<CreateUserMasterOutputDto> {
     await this.policiesService.verifyPolicies(
@@ -43,25 +40,25 @@ export default class CreateUserMaster
       throw new Error('You must register this email before creating the user.');
     }
 
-    const userMaster = new UserMaster({
-      id: new Id(id),
+    const baseUser = await this.userService.getOrCreateUser(token.email, {
+      email: token.email,
       name: new Name(name),
       address: new Address(address),
-      email,
-      birthday: new Date(birthday),
+      birthday,
+    });
+
+    const userMaster = new UserMaster({
+      userId: baseUser.id.value,
       cnpj,
     });
 
-    const userVerification = await this._userMasterRepository.findByEmail(
+    const userVerification = await this._userMasterRepository.findByBaseUserId(
       token.masterId,
-      userMaster.email
+      baseUser.id.value
     );
     if (userVerification) throw new Error('User already exists');
 
-    const result = await this._userMasterRepository.create(
-      token.masterId,
-      userMaster
-    );
+    const result = await this._userMasterRepository.create(token.masterId, userMaster);
 
     return { id: result };
   }
