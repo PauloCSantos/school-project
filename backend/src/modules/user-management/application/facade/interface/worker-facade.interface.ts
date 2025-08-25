@@ -10,7 +10,7 @@ import {
   FindUserWorkerOutputDto,
   UpdateUserWorkerInputDto,
   UpdateUserWorkerOutputDto,
-} from '../../dto/worker-facade.dto';
+} from '../../../application/dto/worker-facade.dto';
 
 export default interface WorkerFacadeInterface {
   create(

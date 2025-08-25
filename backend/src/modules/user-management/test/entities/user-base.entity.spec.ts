@@ -1,16 +1,12 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import UserBase, {
+import {
+  UserBase,
   UserBaseProps,
-} from '@/modules/user-management/domain/@shared/entity/base-user.entity';
+} from '@/modules/user-management/domain/entity/user.entity';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 
 describe('UserBase unit test', () => {
-  class UserMock extends UserBase {
-    constructor(input: UserBaseProps) {
-      super(input);
-    }
-  }
   const id = new Id();
   const address = new Address({
     street: 'Street A',
@@ -36,27 +32,23 @@ describe('UserBase unit test', () => {
   describe('On fail', () => {
     it('should throw an error for an invalid email', () => {
       const invalidEmailProps = { ...userBase, email: 'invalid-email' };
-      expect(() => new UserMock(invalidEmailProps)).toThrow(
-        'Field email is not valid'
-      );
+      expect(() => new UserBase(invalidEmailProps)).toThrow('Field email is not valid');
     });
     it('should throw an error when setting an invalid email', () => {
-      const user = new UserMock(userBase);
-      expect(() => (user.email = 'invalid-email')).toThrow(
-        'Field email is not valid'
-      );
+      const user = new UserBase(userBase);
+      expect(() => (user.email = 'invalid-email')).toThrow('Field email is not valid');
     });
     it('should throw an error for an invalid birthday', () => {
       const invalidBirthdayProps = {
         ...userBase,
         birthday: new Date('2026-01-06'),
       };
-      expect(() => new UserMock(invalidBirthdayProps)).toThrow(
+      expect(() => new UserBase(invalidBirthdayProps)).toThrow(
         'Field birthday is not valid'
       );
     });
     it('should throw an error when setting an invalid birthday', () => {
-      const user = new UserMock(userBase);
+      const user = new UserBase(userBase);
       expect(() => (user.birthday = new Date('2026-01-06'))).toThrow(
         'Field birthday is not valid'
       );
@@ -65,8 +57,7 @@ describe('UserBase unit test', () => {
 
   describe('On success', () => {
     it('should create a user instance with valid input', () => {
-      const user = new UserMock(userBase);
-      expect(user).toBeInstanceOf(UserMock);
+      const user = new UserBase(userBase);
       expect(user.id).toBe(userBase.id);
       expect(user.name).toBe(userBase.name);
       expect(user.address).toBe(userBase.address);
@@ -74,13 +65,13 @@ describe('UserBase unit test', () => {
       expect(user.birthday).toBe(userBase.birthday);
     });
     it('should update birthday when setting a valid date', () => {
-      const user = new UserMock(userBase);
+      const user = new UserBase(userBase);
       const newBirthday = new Date('1995-01-01');
       user.birthday = newBirthday;
       expect(user.birthday).toEqual(newBirthday);
     });
     it('should update email when setting a valid input', () => {
-      const user = new UserMock(userBase);
+      const user = new UserBase(userBase);
       const newEmail = 'john2@example.com';
       user.email = newEmail;
       expect(user.email).toEqual(newEmail);

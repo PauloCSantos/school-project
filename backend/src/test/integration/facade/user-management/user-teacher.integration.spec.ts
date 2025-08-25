@@ -34,15 +34,23 @@ import {
 } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.gateway';
+import UserGateway from '@/modules/user-management/application/gateway/user.gateway';
+import {
+  UserService,
+  UserServiceInterface,
+} from '@/modules/user-management/domain/services/user.service';
+import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 
 describe('User Teacher facade integration test', () => {
   let authUserRepository: AuthUserGateway;
   let tenantRepository: TenantGateway;
   let teacherRepository: UserTeacherGateway;
+  let userRepository: UserGateway;
   let emailAuthValidator: EmailAuthValidatorService;
   let authUserService: AuthUserServiceInterface;
   let tenantService: TenantServiceInterface;
   let tokenService: TokenServiceInterface;
+  let userService: UserServiceInterface;
   let createAuthUser: CreateAuthUser;
   let deleteAuthUser: DeleteAuthUser;
   let findAuthUser: FindAuthUser;
@@ -144,11 +152,13 @@ describe('User Teacher facade integration test', () => {
     authUserRepository = new MemoryAuthUserRepository();
     tenantRepository = new MemoryTenantRepository();
     teacherRepository = new MemoryTeacherRepository();
+    userRepository = new MemoryUserRepository();
 
     emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
     authUserService = new AuthUserService();
     tenantService = new TenantService(tenantRepository);
     tokenService = new TokenService('PxHf3H7');
+    userService = new UserService(userRepository);
 
     policiesService = new PoliciesService();
     createAuthUser = new CreateAuthUser(
@@ -187,20 +197,24 @@ describe('User Teacher facade integration test', () => {
     createUserTeacher = new CreateUserTeacher(
       teacherRepository,
       emailAuthValidator,
-      policiesService
+      policiesService,
+      userService
     );
-    deleteUserTeacher = new DeleteUserTeacher(
-      teacherRepository,
-      policiesService
-    );
+    deleteUserTeacher = new DeleteUserTeacher(teacherRepository, policiesService);
     findAllUserTeacher = new FindAllUserTeacher(
       teacherRepository,
-      policiesService
+      policiesService,
+      userService
     );
-    findUserTeacher = new FindUserTeacher(teacherRepository, policiesService);
+    findUserTeacher = new FindUserTeacher(
+      teacherRepository,
+      policiesService,
+      userService
+    );
     updateUserTeacher = new UpdateUserTeacher(
       teacherRepository,
-      policiesService
+      policiesService,
+      userService
     );
 
     facadeTeacher = new TeacherFacade({

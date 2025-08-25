@@ -2,25 +2,23 @@ import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.in
 import {
   FindUserMasterInputDto,
   FindUserMasterOutputDto,
-} from '../../dto/master-usecase.dto';
+} from '../../../application/dto/master-usecase.dto';
 import UserMasterGateway from '@/modules/user-management/application/gateway/master.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
-import { MasterMapper } from '@/modules/user-management/infrastructure/mapper/master.mapper';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
+import { MasterAssembler } from '../../assemblers/master.assembler';
 
 export default class FindUserMaster
-  implements
-    UseCaseInterface<FindUserMasterInputDto, FindUserMasterOutputDto | null>
+  implements UseCaseInterface<FindUserMasterInputDto, FindUserMasterOutputDto | null>
 {
   private _userMasterRepository: UserMasterGateway;
 
   constructor(
     userMasterRepository: UserMasterGateway,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly policiesService: PoliciesServiceInterface,
+    private readonly userService: UserServiceInterface
   ) {
     this._userMasterRepository = userMasterRepository;
   }
@@ -36,7 +34,8 @@ export default class FindUserMaster
 
     const response = await this._userMasterRepository.find(token.masterId, id);
     if (response) {
-      return MasterMapper.toObj(response);
+      const baseUser = await this.userService.findBaseUser(response.userId);
+      return MasterAssembler.toObj(baseUser!, response);
     }
     return null;
   }

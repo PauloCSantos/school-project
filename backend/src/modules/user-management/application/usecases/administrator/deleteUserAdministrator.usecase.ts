@@ -6,17 +6,11 @@ import {
 import UserAdministratorGateway from '@/modules/user-management/application/gateway/administrator.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 export default class DeleteUserAdministrator
   implements
-    UseCaseInterface<
-      DeleteUserAdministratorInputDto,
-      DeleteUserAdministratorOutputDto
-    >
+    UseCaseInterface<DeleteUserAdministratorInputDto, DeleteUserAdministratorOutputDto>
 {
   private _userAdministratorRepository: UserAdministratorGateway;
 
@@ -42,10 +36,7 @@ export default class DeleteUserAdministrator
     );
     if (!userVerification) throw new Error('User not found');
 
-    const result = await this._userAdministratorRepository.delete(
-      token.masterId,
-      id
-    );
+    const result = await this._userAdministratorRepository.delete(token.masterId, id);
 
     return { message: result };
   }

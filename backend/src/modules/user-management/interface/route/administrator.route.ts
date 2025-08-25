@@ -43,10 +43,7 @@ export class UserAdministratorRoute {
       this.findAllUserAdministrators.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(
-          FunctionCalledEnum.FIND_ALL,
-          REQUIRED_FIELDS_ALL
-        ),
+        createRequestMiddleware(FunctionCalledEnum.FIND_ALL, REQUIRED_FIELDS_ALL),
       ]
     );
 
@@ -146,8 +143,10 @@ export class UserAdministratorRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const updatedAdministrator =
-        await this.userAdministratorController.update(input, req.tokenData!);
+      const updatedAdministrator = await this.userAdministratorController.update(
+        input,
+        req.tokenData!
+      );
       return { statusCode: StatusCodeEnum.OK, body: updatedAdministrator };
     } catch (error) {
       return this.handleError(error);

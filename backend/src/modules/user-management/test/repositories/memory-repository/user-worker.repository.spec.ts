@@ -2,6 +2,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
 import MemoryUserWorkerRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/worker.repository';
 
@@ -58,18 +59,25 @@ describe('MemoryUserWorkerRepository unit test', () => {
   const salary2 = new Salary({ salary: 3000 });
   const salary3 = new Salary({ salary: 1500 });
 
-  const userWorker1 = new UserWorker({
+  const userBase1 = new UserBase({
     name: name1,
     address: address1,
     birthday: birthday1,
     email: email1,
-    salary: salary1,
   });
-  const userWorker2 = new UserWorker({
+  const userBase2 = new UserBase({
     name: name2,
     address: address2,
     birthday: birthday2,
     email: email2,
+  });
+
+  const userWorker1 = new UserWorker({
+    userId: userBase1.id.value,
+    salary: salary1,
+  });
+  const userWorker2 = new UserWorker({
+    userId: userBase2.id.value,
     salary: salary2,
   });
 
@@ -88,11 +96,8 @@ describe('MemoryUserWorkerRepository unit test', () => {
     });
     it('should throw an error when the Id is wrong', async () => {
       const userWorker = new UserWorker({
-        id: new Id(),
-        name: name3,
-        address: address3,
-        birthday: birthday3,
-        email: email3,
+        id: new Id().value,
+        userId: new Id().value,
         salary: salary3,
       });
 
@@ -113,18 +118,18 @@ describe('MemoryUserWorkerRepository unit test', () => {
 
       expect(userWorkerFound).toBeDefined();
       expect(userWorkerFound!.id).toBeDefined();
-      expect(userWorkerFound!.name).toStrictEqual(userWorker1.name);
-      expect(userWorkerFound!.address).toStrictEqual(userWorker1.address);
-      expect(userWorkerFound!.email).toStrictEqual(userWorker1.email);
-      expect(userWorkerFound!.birthday).toStrictEqual(userWorker1.birthday);
+      expect(userWorkerFound!.userId).toStrictEqual(userWorker1.userId);
       expect(userWorkerFound!.salary).toStrictEqual(userWorker1.salary);
     });
     it('should create a new user and return its id', async () => {
-      const userWorker = new UserWorker({
+      const userBase = new UserBase({
         name: name3,
         address: address3,
         birthday: birthday3,
         email: email3,
+      });
+      const userWorker = new UserWorker({
+        userId: userBase.id.value,
         salary: salary3,
       });
       const result = await repository.create(masterId, userWorker);
@@ -133,15 +138,7 @@ describe('MemoryUserWorkerRepository unit test', () => {
     });
     it('should update a user and return its new informations', async () => {
       const updateduserWorker: UserWorker = userWorker2;
-      updateduserWorker.name.firstName = 'Jane';
-      updateduserWorker.name.middleName = 'Monza';
-      updateduserWorker.name.lastName = 'Gueda';
-      updateduserWorker.address.city = address3.city;
-      updateduserWorker.address.avenue = address3.avenue;
-      updateduserWorker.address.number = address3.number;
-      updateduserWorker.address.state = address3.state;
-      updateduserWorker.address.zip = address3.zip;
-      updateduserWorker.address.street = address3.street;
+      updateduserWorker.salary.increaseSalary(10);
 
       const result = await repository.update(masterId, updateduserWorker);
 
@@ -151,10 +148,8 @@ describe('MemoryUserWorkerRepository unit test', () => {
       const allworkerUsers = await repository.findAll(masterId);
 
       expect(allworkerUsers.length).toBe(2);
-      expect(allworkerUsers[0].name).toStrictEqual(userWorker1.name);
-      expect(allworkerUsers[1].name).toStrictEqual(userWorker2.name);
-      expect(allworkerUsers[0].email).toStrictEqual(userWorker1.email);
-      expect(allworkerUsers[1].email).toStrictEqual(userWorker2.email);
+      expect(allworkerUsers[0].userId).toStrictEqual(userWorker1.userId);
+      expect(allworkerUsers[1].userId).toStrictEqual(userWorker2.userId);
       expect(allworkerUsers[0].salary).toStrictEqual(userWorker1.salary);
       expect(allworkerUsers[1].salary).toStrictEqual(userWorker2.salary);
     });

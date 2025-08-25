@@ -49,10 +49,7 @@ export class UserMasterRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const reponse = await this.userMasterController.create(
-        input,
-        req.tokenData!
-      );
+      const reponse = await this.userMasterController.create(input, req.tokenData!);
       return { statusCode: StatusCodeEnum.CREATED, body: reponse };
     } catch (error) {
       return this.handleError(error);
@@ -64,10 +61,7 @@ export class UserMasterRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userMasterController.find(
-        { id },
-        req.tokenData!
-      );
+      const response = await this.userMasterController.find({ id }, req.tokenData!);
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
@@ -85,10 +79,7 @@ export class UserMasterRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.userMasterController.update(
-        input,
-        req.tokenData!
-      );
+      const response = await this.userMasterController.update(input, req.tokenData!);
 
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {

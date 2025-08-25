@@ -6,6 +6,7 @@ import UserMaster from '@/modules/user-management/domain/entity/master.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 
 describe('updateUserMaster usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -14,8 +15,16 @@ describe('updateUserMaster usecase unit test', () => {
   const MockRepository = () => {
     return {
       find: jest.fn(),
-      findByEmail: jest.fn(),
+      findByBaseUserId: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
+    };
+  };
+  const MockUserService = () => {
+    return {
+      getOrCreateUser: jest.fn(),
+      findBaseUsers: jest.fn(),
+      findBaseUser: jest.fn(),
       update: jest.fn(),
     };
   };
@@ -54,33 +63,28 @@ describe('updateUserMaster usecase unit test', () => {
     cnpj: '35.741.901/0001-58',
   };
 
+  const userBase = new UserBase({
+    name: new Name(input.name),
+    address: new Address(input.address),
+    birthday: input.birthday,
+    email: input.email,
+  });
   const userMaster1 = new UserMaster({
-    id: new Id(),
-    name: new Name({
-      firstName: 'John',
-      middleName: 'David',
-      lastName: 'Doe',
-    }),
-    address: new Address({
-      street: 'Street A',
-      city: 'City A',
-      zip: '111111-111',
-      number: 1,
-      avenue: 'Avenue A',
-      state: 'State A',
-    }),
-    birthday: new Date('11-12-1995'),
-    email: 'teste1@test.com',
+    userId: userBase.id.value,
     cnpj: '35.741.901/0001-58',
   });
 
   describe('On fail', () => {
     it('should throw an error if the user does not exist', async () => {
       const userMasterRepository = MockRepository();
+      const userService = MockUserService();
+
       userMasterRepository.find.mockResolvedValue(null);
+
       const usecase = new UpdateUserMaster(
         userMasterRepository,
-        policieService
+        policieService,
+        userService
       );
 
       await expect(
@@ -97,11 +101,17 @@ describe('updateUserMaster usecase unit test', () => {
   describe('On success', () => {
     it('should update an user administrator', async () => {
       const userMasterRepository = MockRepository();
+      const userService = MockUserService();
+
       userMasterRepository.find.mockResolvedValue(userMaster1);
       userMasterRepository.update.mockResolvedValue(userMaster1);
+      userService.findBaseUser.mockResolvedValue(userBase);
+      userService.update.mockResolvedValue(userBase);
+
       const usecase = new UpdateUserMaster(
         userMasterRepository,
-        policieService
+        policieService,
+        userService
       );
 
       const result = await usecase.execute(
@@ -124,8 +134,8 @@ describe('updateUserMaster usecase unit test', () => {
       expect(result).toStrictEqual({
         id: userMaster1.id.value,
         name: {
-          fullName: userMaster1.name.fullName(),
-          shortName: userMaster1.name.shortName(),
+          fullName: userBase.name.fullName(),
+          shortName: userBase.name.shortName(),
         },
         address: {
           street: 'Street B',

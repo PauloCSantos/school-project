@@ -68,18 +68,14 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
   /**
    * Finds a worker record by email.
    * @param masterId - The tenant unique identifier
-   * @param email - The email to search for
+   * @param userId - The user id to search for
    * @returns Promise resolving to the found worker or null if not found
    */
-  async findByEmail(
-    masterId: string,
-    email: string
-  ): Promise<UserWorker | null> {
+  async findByBaseUserId(masterId: string, userId: string): Promise<UserWorker | null> {
     const workerUsers = this._workerUsers.get(masterId);
     if (!workerUsers) return null;
     for (const userWorker of workerUsers.values()) {
-      if (userWorker.email === email)
-        return WorkerMapper.toInstance(userWorker);
+      if (userWorker.userId === userId) return WorkerMapper.toInstance(userWorker);
     }
     return null;
   }

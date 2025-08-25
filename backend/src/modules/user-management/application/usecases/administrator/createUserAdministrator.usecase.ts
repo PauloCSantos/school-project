@@ -11,32 +11,28 @@ import UserAdministrator from '@/modules/user-management/domain/entity/administr
 import { EmailAuthValidator } from '../../services/email-auth-validator.service';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
 
 export default class CreateUserAdministrator
   implements
-    UseCaseInterface<
-      CreateUserAdministratorInputDto,
-      CreateUserAdministratorOutputDto
-    >
+    UseCaseInterface<CreateUserAdministratorInputDto, CreateUserAdministratorOutputDto>
 {
   private _userAdministratorRepository: UserAdministratorGateway;
 
   constructor(
     userAdministratorRepository: UserAdministratorGateway,
     private readonly emailValidatorService: EmailAuthValidator,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly policiesService: PoliciesServiceInterface,
+    private readonly userService: UserServiceInterface
   ) {
     this._userAdministratorRepository = userAdministratorRepository;
   }
   async execute(
     {
       name,
-      address,
       email,
+      address,
       birthday,
       graduation,
       salary,
@@ -53,20 +49,23 @@ export default class CreateUserAdministrator
       throw new Error('You must register this email before creating the user.');
     }
 
-    const userAdministrator = new UserAdministrator({
+    const baseUser = await this.userService.getOrCreateUser(email, {
+      email: email,
       name: new Name(name),
       address: new Address(address),
-      email,
       birthday: new Date(birthday),
+    });
+
+    const userAdministrator = new UserAdministrator({
+      userId: baseUser.id.value,
       graduation,
       salary: new Salary(salary),
     });
 
-    const userVerification =
-      await this._userAdministratorRepository.findByEmail(
-        token.masterId,
-        userAdministrator.email
-      );
+    const userVerification = await this._userAdministratorRepository.findByBaseUserId(
+      token.masterId,
+      baseUser.id.value
+    );
     if (userVerification) throw new Error('User already exists');
 
     const result = await this._userAdministratorRepository.create(

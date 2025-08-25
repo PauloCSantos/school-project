@@ -2,25 +2,23 @@ import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.in
 import {
   FindAllUserStudentInputDto,
   FindAllUserStudentOutputDto,
-} from '../../dto/student-usecase.dto';
+} from '../../../application/dto/student-usecase.dto';
 import UserStudentGateway from '@/modules/user-management/application/gateway/student.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
-import { StudentMapper } from '@/modules/user-management/infrastructure/mapper/student.mapper';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
+import { StudentAssembler } from '../../assemblers/student.assembler';
 
 export default class FindAllUserStudent
-  implements
-    UseCaseInterface<FindAllUserStudentInputDto, FindAllUserStudentOutputDto>
+  implements UseCaseInterface<FindAllUserStudentInputDto, FindAllUserStudentOutputDto>
 {
   private _userStudentRepository: UserStudentGateway;
 
   constructor(
     userStudentRepository: UserStudentGateway,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly policiesService: PoliciesServiceInterface,
+    private readonly userService: UserServiceInterface
   ) {
     this._userStudentRepository = userStudentRepository;
   }
@@ -34,12 +32,14 @@ export default class FindAllUserStudent
       token
     );
 
-    const results = await this._userStudentRepository.findAll(
+    const students = await this._userStudentRepository.findAll(
       token.masterId,
       quantity,
       offset
     );
 
-    return StudentMapper.toObjList(results);
+    const results = await this.userService.findBaseUsers(students);
+
+    return StudentAssembler.toObjList(results);
   }
 }

@@ -2,6 +2,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import UserMaster from '@/modules/user-management/domain/entity/master.entity';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 import MemoryUserMasterRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/master.repository';
 
 describe('MemoryUserMasterRepository unit test', () => {
@@ -60,21 +61,28 @@ describe('MemoryUserMasterRepository unit test', () => {
   const email2 = 'teste2@test.com';
   const email3 = 'teste3@test.com';
 
-  const userMaster1 = new UserMaster({
-    id: id1,
+  const userBase1 = new UserBase({
     name: name1,
     address: address1,
     birthday: birthday1,
-    cnpj: cnpj1,
     email: email1,
   });
-  const userMaster2 = new UserMaster({
-    id: id2,
+  const userBase2 = new UserBase({
     name: name2,
     address: address2,
     birthday: birthday2,
-    cnpj: cnpj2,
     email: email2,
+  });
+
+  const userMaster1 = new UserMaster({
+    id: id1.value,
+    userId: userBase1.id.value,
+    cnpj: cnpj1,
+  });
+  const userMaster2 = new UserMaster({
+    id: id2.value,
+    userId: userBase2.id.value,
+    cnpj: cnpj2,
   });
 
   beforeEach(() => {
@@ -92,12 +100,9 @@ describe('MemoryUserMasterRepository unit test', () => {
     });
     it('should throw an error when the Id is wrong', async () => {
       const userMaster = new UserMaster({
-        id: new Id(),
-        name: name3,
-        address: address3,
-        birthday: birthday3,
+        id: new Id().value,
+        userId: new Id().value,
         cnpj: cnpj3,
-        email: email3,
       });
 
       await expect(repository.update(masterId, userMaster)).rejects.toThrow(
@@ -112,20 +117,19 @@ describe('MemoryUserMasterRepository unit test', () => {
 
       expect(userMasterFound).toBeDefined();
       expect(userMasterFound!.id).toBeDefined();
-      expect(userMasterFound!.name).toStrictEqual(userMaster1.name);
-      expect(userMasterFound!.address).toStrictEqual(userMaster1.address);
-      expect(userMasterFound!.email).toStrictEqual(userMaster1.email);
       expect(userMasterFound!.cnpj).toStrictEqual(userMaster1.cnpj);
-      expect(userMasterFound!.birthday).toStrictEqual(userMaster1.birthday);
     });
     it('should create a new user and return its id', async () => {
-      const userMaster = new UserMaster({
-        id: id3,
+      const userBase = new UserBase({
         name: name3,
         address: address3,
         birthday: birthday3,
-        cnpj: cnpj3,
         email: email3,
+      });
+      const userMaster = new UserMaster({
+        id: id3.value,
+        userId: userBase.id.value,
+        cnpj: cnpj3,
       });
       const result = await repository.create(masterId, userMaster);
 
@@ -133,15 +137,7 @@ describe('MemoryUserMasterRepository unit test', () => {
     });
     it('should update a user and return its new informations', async () => {
       const updatedUserMaster: UserMaster = userMaster2;
-      updatedUserMaster.name.firstName = 'Jane';
-      updatedUserMaster.name.middleName = 'Monza';
-      updatedUserMaster.name.lastName = 'Gueda';
-      updatedUserMaster.address.city = address3.city;
-      updatedUserMaster.address.avenue = address3.avenue;
-      updatedUserMaster.address.number = address3.number;
-      updatedUserMaster.address.state = address3.state;
-      updatedUserMaster.address.zip = address3.zip;
-      updatedUserMaster.address.street = address3.street;
+      updatedUserMaster.cnpj = cnpj3;
 
       const result = await repository.update(masterId, updatedUserMaster);
 

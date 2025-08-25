@@ -6,22 +6,29 @@ import FindUserMaster from '../usecases/master/findUserMaster.usecase';
 import UpdateUserMaster from '../usecases/master/updateUserMaster.usecase';
 import { EmailAuthValidatorService } from '../services/email-auth-validator.service';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { UserService } from '../../domain/services/user.service';
+import MemoryUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
 
 export default class MasterFacadeFactory {
   static create(): MasterFacade {
     const repository = new MemoryUserMasterRepository();
     const authUserRepository = new MemoryAuthUserRepository();
-    const emailValidatorService = new EmailAuthValidatorService(
-      authUserRepository
-    );
+    const userRepository = new MemoryUserRepository();
+    const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
     const policiesService = new PoliciesService();
+    const userService = new UserService(userRepository);
     const createUserMaster = new CreateUserMaster(
       repository,
       emailValidatorService,
-      policiesService
+      policiesService,
+      userService
     );
-    const findUserMaster = new FindUserMaster(repository, policiesService);
-    const updateUserMaster = new UpdateUserMaster(repository, policiesService);
+    const findUserMaster = new FindUserMaster(repository, policiesService, userService);
+    const updateUserMaster = new UpdateUserMaster(
+      repository,
+      policiesService,
+      userService
+    );
     const facade = new MasterFacade({
       createUserMaster,
       findUserMaster,

@@ -15,7 +15,7 @@ import {
   FindUserStudentOutputDto,
   UpdateUserStudentInputDto,
   UpdateUserStudentOutputDto,
-} from '../../dto/student-facade.dto';
+} from '../../../application/dto/student-facade.dto';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
 type StudentFacadeProps = {

@@ -6,6 +6,7 @@ import FindAllUserWorker from '@/modules/user-management/application/usecases/wo
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
 
 describe('findAllUserWorker usecase unit test', () => {
@@ -15,11 +16,20 @@ describe('findAllUserWorker usecase unit test', () => {
   const MockRepository = () => {
     return {
       find: jest.fn(),
-      findByEmail: jest.fn(),
+      findByBaseUserId: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+    };
+  };
+
+  const MockUserService = () => {
+    return {
+      getOrCreateUser: jest.fn(),
+      findBaseUsers: jest.fn(),
+      findBaseUser: jest.fn(),
+      update: jest.fn(),
     };
   };
 
@@ -35,7 +45,7 @@ describe('findAllUserWorker usecase unit test', () => {
     masterId: new Id().value,
   };
 
-  const userWorker1 = new UserWorker({
+  const userBase1 = new UserBase({
     name: new Name({
       firstName: 'John',
       middleName: 'David',
@@ -51,9 +61,13 @@ describe('findAllUserWorker usecase unit test', () => {
     }),
     birthday: new Date('11-12-1995'),
     email: 'teste1@test.com',
+  });
+  const userWorker1 = new UserWorker({
+    userId: userBase1.id.value,
     salary: new Salary({ salary: 2500 }),
   });
-  const userWorker2 = new UserWorker({
+
+  const userBase2 = new UserBase({
     name: new Name({
       firstName: 'Marie',
       lastName: 'Mason',
@@ -68,19 +82,27 @@ describe('findAllUserWorker usecase unit test', () => {
     }),
     birthday: new Date('05-24-1995'),
     email: 'teste2@test.com',
+  });
+  const userWorker2 = new UserWorker({
+    userId: userBase2.id.value,
     salary: new Salary({ salary: 8500 }),
   });
 
   describe('On success', () => {
     it('should find all users administrator', async () => {
       const userWorkerRepository = MockRepository();
-      userWorkerRepository.findAll.mockResolvedValue([
-        userWorker1,
-        userWorker2,
+      const userService = MockUserService();
+
+      userWorkerRepository.findAll.mockResolvedValue([userWorker1, userWorker2]);
+      userService.findBaseUsers.mockResolvedValue([
+        { entity: userWorker1, user: userBase1 },
+        { entity: userWorker2, user: userBase2 },
       ]);
+
       const usecase = new FindAllUserWorker(
         userWorkerRepository,
-        policieService
+        policieService,
+        userService
       );
 
       const result = await usecase.execute({}, token);
@@ -90,10 +112,15 @@ describe('findAllUserWorker usecase unit test', () => {
     });
     it('should return an empty array when the repository is empty', async () => {
       const userWorkerRepository = MockRepository();
+      const userService = MockUserService();
+
       userWorkerRepository.findAll.mockResolvedValue([]);
+      userService.findBaseUsers.mockResolvedValue([]);
+
       const usecase = new FindAllUserWorker(
         userWorkerRepository,
-        policieService
+        policieService,
+        userService
       );
 
       const result = await usecase.execute({}, token);

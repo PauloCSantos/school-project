@@ -68,18 +68,14 @@ export default class MemoryUserMasterRepository implements UserMasterGateway {
   /**
    * Finds a master record by email.
    * @param masterId - The tenant unique identifier
-   * @param email - The email to search for
+   * @param userId - The user id to search for
    * @returns Promise resolving to the found master or null if not found
    */
-  async findByEmail(
-    masterId: string,
-    email: string
-  ): Promise<UserMaster | null> {
+  async findByBaseUserId(masterId: string, userId: string): Promise<UserMaster | null> {
     const masterUsers = this._masterUsers.get(masterId);
     if (!masterUsers) return null;
     for (const userMaster of masterUsers.values()) {
-      if ((userMaster as any).email === email)
-        return MasterMapper.toInstance(userMaster);
+      if (userMaster.userId === userId) return MasterMapper.toInstance(userMaster);
     }
     return null;
   }

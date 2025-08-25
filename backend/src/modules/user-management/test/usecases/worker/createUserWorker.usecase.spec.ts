@@ -6,20 +6,32 @@ import CreateUserWorker from '@/modules/user-management/application/usecases/wor
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
 
 describe('createUserWorker usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
   let token: TokenData;
 
-  const MockRepository = () => ({
-    find: jest.fn(),
-    findByEmail: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-  });
+  const MockRepository = () => {
+    return {
+      find: jest.fn(),
+      findByBaseUserId: jest.fn(),
+      findAll: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    };
+  };
+
+  const MockUserService = () => {
+    return {
+      getOrCreateUser: jest.fn(),
+      findBaseUsers: jest.fn(),
+      findBaseUser: jest.fn(),
+      update: jest.fn(),
+    };
+  };
 
   const MockEmailAuthValidatorService = () => ({
     validate: jest.fn().mockResolvedValue(true),
@@ -57,67 +69,71 @@ describe('createUserWorker usecase unit test', () => {
     email: 'teste1@test.com',
   };
 
-  const userWorker = new UserWorker({
+  const userBase = new UserBase({
     name: new Name(input.name),
     address: new Address(input.address),
-    salary: new Salary(input.salary),
     birthday: input.birthday,
     email: input.email,
+  });
+
+  const userWorker = new UserWorker({
+    userId: userBase.id.value,
+    salary: new Salary(input.salary),
   });
 
   describe('On fail', () => {
     it('should throw an error if the user already exists', async () => {
       const userWorkerRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const userService = MockUserService();
 
-      userWorkerRepository.findByEmail.mockResolvedValue(userWorker);
+      userService.getOrCreateUser.mockResolvedValue(userBase);
+      userWorkerRepository.findByBaseUserId.mockResolvedValue(userWorker);
 
       const usecase = new CreateUserWorker(
         userWorkerRepository,
         emailAuthValidatorService,
-        policieService
+        policieService,
+        userService
       );
 
-      await expect(usecase.execute(input, token)).rejects.toThrow(
-        'User already exists'
-      );
-      expect(userWorkerRepository.findByEmail).toHaveBeenCalledWith(
+      await expect(usecase.execute(input, token)).rejects.toThrow('User already exists');
+      expect(userWorkerRepository.findByBaseUserId).toHaveBeenCalledWith(
         token.masterId,
         expect.any(String)
       );
       expect(userWorkerRepository.create).not.toHaveBeenCalled();
-      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
-        input.email
-      );
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(input.email);
     });
   });
 
   describe('On success', () => {
     it('should create a user worker', async () => {
       const userWorkerRepository = MockRepository();
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const userService = MockUserService();
+
+      userService.getOrCreateUser.mockResolvedValue(userBase);
+      userWorkerRepository.findByBaseUserId.mockResolvedValue(null);
       userWorkerRepository.create.mockResolvedValue({
         id: userWorker.id.value,
       });
-      const emailAuthValidatorService = MockEmailAuthValidatorService();
-
-      userWorkerRepository.findByEmail.mockResolvedValue(null);
 
       const usecase = new CreateUserWorker(
         userWorkerRepository,
         emailAuthValidatorService,
-        policieService
+        policieService,
+        userService
       );
       const result = await usecase.execute(input, token);
 
-      expect(userWorkerRepository.findByEmail).toHaveBeenCalledWith(
+      expect(userWorkerRepository.findByBaseUserId).toHaveBeenCalledWith(
         token.masterId,
         expect.any(String)
       );
       expect(userWorkerRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
-      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
-        input.email
-      );
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(input.email);
     });
   });
 });

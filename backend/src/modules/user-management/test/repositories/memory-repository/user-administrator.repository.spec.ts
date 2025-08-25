@@ -3,6 +3,7 @@ import Address from '@/modules/user-management/domain/@shared/value-object/addre
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserAdministrator from '@/modules/user-management/domain/entity/administrator.entity';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 import MemoryUserAdministratorRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/administrator.repository';
 
 describe('MemoryUserAdministratorRepository unit test', () => {
@@ -61,19 +62,25 @@ describe('MemoryUserAdministratorRepository unit test', () => {
   const graduation2 = 'English';
   const graduation3 = 'Spanish';
 
-  const userAdministrator1 = new UserAdministrator({
+  const userBase1 = new UserBase({
     name: name1,
     address: address1,
     birthday: birthday1,
     email: email1,
-    salary: salary1,
-    graduation: graduation1,
   });
-  const userAdministrator2 = new UserAdministrator({
+  const userBase2 = new UserBase({
     name: name2,
     address: address2,
     birthday: birthday2,
     email: email2,
+  });
+  const userAdministrator1 = new UserAdministrator({
+    userId: userBase1.id.value,
+    salary: salary1,
+    graduation: graduation1,
+  });
+  const userAdministrator2 = new UserAdministrator({
+    userId: userBase2.id.value,
     salary: salary2,
     graduation: graduation2,
   });
@@ -91,20 +98,17 @@ describe('MemoryUserAdministratorRepository unit test', () => {
 
       expect(userAdministratorFound).toBeNull();
     });
-    it('should throw an error when the Id is wrong', async () => {
+    it('should throw an error when the Id is not found', async () => {
       const userAdministrator = new UserAdministrator({
-        id: new Id(),
-        name: name3,
-        address: address3,
-        birthday: birthday3,
-        email: email3,
+        id: new Id().value,
+        userId: new Id().value,
         graduation: graduation3,
         salary: salary3,
       });
 
-      await expect(
-        repository.update(masterId, userAdministrator)
-      ).rejects.toThrow('User not found');
+      await expect(repository.update(masterId, userAdministrator)).rejects.toThrow(
+        'User not found'
+      );
     });
     it('should generate an error when trying to remove the user with the wrong ID', async () => {
       await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
@@ -119,31 +123,20 @@ describe('MemoryUserAdministratorRepository unit test', () => {
 
       expect(userAdministratorFound).toBeDefined();
       expect(userAdministratorFound!.id).toBeDefined();
-      expect(userAdministratorFound!.name).toStrictEqual(
-        userAdministrator1.name
-      );
-      expect(userAdministratorFound!.address).toStrictEqual(
-        userAdministrator1.address
-      );
-      expect(userAdministratorFound!.email).toStrictEqual(
-        userAdministrator1.email
-      );
-      expect(userAdministratorFound!.birthday).toStrictEqual(
-        userAdministrator1.birthday
-      );
       expect(userAdministratorFound!.graduation).toStrictEqual(
         userAdministrator1.graduation
       );
-      expect(userAdministratorFound!.salary).toStrictEqual(
-        userAdministrator1.salary
-      );
+      expect(userAdministratorFound!.salary).toStrictEqual(userAdministrator1.salary);
     });
     it('should create a new user and return its id', async () => {
-      const userAdministrator = new UserAdministrator({
+      const userBase = new UserBase({
         name: name3,
         address: address3,
         birthday: birthday3,
         email: email3,
+      });
+      const userAdministrator = new UserAdministrator({
+        userId: userBase.id.value,
         salary: salary3,
         graduation: graduation3,
       });
@@ -153,20 +146,9 @@ describe('MemoryUserAdministratorRepository unit test', () => {
     });
     it('should update a user and return its new informations', async () => {
       const updateduserAdministrator: UserAdministrator = userAdministrator2;
-      updateduserAdministrator.name.firstName = 'Jane';
-      updateduserAdministrator.name.middleName = 'Monza';
-      updateduserAdministrator.name.lastName = 'Gueda';
-      updateduserAdministrator.address.city = address3.city;
-      updateduserAdministrator.address.avenue = address3.avenue;
-      updateduserAdministrator.address.number = address3.number;
-      updateduserAdministrator.address.state = address3.state;
-      updateduserAdministrator.address.zip = address3.zip;
-      updateduserAdministrator.address.street = address3.street;
+      updateduserAdministrator.salary.currency = '$';
 
-      const result = await repository.update(
-        masterId,
-        updateduserAdministrator
-      );
+      const result = await repository.update(masterId, updateduserAdministrator);
 
       expect(result).toEqual(updateduserAdministrator);
     });
@@ -174,30 +156,19 @@ describe('MemoryUserAdministratorRepository unit test', () => {
       const allAdministratorUsers = await repository.findAll(masterId);
 
       expect(allAdministratorUsers.length).toBe(2);
-      expect(allAdministratorUsers[0].name).toStrictEqual(
-        userAdministrator1.name
+      expect(allAdministratorUsers[0].salary).toStrictEqual(userAdministrator1.salary);
+      expect(allAdministratorUsers[1].salary).toStrictEqual(userAdministrator2.salary);
+      expect(allAdministratorUsers[0].userId).toStrictEqual(userAdministrator1.userId);
+      expect(allAdministratorUsers[1].userId).toStrictEqual(userAdministrator2.userId);
+      expect(allAdministratorUsers[0].graduation).toStrictEqual(
+        userAdministrator1.graduation
       );
-      expect(allAdministratorUsers[1].name).toStrictEqual(
-        userAdministrator2.name
-      );
-      expect(allAdministratorUsers[0].email).toStrictEqual(
-        userAdministrator1.email
-      );
-      expect(allAdministratorUsers[1].email).toStrictEqual(
-        userAdministrator2.email
-      );
-      expect(allAdministratorUsers[0].salary).toStrictEqual(
-        userAdministrator1.salary
-      );
-      expect(allAdministratorUsers[1].salary).toStrictEqual(
-        userAdministrator2.salary
+      expect(allAdministratorUsers[1].graduation).toStrictEqual(
+        userAdministrator2.graduation
       );
     });
     it('should remove the user', async () => {
-      const response = await repository.delete(
-        masterId,
-        userAdministrator1.id.value
-      );
+      const response = await repository.delete(masterId, userAdministrator1.id.value);
 
       expect(response).toBe('Operação concluída com sucesso');
     });

@@ -1,20 +1,38 @@
-import { isGreaterZero, isNumeric } from '@/modules/@shared/utils/validations';
-import UserBase, { UserBaseProps } from '../@shared/entity/base-user.entity';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { isGreaterZero, isNumeric, validId } from '@/modules/@shared/utils/validations';
 
-type StudentUserProps = UserBaseProps & {
+type StudentUserProps = {
+  id?: string;
+  userId: string;
   paymentYear: number;
 };
 
-export default class UserStudent extends UserBase {
+export default class UserStudent {
+  private _id;
+  private _userId;
   private _paymentYear;
 
-  constructor(input: StudentUserProps) {
-    super(input);
-    if (input.paymentYear === undefined)
-      throw new Error('Payment field is mandatory');
-    if (!this.validatePayment(input.paymentYear))
-      throw new Error('Field payment is not valid');
-    this._paymentYear = input.paymentYear;
+  constructor({ id, userId, paymentYear }: StudentUserProps) {
+    if (userId === undefined) throw new Error('Master user needs id');
+    if (!validId(userId)) throw new Error('Invalid id');
+    if (paymentYear === undefined) throw new Error('Payment field is mandatory');
+    if (!this.validatePayment(paymentYear)) throw new Error('Field payment is not valid');
+    if (id) {
+      if (!validId(id)) throw new Error('Invalid id');
+      this._id = new Id(id);
+    } else {
+      this._id = new Id();
+    }
+    this._userId = userId;
+    this._paymentYear = paymentYear;
+  }
+
+  get id(): Id {
+    return this._id;
+  }
+
+  get userId(): string {
+    return this._userId;
   }
 
   get paymentYear(): number {
@@ -22,8 +40,7 @@ export default class UserStudent extends UserBase {
   }
 
   set paymentYear(value: number) {
-    if (!this.validatePayment(value))
-      throw new Error('Field payment is not valid');
+    if (!this.validatePayment(value)) throw new Error('Field payment is not valid');
     this._paymentYear = value;
   }
 

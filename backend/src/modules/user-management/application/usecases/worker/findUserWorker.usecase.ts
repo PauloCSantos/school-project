@@ -2,25 +2,23 @@ import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.in
 import {
   FindUserWorkerInputDto,
   FindUserWorkerOutputDto,
-} from '../../dto/worker-usecase.dto';
+} from '../../../application/dto/worker-usecase.dto';
 import UserWorkerGateway from '@/modules/user-management/application/gateway/worker.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
-import { WorkerMapper } from '@/modules/user-management/infrastructure/mapper/worker.mapper';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
+import { WorkerAssembler } from '../../assemblers/worker.assembler';
 
 export default class FindUserWorker
-  implements
-    UseCaseInterface<FindUserWorkerInputDto, FindUserWorkerOutputDto | null>
+  implements UseCaseInterface<FindUserWorkerInputDto, FindUserWorkerOutputDto | null>
 {
   private _userWorkerRepository: UserWorkerGateway;
 
   constructor(
     userWorkerRepository: UserWorkerGateway,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly policiesService: PoliciesServiceInterface,
+    private readonly userService: UserServiceInterface
   ) {
     this._userWorkerRepository = userWorkerRepository;
   }
@@ -36,7 +34,8 @@ export default class FindUserWorker
 
     const response = await this._userWorkerRepository.find(token.masterId, id);
     if (response) {
-      return WorkerMapper.toDTO(response);
+      const baseUser = await this.userService.findBaseUser(response.userId);
+      return WorkerAssembler.toObj(baseUser!, response);
     }
     return null;
   }

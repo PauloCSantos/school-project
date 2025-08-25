@@ -51,14 +51,10 @@ export class UserWorkerRoute {
       createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
     ]);
 
-    this.httpGateway.delete(
-      '/user-worker/:id',
-      this.deleteUserWorker.bind(this),
-      [
-        this.authMiddleware,
-        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
-      ]
-    );
+    this.httpGateway.delete('/user-worker/:id', this.deleteUserWorker.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
+    ]);
   }
 
   private async findAllUserWorkers(
@@ -84,10 +80,7 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userWorkerController.find(
-        { id },
-        req.tokenData!
-      );
+      const response = await this.userWorkerController.find({ id }, req.tokenData!);
       if (!response) {
         return {
           statusCode: StatusCodeEnum.NOT_FOUND,
@@ -105,10 +98,7 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.userWorkerController.create(
-        input,
-        req.tokenData!
-      );
+      const response = await this.userWorkerController.create(input, req.tokenData!);
       return { statusCode: StatusCodeEnum.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -120,10 +110,7 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.userWorkerController.update(
-        input,
-        req.tokenData!
-      );
+      const response = await this.userWorkerController.update(input, req.tokenData!);
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
@@ -135,10 +122,7 @@ export class UserWorkerRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.userWorkerController.delete(
-        { id },
-        req.tokenData!
-      );
+      const response = await this.userWorkerController.delete({ id }, req.tokenData!);
       return { statusCode: StatusCodeEnum.OK, body: response };
     } catch (error) {
       return this.handleError(error);
