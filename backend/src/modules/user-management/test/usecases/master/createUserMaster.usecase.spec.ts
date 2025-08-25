@@ -6,6 +6,7 @@ import UserMaster from '@/modules/user-management/domain/entity/master.entity';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 
 describe('createUserMaster usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -14,8 +15,17 @@ describe('createUserMaster usecase unit test', () => {
   const MockRepository = () => {
     return {
       find: jest.fn(),
-      findByEmail: jest.fn(),
+      findByBaseUserId: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
+    };
+  };
+
+  const MockUserService = () => {
+    return {
+      getOrCreateUser: jest.fn(),
+      findBaseUsers: jest.fn(),
+      findBaseUser: jest.fn(),
       update: jest.fn(),
     };
   };
@@ -55,26 +65,44 @@ describe('createUserMaster usecase unit test', () => {
     cnpj: '35.741.901/0001-58',
   };
 
+  const userBase = new UserBase({
+    name: new Name({
+      firstName: 'John',
+      middleName: 'David',
+      lastName: 'Doe',
+    }),
+    address: new Address({
+      street: 'Street A',
+      city: 'City A',
+      zip: '111111-111',
+      number: 1,
+      avenue: 'Avenue A',
+      state: 'State A',
+    }),
+    birthday: new Date('11-12-1995'),
+    email: 'teste1@test.com',
+  });
+
   const userMaster = new UserMaster({
-    id: new Id(input.id),
-    name: new Name(input.name),
-    address: new Address(input.address),
-    birthday: input.birthday,
-    email: input.email,
+    id: new Id(input.id).value,
+    userId: userBase.id.value,
     cnpj: input.cnpj,
   });
 
   describe('On fail', () => {
     it('should throw an error if the user already exists', async () => {
       const userMasterRepository = MockRepository();
+      const userService = MockUserService();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
 
-      userMasterRepository.findByEmail.mockResolvedValue(userMaster);
+      userService.getOrCreateUser.mockResolvedValue(userBase);
+      userMasterRepository.findByBaseUserId.mockResolvedValue(userMaster);
 
       const usecase = new CreateUserMaster(
         userMasterRepository,
         emailAuthValidatorService,
-        policieService
+        policieService,
+        userService
       );
 
       await expect(
@@ -85,43 +113,42 @@ describe('createUserMaster usecase unit test', () => {
           token
         )
       ).rejects.toThrow('User already exists');
-      expect(userMasterRepository.findByEmail).toHaveBeenCalledWith(
+      expect(userMasterRepository.findByBaseUserId).toHaveBeenCalledWith(
         token.masterId,
         expect.any(String)
       );
       expect(userMasterRepository.create).not.toHaveBeenCalled();
-      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
-        input.email
-      );
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(input.email);
     });
   });
 
   describe('On success', () => {
     it('should create a user master', async () => {
       const userMasterRepository = MockRepository();
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const userService = MockUserService();
+
+      userService.getOrCreateUser.mockResolvedValue(userBase);
+      userMasterRepository.findByBaseUserId.mockResolvedValue(null);
       userMasterRepository.create.mockResolvedValue({
         id: userMaster.id.value,
       });
-      const emailAuthValidatorService = MockEmailAuthValidatorService();
-
-      userMasterRepository.findByEmail.mockResolvedValue(null);
 
       const usecase = new CreateUserMaster(
         userMasterRepository,
         emailAuthValidatorService,
-        policieService
+        policieService,
+        userService
       );
       const result = await usecase.execute({ ...input }, token);
 
-      expect(userMasterRepository.findByEmail).toHaveBeenCalledWith(
+      expect(userMasterRepository.findByBaseUserId).toHaveBeenCalledWith(
         token.masterId,
         expect.any(String)
       );
       expect(userMasterRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
-      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
-        input.email
-      );
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(input.email);
     });
   });
 });

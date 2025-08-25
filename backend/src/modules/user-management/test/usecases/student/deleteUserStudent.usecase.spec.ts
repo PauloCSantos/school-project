@@ -6,6 +6,7 @@ import DeleteUserStudent from '@/modules/user-management/application/usecases/st
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import UserStudent from '@/modules/user-management/domain/entity/student.entity';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 
 describe('deleteUserStudent usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -14,7 +15,7 @@ describe('deleteUserStudent usecase unit test', () => {
   const MockRepository = () => {
     return {
       find: jest.fn(),
-      findByEmail: jest.fn(),
+      findByBaseUserId: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -52,11 +53,15 @@ describe('deleteUserStudent usecase unit test', () => {
     paymentYear: 20000,
   };
 
-  const userStudent = new UserStudent({
+  const userBase = new UserBase({
     name: new Name(input.name),
     address: new Address(input.address),
     birthday: input.birthday,
     email: input.email,
+  });
+
+  const userStudent = new UserStudent({
+    userId: userBase.id.value,
     paymentYear: input.paymentYear,
   });
 
@@ -65,10 +70,7 @@ describe('deleteUserStudent usecase unit test', () => {
       const userStudentRepository = MockRepository();
       userStudentRepository.find.mockResolvedValue(undefined);
 
-      const usecase = new DeleteUserStudent(
-        userStudentRepository,
-        policieService
-      );
+      const usecase = new DeleteUserStudent(userStudentRepository, policieService);
 
       await expect(
         usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
@@ -79,10 +81,7 @@ describe('deleteUserStudent usecase unit test', () => {
     it('should delete a user student', async () => {
       const userStudentRepository = MockRepository();
       userStudentRepository.find.mockResolvedValue(userStudent);
-      const usecase = new DeleteUserStudent(
-        userStudentRepository,
-        policieService
-      );
+      const usecase = new DeleteUserStudent(userStudentRepository, policieService);
       const result = await usecase.execute(
         {
           id: userStudent.id.value,

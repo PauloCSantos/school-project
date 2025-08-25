@@ -6,6 +6,7 @@ import UpdateUserWorker from '@/modules/user-management/application/usecases/wor
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
 
 describe('updateUserWorker usecase unit test', () => {
@@ -15,11 +16,20 @@ describe('updateUserWorker usecase unit test', () => {
   const MockRepository = () => {
     return {
       find: jest.fn(),
-      findByEmail: jest.fn(),
+      findByBaseUserId: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+    };
+  };
+
+  const MockUserService = () => {
+    return {
+      getOrCreateUser: jest.fn(),
+      findBaseUsers: jest.fn(),
+      findBaseUser: jest.fn(),
+      update: jest.fn(),
     };
   };
 
@@ -56,7 +66,7 @@ describe('updateUserWorker usecase unit test', () => {
     graduation: 'Math',
   };
 
-  const userWorker1 = new UserWorker({
+  const userBase = new UserBase({
     name: new Name({
       firstName: 'John',
       middleName: 'David',
@@ -72,16 +82,23 @@ describe('updateUserWorker usecase unit test', () => {
     }),
     birthday: new Date('11-12-1995'),
     email: 'teste1@test.com',
+  });
+  const userWorker1 = new UserWorker({
+    userId: userBase.id.value,
     salary: new Salary({ salary: 2500 }),
   });
 
   describe('On fail', () => {
     it('should throw an error if the user does not exist', async () => {
       const userWorkerRepository = MockRepository();
+      const userService = MockUserService();
+
       userWorkerRepository.find.mockResolvedValue(null);
+
       const usecase = new UpdateUserWorker(
         userWorkerRepository,
-        policieService
+        policieService,
+        userService
       );
 
       await expect(
@@ -98,11 +115,17 @@ describe('updateUserWorker usecase unit test', () => {
   describe('On success', () => {
     it('should update an user worker', async () => {
       const userWorkerRepository = MockRepository();
+      const userService = MockUserService();
+
       userWorkerRepository.find.mockResolvedValue(userWorker1);
       userWorkerRepository.update.mockResolvedValue(userWorker1);
+      userService.findBaseUser.mockResolvedValue(userBase);
+      userService.update.mockResolvedValue(userBase);
+
       const usecase = new UpdateUserWorker(
         userWorkerRepository,
-        policieService
+        policieService,
+        userService
       );
 
       const result = await usecase.execute(
@@ -125,8 +148,8 @@ describe('updateUserWorker usecase unit test', () => {
       expect(result).toStrictEqual({
         id: userWorker1.id.value,
         name: {
-          fullName: userWorker1.name.fullName(),
-          shortName: userWorker1.name.shortName(),
+          fullName: userBase.name.fullName(),
+          shortName: userBase.name.shortName(),
         },
         address: {
           street: 'Street B',

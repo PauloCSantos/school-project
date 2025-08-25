@@ -7,19 +7,31 @@ import Address from '@/modules/user-management/domain/@shared/value-object/addre
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserTeacher from '@/modules/user-management/domain/entity/teacher.entity';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 
 describe('createUserTeacher usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
   let token: TokenData;
 
-  const MockRepository = () => ({
-    find: jest.fn(),
-    findByEmail: jest.fn(),
-    findAll: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-  });
+  const MockRepository = () => {
+    return {
+      find: jest.fn(),
+      findByBaseUserId: jest.fn(),
+      findAll: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    };
+  };
+
+  const MockUserService = () => {
+    return {
+      getOrCreateUser: jest.fn(),
+      findBaseUsers: jest.fn(),
+      findBaseUser: jest.fn(),
+      update: jest.fn(),
+    };
+  };
 
   const MockEmailAuthValidatorService = () => ({
     validate: jest.fn().mockResolvedValue(true),
@@ -59,12 +71,16 @@ describe('createUserTeacher usecase unit test', () => {
     academicDegrees: 'Msc',
   };
 
-  const userTeacher = new UserTeacher({
+  const userBase = new UserBase({
     name: new Name(input.name),
     address: new Address(input.address),
-    salary: new Salary(input.salary),
     birthday: input.birthday,
     email: input.email,
+  });
+
+  const userTeacher = new UserTeacher({
+    userId: userBase.id.value,
+    salary: new Salary(input.salary),
     graduation: input.graduation,
     academicDegrees: input.academicDegrees,
   });
@@ -73,26 +89,25 @@ describe('createUserTeacher usecase unit test', () => {
     it('should throw an error if the user already exists', async () => {
       const userTeacherRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const userService = MockUserService();
 
-      userTeacherRepository.findByEmail.mockResolvedValue(userTeacher);
+      userService.getOrCreateUser.mockResolvedValue(userBase);
+      userTeacherRepository.findByBaseUserId.mockResolvedValue(userTeacher);
 
       const usecase = new CreateUserTeacher(
         userTeacherRepository,
         emailAuthValidatorService,
-        policieService
+        policieService,
+        userService
       );
 
-      await expect(usecase.execute(input, token)).rejects.toThrow(
-        'User already exists'
-      );
-      expect(userTeacherRepository.findByEmail).toHaveBeenCalledWith(
+      await expect(usecase.execute(input, token)).rejects.toThrow('User already exists');
+      expect(userTeacherRepository.findByBaseUserId).toHaveBeenCalledWith(
         token.masterId,
         expect.any(String)
       );
       expect(userTeacherRepository.create).not.toHaveBeenCalled();
-      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
-        input.email
-      );
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(input.email);
     });
   });
 
@@ -100,8 +115,10 @@ describe('createUserTeacher usecase unit test', () => {
     it('should create a user teacher', async () => {
       const userTeacherRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const userService = MockUserService();
 
-      userTeacherRepository.findByEmail.mockResolvedValue(null);
+      userTeacherRepository.findByBaseUserId.mockResolvedValue(null);
+      userService.getOrCreateUser.mockResolvedValue(userBase);
       userTeacherRepository.create.mockResolvedValue({
         id: userTeacher.id.value,
       });
@@ -109,19 +126,18 @@ describe('createUserTeacher usecase unit test', () => {
       const usecase = new CreateUserTeacher(
         userTeacherRepository,
         emailAuthValidatorService,
-        policieService
+        policieService,
+        userService
       );
       const result = await usecase.execute(input, token);
 
-      expect(userTeacherRepository.findByEmail).toHaveBeenCalledWith(
+      expect(userTeacherRepository.findByBaseUserId).toHaveBeenCalledWith(
         token.masterId,
         expect.any(String)
       );
       expect(userTeacherRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
-      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
-        input.email
-      );
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(input.email);
     });
   });
 });

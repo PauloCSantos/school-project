@@ -6,6 +6,7 @@ import DeleteUserWorker from '@/modules/user-management/application/usecases/wor
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
 
 describe('deleteUserWorker usecase unit test', () => {
@@ -15,7 +16,7 @@ describe('deleteUserWorker usecase unit test', () => {
   const MockRepository = () => {
     return {
       find: jest.fn(),
-      findByEmail: jest.fn(),
+      findByBaseUserId: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -55,12 +56,16 @@ describe('deleteUserWorker usecase unit test', () => {
     email: 'teste1@test.com',
   };
 
-  const userWorker = new UserWorker({
+  const baseUser = new UserBase({
     name: new Name(input.name),
     address: new Address(input.address),
-    salary: new Salary(input.salary),
     birthday: input.birthday,
     email: input.email,
+  });
+
+  const userWorker = new UserWorker({
+    userId: baseUser.id.value,
+    salary: new Salary(input.salary),
   });
 
   describe('On fail', () => {
@@ -68,10 +73,7 @@ describe('deleteUserWorker usecase unit test', () => {
       const userWorkerRepository = MockRepository();
       userWorkerRepository.find.mockResolvedValue(null);
 
-      const usecase = new DeleteUserWorker(
-        userWorkerRepository,
-        policieService
-      );
+      const usecase = new DeleteUserWorker(userWorkerRepository, policieService);
 
       await expect(
         usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
@@ -82,10 +84,7 @@ describe('deleteUserWorker usecase unit test', () => {
     it('should delete a user worker', async () => {
       const userWorkerRepository = MockRepository();
       userWorkerRepository.find.mockResolvedValue(userWorker);
-      const usecase = new DeleteUserWorker(
-        userWorkerRepository,
-        policieService
-      );
+      const usecase = new DeleteUserWorker(userWorkerRepository, policieService);
       const result = await usecase.execute(
         {
           id: userWorker.id.value,
