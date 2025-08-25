@@ -29,7 +29,14 @@ export default class CreateUserAdministrator
     this._userAdministratorRepository = userAdministratorRepository;
   }
   async execute(
-    { name, address, birthday, graduation, salary }: CreateUserAdministratorInputDto,
+    {
+      name,
+      email,
+      address,
+      birthday,
+      graduation,
+      salary,
+    }: CreateUserAdministratorInputDto,
     token: TokenData
   ): Promise<CreateUserAdministratorOutputDto> {
     await this.policiesService.verifyPolicies(
@@ -38,15 +45,15 @@ export default class CreateUserAdministrator
       token
     );
 
-    if (!(await this.emailValidatorService.validate(token.email))) {
+    if (!(await this.emailValidatorService.validate(email))) {
       throw new Error('You must register this email before creating the user.');
     }
 
-    const baseUser = await this.userService.getOrCreateUser(token.email, {
-      email: token.email,
+    const baseUser = await this.userService.getOrCreateUser(email, {
+      email: email,
       name: new Name(name),
       address: new Address(address),
-      birthday,
+      birthday: new Date(birthday),
     });
 
     const userAdministrator = new UserAdministrator({

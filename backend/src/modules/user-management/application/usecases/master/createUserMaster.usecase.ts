@@ -40,11 +40,11 @@ export default class CreateUserMaster
       throw new Error('You must register this email before creating the user.');
     }
 
-    const baseUser = await this.userService.getOrCreateUser(token.email, {
-      email: token.email,
+    const baseUser = await this.userService.getOrCreateUser(email, {
+      email: email,
       name: new Name(name),
       address: new Address(address),
-      birthday,
+      birthday: new Date(birthday),
     });
 
     const userMaster = new UserMaster({
