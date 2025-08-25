@@ -2,19 +2,13 @@ import UserAdministrator from '@/modules/user-management/domain/entity/administr
 
 export default interface UserAdministratorGateway {
   find(masterId: string, id: string): Promise<UserAdministrator | null>;
-  findByEmail(
-    masterId: string,
-    email: string
-  ): Promise<UserAdministrator | null>;
+  findByBaseUserId(masterId: string, userId: string): Promise<UserAdministrator | null>;
   findAll(
     masterId: string,
     quantity?: number,
     offSet?: number
   ): Promise<UserAdministrator[]>;
-  create(
-    masterId: string,
-    userAdministrator: UserAdministrator
-  ): Promise<string>;
+  create(masterId: string, userAdministrator: UserAdministrator): Promise<string>;
   update(
     masterId: string,
     userAdministrator: UserAdministrator

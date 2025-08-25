@@ -6,6 +6,7 @@ import FindUserStudent from '@/modules/user-management/application/usecases/stud
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import UserStudent from '@/modules/user-management/domain/entity/student.entity';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 
 describe('findUserStudent usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -14,11 +15,20 @@ describe('findUserStudent usecase unit test', () => {
   const MockRepository = () => {
     return {
       find: jest.fn(),
-      findByEmail: jest.fn(),
+      findByBaseUserId: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+    };
+  };
+
+  const MockUserService = () => {
+    return {
+      getOrCreateUser: jest.fn(),
+      findBaseUsers: jest.fn(),
+      findBaseUser: jest.fn(),
+      update: jest.fn(),
     };
   };
 
@@ -34,7 +44,7 @@ describe('findUserStudent usecase unit test', () => {
     masterId: new Id().value,
   };
 
-  const userStudent1 = new UserStudent({
+  const userBase = new UserBase({
     name: new Name({
       firstName: 'John',
       middleName: 'David',
@@ -50,32 +60,40 @@ describe('findUserStudent usecase unit test', () => {
     }),
     birthday: new Date('11-12-1995'),
     email: 'teste1@test.com',
+  });
+  const userStudent1 = new UserStudent({
+    userId: userBase.id.value,
     paymentYear: 28000,
   });
+
   describe('On success', () => {
     it('should find an user student', async () => {
       const userStudentRepository = MockRepository();
+      const userService = MockUserService();
+
       userStudentRepository.find.mockResolvedValue(userStudent1);
+      userService.findBaseUser.mockResolvedValue(userBase);
+
       const usecase = new FindUserStudent(
         userStudentRepository,
-        policieService
+        policieService,
+        userService
       );
-
-      const result = await usecase.execute(
-        { id: userStudent1.id.value },
-        token
-      );
+      const result = await usecase.execute({ id: userStudent1.id.value }, token);
 
       expect(userStudentRepository.find).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
     it('should return null when id is not found', async () => {
       const userStudentRepository = MockRepository();
+      const userService = MockUserService();
+
       userStudentRepository.find.mockResolvedValue(null);
 
       const usecase = new FindUserStudent(
         userStudentRepository,
-        policieService
+        policieService,
+        userService
       );
       const result = await usecase.execute(
         {

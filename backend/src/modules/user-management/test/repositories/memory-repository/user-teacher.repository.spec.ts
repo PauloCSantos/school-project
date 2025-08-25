@@ -3,6 +3,7 @@ import Address from '@/modules/user-management/domain/@shared/value-object/addre
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserTeacher from '@/modules/user-management/domain/entity/teacher.entity';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 import MemoryUserTeacherRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/teacher.repository';
 
 describe('MemoryUserTeacherRepository unit test', () => {
@@ -64,20 +65,27 @@ describe('MemoryUserTeacherRepository unit test', () => {
   const academicDegrees2 = 'Dr';
   const academicDegrees3 = 'Esp';
 
-  const userTeacher1 = new UserTeacher({
+  const userBase1 = new UserBase({
     name: name1,
     address: address1,
     birthday: birthday1,
     email: email1,
+  });
+  const userBase2 = new UserBase({
+    name: name2,
+    address: address2,
+    birthday: birthday2,
+    email: email2,
+  });
+
+  const userTeacher1 = new UserTeacher({
+    userId: userBase1.id.value,
     salary: salary1,
     graduation: graduation1,
     academicDegrees: academicDegrees1,
   });
   const userTeacher2 = new UserTeacher({
-    name: name2,
-    address: address2,
-    birthday: birthday2,
-    email: email2,
+    userId: userBase2.id.value,
     salary: salary2,
     graduation: graduation2,
     academicDegrees: academicDegrees2,
@@ -98,11 +106,8 @@ describe('MemoryUserTeacherRepository unit test', () => {
     });
     it('should throw an error when the Id is wrong', async () => {
       const userTeacher = new UserTeacher({
-        id: new Id(),
-        name: name3,
-        address: address3,
-        birthday: birthday3,
-        email: email3,
+        id: new Id().value,
+        userId: new Id().value,
         graduation: graduation3,
         salary: salary3,
         academicDegrees: academicDegrees3,
@@ -125,21 +130,19 @@ describe('MemoryUserTeacherRepository unit test', () => {
 
       expect(userTeacherFound).toBeDefined();
       expect(userTeacherFound!.id).toBeDefined();
-      expect(userTeacherFound!.name).toStrictEqual(userTeacher1.name);
-      expect(userTeacherFound!.address).toStrictEqual(userTeacher1.address);
-      expect(userTeacherFound!.email).toStrictEqual(userTeacher1.email);
-      expect(userTeacherFound!.birthday).toStrictEqual(userTeacher1.birthday);
-      expect(userTeacherFound!.graduation).toStrictEqual(
-        userTeacher1.graduation
-      );
+      expect(userTeacherFound!.userId).toStrictEqual(userTeacher1.userId);
+      expect(userTeacherFound!.graduation).toStrictEqual(userTeacher1.graduation);
       expect(userTeacherFound!.salary).toStrictEqual(userTeacher1.salary);
     });
     it('should create a new user and return its id', async () => {
-      const userTeacher = new UserTeacher({
+      const userBase = new UserBase({
         name: name3,
         address: address3,
         birthday: birthday3,
         email: email3,
+      });
+      const userTeacher = new UserTeacher({
+        userId: userBase.id.value,
         salary: salary3,
         graduation: graduation3,
         academicDegrees: academicDegrees3,
@@ -150,15 +153,9 @@ describe('MemoryUserTeacherRepository unit test', () => {
     });
     it('should update a user and return its new informations', async () => {
       const updateduserTeacher: UserTeacher = userTeacher2;
-      updateduserTeacher.name.firstName = 'Jane';
-      updateduserTeacher.name.middleName = 'Monza';
-      updateduserTeacher.name.lastName = 'Gueda';
-      updateduserTeacher.address.city = address3.city;
-      updateduserTeacher.address.avenue = address3.avenue;
-      updateduserTeacher.address.number = address3.number;
-      updateduserTeacher.address.state = address3.state;
-      updateduserTeacher.address.zip = address3.zip;
-      updateduserTeacher.address.street = address3.street;
+      updateduserTeacher.salary.increaseSalary(10);
+      updateduserTeacher.graduation = graduation3;
+      updateduserTeacher.academicDegrees = academicDegrees3;
 
       const result = await repository.update(masterId, updateduserTeacher);
 
@@ -168,10 +165,10 @@ describe('MemoryUserTeacherRepository unit test', () => {
       const allTeacherUsers = await repository.findAll(masterId);
 
       expect(allTeacherUsers.length).toBe(2);
-      expect(allTeacherUsers[0].name).toStrictEqual(userTeacher1.name);
-      expect(allTeacherUsers[1].name).toStrictEqual(userTeacher2.name);
-      expect(allTeacherUsers[0].email).toStrictEqual(userTeacher1.email);
-      expect(allTeacherUsers[1].email).toStrictEqual(userTeacher2.email);
+      expect(allTeacherUsers[0].userId).toStrictEqual(userTeacher1.userId);
+      expect(allTeacherUsers[1].userId).toStrictEqual(userTeacher2.userId);
+      expect(allTeacherUsers[0].graduation).toStrictEqual(userTeacher1.graduation);
+      expect(allTeacherUsers[1].graduation).toStrictEqual(userTeacher2.graduation);
       expect(allTeacherUsers[0].salary).toStrictEqual(userTeacher1.salary);
       expect(allTeacherUsers[1].salary).toStrictEqual(userTeacher2.salary);
     });

@@ -4,30 +4,49 @@ import {
   isString,
   maxLengthInclusive,
   minLength,
+  validId,
 } from '@/modules/@shared/utils/validations';
 
 import Salary from '../@shared/value-object/salary.value-object';
-import UserBase, { UserBaseProps } from '../@shared/entity/base-user.entity';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
-type AdministratorUserProps = UserBaseProps & {
+type AdministratorUserProps = {
+  id?: string;
+  userId: string;
   salary: Salary;
   graduation: string;
 };
 
-export default class UserAdministrator extends UserBase {
+export default class UserAdministrator {
+  private _id;
+  private _userId;
   private _salary;
   private _graduation;
 
-  constructor(input: AdministratorUserProps) {
-    super(input);
-    if (input.salary === undefined || input.graduation === undefined)
+  constructor({ id, userId, graduation, salary }: AdministratorUserProps) {
+    if (userId === undefined || salary === undefined || graduation === undefined)
       throw new Error('Salary and graduation are mandatory');
-    if (!this.validateGraduation(input.graduation))
+    if (!this.validateGraduation(graduation))
       throw new Error('Field graduation is not valid');
-    if (!(input.salary instanceof Salary)) throw new Error('Invalid salary');
+    if (!(salary instanceof Salary)) throw new Error('Invalid salary');
+    if (!validId(userId)) throw new Error('Invalid id');
+    if (id) {
+      if (!validId(id)) throw new Error('Invalid id');
+      this._id = new Id(id);
+    } else {
+      this._id = new Id();
+    }
+    this._userId = userId;
+    this._salary = salary;
+    this._graduation = graduation;
+  }
 
-    this._salary = input.salary;
-    this._graduation = input.graduation;
+  get id(): Id {
+    return this._id;
+  }
+
+  get userId(): string {
+    return this._userId;
   }
 
   get salary(): Salary {
@@ -39,8 +58,7 @@ export default class UserAdministrator extends UserBase {
   }
 
   set graduation(input: string) {
-    if (!this.validateGraduation(input))
-      throw new Error('Field graduation is not valid');
+    if (!this.validateGraduation(input)) throw new Error('Field graduation is not valid');
     this._graduation = input;
   }
 

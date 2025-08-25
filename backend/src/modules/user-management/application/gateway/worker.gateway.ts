@@ -2,12 +2,8 @@ import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
 
 export default interface UserWorkerGateway {
   find(masterId: string, id: string): Promise<UserWorker | null>;
-  findByEmail(masterId: string, email: string): Promise<UserWorker | null>;
-  findAll(
-    masterId: string,
-    quantity?: number,
-    offSet?: number
-  ): Promise<UserWorker[]>;
+  findByBaseUserId(masterId: string, userId: string): Promise<UserWorker | null>;
+  findAll(masterId: string, quantity?: number, offSet?: number): Promise<UserWorker[]>;
   create(masterId: string, userWorker: UserWorker): Promise<string>;
   update(masterId: string, userWorker: UserWorker): Promise<UserWorker>;
   delete(masterId: string, id: string): Promise<string>;

@@ -34,15 +34,23 @@ import {
 } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.gateway';
+import UserGateway from '@/modules/user-management/application/gateway/user.gateway';
+import {
+  UserService,
+  UserServiceInterface,
+} from '@/modules/user-management/domain/services/user.service';
+import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 
 describe('User Student facade integration test', () => {
   let authUserRepository: AuthUserGateway;
   let tenantRepository: TenantGateway;
   let studentRepository: UserStudentGateway;
+  let userRepository: UserGateway;
   let emailAuthValidator: EmailAuthValidatorService;
   let authUserService: AuthUserServiceInterface;
   let tenantService: TenantServiceInterface;
   let tokenService: TokenServiceInterface;
+  let userService: UserServiceInterface;
   let createAuthUser: CreateAuthUser;
   let deleteAuthUser: DeleteAuthUser;
   let findAuthUser: FindAuthUser;
@@ -129,15 +137,16 @@ describe('User Student facade integration test', () => {
   }
 
   beforeEach(() => {
-    // Create fresh shared instances for each test
     authUserRepository = new MemoryAuthUserRepository();
     tenantRepository = new MemoryTenantRepository();
     studentRepository = new MemoryStudentRepository();
+    userRepository = new MemoryUserRepository();
 
     emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
     authUserService = new AuthUserService();
     tenantService = new TenantService(tenantRepository);
     tokenService = new TokenService('PxHf3H7');
+    userService = new UserService(userRepository);
 
     policiesService = new PoliciesService();
     createAuthUser = new CreateAuthUser(
@@ -176,20 +185,24 @@ describe('User Student facade integration test', () => {
     createUserStudent = new CreateUserStudent(
       studentRepository,
       emailAuthValidator,
-      policiesService
+      policiesService,
+      userService
     );
-    deleteUserStudent = new DeleteUserStudent(
-      studentRepository,
-      policiesService
-    );
+    deleteUserStudent = new DeleteUserStudent(studentRepository, policiesService);
     findAllUserStudent = new FindAllUserStudent(
       studentRepository,
-      policiesService
+      policiesService,
+      userService
     );
-    findUserStudent = new FindUserStudent(studentRepository, policiesService);
+    findUserStudent = new FindUserStudent(
+      studentRepository,
+      policiesService,
+      userService
+    );
     updateUserStudent = new UpdateUserStudent(
       studentRepository,
-      policiesService
+      policiesService,
+      userService
     );
 
     facadeStudent = new StudentFacade({

@@ -34,15 +34,23 @@ import {
 } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.gateway';
+import UserGateway from '@/modules/user-management/application/gateway/user.gateway';
+import {
+  UserService,
+  UserServiceInterface,
+} from '@/modules/user-management/domain/services/user.service';
+import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 
 describe('User Worker facade integration test', () => {
   let authUserRepository: AuthUserGateway;
   let tenantRepository: TenantGateway;
   let workerRepository: UserWorkerGateway;
+  let userRepository: UserGateway;
   let emailAuthValidator: EmailAuthValidatorService;
   let authUserService: AuthUserServiceInterface;
   let tenantService: TenantServiceInterface;
   let tokenService: TokenServiceInterface;
+  let userService: UserServiceInterface;
   let createAuthUser: CreateAuthUser;
   let deleteAuthUser: DeleteAuthUser;
   let findAuthUser: FindAuthUser;
@@ -138,11 +146,13 @@ describe('User Worker facade integration test', () => {
     authUserRepository = new MemoryAuthUserRepository();
     tenantRepository = new MemoryTenantRepository();
     workerRepository = new MemoryWorkerRepository();
+    userRepository = new MemoryUserRepository();
 
     emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
     authUserService = new AuthUserService();
     tenantService = new TenantService(tenantRepository);
     tokenService = new TokenService('PxHf3H7');
+    userService = new UserService(userRepository);
 
     policiesService = new PoliciesService();
     createAuthUser = new CreateAuthUser(
@@ -181,15 +191,21 @@ describe('User Worker facade integration test', () => {
     createUserWorker = new CreateUserWorker(
       workerRepository,
       emailAuthValidator,
-      policiesService
+      policiesService,
+      userService
     );
     deleteUserWorker = new DeleteUserWorker(workerRepository, policiesService);
     findAllUserWorker = new FindAllUserWorker(
       workerRepository,
-      policiesService
+      policiesService,
+      userService
     );
-    findUserWorker = new FindUserWorker(workerRepository, policiesService);
-    updateUserWorker = new UpdateUserWorker(workerRepository, policiesService);
+    findUserWorker = new FindUserWorker(workerRepository, policiesService, userService);
+    updateUserWorker = new UpdateUserWorker(
+      workerRepository,
+      policiesService,
+      userService
+    );
 
     facadeWorker = new WorkerFacade({
       createUserWorker,

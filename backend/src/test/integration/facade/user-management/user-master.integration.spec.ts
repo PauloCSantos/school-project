@@ -35,15 +35,23 @@ import {
   TenantServiceInterface,
 } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
 import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.gateway';
+import UserGateway from '@/modules/user-management/application/gateway/user.gateway';
+import {
+  UserService,
+  UserServiceInterface,
+} from '@/modules/user-management/domain/services/user.service';
+import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 
 describe('User master facade integration test', () => {
   let authUserRepository: AuthUserGateway;
   let tenantRepository: TenantGateway;
   let masterRepository: UserMasterGateway;
+  let userRepository: UserGateway;
   let emailAuthValidator: EmailAuthValidatorService;
   let authUserService: AuthUserServiceInterface;
   let tenantService: TenantServiceInterface;
   let tokenService: TokenServiceInterface;
+  let userService: UserServiceInterface;
   let createAuthUser: CreateAuthUser;
   let deleteAuthUser: DeleteAuthUser;
   let findAuthUser: FindAuthUser;
@@ -97,11 +105,13 @@ describe('User master facade integration test', () => {
     authUserRepository = new MemoryAuthUserRepository();
     masterRepository = new MemoryMasterRepository();
     tenantRepository = new MemoryTenantRepository();
+    userRepository = new MemoryUserRepository();
 
     emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
     authUserService = new AuthUserService();
     tenantService = new TenantService(tenantRepository);
     tokenService = new TokenService('PxHf3H7');
+    userService = new UserService(userRepository);
 
     policiesService = new PoliciesService();
     createAuthUser = new CreateAuthUser(
@@ -139,10 +149,15 @@ describe('User master facade integration test', () => {
     createUserMaster = new CreateUserMaster(
       masterRepository,
       emailAuthValidator,
-      policiesService
+      policiesService,
+      userService
     );
-    findUserMaster = new FindUserMaster(masterRepository, policiesService);
-    updateUserMaster = new UpdateUserMaster(masterRepository, policiesService);
+    findUserMaster = new FindUserMaster(masterRepository, policiesService, userService);
+    updateUserMaster = new UpdateUserMaster(
+      masterRepository,
+      policiesService,
+      userService
+    );
 
     facadeMaster = new MasterFacade({
       createUserMaster,

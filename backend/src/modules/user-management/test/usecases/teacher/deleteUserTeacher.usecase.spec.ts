@@ -7,6 +7,7 @@ import Address from '@/modules/user-management/domain/@shared/value-object/addre
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserTeacher from '@/modules/user-management/domain/entity/teacher.entity';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 
 describe('deleteUserTeacher usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -15,7 +16,7 @@ describe('deleteUserTeacher usecase unit test', () => {
   const MockRepository = () => {
     return {
       find: jest.fn(),
-      findByEmail: jest.fn(),
+      findByBaseUserId: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -57,12 +58,16 @@ describe('deleteUserTeacher usecase unit test', () => {
     academicDegrees: 'Msc',
   };
 
-  const userTeacher = new UserTeacher({
+  const baseUser = new UserBase({
     name: new Name(input.name),
     address: new Address(input.address),
-    salary: new Salary(input.salary),
     birthday: input.birthday,
     email: input.email,
+  });
+
+  const userTeacher = new UserTeacher({
+    userId: baseUser.id.value,
+    salary: new Salary(input.salary),
     graduation: input.graduation,
     academicDegrees: input.academicDegrees,
   });
@@ -72,10 +77,7 @@ describe('deleteUserTeacher usecase unit test', () => {
       const userTeacherRepository = MockRepository();
       userTeacherRepository.find.mockResolvedValue(null);
 
-      const usecase = new DeleteUserTeacher(
-        userTeacherRepository,
-        policieService
-      );
+      const usecase = new DeleteUserTeacher(userTeacherRepository, policieService);
 
       await expect(
         usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
@@ -86,10 +88,7 @@ describe('deleteUserTeacher usecase unit test', () => {
     it('should delete a user teacher', async () => {
       const userTeacherRepository = MockRepository();
       userTeacherRepository.find.mockResolvedValue(userTeacher);
-      const usecase = new DeleteUserTeacher(
-        userTeacherRepository,
-        policieService
-      );
+      const usecase = new DeleteUserTeacher(userTeacherRepository, policieService);
       const result = await usecase.execute(
         {
           id: userTeacher.id.value,

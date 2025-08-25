@@ -48,6 +48,8 @@ import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
 import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
+import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
+import { UserService } from '@/modules/user-management/domain/services/user.service';
 
 let tokenService: TokenService;
 
@@ -76,11 +78,7 @@ async function authHeader() {
   return { authorization: token };
 }
 
-async function createAuthUserInMemory(
-  email: string,
-  repository: any,
-  role = 'master'
-) {
+async function createAuthUserInMemory(email: string, repository: any, role = 'master') {
   await repository.create({
     id: new Id().value,
     email,
@@ -97,8 +95,10 @@ describe('User management module end to end test', () => {
   let userStudentRepository = new MemoryUserStudentRepository();
   let userTeacherRepository = new MemoryUserTeacherRepository();
   let userWorkerRepository = new MemoryUserWorkerRepository();
+  let userRepository = new MemoryUserRepository();
   let authUserRepository = new MemoryAuthUserRepository();
   let emailValidatorService = new EmailAuthValidatorService(authUserRepository);
+  let userService = new UserService(userRepository);
   let app: any;
   beforeEach(() => {
     userAdministratorRepository = new MemoryUserAdministratorRepository();
@@ -106,25 +106,32 @@ describe('User management module end to end test', () => {
     userStudentRepository = new MemoryUserStudentRepository();
     userTeacherRepository = new MemoryUserTeacherRepository();
     userWorkerRepository = new MemoryUserWorkerRepository();
+    userRepository = new MemoryUserRepository();
     authUserRepository = new MemoryAuthUserRepository();
     emailValidatorService = new EmailAuthValidatorService(authUserRepository);
+    userService = new UserService(userRepository);
+
     const policiesService = new PoliciesService();
     const createUserAdministratorUsecase = new CreateUserAdministrator(
       userAdministratorRepository,
       emailValidatorService,
-      policiesService
+      policiesService,
+      userService
     );
     const findUserAdministratorUsecase = new FindUserAdministrator(
       userAdministratorRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const findAllUserAdministratorUsecase = new FindAllUserAdministrator(
       userAdministratorRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const updateUserAdministratorUsecase = new UpdateUserAdministrator(
       userAdministratorRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const deleteUserAdministratorUsecase = new DeleteUserAdministrator(
       userAdministratorRepository,
@@ -133,33 +140,40 @@ describe('User management module end to end test', () => {
     const createUserMasterUsecase = new CreateUserMaster(
       userMasterRepository,
       emailValidatorService,
-      policiesService
+      policiesService,
+      userService
     );
     const findUserMasterUsecase = new FindUserMaster(
       userMasterRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const updateUserMasterUsecase = new UpdateUserMaster(
       userMasterRepository,
-      policiesService
+      policiesService,
+      userService
     );
 
     const createUserStudentUsecase = new CreateUserStudent(
       userStudentRepository,
       emailValidatorService,
-      policiesService
+      policiesService,
+      userService
     );
     const findUserStudentUsecase = new FindUserStudent(
       userStudentRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const findAllUserStudentUsecase = new FindAllUserStudent(
       userStudentRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const updateUserStudentUsecase = new UpdateUserStudent(
       userStudentRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const deleteUserStudentUsecase = new DeleteUserStudent(
       userStudentRepository,
@@ -169,19 +183,23 @@ describe('User management module end to end test', () => {
     const createUserTeacherUsecase = new CreateUserTeacher(
       userTeacherRepository,
       emailValidatorService,
-      policiesService
+      policiesService,
+      userService
     );
     const findUserTeacherUsecase = new FindUserTeacher(
       userTeacherRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const findAllUserTeacherUsecase = new FindAllUserTeacher(
       userTeacherRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const updateUserTeacherUsecase = new UpdateUserTeacher(
       userTeacherRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const deleteUserTeacherUsecase = new DeleteUserTeacher(
       userTeacherRepository,
@@ -191,19 +209,23 @@ describe('User management module end to end test', () => {
     const createUserWorkerUsecase = new CreateUserWorker(
       userWorkerRepository,
       emailValidatorService,
-      policiesService
+      policiesService,
+      userService
     );
     const findUserWorkerUsecase = new FindUserWorker(
       userWorkerRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const findAllUserWorkerUsecase = new FindAllUserWorker(
       userWorkerRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const updateUserWorkerUsecase = new UpdateUserWorker(
       userWorkerRepository,
-      policiesService
+      policiesService,
+      userService
     );
     const deleteUserWorkerUsecase = new DeleteUserWorker(
       userWorkerRepository,
@@ -249,10 +271,10 @@ describe('User management module end to end test', () => {
     const authUserMiddlewareMaster = new AuthUserMiddleware(tokenService, [
       RoleUsersEnum.MASTER,
     ]);
-    const authUserMiddlewareAdministrator = new AuthUserMiddleware(
-      tokenService,
-      [RoleUsersEnum.MASTER, RoleUsersEnum.ADMINISTRATOR]
-    );
+    const authUserMiddlewareAdministrator = new AuthUserMiddleware(tokenService, [
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
+    ]);
     const authUserMiddlewareTeacher = new AuthUserMiddleware(tokenService, [
       RoleUsersEnum.MASTER,
       RoleUsersEnum.ADMINISTRATOR,
@@ -332,6 +354,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
             });
+
           expect(response.status).toBe(400);
           expect(response.body.error).toBeDefined();
         });
@@ -541,6 +564,7 @@ describe('User management module end to end test', () => {
     describe('On success', () => {
       describe('POST /user-administrator', () => {
         it('should create a user', async () => {
+          //aqui
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
@@ -608,9 +632,7 @@ describe('User management module end to end test', () => {
       describe('GET /users-administrator', () => {
         it('should return empty array on GET /users-administrator when there are no administrators', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
-            .get('/users-administrator')
-            .set(headers);
+          const res = await supertest(app).get('/users-administrator').set(headers);
           expect(res.status).toBe(200);
           expect(Array.isArray(res.body)).toBe(true);
           expect(res.body.length).toBe(0);
@@ -665,9 +687,7 @@ describe('User management module end to end test', () => {
               email: 'teste2@test.com',
               graduation: 'Spanish',
             });
-          const response = await supertest(app)
-            .get('/users-administrator')
-            .set(headers);
+          const response = await supertest(app).get('/users-administrator').set(headers);
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -787,9 +807,7 @@ describe('User management module end to end test', () => {
       });
       describe('GET /user-master/:id', () => {
         it('should return 401 when authorization header is missing on GET /user-master/:id', async () => {
-          const res = await supertest(app).get(
-            `/user-master/${new Id().value}`
-          );
+          const res = await supertest(app).get(`/user-master/${new Id().value}`);
           expect(res.status).toBe(401);
           expect(res.body).toBeDefined();
         });
@@ -834,9 +852,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
             });
-          const response = await supertest(app)
-            .get(`/user-master/123`)
-            .set(headers);
+          const response = await supertest(app).get(`/user-master/123`).set(headers);
           expect(response.status).toBe(400);
           expect(response.body.error).toBeDefined();
         });
@@ -890,13 +906,10 @@ describe('User management module end to end test', () => {
               password: 'StrongPass1!',
               name: { firstName: 'Valid', lastName: 'Master' },
             });
-          const upd = await supertest(app)
-            .patch('/user-master')
-            .set(headers)
-            .send({
-              id: created.body.id,
-              name: 123,
-            });
+          const upd = await supertest(app).patch('/user-master').set(headers).send({
+            id: created.body.id,
+            name: 123,
+          });
           expect(upd.status).toBe(400);
           expect(upd.body.error).toBeDefined();
         });
@@ -992,9 +1005,7 @@ describe('User management module end to end test', () => {
               cnpj: '35.741.901/0001-58',
             });
           const id = response.body.id;
-          const userMaster = await supertest(app)
-            .get(`/user-master/${id}`)
-            .set(headers);
+          const userMaster = await supertest(app).get(`/user-master/${id}`).set(headers);
           expect(userMaster.status).toBe(200);
           expect(userMaster.body).toBeDefined();
         });
@@ -1106,9 +1117,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
-          const userStudent = await supertest(app)
-            .get(`/user-student/123`)
-            .set(headers);
+          const userStudent = await supertest(app).get(`/user-student/123`).set(headers);
           expect(userStudent.status).toBe(400);
           expect(userStudent.body.error).toBeDefined();
         });
@@ -1180,13 +1189,10 @@ describe('User management module end to end test', () => {
               password: 'StrongPass1!',
               name: { firstName: 'Valid', lastName: 'student' },
             });
-          const upd = await supertest(app)
-            .patch('/user-student')
-            .set(headers)
-            .send({
-              id: created.body.id,
-              name: 123,
-            });
+          const upd = await supertest(app).patch('/user-student').set(headers).send({
+            id: created.body.id,
+            name: 123,
+          });
           expect(upd.status).toBe(400);
           expect(upd.body.error).toBeDefined();
         });
@@ -1250,9 +1256,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
-          const result = await supertest(app)
-            .delete(`/user-student/123`)
-            .set(headers);
+          const result = await supertest(app).delete(`/user-student/123`).set(headers);
           expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined();
         });
@@ -1370,9 +1374,7 @@ describe('User management module end to end test', () => {
               email: 'teste2@test.com',
               paymentYear: 20000,
             });
-          const response = await supertest(app)
-            .get('/users-student')
-            .set(headers);
+          const response = await supertest(app).get('/users-student').set(headers);
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -1452,9 +1454,7 @@ describe('User management module end to end test', () => {
               paymentYear: 20000,
             });
           const id = response.body.id;
-          const result = await supertest(app)
-            .delete(`/user-student/${id}`)
-            .set(headers);
+          const result = await supertest(app).delete(`/user-student/${id}`).set(headers);
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -1536,9 +1536,7 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          const userTeacher = await supertest(app)
-            .get(`/user-teacher/123`)
-            .set(headers);
+          const userTeacher = await supertest(app).get(`/user-teacher/123`).set(headers);
           expect(userTeacher.status).toBe(400);
           expect(userTeacher.body.error).toBeDefined();
         });
@@ -1610,13 +1608,10 @@ describe('User management module end to end test', () => {
               password: 'StrongPass1!',
               name: { firstName: 'Valid', lastName: 'teacher' },
             });
-          const upd = await supertest(app)
-            .patch('/user-teacher')
-            .set(headers)
-            .send({
-              id: created.body.id,
-              name: 123,
-            });
+          const upd = await supertest(app).patch('/user-teacher').set(headers).send({
+            id: created.body.id,
+            name: 123,
+          });
           expect(upd.status).toBe(400);
           expect(upd.body.error).toBeDefined();
         });
@@ -1689,9 +1684,7 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          const result = await supertest(app)
-            .delete(`/user-teacher/123`)
-            .set(headers);
+          const result = await supertest(app).delete(`/user-teacher/123`).set(headers);
           expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined();
         });
@@ -1826,9 +1819,7 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          const response = await supertest(app)
-            .get('/users-teacher')
-            .set(headers);
+          const response = await supertest(app).get('/users-teacher').set(headers);
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -1921,9 +1912,7 @@ describe('User management module end to end test', () => {
               academicDegrees: 'Msc',
             });
           const id = response.body.id;
-          const result = await supertest(app)
-            .delete(`/user-teacher/${id}`)
-            .set(headers);
+          const result = await supertest(app).delete(`/user-teacher/${id}`).set(headers);
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });
@@ -2001,9 +1990,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          const userWorker = await supertest(app)
-            .get(`/user-worker/123`)
-            .set(headers);
+          const userWorker = await supertest(app).get(`/user-worker/123`).set(headers);
           expect(userWorker.status).toBe(400);
           expect(userWorker.body.error).toBeDefined();
         });
@@ -2075,13 +2062,10 @@ describe('User management module end to end test', () => {
               password: 'StrongPass1!',
               name: { firstName: 'Valid', lastName: 'worker' },
             });
-          const upd = await supertest(app)
-            .patch('/user-worker')
-            .set(headers)
-            .send({
-              id: created.body.id,
-              name: 123,
-            });
+          const upd = await supertest(app).patch('/user-worker').set(headers).send({
+            id: created.body.id,
+            name: 123,
+          });
           expect(upd.status).toBe(400);
           expect(upd.body.error).toBeDefined();
         });
@@ -2151,9 +2135,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          const result = await supertest(app)
-            .delete(`/user-worker/123`)
-            .set(headers);
+          const result = await supertest(app).delete(`/user-worker/123`).set(headers);
           expect(result.status).toBe(400);
           expect(result.body.error).toBeDefined();
         });
@@ -2216,9 +2198,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
             });
           const id = response.body.id;
-          const userWorker = await supertest(app)
-            .get(`/user-worker/${id}`)
-            .set(headers);
+          const userWorker = await supertest(app).get(`/user-worker/${id}`).set(headers);
           expect(userWorker.status).toBe(200);
           expect(userWorker.body).toBeDefined();
         });
@@ -2280,9 +2260,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste2@test.com',
             });
-          const response = await supertest(app)
-            .get('/users-worker')
-            .set(headers);
+          const response = await supertest(app).get('/users-worker').set(headers);
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -2369,9 +2347,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
             });
           const id = response.body.id;
-          const result = await supertest(app)
-            .delete(`/user-worker/${id}`)
-            .set(headers);
+          const result = await supertest(app).delete(`/user-worker/${id}`).set(headers);
           expect(result.status).toBe(200);
           expect(result.body.message).toBe('Operação concluída com sucesso');
         });

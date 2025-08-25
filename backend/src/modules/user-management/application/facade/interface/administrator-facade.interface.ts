@@ -10,7 +10,7 @@ import {
   FindUserAdministratorOutputDto,
   UpdateUserAdministratorInputDto,
   UpdateUserAdministratorOutputDto,
-} from '../../dto/administrator-facade.dto';
+} from '../../../application/dto/administrator-facade.dto';
 
 export default interface AdministratorFacadeInterface {
   create(

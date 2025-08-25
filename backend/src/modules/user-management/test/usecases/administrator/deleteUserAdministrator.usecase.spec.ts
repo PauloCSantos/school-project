@@ -7,6 +7,7 @@ import Address from '@/modules/user-management/domain/@shared/value-object/addre
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserAdministrator from '@/modules/user-management/domain/entity/administrator.entity';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 
 describe('deleteUserAdministrator usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -15,7 +16,7 @@ describe('deleteUserAdministrator usecase unit test', () => {
   const MockRepository = () => {
     return {
       find: jest.fn(),
-      findByEmail: jest.fn(),
+      findByBaseUserId: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -56,18 +57,22 @@ describe('deleteUserAdministrator usecase unit test', () => {
     graduation: 'Math',
   };
 
-  const userAdministrator = new UserAdministrator({
+  const baseUser = new UserBase({
     name: new Name(input.name),
     address: new Address(input.address),
-    salary: new Salary(input.salary),
     birthday: input.birthday,
     email: input.email,
+  });
+  const userAdministrator = new UserAdministrator({
+    userId: baseUser.id.value,
+    salary: new Salary(input.salary),
     graduation: input.graduation,
   });
 
   describe('On fail', () => {
     it('should return an error if the user does not exist', async () => {
       const userAdministratorRepository = MockRepository();
+
       userAdministratorRepository.find.mockResolvedValue(null);
 
       const usecase = new DeleteUserAdministrator(
@@ -83,7 +88,9 @@ describe('deleteUserAdministrator usecase unit test', () => {
   describe('On success', () => {
     it('should delete a user administrator', async () => {
       const userAdministratorRepository = MockRepository();
+
       userAdministratorRepository.find.mockResolvedValue(userAdministrator);
+
       const usecase = new DeleteUserAdministrator(
         userAdministratorRepository,
         policieService

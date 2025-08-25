@@ -2,7 +2,7 @@ import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.in
 import {
   FindAllUserTeacherInputDto,
   FindAllUserTeacherOutputDto,
-} from '../../dto/teacher-usecase.dto';
+} from '../../../application/dto/teacher-usecase.dto';
 import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
@@ -10,7 +10,8 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
 } from '@/modules/@shared/enums/enums';
-import { TeacherMapper } from '@/modules/user-management/infrastructure/mapper/teacher.mapper';
+import { TeacherAssembler } from '../../assemblers/teacher.assembler';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
 
 export default class FindAllUserTeacher
   implements
@@ -20,7 +21,8 @@ export default class FindAllUserTeacher
 
   constructor(
     userTeacherRepository: UserTeacherGateway,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly policiesService: PoliciesServiceInterface,
+    private readonly userService: UserServiceInterface
   ) {
     this._userTeacherRepository = userTeacherRepository;
   }
@@ -34,12 +36,14 @@ export default class FindAllUserTeacher
       token
     );
 
-    const results = await this._userTeacherRepository.findAll(
+    const teachers = await this._userTeacherRepository.findAll(
       token.masterId,
       quantity,
       offset
     );
 
-    return TeacherMapper.toDTOList(results);
+    const results = await this.userService.findBaseUsers(teachers);
+
+    return TeacherAssembler.toObjList(results);
   }
 }

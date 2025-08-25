@@ -2,6 +2,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import UserStudent from '@/modules/user-management/domain/entity/student.entity';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 import MemoryUserStudentRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/student.repository';
 
 describe('MemoryUserStudentRepository unit test', () => {
@@ -57,18 +58,24 @@ describe('MemoryUserStudentRepository unit test', () => {
   const paymentYear2 = 15000;
   const paymentYear3 = 50000;
 
-  const userStudent1 = new UserStudent({
+  const userBase1 = new UserBase({
     name: name1,
     address: address1,
     birthday: birthday1,
     email: email1,
-    paymentYear: paymentYear1,
   });
-  const userStudent2 = new UserStudent({
+  const userBase2 = new UserBase({
     name: name2,
     address: address2,
     birthday: birthday2,
     email: email2,
+  });
+  const userStudent1 = new UserStudent({
+    userId: userBase1.id.value,
+    paymentYear: paymentYear1,
+  });
+  const userStudent2 = new UserStudent({
+    userId: userBase2.id.value,
     paymentYear: paymentYear2,
   });
 
@@ -87,11 +94,8 @@ describe('MemoryUserStudentRepository unit test', () => {
     });
     it('should throw an error when the Id is wrong', async () => {
       const userStudent = new UserStudent({
-        id: new Id(),
-        name: name3,
-        address: address3,
-        birthday: birthday3,
-        email: email3,
+        id: new Id().value,
+        userId: new Id().value,
         paymentYear: paymentYear3,
       });
 
@@ -112,20 +116,18 @@ describe('MemoryUserStudentRepository unit test', () => {
 
       expect(userStudentFound).toBeDefined();
       expect(userStudentFound!.id).toBeDefined();
-      expect(userStudentFound!.name).toStrictEqual(userStudent1.name);
-      expect(userStudentFound!.address).toStrictEqual(userStudent1.address);
-      expect(userStudentFound!.email).toStrictEqual(userStudent1.email);
-      expect(userStudentFound!.birthday).toStrictEqual(userStudent1.birthday);
-      expect(userStudentFound!.paymentYear).toStrictEqual(
-        userStudent1.paymentYear
-      );
+      expect(userStudentFound!.userId).toStrictEqual(userStudent1.userId);
+      expect(userStudentFound!.paymentYear).toStrictEqual(userStudent1.paymentYear);
     });
     it('should create a new user and return its id', async () => {
-      const userStudent = new UserStudent({
+      const userBase = new UserBase({
         name: name3,
         address: address3,
         birthday: birthday3,
         email: email3,
+      });
+      const userStudent = new UserStudent({
+        userId: userBase.id.value,
         paymentYear: paymentYear3,
       });
       const result = await repository.create(masterId, userStudent);
@@ -134,15 +136,7 @@ describe('MemoryUserStudentRepository unit test', () => {
     });
     it('should update a user and return its new informations', async () => {
       const updateduserStudent: UserStudent = userStudent2;
-      updateduserStudent.name.firstName = 'Jane';
-      updateduserStudent.name.middleName = 'Monza';
-      updateduserStudent.name.lastName = 'Gueda';
-      updateduserStudent.address.city = address3.city;
-      updateduserStudent.address.avenue = address3.avenue;
-      updateduserStudent.address.number = address3.number;
-      updateduserStudent.address.state = address3.state;
-      updateduserStudent.address.zip = address3.zip;
-      updateduserStudent.address.street = address3.street;
+      updateduserStudent.paymentYear = 99000;
 
       const result = await repository.update(masterId, updateduserStudent);
 
@@ -152,16 +146,10 @@ describe('MemoryUserStudentRepository unit test', () => {
       const allStudentUsers = await repository.findAll(masterId);
 
       expect(allStudentUsers.length).toBe(2);
-      expect(allStudentUsers[0].name).toStrictEqual(userStudent1.name);
-      expect(allStudentUsers[1].name).toStrictEqual(userStudent2.name);
-      expect(allStudentUsers[0].email).toStrictEqual(userStudent1.email);
-      expect(allStudentUsers[1].email).toStrictEqual(userStudent2.email);
-      expect(allStudentUsers[0].paymentYear).toStrictEqual(
-        userStudent1.paymentYear
-      );
-      expect(allStudentUsers[1].paymentYear).toStrictEqual(
-        userStudent2.paymentYear
-      );
+      expect(allStudentUsers[0].userId).toStrictEqual(userStudent1.userId);
+      expect(allStudentUsers[1].userId).toStrictEqual(userStudent2.userId);
+      expect(allStudentUsers[0].paymentYear).toStrictEqual(userStudent1.paymentYear);
+      expect(allStudentUsers[1].paymentYear).toStrictEqual(userStudent2.paymentYear);
     });
     it('should remove the user', async () => {
       const response = await repository.delete(masterId, userStudent1.id.value);

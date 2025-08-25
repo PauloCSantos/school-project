@@ -1,19 +1,37 @@
-import { isString, validCNPJ } from '@/modules/@shared/utils/validations';
-import UserBase, { UserBaseProps } from '../@shared/entity/base-user.entity';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { isString, validCNPJ, validId } from '@/modules/@shared/utils/validations';
 
-type MasterUserProps = UserBaseProps & {
+type MasterUserProps = {
+  id?: string;
+  userId: string;
   cnpj: string;
 };
 
-export default class UserMaster extends UserBase {
+export default class UserMaster {
+  private _id;
+  private _userId;
   private _cnpj;
-  constructor(input: MasterUserProps) {
-    if (input.id === undefined) throw new Error('Master user needs id');
-    super(input);
-    if (input.cnpj === undefined) throw new Error('Field CNPJ is mandatory');
-    if (this.validateCnpj(input.cnpj))
-      throw new Error('Field CNPJ is not valid');
-    this._cnpj = input.cnpj;
+  constructor({ id, userId, cnpj }: MasterUserProps) {
+    if (userId === undefined) throw new Error('Master user needs id');
+    if (cnpj === undefined) throw new Error('Field CNPJ is mandatory');
+    if (this.validateCnpj(cnpj)) throw new Error('Field CNPJ is not valid');
+    if (!validId(userId)) throw new Error('Invalid id');
+    if (id) {
+      if (!validId(id)) throw new Error('Invalid id');
+      this._id = new Id(id);
+    } else {
+      this._id = new Id();
+    }
+    this._userId = userId;
+    this._cnpj = cnpj;
+  }
+
+  get id(): Id {
+    return this._id;
+  }
+
+  get userId(): string {
+    return this._userId;
   }
 
   get cnpj(): string {

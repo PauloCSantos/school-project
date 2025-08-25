@@ -3,7 +3,7 @@ import UserTeacher from '@/modules/user-management/domain/entity/teacher.entity'
 import {
   CreateUserTeacherInputDto,
   CreateUserTeacherOutputDto,
-} from '../../dto/teacher-usecase.dto';
+} from '../../../application/dto/teacher-usecase.dto';
 import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
@@ -11,21 +11,19 @@ import Salary from '@/modules/user-management/domain/@shared/value-object/salary
 import { EmailAuthValidator } from '../../services/email-auth-validator.service';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
 
 export default class CreateUserTeacher
-  implements
-    UseCaseInterface<CreateUserTeacherInputDto, CreateUserTeacherOutputDto>
+  implements UseCaseInterface<CreateUserTeacherInputDto, CreateUserTeacherOutputDto>
 {
   private _userTeacherRepository: UserTeacherGateway;
 
   constructor(
     userTeacherRepository: UserTeacherGateway,
     readonly emailValidatorService: EmailAuthValidator,
-    private readonly policiesService: PoliciesServiceInterface
+    private readonly policiesService: PoliciesServiceInterface,
+    private readonly userService: UserServiceInterface
   ) {
     this._userTeacherRepository = userTeacherRepository;
   }
@@ -51,26 +49,27 @@ export default class CreateUserTeacher
       throw new Error('You must register this email before creating the user.');
     }
 
-    const userTeacher = new UserTeacher({
+    const baseUser = await this.userService.getOrCreateUser(email, {
+      email: email,
       name: new Name(name),
       address: new Address(address),
-      email,
       birthday: new Date(birthday),
+    });
+
+    const userTeacher = new UserTeacher({
+      userId: baseUser.id.value,
       graduation,
       salary: new Salary(salary),
       academicDegrees,
     });
 
-    const userVerification = await this._userTeacherRepository.findByEmail(
+    const userVerification = await this._userTeacherRepository.findByBaseUserId(
       token.masterId,
-      userTeacher.email
+      baseUser.id.value
     );
     if (userVerification) throw new Error('User already exists');
 
-    const result = await this._userTeacherRepository.create(
-      token.masterId,
-      userTeacher
-    );
+    const result = await this._userTeacherRepository.create(token.masterId, userTeacher);
 
     return { id: result };
   }

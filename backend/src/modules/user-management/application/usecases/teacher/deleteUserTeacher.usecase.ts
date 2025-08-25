@@ -2,18 +2,14 @@ import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.in
 import {
   DeleteUserTeacherInputDto,
   DeleteUserTeacherOutputDto,
-} from '../../dto/teacher-usecase.dto';
+} from '../../../application/dto/teacher-usecase.dto';
 import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 export default class DeleteUserTeacher
-  implements
-    UseCaseInterface<DeleteUserTeacherInputDto, DeleteUserTeacherOutputDto>
+  implements UseCaseInterface<DeleteUserTeacherInputDto, DeleteUserTeacherOutputDto>
 {
   private _userTeacherRepository: UserTeacherGateway;
 
@@ -33,10 +29,7 @@ export default class DeleteUserTeacher
       token
     );
 
-    const userVerification = await this._userTeacherRepository.find(
-      token.masterId,
-      id
-    );
+    const userVerification = await this._userTeacherRepository.find(token.masterId, id);
     if (!userVerification) throw new Error('User not found');
 
     const result = await this._userTeacherRepository.delete(token.masterId, id);

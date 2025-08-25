@@ -6,6 +6,7 @@ import CreateUserStudent from '@/modules/user-management/application/usecases/st
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import UserStudent from '@/modules/user-management/domain/entity/student.entity';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 
 describe('createUserStudent usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -14,11 +15,20 @@ describe('createUserStudent usecase unit test', () => {
   const MockRepository = () => {
     return {
       find: jest.fn(),
-      findByEmail: jest.fn(),
+      findByBaseUserId: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+    };
+  };
+
+  const MockUserService = () => {
+    return {
+      getOrCreateUser: jest.fn(),
+      findBaseUsers: jest.fn(),
+      findBaseUser: jest.fn(),
+      update: jest.fn(),
     };
   };
 
@@ -56,11 +66,15 @@ describe('createUserStudent usecase unit test', () => {
     paymentYear: 20000,
   };
 
-  const userStudent = new UserStudent({
+  const userBase = new UserBase({
     name: new Name(input.name),
     address: new Address(input.address),
     birthday: input.birthday,
     email: input.email,
+  });
+
+  const userStudent = new UserStudent({
+    userId: userBase.id.value,
     paymentYear: input.paymentYear,
   });
 
@@ -68,53 +82,53 @@ describe('createUserStudent usecase unit test', () => {
     it('should throw an error if the user already exists', async () => {
       const userStudentRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const userService = MockUserService();
 
-      userStudentRepository.findByEmail.mockResolvedValue(userStudent);
+      userService.getOrCreateUser.mockResolvedValue(userBase);
+      userStudentRepository.findByBaseUserId.mockResolvedValue(userStudent);
 
       const usecase = new CreateUserStudent(
         userStudentRepository,
         emailAuthValidatorService,
-        policieService
+        policieService,
+        userService
       );
 
-      await expect(usecase.execute(input, token)).rejects.toThrow(
-        'User already exists'
-      );
-      expect(userStudentRepository.findByEmail).toHaveBeenCalledWith(
+      await expect(usecase.execute(input, token)).rejects.toThrow('User already exists');
+      expect(userStudentRepository.findByBaseUserId).toHaveBeenCalledWith(
         token.masterId,
         expect.any(String)
       );
       expect(userStudentRepository.create).not.toHaveBeenCalled();
-      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
-        input.email
-      );
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(input.email);
     });
   });
 
   describe('On success', () => {
     it('should create a user student', async () => {
       const userStudentRepository = MockRepository();
-      userStudentRepository.create.mockResolvedValue(userStudent);
       const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const userService = MockUserService();
 
-      userStudentRepository.findByEmail.mockResolvedValue(null);
+      userStudentRepository.create.mockResolvedValue(userStudent);
+      userStudentRepository.findByBaseUserId.mockResolvedValue(null);
+      userService.getOrCreateUser.mockResolvedValue(userBase);
 
       const usecase = new CreateUserStudent(
         userStudentRepository,
         emailAuthValidatorService,
-        policieService
+        policieService,
+        userService
       );
       const result = await usecase.execute(input, token);
 
-      expect(userStudentRepository.findByEmail).toHaveBeenCalledWith(
+      expect(userStudentRepository.findByBaseUserId).toHaveBeenCalledWith(
         token.masterId,
         expect.any(String)
       );
       expect(userStudentRepository.create).toHaveBeenCalled();
       expect(result).toBeDefined();
-      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(
-        input.email
-      );
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(input.email);
     });
   });
 });

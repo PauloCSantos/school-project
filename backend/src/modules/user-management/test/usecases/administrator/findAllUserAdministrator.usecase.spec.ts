@@ -7,6 +7,7 @@ import Address from '@/modules/user-management/domain/@shared/value-object/addre
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserAdministrator from '@/modules/user-management/domain/entity/administrator.entity';
+import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 
 describe('findAllUserAdministrator usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -15,11 +16,20 @@ describe('findAllUserAdministrator usecase unit test', () => {
   const MockRepository = () => {
     return {
       find: jest.fn(),
-      findByEmail: jest.fn(),
+      findByBaseUserId: jest.fn(),
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+    };
+  };
+
+  const MockUserService = () => {
+    return {
+      getOrCreateUser: jest.fn(),
+      findBaseUsers: jest.fn(),
+      findBaseUser: jest.fn(),
+      update: jest.fn(),
     };
   };
 
@@ -35,7 +45,7 @@ describe('findAllUserAdministrator usecase unit test', () => {
     masterId: new Id().value,
   };
 
-  const userAdministrator1 = new UserAdministrator({
+  const userBase1 = new UserBase({
     name: new Name({
       firstName: 'John',
       middleName: 'David',
@@ -51,10 +61,14 @@ describe('findAllUserAdministrator usecase unit test', () => {
     }),
     birthday: new Date('11-12-1995'),
     email: 'teste1@test.com',
+  });
+  const userAdministrator1 = new UserAdministrator({
+    userId: userBase1.id.value,
     salary: new Salary({ salary: 2500 }),
     graduation: 'Math',
   });
-  const userAdministrator2 = new UserAdministrator({
+
+  const userBase2 = new UserBase({
     name: new Name({
       firstName: 'Marie',
       lastName: 'Mason',
@@ -69,6 +83,9 @@ describe('findAllUserAdministrator usecase unit test', () => {
     }),
     birthday: new Date('05-24-1995'),
     email: 'teste2@test.com',
+  });
+  const userAdministrator2 = new UserAdministrator({
+    userId: userBase2.id.value,
     salary: new Salary({ salary: 8500 }),
     graduation: 'Spanish',
   });
@@ -76,13 +93,21 @@ describe('findAllUserAdministrator usecase unit test', () => {
   describe('On success', () => {
     it('should find all users administrator', async () => {
       const userAdministratorRepository = MockRepository();
+      const userService = MockUserService();
+
       userAdministratorRepository.findAll.mockResolvedValue([
         userAdministrator1,
         userAdministrator2,
       ]);
+      userService.findBaseUsers.mockResolvedValue([
+        { entity: userAdministrator1, user: userBase1 },
+        { entity: userAdministrator2, user: userBase2 },
+      ]);
+
       const usecase = new FindAllUserAdministrator(
         userAdministratorRepository,
-        policieService
+        policieService,
+        userService
       );
 
       const result = await usecase.execute({}, token);
@@ -92,10 +117,15 @@ describe('findAllUserAdministrator usecase unit test', () => {
     });
     it('should return an empty array when the repository is empty', async () => {
       const userAdministratorRepository = MockRepository();
+      const userService = MockUserService();
+
       userAdministratorRepository.findAll.mockResolvedValue([]);
+      userService.findBaseUsers.mockResolvedValue([]);
+
       const usecase = new FindAllUserAdministrator(
         userAdministratorRepository,
-        policieService
+        policieService,
+        userService
       );
 
       const result = await usecase.execute({}, token);

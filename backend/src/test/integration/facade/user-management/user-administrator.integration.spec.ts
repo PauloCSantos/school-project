@@ -34,15 +34,23 @@ import {
 import TenantGateway from '@/modules/authentication-authorization-management/application/gateway/tenant.gateway';
 import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
 import UserAdministratorGateway from '@/modules/user-management/application/gateway/administrator.gateway';
+import UserGateway from '@/modules/user-management/application/gateway/user.gateway';
+import {
+  UserService,
+  UserServiceInterface,
+} from '@/modules/user-management/domain/services/user.service';
+import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 
 describe('User Administrator facade integration test', () => {
   let authUserRepository: AuthUserGateway;
   let tenantRepository: TenantGateway;
   let administratorRepository: UserAdministratorGateway;
+  let userRepository: UserGateway;
   let emailAuthValidator: EmailAuthValidatorService;
   let authUserService: AuthUserServiceInterface;
   let tokenService: TokenServiceInterface;
   let tenantService: TenantServiceInterface;
+  let userService: UserServiceInterface;
   let createAuthUser: CreateAuthUser;
   let deleteAuthUser: DeleteAuthUser;
   let findAuthUser: FindAuthUser;
@@ -140,11 +148,12 @@ describe('User Administrator facade integration test', () => {
     authUserRepository = new MemoryAuthUserRepository();
     administratorRepository = new MemoryAdministratorRepository();
     tenantRepository = new MemoryTenantRepository();
-
+    userRepository = new MemoryUserRepository();
     emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
     authUserService = new AuthUserService();
     tenantService = new TenantService(tenantRepository);
     tokenService = new TokenService('PxHf3H7');
+    userService = new UserService(userRepository);
 
     policiesService = new PoliciesService();
     createAuthUser = new CreateAuthUser(
@@ -181,7 +190,8 @@ describe('User Administrator facade integration test', () => {
     createUserAdministrator = new CreateUserAdministrator(
       administratorRepository,
       emailAuthValidator,
-      policiesService
+      policiesService,
+      userService
     );
     deleteUserAdministrator = new DeleteUserAdministrator(
       administratorRepository,
@@ -189,15 +199,18 @@ describe('User Administrator facade integration test', () => {
     );
     findAllUserAdministrator = new FindAllUserAdministrator(
       administratorRepository,
-      policiesService
+      policiesService,
+      userService
     );
     findUserAdministrator = new FindUserAdministrator(
       administratorRepository,
-      policiesService
+      policiesService,
+      userService
     );
     updateUserAdministrator = new UpdateUserAdministrator(
       administratorRepository,
-      policiesService
+      policiesService,
+      userService
     );
 
     facadeAdministrator = new AdministratorFacade({

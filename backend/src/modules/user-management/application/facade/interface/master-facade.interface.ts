@@ -6,7 +6,7 @@ import {
   FindUserMasterOutputDto,
   UpdateUserMasterInputDto,
   UpdateUserMasterOutputDto,
-} from '../../dto/master-facade.dto';
+} from '../../../application/dto/master-facade.dto';
 
 export default interface MasterFacadeInterface {
   create(
