@@ -1,3 +1,4 @@
+import { toStateType } from '@/modules/@shared/utils/formatting';
 import Student from '../../domain/entity/student.entity';
 import type { IFindUserStudentOutput as StudentMapperProps } from '../dto/base-student.dto';
 
@@ -24,6 +25,7 @@ export class StudentMapper {
       id: input.id.value,
       userId: input.userId,
       paymentYear: input.paymentYear,
+      state: input.state,
     };
   }
 
@@ -42,6 +44,7 @@ export class StudentMapper {
       id: input.id,
       userId: input.userId,
       paymentYear: input.paymentYear,
+      state: toStateType(input.state),
     });
   }
 

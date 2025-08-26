@@ -6,5 +6,5 @@ export default interface UserTeacherGateway {
   findAll(masterId: string, quantity?: number, offSet?: number): Promise<UserTeacher[]>;
   create(masterId: string, userTeacher: UserTeacher): Promise<string>;
   update(masterId: string, userTeacher: UserTeacher): Promise<UserTeacher>;
-  delete(masterId: string, id: string): Promise<string>;
+  delete(masterId: string, userTeacher: UserTeacher): Promise<string>;
 }

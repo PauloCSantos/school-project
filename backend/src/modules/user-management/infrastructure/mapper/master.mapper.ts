@@ -1,3 +1,4 @@
+import { toStateType } from '@/modules/@shared/utils/formatting';
 import Master from '../../domain/entity/master.entity';
 import type { IFindUserMasterOutput as MasterMapperProps } from '../dto/base-master.dto';
 
@@ -24,6 +25,7 @@ export class MasterMapper {
       id: input.id.value,
       userId: input.userId,
       cnpj: input.cnpj,
+      state: input.state,
     };
   }
 
@@ -42,6 +44,7 @@ export class MasterMapper {
       id: input.id,
       userId: input.userId,
       cnpj: input.cnpj,
+      state: toStateType(input.state),
     });
   }
 

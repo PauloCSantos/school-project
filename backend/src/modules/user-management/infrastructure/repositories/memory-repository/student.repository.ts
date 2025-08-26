@@ -115,12 +115,12 @@ export default class MemoryUserStudentRepository implements UserStudentGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the student record is not found
    */
-  async delete(masterId: string, id: string): Promise<string> {
+  async delete(masterId: string, userStudent: UserStudent): Promise<string> {
     const studentUsers = this._studentUsers.get(masterId);
-    if (!studentUsers || !studentUsers.has(id)) {
+    if (!studentUsers || !studentUsers.has(userStudent.id.value)) {
       throw new Error('User not found');
     }
-    studentUsers.delete(id);
+    studentUsers.set(userStudent.id.value, StudentMapper.toObj(userStudent));
     return 'Operação concluída com sucesso';
   }
 
