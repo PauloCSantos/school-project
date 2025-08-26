@@ -37,9 +37,7 @@ describe('MemoryEventRepository unit test', () => {
   });
 
   beforeEach(() => {
-    repository = new MemoryEventRepository([
-      { masterId, records: [event1, event2] },
-    ]);
+    repository = new MemoryEventRepository([{ masterId, records: [event1, event2] }]);
   });
 
   describe('On fail', () => {
@@ -68,9 +66,17 @@ describe('MemoryEventRepository unit test', () => {
     });
 
     it('should throw an error when trying to delete a non-existent event', async () => {
-      await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
-        'Event not found'
-      );
+      const event = new Event({
+        id: new Id(),
+        creator: event3.creator,
+        name: event3.name,
+        date: event3.date,
+        hour: event3.hour,
+        day: event3.day,
+        type: event3.type,
+        place: event3.place,
+      });
+      await expect(repository.delete(masterId, event)).rejects.toThrow('Event not found');
     });
   });
 
@@ -117,7 +123,7 @@ describe('MemoryEventRepository unit test', () => {
     });
 
     it('should delete an existing event', async () => {
-      const response = await repository.delete(masterId, event1.id.value);
+      const response = await repository.delete(masterId, event1);
 
       expect(response).toBe('Operação concluída com sucesso');
     });

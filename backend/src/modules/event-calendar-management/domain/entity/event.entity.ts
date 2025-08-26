@@ -1,4 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
+import { StatesEnum } from '@/modules/@shared/enums/enums';
+import { States } from '@/modules/@shared/type/sharedTypes';
 import {
   isNotEmpty,
   isString,
@@ -22,6 +25,7 @@ type EventProps = {
   day: DayOfWeek;
   type: string;
   place: string;
+  state?: States;
 };
 
 /**
@@ -38,6 +42,7 @@ export default class Event {
   private _day: DayOfWeek;
   private _type: string;
   private _place: string;
+  private _lifecycle: Lifecycle;
 
   /**
    * Creates a new calendar event
@@ -57,6 +62,7 @@ export default class Event {
     this._day = input.day;
     this._type = input.type;
     this._place = input.place;
+    this._lifecycle = Lifecycle.from(input.state ?? StatesEnum.ACTIVE);
   }
 
   /**
@@ -271,5 +277,25 @@ export default class Event {
       maxLengthInclusive(input, 255) &&
       minLength(input, 3)
     );
+  }
+
+  get state(): States {
+    return this._lifecycle.value;
+  }
+  get isActive(): boolean {
+    return this._lifecycle.equals(StatesEnum.INACTIVE);
+  }
+  get isPending(): boolean {
+    return this._lifecycle.equals(StatesEnum.PENDING);
+  }
+
+  deactivate(): void {
+    this._lifecycle = this._lifecycle.deactivate();
+  }
+  reactivate(requireVerification = false): void {
+    this._lifecycle = this._lifecycle.activate(requireVerification);
+  }
+  markVerified(): void {
+    this._lifecycle = this._lifecycle.markVerified();
   }
 }

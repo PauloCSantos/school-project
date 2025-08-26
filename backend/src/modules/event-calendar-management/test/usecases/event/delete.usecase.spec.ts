@@ -91,14 +91,8 @@ describe('DeleteEvent usecase unit test', () => {
         token
       );
 
-      expect(repository.find).toHaveBeenCalledWith(
-        token.masterId,
-        event.id.value
-      );
-      expect(repository.delete).toHaveBeenCalledWith(
-        token.masterId,
-        event.id.value
-      );
+      expect(repository.find).toHaveBeenCalledWith(token.masterId, event.id.value);
+      expect(repository.delete).toHaveBeenCalledWith(token.masterId, event);
       expect(result).toBeDefined();
       expect(result.message).toBe('Operação concluída com sucesso');
     });
