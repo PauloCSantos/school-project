@@ -9,27 +9,25 @@ import { NoteMapper, NoteMapperProps } from '../../mapper/note.mapper';
 export default class MemoryNoteRepository implements NoteGateway {
   private _notes: Map<string, Map<string, NoteMapperProps>> = new Map();
 
-/**
+  /**
  * Creates a new in-memory repository.
  * @param notesRecords - Optional initial array of note records
   Ex.: new MemoryNoteRepository([{ masterId, records: [n1, n2] }])
  */
-constructor(
-  notesRecords?: Array<{ masterId: string; records: Note[] }>
-) {
-  if (notesRecords) {
-    for (const { masterId, records } of notesRecords) {
-      let notes = this._notes.get(masterId);
-      if (!notes) {
-        notes = new Map<string, NoteMapperProps>();
-        this._notes.set(masterId, notes);
-      }
-      for (const note of records) {
-        notes.set(note.id.value, NoteMapper.toObj(note));
+  constructor(notesRecords?: Array<{ masterId: string; records: Note[] }>) {
+    if (notesRecords) {
+      for (const { masterId, records } of notesRecords) {
+        let notes = this._notes.get(masterId);
+        if (!notes) {
+          notes = new Map<string, NoteMapperProps>();
+          this._notes.set(masterId, notes);
+        }
+        for (const note of records) {
+          notes.set(note.id.value, NoteMapper.toObj(note));
+        }
       }
     }
   }
-}
 
   /**
    * Finds a note record by its unique identifier.
@@ -97,12 +95,12 @@ constructor(
    * @returns Promise resolving to a success message
    * @throws Error if the note record is not found
    */
-  async delete(masterId: string, id: string): Promise<string> {
+  async delete(masterId: string, note: Note): Promise<string> {
     const notes = this._notes.get(masterId);
-    if (!notes || !notes.has(id)) {
+    if (!notes || !notes.has(note.id.value)) {
       throw new Error('Note not found');
     }
-    notes.delete(id);
+    notes.set(note.id.value, NoteMapper.toObj(note));
     return 'Operação concluída com sucesso';
   }
 

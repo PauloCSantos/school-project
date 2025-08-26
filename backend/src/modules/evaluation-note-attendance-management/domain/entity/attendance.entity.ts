@@ -1,4 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
+import { StatesEnum } from '@/modules/@shared/enums/enums';
+import { States } from '@/modules/@shared/type/sharedTypes';
 import {
   areAllValuesUnique,
   validDate,
@@ -17,6 +20,7 @@ export type AttendanceProps = {
   hour: Hour;
   day: DayOfWeek;
   studentsPresent: string[];
+  state?: States;
 };
 
 /**
@@ -31,6 +35,7 @@ export default class Attendance {
   private _hour: Hour;
   private _day: DayOfWeek;
   private _studentsPresent: string[];
+  private _lifecycle: Lifecycle;
 
   /**
    * Creates a new attendance record
@@ -47,6 +52,7 @@ export default class Attendance {
     this._hour = input.hour;
     this._day = input.day;
     this._studentsPresent = input.studentsPresent;
+    this._lifecycle = Lifecycle.from(input.state ?? StatesEnum.ACTIVE);
   }
 
   /**
@@ -225,5 +231,25 @@ export default class Attendance {
    */
   private findIndex(value: string): number {
     return this._studentsPresent.indexOf(value);
+  }
+
+  get state(): States {
+    return this._lifecycle.value;
+  }
+  get isActive(): boolean {
+    return this._lifecycle.equals(StatesEnum.INACTIVE);
+  }
+  get isPending(): boolean {
+    return this._lifecycle.equals(StatesEnum.PENDING);
+  }
+
+  deactivate(): void {
+    this._lifecycle = this._lifecycle.deactivate();
+  }
+  reactivate(requireVerification = false): void {
+    this._lifecycle = this._lifecycle.activate(requireVerification);
+  }
+  markVerified(): void {
+    this._lifecycle = this._lifecycle.markVerified();
   }
 }

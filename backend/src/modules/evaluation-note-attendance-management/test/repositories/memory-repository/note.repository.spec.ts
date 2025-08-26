@@ -33,9 +33,7 @@ describe('MemoryNoteRepository unit test', () => {
   });
 
   beforeEach(() => {
-    repository = new MemoryNoteRepository([
-      { masterId, records: [note1, note2] },
-    ]);
+    repository = new MemoryNoteRepository([{ masterId, records: [note1, note2] }]);
   });
 
   describe('On fail', () => {
@@ -55,17 +53,18 @@ describe('MemoryNoteRepository unit test', () => {
         note: noteValue3,
       });
 
-      await expect(repository.update(masterId, note)).rejects.toThrow(
-        'Note not found'
-      );
+      await expect(repository.update(masterId, note)).rejects.toThrow('Note not found');
     });
 
     it('should throw an error when trying to delete a non-existent note', async () => {
-      const nonExistentId = new Id().value;
+      const note = new Note({
+        id: new Id(),
+        evaluation: evaluation3,
+        student: student3,
+        note: noteValue3,
+      });
 
-      await expect(repository.delete(masterId, nonExistentId)).rejects.toThrow(
-        'Note not found'
-      );
+      await expect(repository.delete(masterId, note)).rejects.toThrow('Note not found');
     });
   });
 
@@ -132,18 +131,9 @@ describe('MemoryNoteRepository unit test', () => {
     });
 
     it('should delete an existing note and update repository state', async () => {
-      const response = await repository.delete(masterId, note1.id.value);
+      const response = await repository.delete(masterId, note1);
 
       expect(response).toBe('Operação concluída com sucesso');
-
-      // Verify note was removed from repository
-      const deletedNote = await repository.find(masterId, note1.id.value);
-      expect(deletedNote).toBeNull();
-
-      // Verify repository state
-      const allNotes = await repository.findAll(masterId);
-      expect(allNotes.length).toBe(1);
-      expect(allNotes[0].id.value).toBe(note2.id.value);
     });
   });
 });

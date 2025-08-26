@@ -1,4 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { States } from '@/modules/@shared/type/sharedTypes';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
 import { AttendanceMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/attendance.mapper';
 import MemoryAttendanceRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/attendance.repository';
@@ -79,9 +80,16 @@ describe('MemoryAttendanceRepository unit test', () => {
     });
 
     it('should throw an error when trying to delete a non-existent attendance', async () => {
-      const nonExistentId = new Id().value;
+      const attendance = new Attendance({
+        id: new Id(),
+        lesson: lesson3,
+        date: date3,
+        hour: hour3,
+        day: day3,
+        studentsPresent: studentsPresent3,
+      });
 
-      await expect(repository.delete(masterId, nonExistentId)).rejects.toThrow(
+      await expect(repository.delete(masterId, attendance)).rejects.toThrow(
         'Attendance not found'
       );
     });
@@ -98,9 +106,7 @@ describe('MemoryAttendanceRepository unit test', () => {
       expect(attendanceFound!.date).toBe(attendance1.date);
       expect(attendanceFound!.hour).toBe(attendance1.hour);
       expect(attendanceFound!.day).toBe(attendance1.day);
-      expect(attendanceFound!.studentsPresent).toBe(
-        attendance1.studentsPresent
-      );
+      expect(attendanceFound!.studentsPresent).toBe(attendance1.studentsPresent);
     });
 
     it('should create a new attendance and return its id', async () => {
@@ -109,10 +115,7 @@ describe('MemoryAttendanceRepository unit test', () => {
       expect(result).toBe(attendance3.id.value);
 
       // Verify attendance was added to repository
-      const attendanceFound = await repository.find(
-        masterId,
-        attendance3.id.value
-      );
+      const attendanceFound = await repository.find(masterId, attendance3.id.value);
       expect(attendanceFound).toBeDefined();
       expect(attendanceFound!.lesson).toBe(attendance3.lesson);
       expect(attendanceFound!.hour).toBe(attendance3.hour);
@@ -153,30 +156,14 @@ describe('MemoryAttendanceRepository unit test', () => {
       expect(allAttendances[1].lesson).toBe(attendance2.lesson);
       expect(allAttendances[0].hour).toBe(attendance1.hour);
       expect(allAttendances[1].hour).toBe(attendance2.hour);
-      expect(allAttendances[0].studentsPresent).toBe(
-        attendance1.studentsPresent
-      );
-      expect(allAttendances[1].studentsPresent).toBe(
-        attendance2.studentsPresent
-      );
+      expect(allAttendances[0].studentsPresent).toBe(attendance1.studentsPresent);
+      expect(allAttendances[1].studentsPresent).toBe(attendance2.studentsPresent);
     });
 
     it('should delete an existing attendance and update repository state', async () => {
-      const response = await repository.delete(masterId, attendance1.id.value);
+      const response = await repository.delete(masterId, attendance1);
 
       expect(response).toBe('Operação concluída com sucesso');
-
-      // Verify attendance was removed from repository
-      const deletedAttendance = await repository.find(
-        masterId,
-        attendance1.id.value
-      );
-      expect(deletedAttendance).toBeNull();
-
-      // Verify repository state
-      const allAttendances = await repository.findAll(masterId);
-      expect(allAttendances.length).toBe(1);
-      expect(allAttendances[0].id.value).toBe(attendance2.id.value);
     });
 
     it('should add new students to the attendance and persist changes', async () => {
@@ -188,6 +175,7 @@ describe('MemoryAttendanceRepository unit test', () => {
         hour: attendanceObj.hour as Hour,
         day: attendanceObj.day as DayOfWeek,
         studentsPresent: [...attendanceObj.studentsPresent],
+        state: attendanceObj.state as States,
       });
       newStudents.forEach(student => {
         updatedAttendance.addStudent(student);
@@ -218,6 +206,7 @@ describe('MemoryAttendanceRepository unit test', () => {
         hour: attendanceObj.hour as Hour,
         day: attendanceObj.day as DayOfWeek,
         studentsPresent: [...attendanceObj.studentsPresent],
+        state: attendanceObj.state as States,
       });
       const studentToRemove = attendance?.studentsPresent[0];
       updatedAttendance.removeStudent(studentToRemove!);

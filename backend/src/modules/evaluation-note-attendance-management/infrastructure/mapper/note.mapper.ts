@@ -1,6 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
-import type { IFindNoteOutput as NoteMapperProps } from '../../application/dto/base-note.dto';
+import type { IFindNoteOutput as NoteMapperProps } from '../dto/base-note.dto';
+import { toStateType } from '@/modules/@shared/utils/formatting';
 
 /**
  * Interface that defines the data structure for mapping Note entities
@@ -23,6 +24,7 @@ export class NoteMapper {
       evaluation: input.evaluation,
       student: input.student,
       note: input.note,
+      state: input.state,
     };
   }
 
@@ -39,6 +41,7 @@ export class NoteMapper {
       evaluation: input.evaluation,
       student: input.student,
       note: input.note,
+      state: toStateType(input.state),
     });
   }
 

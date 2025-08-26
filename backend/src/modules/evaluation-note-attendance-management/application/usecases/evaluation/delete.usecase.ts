@@ -6,10 +6,7 @@ import {
 import EvaluationGateway from '@/modules/evaluation-note-attendance-management/application/gateway/evaluation.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for deleting an evaluation record.
@@ -17,8 +14,7 @@ import {
  * Verifies evaluation existence before proceeding with deletion.
  */
 export default class DeleteEvaluation
-  implements
-    UseCaseInterface<DeleteEvaluationInputDto, DeleteEvaluationOutputDto>
+  implements UseCaseInterface<DeleteEvaluationInputDto, DeleteEvaluationOutputDto>
 {
   /** Repository for persisting and retrieving evaluation records */
   private readonly _evaluationRepository: EvaluationGateway;
@@ -51,13 +47,14 @@ export default class DeleteEvaluation
       FunctionCalledEnum.DELETE,
       token
     );
-    const evaluationVerification = await this._evaluationRepository.find(token.masterId, id);
+    const evaluation = await this._evaluationRepository.find(token.masterId, id);
 
-    if (!evaluationVerification) {
+    if (!evaluation) {
       throw new Error('Evaluation not found');
     }
+    evaluation.deactivate();
 
-    const result = await this._evaluationRepository.delete(token.masterId, id);
+    const result = await this._evaluationRepository.delete(token.masterId, evaluation);
 
     return { message: result };
   }
