@@ -1,6 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Lesson from '../../domain/entity/lesson.entity';
-import type { IFindLessonOutput as LessonMapperProps } from '../../application/dto/base-lesson.dto';
+import type { IFindLessonOutput as LessonMapperProps } from '../dto/base-lesson.dto';
+import { toStateType } from '@/modules/@shared/utils/formatting';
 
 /**
  * Interface that defines the data structure for mapping Lesson entities
@@ -29,6 +30,7 @@ export class LessonMapper {
       days: input.days,
       times: input.times,
       semester: input.semester,
+      state: input.state,
     };
   }
 
@@ -48,6 +50,7 @@ export class LessonMapper {
       days: input.days as DayOfWeek[],
       times: input.times as Hour[],
       semester: input.semester as 1 | 2,
+      state: toStateType(input.state),
     });
   }
 

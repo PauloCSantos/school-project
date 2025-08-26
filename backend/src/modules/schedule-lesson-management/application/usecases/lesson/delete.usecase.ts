@@ -6,10 +6,7 @@ import {
 import LessonGateway from '@/modules/schedule-lesson-management/application/gateway/lesson.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for deleting a lesson.
@@ -39,13 +36,11 @@ export default class DeleteLesson
       token
     );
 
-    const lessonVerification = await this._lessonRepository.find(
-      token.masterId,
-      id
-    );
-    if (!lessonVerification) throw new Error('Lesson not found');
+    const lesson = await this._lessonRepository.find(token.masterId, id);
+    if (!lesson) throw new Error('Lesson not found');
+    lesson.deactivate();
 
-    const result = await this._lessonRepository.delete(token.masterId, id);
+    const result = await this._lessonRepository.delete(token.masterId, lesson);
 
     return { message: result };
   }
