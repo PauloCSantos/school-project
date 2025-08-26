@@ -1,6 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Curriculum from '../../domain/entity/curriculum.entity';
-import type { IFindCurriculumOutput as CurriculumMapperProps } from '../../application/dto/base-curriculum.dto';
+import type { IFindCurriculumOutput as CurriculumMapperProps } from '../dto/base-curriculum.dto';
+import { toStateType } from '@/modules/@shared/utils/formatting';
 
 /**
  * Interface that defines the data structure for mapping Curriculum entities
@@ -26,6 +27,7 @@ export class CurriculumMapper {
       name: input.name,
       yearsToComplete: input.yearsToComplete,
       subjectsList: input.subjectList,
+      state: input.state,
     };
   }
 
@@ -44,6 +46,7 @@ export class CurriculumMapper {
       name: input.name,
       yearsToComplete: input.yearsToComplete,
       subjectsList: input.subjectsList || [],
+      state: toStateType(input.state),
     });
   }
 

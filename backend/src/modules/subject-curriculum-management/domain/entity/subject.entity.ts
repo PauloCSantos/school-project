@@ -5,35 +5,40 @@ import {
   maxLengthInclusive,
   minLength,
 } from '../../../@shared/utils/validations';
+import { States } from '@/modules/@shared/type/sharedTypes';
+import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
+import { StatesEnum } from '@/modules/@shared/enums/enums';
 
 type SubjectProps = {
   id?: Id;
   name: string;
   description: string;
+  state?: States;
 };
 
 export default class Subject {
   private _id;
   private _name;
   private _description;
+  private _lifecycle: Lifecycle;
 
-  constructor(input: SubjectProps) {
-    if (input.name === undefined || input.description === undefined)
+  constructor({ id, name, description, state }: SubjectProps) {
+    if (name === undefined || description === undefined)
       throw new Error('Name and description are mandatory');
-    if (!this.validateName(input.name))
-      throw new Error('Field name is not valid');
-    if (!this.validateDescription(input.description))
+    if (!this.validateName(name)) throw new Error('Field name is not valid');
+    if (!this.validateDescription(description))
       throw new Error('Field description is not valid');
 
-    if (input.id) {
-      if (!(input.id instanceof Id)) throw new Error('Invalid id');
-      this._id = input.id;
+    if (id) {
+      if (!(id instanceof Id)) throw new Error('Invalid id');
+      this._id = id;
     } else {
       this._id = new Id();
     }
 
-    this._name = input.name;
-    this._description = input.description;
+    this._name = name;
+    this._description = description;
+    this._lifecycle = Lifecycle.from(state ?? StatesEnum.ACTIVE);
   }
 
   get id(): Id {
@@ -74,5 +79,25 @@ export default class Subject {
       maxLengthInclusive(input, 500) &&
       minLength(input, 4)
     );
+  }
+
+  get state(): States {
+    return this._lifecycle.value;
+  }
+  get isActive(): boolean {
+    return this._lifecycle.equals(StatesEnum.INACTIVE);
+  }
+  get isPending(): boolean {
+    return this._lifecycle.equals(StatesEnum.PENDING);
+  }
+
+  deactivate(): void {
+    this._lifecycle = this._lifecycle.deactivate();
+  }
+  reactivate(requireVerification = false): void {
+    this._lifecycle = this._lifecycle.activate(requireVerification);
+  }
+  markVerified(): void {
+    this._lifecycle = this._lifecycle.markVerified();
   }
 }

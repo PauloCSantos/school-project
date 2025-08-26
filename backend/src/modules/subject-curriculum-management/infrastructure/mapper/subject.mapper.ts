@@ -1,6 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Subject from '@/modules/subject-curriculum-management/domain/entity/subject.entity';
-import type { IFindSubjectOutput as SubjectMapperProps } from '../../application/dto/base-subject.dto';
+import type { IFindSubjectOutput as SubjectMapperProps } from '../dto/base-subject.dto';
+import { toStateType } from '@/modules/@shared/utils/formatting';
 
 /**
  * Interface that defines the data structure for mapping Subject entities
@@ -25,6 +26,7 @@ export class SubjectMapper {
       id: input.id.value,
       name: input.name,
       description: input.description,
+      state: input.state,
     };
   }
 
@@ -42,6 +44,7 @@ export class SubjectMapper {
       id: new Id(input.id),
       name: input.name,
       description: input.description,
+      state: toStateType(input.state),
     });
   }
 

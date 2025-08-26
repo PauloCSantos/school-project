@@ -9,12 +9,16 @@ import {
   minLength,
   validId,
 } from '../../../@shared/utils/validations';
+import { States } from '@/modules/@shared/type/sharedTypes';
+import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
+import { StatesEnum } from '@/modules/@shared/enums/enums';
 
 type CurriculumProps = {
   id?: Id;
   name: string;
   yearsToComplete: number;
   subjectsList: string[];
+  state?: States;
 };
 
 export default class Curriculum {
@@ -22,31 +26,27 @@ export default class Curriculum {
   private _name;
   private _yearsToComplete;
   private _subjectsList;
+  private _lifecycle: Lifecycle;
 
-  constructor(input: CurriculumProps) {
-    if (
-      input.name === undefined ||
-      input.yearsToComplete === undefined ||
-      input.subjectsList === undefined
-    )
+  constructor({ id, name, yearsToComplete, subjectsList, state }: CurriculumProps) {
+    if (name === undefined || yearsToComplete === undefined || subjectsList === undefined)
       throw new Error('All curriculum fields are mandatory');
-    if (!this.validateName(input.name))
-      throw new Error('Field name is not valid');
-    if (!this.validateYears(input.yearsToComplete))
-      throw new Error('Field date is not valid');
-    if (!this.validateSubjects(input.subjectsList))
+    if (!this.validateName(name)) throw new Error('Field name is not valid');
+    if (!this.validateYears(yearsToComplete)) throw new Error('Field date is not valid');
+    if (!this.validateSubjects(subjectsList))
       throw new Error('Subject IDs do not match pattern');
 
-    if (input.id) {
-      if (!(input.id instanceof Id)) throw new Error('Invalid id');
-      this._id = input.id;
+    if (id) {
+      if (!(id instanceof Id)) throw new Error('Invalid id');
+      this._id = id;
     } else {
       this._id = new Id();
     }
 
-    this._name = input.name;
-    this._yearsToComplete = input.yearsToComplete;
-    this._subjectsList = input.subjectsList;
+    this._name = name;
+    this._yearsToComplete = yearsToComplete;
+    this._subjectsList = subjectsList;
+    this._lifecycle = Lifecycle.from(state ?? StatesEnum.ACTIVE);
   }
 
   get id(): Id {
@@ -63,13 +63,11 @@ export default class Curriculum {
   }
 
   set name(input: string) {
-    if (!this.validateName(input))
-      throw new Error('Field description is not valid');
+    if (!this.validateName(input)) throw new Error('Field description is not valid');
     this._name = input;
   }
   set year(input: number) {
-    if (!this.validateYears(input))
-      throw new Error('Field description is not valid');
+    if (!this.validateYears(input)) throw new Error('Field description is not valid');
     this._yearsToComplete = input;
   }
 
@@ -106,5 +104,25 @@ export default class Curriculum {
   }
   private validateSubjects(subjects: string[]): boolean {
     return subjects.every(id => validId(id)) && areAllValuesUnique(subjects);
+  }
+
+  get state(): States {
+    return this._lifecycle.value;
+  }
+  get isActive(): boolean {
+    return this._lifecycle.equals(StatesEnum.INACTIVE);
+  }
+  get isPending(): boolean {
+    return this._lifecycle.equals(StatesEnum.PENDING);
+  }
+
+  deactivate(): void {
+    this._lifecycle = this._lifecycle.deactivate();
+  }
+  reactivate(requireVerification = false): void {
+    this._lifecycle = this._lifecycle.activate(requireVerification);
+  }
+  markVerified(): void {
+    this._lifecycle = this._lifecycle.markVerified();
   }
 }
