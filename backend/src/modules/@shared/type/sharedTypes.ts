@@ -2,16 +2,13 @@ import {
   FunctionCalledEnum,
   ModulesNameEnum,
   RoleUsersEnum,
+  StatesEnum,
 } from '../enums/enums';
 
 export type RoleUsers = (typeof RoleUsersEnum)[keyof typeof RoleUsersEnum];
-export type ModulesName =
-  (typeof ModulesNameEnum)[keyof typeof ModulesNameEnum];
-export type FunctionCalled =
-  (typeof FunctionCalledEnum)[keyof typeof FunctionCalledEnum];
-//export type RoleUsers = `${RoleUsersEnum}`;
-//export type FunctionCalled = `${FunctionCalledEnum}`;
-//export type ModulesName = `${ModulesNameEnum}`;
+export type ModulesName = (typeof ModulesNameEnum)[keyof typeof ModulesNameEnum];
+export type FunctionCalled = (typeof FunctionCalledEnum)[keyof typeof FunctionCalledEnum];
+export type States = (typeof StatesEnum)[keyof typeof StatesEnum];
 export type TokenData = {
   email: string;
   role: RoleUsers;
