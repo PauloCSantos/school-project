@@ -6,5 +6,5 @@ export default interface UserWorkerGateway {
   findAll(masterId: string, quantity?: number, offSet?: number): Promise<UserWorker[]>;
   create(masterId: string, userWorker: UserWorker): Promise<string>;
   update(masterId: string, userWorker: UserWorker): Promise<UserWorker>;
-  delete(masterId: string, id: string): Promise<string>;
+  delete(masterId: string, userWorker: UserWorker): Promise<string>;
 }

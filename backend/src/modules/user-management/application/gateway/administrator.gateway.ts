@@ -13,5 +13,5 @@ export default interface UserAdministratorGateway {
     masterId: string,
     userAdministrator: UserAdministrator
   ): Promise<UserAdministrator>;
-  delete(masterId: string, id: string): Promise<string>;
+  delete(masterId: string, userAdministrator: UserAdministrator): Promise<string>;
 }

@@ -51,7 +51,12 @@ describe('MemorySubjectRepository unit test', () => {
       );
     });
     it('should generate an error when trying to remove the subject with the wrong ID', async () => {
-      await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
+      const subject = new Subject({
+        id: new Id(),
+        name: name3,
+        description: description3,
+      });
+      await expect(repository.delete(masterId, subject)).rejects.toThrow(
         'Subject not found'
       );
     });
@@ -91,7 +96,7 @@ describe('MemorySubjectRepository unit test', () => {
       expect(allSubjects[1].description).toBe(subject2.description);
     });
     it('should remove the subject', async () => {
-      const response = await repository.delete(masterId, subject1.id.value);
+      const response = await repository.delete(masterId, subject1);
 
       expect(response).toBe('Operação concluída com sucesso');
     });

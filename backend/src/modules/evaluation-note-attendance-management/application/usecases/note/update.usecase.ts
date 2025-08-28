@@ -1,15 +1,9 @@
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
-import {
-  UpdateNoteInputDto,
-  UpdateNoteOutputDto,
-} from '../../dto/note-usecase.dto';
+import { UpdateNoteInputDto, UpdateNoteOutputDto } from '../../dto/note-usecase.dto';
 import NoteGateway from '@/modules/evaluation-note-attendance-management/application/gateway/note.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import { NoteMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/note.mapper';
 
 /**
@@ -59,8 +53,12 @@ export default class UpdateNote
     note !== undefined && (noteInstance.note = note);
     student !== undefined && (noteInstance.student = student);
 
+    if (noteInstance.isPending) {
+      noteInstance.markVerified();
+    }
+
     const result = await this._noteRepository.update(token.masterId, noteInstance);
 
-    return NoteMapper.toObj(result)
+    return NoteMapper.toObj(result);
   }
 }

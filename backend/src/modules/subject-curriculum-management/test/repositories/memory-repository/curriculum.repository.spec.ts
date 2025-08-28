@@ -1,4 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { States } from '@/modules/@shared/type/sharedTypes';
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 import { CurriculumMapper } from '@/modules/subject-curriculum-management/infrastructure/mapper/curriculum.mapper';
 import MemoryCurriculumRepository from '@/modules/subject-curriculum-management/infrastructure/repositories/memory-repository/curriculum.repository';
@@ -59,7 +60,13 @@ describe('MemoryCurriculumRepository unit test', () => {
       );
     });
     it('should generate an error when trying to remove the curriculum with the wrong ID', async () => {
-      await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
+      const curriculum = new Curriculum({
+        id: new Id(),
+        name: name3,
+        yearsToComplete: yearsToComplete3,
+        subjectsList: subjectsList3,
+      });
+      await expect(repository.delete(masterId, curriculum)).rejects.toThrow(
         'Curriculum not found'
       );
     });
@@ -73,9 +80,7 @@ describe('MemoryCurriculumRepository unit test', () => {
       expect(curriculumFound).toBeDefined();
       expect(curriculumFound!.id).toBeDefined();
       expect(curriculumFound!.name).toBe(curriculum1.name);
-      expect(curriculumFound!.yearsToComplete).toBe(
-        curriculum1.yearsToComplete
-      );
+      expect(curriculumFound!.yearsToComplete).toBe(curriculum1.yearsToComplete);
       expect(curriculumFound!.year).toBe(curriculum1.year);
     });
 
@@ -102,7 +107,7 @@ describe('MemoryCurriculumRepository unit test', () => {
       expect(allCurriculums[1].subjectList).toBe(curriculum2.subjectList);
     });
     it('should remove the curriculum', async () => {
-      const response = await repository.delete(masterId, curriculum1.id.value);
+      const response = await repository.delete(masterId, curriculum1);
 
       expect(response).toBe('Operação concluída com sucesso');
     });
@@ -113,6 +118,7 @@ describe('MemoryCurriculumRepository unit test', () => {
         ...curriculumObj,
         id: new Id(curriculumObj.id),
         subjectsList: [...curriculumObj.subjectsList],
+        state: curriculumObj.state as States,
       });
       updatedCurriculum.addSubject(new Id().value);
       const response = await repository.addSubjects(
@@ -129,6 +135,7 @@ describe('MemoryCurriculumRepository unit test', () => {
         ...curriculumObj,
         id: new Id(curriculumObj.id),
         subjectsList: [...curriculumObj.subjectsList],
+        state: curriculumObj.state as States,
       });
       updatedCurriculum.removeSubject(curriculum1.subjectList[0]);
       const response = await repository.removeSubjects(

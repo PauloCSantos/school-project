@@ -1,15 +1,12 @@
 import Worker from '../../domain/entity/worker.entity';
 import Salary from '../../domain/@shared/value-object/salary.value-object';
-import type { IFindUserWorkerOutput } from '../dto/base-worker.dto';
+import type { IFindUserWorkerOutput as WorkerMapperProps } from '../dto/base-worker.dto';
+import { toStateType } from '@/modules/@shared/utils/formatting';
 
 /**
  * Interface that defines the data structure for mapping Worker entities
  */
-type Override<T, R> = Omit<T, keyof R> & R;
-export type WorkerMapperProps = Override<
-  IFindUserWorkerOutput,
-  { salary: { salary: number; currency: 'R$' | '€' | '$' } }
->;
+export type { WorkerMapperProps };
 
 /**
  * Mapper responsible for converting between Worker entity and DTOs
@@ -29,6 +26,7 @@ export class WorkerMapper {
       id: input.id.value,
       userId: input.userId,
       salary: { salary: input.salary.salary, currency: input.salary.currency },
+      state: input.state,
     };
   }
 
@@ -50,6 +48,7 @@ export class WorkerMapper {
         salary: input.salary.salary,
         currency: input.salary.currency,
       }),
+      state: toStateType(input.state),
     });
   }
 

@@ -60,3 +60,9 @@ export enum ErrorMessage {
   ACCESS_DENIED = 'User does not have access permission',
   INTERNAL_ERROR = 'Internal server error',
 }
+
+export enum StatesEnum {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+}

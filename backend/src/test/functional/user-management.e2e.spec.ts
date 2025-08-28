@@ -60,7 +60,6 @@ async function makeToken(): Promise<string> {
       email: 'usermanagement@example.com',
       password: 'StrongPass1!',
       isHashed: false,
-      isActive: true,
     },
     authService
   );
@@ -78,15 +77,17 @@ async function authHeader() {
   return { authorization: token };
 }
 
-async function createAuthUserInMemory(email: string, repository: any, role = 'master') {
-  await repository.create({
-    id: new Id().value,
-    email,
-    password: 'testPassword123',
-    masterId: new Id().value,
-    role,
-    isHashed: false,
-  });
+async function createAuthUserInMemory(email: string, repository: any) {
+  await repository.create(
+    new AuthUser(
+      {
+        email,
+        password: 'testPassword123',
+        isHashed: true,
+      },
+      new AuthUserService()
+    )
+  );
 }
 
 describe('User management module end to end test', () => {
@@ -96,7 +97,8 @@ describe('User management module end to end test', () => {
   let userTeacherRepository = new MemoryUserTeacherRepository();
   let userWorkerRepository = new MemoryUserWorkerRepository();
   let userRepository = new MemoryUserRepository();
-  let authUserRepository = new MemoryAuthUserRepository();
+  let authUserService = new AuthUserService();
+  let authUserRepository = new MemoryAuthUserRepository(authUserService);
   let emailValidatorService = new EmailAuthValidatorService(authUserRepository);
   let userService = new UserService(userRepository);
   let app: any;
@@ -107,7 +109,7 @@ describe('User management module end to end test', () => {
     userTeacherRepository = new MemoryUserTeacherRepository();
     userWorkerRepository = new MemoryUserWorkerRepository();
     userRepository = new MemoryUserRepository();
-    authUserRepository = new MemoryAuthUserRepository();
+    authUserRepository = new MemoryAuthUserRepository(authUserService);
     emailValidatorService = new EmailAuthValidatorService(authUserRepository);
     userService = new UserService(userRepository);
 

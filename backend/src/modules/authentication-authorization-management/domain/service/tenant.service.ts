@@ -24,11 +24,7 @@ export interface TenantServiceInterface {
     newRole: RoleUsers
   ): Promise<Tenant>;
   getTenant(id?: string): Promise<Tenant>;
-  verifyTenantRole(
-    masterId: string,
-    email: string,
-    role: RoleUsers
-  ): Promise<void>;
+  verifyTenantRole(masterId: string, email: string, role: RoleUsers): Promise<void>;
   getAvailableTenantsAndRoles(
     userEmail: string
   ): Promise<{ id: string; roles: RoleUsers[] }[]>;
@@ -37,7 +33,7 @@ export interface TenantServiceInterface {
  * Domain service for Tenant operations.
  */
 export class TenantService implements TenantServiceInterface {
-  constructor(private readonly tenantGateway: TenantGateway) {}
+  constructor(private readonly tenantRepository: TenantGateway) {}
 
   public async manageUserRoleAssignmentInTenant({
     email,
@@ -56,7 +52,7 @@ export class TenantService implements TenantServiceInterface {
     oldRole: RoleUsers,
     newRole: RoleUsers
   ): Promise<Tenant> {
-    const tenant = await this.tenantGateway.find(masterId);
+    const tenant = await this.tenantRepository.find(masterId);
     if (!tenant) {
       throw new Error('Tenant não encontrado');
     }
@@ -68,7 +64,7 @@ export class TenantService implements TenantServiceInterface {
     if (!id) {
       throw new Error('Tenant não encontrado');
     }
-    const tenant = await this.tenantGateway.find(id);
+    const tenant = await this.tenantRepository.find(id);
     if (!tenant) throw new Error('Tenant não encontrado');
     return tenant;
   }
@@ -78,16 +74,14 @@ export class TenantService implements TenantServiceInterface {
     email: string,
     role: RoleUsers
   ): Promise<void> {
-    const tenant = await this.tenantGateway.find(masterId);
+    const tenant = await this.tenantRepository.find(masterId);
     if (!tenant) throw new Error('Tenant não encontrado');
 
     const roles = tenant.tenantUserRolesMap.get(email) ?? [];
     const userRole = roles.find(ur => ur._email === email && ur.role === role);
 
     if (!userRole) {
-      throw new Error(
-        `Usuário "${email}" não possui a role "${role}" cadastrada`
-      );
+      throw new Error(`Usuário "${email}" não possui a role "${role}" cadastrada`);
     }
 
     if (userRole.isActive === false) {
@@ -98,7 +92,7 @@ export class TenantService implements TenantServiceInterface {
   async getAvailableTenantsAndRoles(
     userEmail: string
   ): Promise<{ id: string; roles: RoleUsers[] }[]> {
-    const tenants = await this.tenantGateway.findByEmail(userEmail);
+    const tenants = await this.tenantRepository.findByEmail(userEmail);
     const options = tenants.map(t => ({
       id: t.id,
       roles: t.tenantUserRolesMap
@@ -115,7 +109,7 @@ export class TenantService implements TenantServiceInterface {
   ): Promise<{ tenant: Tenant; isNew: boolean }> {
     let existing: Tenant | null = null;
     if (id) {
-      existing = await this.tenantGateway.find(id);
+      existing = await this.tenantRepository.find(id);
     }
     if (existing) {
       return { tenant: existing, isNew: false };

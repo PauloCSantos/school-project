@@ -1,4 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
+import { StatesEnum } from '@/modules/@shared/enums/enums';
+import { States } from '@/modules/@shared/type/sharedTypes';
 import {
   areAllValuesUnique,
   isGreaterZero,
@@ -25,6 +28,7 @@ export type LessonProps = {
   days: DayOfWeek[];
   times: Hour[];
   semester: 1 | 2;
+  state?: States;
 };
 
 /**
@@ -42,6 +46,7 @@ export default class Lesson {
   private _days: DayOfWeek[];
   private _times: Hour[];
   private _semester: 1 | 2;
+  private _lifecycle: Lifecycle;
 
   /**
    * Creates a new lesson
@@ -61,6 +66,7 @@ export default class Lesson {
     this._days = input.days;
     this._times = input.times;
     this._semester = input.semester;
+    this._lifecycle = Lifecycle.from(input.state ?? StatesEnum.ACTIVE);
   }
 
   /**
@@ -102,10 +108,7 @@ export default class Lesson {
       throw new Error('Subject id is not valid');
     }
 
-    if (
-      !input.days.every(day => validDay(day)) ||
-      !areAllValuesUnique(input.days)
-    ) {
+    if (!input.days.every(day => validDay(day)) || !areAllValuesUnique(input.days)) {
       throw new Error('Days are not up to standard');
     }
 
@@ -382,5 +385,25 @@ export default class Lesson {
    */
   private validateStudents(students: string[]): boolean {
     return students.every(id => validId(id)) && areAllValuesUnique(students);
+  }
+
+  get state(): States {
+    return this._lifecycle.value;
+  }
+  get isActive(): boolean {
+    return !this._lifecycle.equals(StatesEnum.INACTIVE);
+  }
+  get isPending(): boolean {
+    return this._lifecycle.equals(StatesEnum.PENDING);
+  }
+
+  deactivate(): void {
+    this._lifecycle = this._lifecycle.deactivate();
+  }
+  reactivate(requireVerification = false): void {
+    this._lifecycle = this._lifecycle.activate(requireVerification);
+  }
+  markVerified(): void {
+    this._lifecycle = this._lifecycle.markVerified();
   }
 }

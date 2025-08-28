@@ -29,10 +29,11 @@ export default class DeleteUserTeacher
       token
     );
 
-    const userVerification = await this._userTeacherRepository.find(token.masterId, id);
-    if (!userVerification) throw new Error('User not found');
+    const userTeacher = await this._userTeacherRepository.find(token.masterId, id);
+    if (!userTeacher) throw new Error('User not found');
+    userTeacher.deactivate();
 
-    const result = await this._userTeacherRepository.delete(token.masterId, id);
+    const result = await this._userTeacherRepository.delete(token.masterId, userTeacher);
 
     return { message: result };
   }

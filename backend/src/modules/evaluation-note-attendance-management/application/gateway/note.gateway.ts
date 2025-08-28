@@ -18,11 +18,7 @@ export default interface NoteGateway {
    * @param offSet - Optional number of records to skip for pagination
    * @returns Promise resolving to an array of Note entities
    */
-  findAll(
-    masterId: string,
-    quantity?: number,
-    offSet?: number
-  ): Promise<Note[]>;
+  findAll(masterId: string, quantity?: number, offSet?: number): Promise<Note[]>;
 
   /**
    * Creates a new student note.
@@ -43,5 +39,5 @@ export default interface NoteGateway {
    * @param id - The unique identifier of the note to delete
    * @returns Promise resolving to a success message
    */
-  delete(masterId: string, id: string): Promise<string>;
+  delete(masterId: string, note: Note): Promise<string>;
 }

@@ -1,6 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Schedule from '../../domain/entity/schedule.entity';
-import type { IFindScheduleOutput as ScheduleMapperProps } from '../../application/dto/base-schedule.dto';
+import type { IFindScheduleOutput as ScheduleMapperProps } from '../dto/base-schedule.dto';
+import { toStateType } from '@/modules/@shared/utils/formatting';
 
 /**
  * Interface that defines the data structure for mapping Schedule entities
@@ -21,6 +22,7 @@ export class ScheduleMapper {
       student: input.student,
       curriculum: input.curriculum,
       lessonsList: input.lessonsList,
+      state: input.state,
     };
   }
 
@@ -35,6 +37,7 @@ export class ScheduleMapper {
       student: input.student,
       curriculum: input.curriculum,
       lessonsList: input.lessonsList,
+      state: toStateType(input.state),
     });
   }
 

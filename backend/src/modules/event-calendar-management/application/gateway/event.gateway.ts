@@ -39,5 +39,5 @@ export default interface EventGateway {
    * @param id - The unique identifier of the event to delete
    * @returns Promise resolving to a success message
    */
-  delete(masterId: string, id: string): Promise<string>;
+  delete(masterId: string, event: Event): Promise<string>;
 }

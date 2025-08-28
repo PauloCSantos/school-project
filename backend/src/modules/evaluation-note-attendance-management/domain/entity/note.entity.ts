@@ -1,9 +1,8 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import {
-  isNumeric,
-  validId,
-  validNote,
-} from '@/modules/@shared/utils/validations';
+import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
+import { StatesEnum } from '@/modules/@shared/enums/enums';
+import { States } from '@/modules/@shared/type/sharedTypes';
+import { isNumeric, validId, validNote } from '@/modules/@shared/utils/validations';
 
 /**
  * Properties required to create a note
@@ -13,6 +12,7 @@ export type NoteProps = {
   evaluation: string;
   student: string;
   note: number;
+  state?: States;
 };
 
 /**
@@ -25,6 +25,7 @@ export default class Note {
   private _evaluation: string;
   private _student: string;
   private _note: number;
+  private _lifecycle: Lifecycle;
 
   /**
    * Creates a new note record
@@ -39,6 +40,7 @@ export default class Note {
     this._evaluation = input.evaluation;
     this._student = input.student;
     this._note = input.note;
+    this._lifecycle = Lifecycle.from(input.state ?? StatesEnum.ACTIVE);
   }
 
   /**
@@ -136,5 +138,25 @@ export default class Note {
    */
   private validateNote(input: number): boolean {
     return isNumeric(input) && validNote(input);
+  }
+
+  get state(): States {
+    return this._lifecycle.value;
+  }
+  get isActive(): boolean {
+    return !this._lifecycle.equals(StatesEnum.INACTIVE);
+  }
+  get isPending(): boolean {
+    return this._lifecycle.equals(StatesEnum.PENDING);
+  }
+
+  deactivate(): void {
+    this._lifecycle = this._lifecycle.deactivate();
+  }
+  reactivate(requireVerification = false): void {
+    this._lifecycle = this._lifecycle.activate(requireVerification);
+  }
+  markVerified(): void {
+    this._lifecycle = this._lifecycle.markVerified();
   }
 }

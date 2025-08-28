@@ -8,6 +8,9 @@ import {
 } from '@/modules/@shared/utils/validations';
 import Salary from '../@shared/value-object/salary.value-object';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { States } from '@/modules/@shared/type/sharedTypes';
+import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
+import { StatesEnum } from '@/modules/@shared/enums/enums';
 
 type TeacherUserProps = {
   id?: string;
@@ -15,6 +18,7 @@ type TeacherUserProps = {
   salary: Salary;
   graduation: string;
   academicDegrees: string;
+  state?: States;
 };
 
 export default class UserTeacher {
@@ -23,8 +27,16 @@ export default class UserTeacher {
   private _salary;
   private _graduation;
   private _academicDegrees;
+  private _lifecycle: Lifecycle;
 
-  constructor({ id, userId, salary, graduation, academicDegrees }: TeacherUserProps) {
+  constructor({
+    id,
+    userId,
+    salary,
+    graduation,
+    academicDegrees,
+    state,
+  }: TeacherUserProps) {
     if (
       userId === undefined ||
       salary === undefined ||
@@ -49,6 +61,7 @@ export default class UserTeacher {
     this._salary = salary;
     this._graduation = graduation;
     this._academicDegrees = academicDegrees;
+    this._lifecycle = Lifecycle.from(state ?? StatesEnum.ACTIVE);
   }
 
   get id(): Id {
@@ -99,5 +112,25 @@ export default class UserTeacher {
       minLength(input, 2) &&
       maxLengthInclusive(input, 255)
     );
+  }
+
+  get state(): States {
+    return this._lifecycle.value;
+  }
+  get isActive(): boolean {
+    return !this._lifecycle.equals(StatesEnum.INACTIVE);
+  }
+  get isPending(): boolean {
+    return this._lifecycle.equals(StatesEnum.PENDING);
+  }
+
+  deactivate(): void {
+    this._lifecycle = this._lifecycle.deactivate();
+  }
+  reactivate(requireVerification = false): void {
+    this._lifecycle = this._lifecycle.activate(requireVerification);
+  }
+  markVerified(): void {
+    this._lifecycle = this._lifecycle.markVerified();
   }
 }

@@ -115,12 +115,12 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the worker record is not found
    */
-  async delete(masterId: string, id: string): Promise<string> {
+  async delete(masterId: string, userWorker: UserWorker): Promise<string> {
     const workerUsers = this._workerUsers.get(masterId);
-    if (!workerUsers || !workerUsers.has(id)) {
+    if (!workerUsers || !workerUsers.has(userWorker.id.value)) {
       throw new Error('User not found');
     }
-    workerUsers.delete(id);
+    workerUsers.set(userWorker.id.value, WorkerMapper.toObj(userWorker));
     return 'Operação concluída com sucesso';
   }
 

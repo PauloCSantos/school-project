@@ -97,12 +97,12 @@ export default class MemoryEventRepository implements EventGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the event is not found
    */
-  async delete(masterId: string, id: string): Promise<string> {
+  async delete(masterId: string, event: Event): Promise<string> {
     const events = this._events.get(masterId);
-    if (!events || !events.has(id)) {
+    if (!events || !events.has(event.id.value)) {
       throw new Error('Event not found');
     }
-    events.delete(id);
+    events.set(event.id.value, EventMapper.toObj(event));
     return 'Operação concluída com sucesso';
   }
 

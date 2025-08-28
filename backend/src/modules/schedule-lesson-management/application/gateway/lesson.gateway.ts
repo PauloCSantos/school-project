@@ -18,11 +18,7 @@ export default interface LessonGateway {
    * @param offSet - Optional number of lessons to skip before starting to collect
    * @returns Promise resolving to an array of Lesson entities
    */
-  findAll(
-    masterId: string,
-    quantity?: number,
-    offSet?: number
-  ): Promise<Lesson[]>;
+  findAll(masterId: string, quantity?: number, offSet?: number): Promise<Lesson[]>;
 
   /**
    * Creates a new lesson.
@@ -44,7 +40,7 @@ export default interface LessonGateway {
    * @param id - The ID of the lesson to delete
    * @returns Promise resolving to a success message
    */
-  delete(masterId: string, id: string): Promise<string>;
+  delete(masterId: string, lesson: Lesson): Promise<string>;
 
   /**
    * Adds students to a lesson.

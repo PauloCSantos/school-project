@@ -1,26 +1,20 @@
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 import CurriculumGateway from '../../../application/gateway/curriculum.gateway';
-import {
-  CurriculumMapper,
-  CurriculumMapperProps,
-} from '../../mapper/curriculum.mapper';
+import { CurriculumMapper, CurriculumMapperProps } from '../../mapper/curriculum.mapper';
 
 /**
  * In-memory implementation of CurriculumGateway.
  * Stores and manipulates curriculum records in memory.
  */
 export default class MemoryCurriculumRepository implements CurriculumGateway {
-  private _curriculums: Map<string, Map<string, CurriculumMapperProps>> =
-    new Map();
+  private _curriculums: Map<string, Map<string, CurriculumMapperProps>> = new Map();
 
   /**
    * Creates a new in-memory repository.
    * @param curriculumsRecords - Optional initial array of curriculum records
    *  Ex.: new MemoryCurriculumRepository([{ masterId, records: [c1, c2] }])
    */
-  constructor(
-    curriculumsRecords?: Array<{ masterId: string; records: Curriculum[] }>
-  ) {
+  constructor(curriculumsRecords?: Array<{ masterId: string; records: Curriculum[] }>) {
     if (curriculumsRecords) {
       for (const { masterId, records } of curriculumsRecords) {
         let curriculums = this._curriculums.get(masterId);
@@ -29,10 +23,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
           this._curriculums.set(masterId, curriculums);
         }
         for (const curriculum of records) {
-          curriculums.set(
-            curriculum.id.value,
-            CurriculumMapper.toObj(curriculum)
-          );
+          curriculums.set(curriculum.id.value, CurriculumMapper.toObj(curriculum));
         }
       }
     }
@@ -104,12 +95,12 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the curriculum record is not found
    */
-  async delete(masterId: string, id: string): Promise<string> {
+  async delete(masterId: string, curriculum: Curriculum): Promise<string> {
     const curriculums = this._curriculums.get(masterId);
-    if (!curriculums || !curriculums.has(id)) {
+    if (!curriculums || !curriculums.has(curriculum.id.value)) {
       throw new Error('Curriculum not found');
     }
-    curriculums.delete(id);
+    curriculums.set(curriculum.id.value, CurriculumMapper.toObj(curriculum));
     return 'Operação concluída com sucesso';
   }
 
@@ -169,9 +160,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     return `${total} ${total === 1 ? 'value was' : 'values were'} removed`;
   }
 
-  private getOrCreateBucket(
-    masterId: string
-  ): Map<string, CurriculumMapperProps> {
+  private getOrCreateBucket(masterId: string): Map<string, CurriculumMapperProps> {
     let curriculums = this._curriculums.get(masterId);
     if (!curriculums) {
       curriculums = new Map<string, CurriculumMapperProps>();

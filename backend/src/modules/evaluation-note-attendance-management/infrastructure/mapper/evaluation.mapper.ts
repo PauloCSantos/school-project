@@ -1,6 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
-import type { IFindEvaluationOutput as EvaluationMapperProps } from '../../application/dto/base-evaluation.dto';
+import type { IFindEvaluationOutput as EvaluationMapperProps } from '../dto/base-evaluation.dto';
+import { toStateType } from '@/modules/@shared/utils/formatting';
 
 /**
  * Interface that defines the data structure for mapping Evaluation entities
@@ -25,6 +26,7 @@ export class EvaluationMapper {
       lesson: input.lesson,
       type: input.type,
       value: input.value,
+      state: input.state,
     };
   }
 
@@ -42,6 +44,7 @@ export class EvaluationMapper {
       lesson: input.lesson,
       type: input.type,
       value: input.value,
+      state: toStateType(input.state),
     });
   }
 

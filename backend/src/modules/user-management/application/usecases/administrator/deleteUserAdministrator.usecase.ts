@@ -30,13 +30,17 @@ export default class DeleteUserAdministrator
       token
     );
 
-    const userVerification = await this._userAdministratorRepository.find(
+    const userAdministrator = await this._userAdministratorRepository.find(
       token.masterId,
       id
     );
-    if (!userVerification) throw new Error('User not found');
+    if (!userAdministrator) throw new Error('User not found');
+    userAdministrator.deactivate();
 
-    const result = await this._userAdministratorRepository.delete(token.masterId, id);
+    const result = await this._userAdministratorRepository.delete(
+      token.masterId,
+      userAdministrator
+    );
 
     return { message: result };
   }

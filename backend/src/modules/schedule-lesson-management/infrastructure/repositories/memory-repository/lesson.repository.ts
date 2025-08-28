@@ -43,11 +43,7 @@ export default class MemoryLessonRepository implements LessonGateway {
    * @param offSet - Optional number of records to skip for pagination (defaults to 0)
    * @returns Promise resolving to an array of Lesson entities
    */
-  async findAll(
-    masterId: string,
-    quantity?: number,
-    offSet?: number
-  ): Promise<Lesson[]> {
+  async findAll(masterId: string, quantity?: number, offSet?: number): Promise<Lesson[]> {
     const offS = offSet ? offSet : 0;
     const qtd = quantity ? quantity : 10;
     const lessons = this._lessons.get(masterId);
@@ -92,12 +88,12 @@ export default class MemoryLessonRepository implements LessonGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the lesson record is not found
    */
-  async delete(masterId: string, id: string): Promise<string> {
+  async delete(masterId: string, lesson: Lesson): Promise<string> {
     const lessons = this._lessons.get(masterId);
-    if (!lessons || !lessons.has(id)) {
+    if (!lessons || !lessons.has(lesson.id.value)) {
       throw new Error('Lesson not found');
     }
-    lessons.delete(id);
+    lessons.set(lesson.id.value, LessonMapper.toObj(lesson));
     return 'Operação concluída com sucesso';
   }
 
@@ -109,11 +105,7 @@ export default class MemoryLessonRepository implements LessonGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the lesson is not found or if adding students fails
    */
-  async addStudents(
-    masterId: string,
-    id: string,
-    lesson: Lesson
-  ): Promise<string> {
+  async addStudents(masterId: string, id: string, lesson: Lesson): Promise<string> {
     const lessons = this._lessons.get(masterId);
     const obj = lessons?.get(id);
     if (!obj) {
@@ -136,11 +128,7 @@ export default class MemoryLessonRepository implements LessonGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the lesson is not found or if removing students fails
    */
-  async removeStudents(
-    masterId: string,
-    id: string,
-    lesson: Lesson
-  ): Promise<string> {
+  async removeStudents(masterId: string, id: string, lesson: Lesson): Promise<string> {
     const lessons = this._lessons.get(masterId);
     const obj = lessons?.get(id);
     if (!obj) {
@@ -185,11 +173,7 @@ export default class MemoryLessonRepository implements LessonGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the lesson is not found or if removing days fails
    */
-  async removeDay(
-    masterId: string,
-    id: string,
-    lesson: Lesson
-  ): Promise<string> {
+  async removeDay(masterId: string, id: string, lesson: Lesson): Promise<string> {
     const lessons = this._lessons.get(masterId);
     const obj = lessons?.get(id);
     if (!obj) {
@@ -235,11 +219,7 @@ export default class MemoryLessonRepository implements LessonGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the lesson is not found or if removing times fails
    */
-  async removeTime(
-    masterId: string,
-    id: string,
-    lesson: Lesson
-  ): Promise<string> {
+  async removeTime(masterId: string, id: string, lesson: Lesson): Promise<string> {
     const lessons = this._lessons.get(masterId);
     const obj = lessons?.get(id);
     if (!obj) {

@@ -18,11 +18,7 @@ export default interface ScheduleGateway {
    * @param offSet - Optional number of schedules to skip before starting to collect
    * @returns Promise resolving to an array of Schedule entities
    */
-  findAll(
-    masterId: string,
-    quantity?: number,
-    offSet?: number
-  ): Promise<Schedule[]>;
+  findAll(masterId: string, quantity?: number, offSet?: number): Promise<Schedule[]>;
 
   /**
    * Creates a new schedule.
@@ -43,7 +39,7 @@ export default interface ScheduleGateway {
    * @param id - The ID of the schedule to delete
    * @returns Promise resolving to a success message
    */
-  delete(masterId: string, id: string): Promise<string>;
+  delete(masterId: string, schedule: Schedule): Promise<string>;
 
   /**
    * Adds lessons to a schedule.
@@ -59,9 +55,5 @@ export default interface ScheduleGateway {
    * @param schedule - Array of lesson IDs to remove
    * @returns Promise resolving to a success message
    */
-  removeLessons(
-    masterId: string,
-    id: string,
-    schedule: Schedule
-  ): Promise<string>;
+  removeLessons(masterId: string, id: string, schedule: Schedule): Promise<string>;
 }

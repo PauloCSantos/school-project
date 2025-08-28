@@ -6,10 +6,7 @@ import {
 import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for deleting an authenticated user.
@@ -51,7 +48,12 @@ export default class DeleteAuthUser
       token
     );
 
-    const result = await this._authUserRepository.delete(email);
+    const authUser = await this._authUserRepository.find(email);
+    if (!authUser) {
+      throw new Error('AuthUser not found');
+    }
+    authUser.deactivate();
+    const result = await this._authUserRepository.delete(authUser);
 
     return { message: result };
   }

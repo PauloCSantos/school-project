@@ -50,10 +50,7 @@ describe('updateEvaluation usecase unit test', () => {
       const evaluationRepository = MockRepository();
       evaluationRepository.find.mockResolvedValue(null);
 
-      const usecase = new UpdateEvaluation(
-        evaluationRepository,
-        policieService
-      );
+      const usecase = new UpdateEvaluation(evaluationRepository, policieService);
 
       await expect(
         usecase.execute(
@@ -79,10 +76,7 @@ describe('updateEvaluation usecase unit test', () => {
       evaluationRepository.find.mockResolvedValue(evaluation1);
       evaluationRepository.update.mockResolvedValue(evaluation1);
 
-      const usecase = new UpdateEvaluation(
-        evaluationRepository,
-        policieService
-      );
+      const usecase = new UpdateEvaluation(evaluationRepository, policieService);
 
       const result = await usecase.execute(
         {
@@ -112,6 +106,7 @@ describe('updateEvaluation usecase unit test', () => {
         teacher: input.teacher,
         type: input.type,
         value: input.value,
+        state: 'active',
       });
     });
   });

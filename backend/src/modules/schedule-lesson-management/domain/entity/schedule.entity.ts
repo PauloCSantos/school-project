@@ -1,8 +1,8 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import {
-  areAllValuesUnique,
-  validId,
-} from '@/modules/@shared/utils/validations';
+import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
+import { StatesEnum } from '@/modules/@shared/enums/enums';
+import { States } from '@/modules/@shared/type/sharedTypes';
+import { areAllValuesUnique, validId } from '@/modules/@shared/utils/validations';
 
 /**
  * Properties required to create a schedule
@@ -12,6 +12,7 @@ export type ScheduleProps = {
   student: string;
   curriculum: string;
   lessonsList: string[];
+  state?: States;
 };
 
 /**
@@ -24,6 +25,7 @@ export default class Schedule {
   private _student: string;
   private _curriculum: string;
   private _lessonsList: string[];
+  private _lifecycle: Lifecycle;
 
   /**
    * Creates a new schedule
@@ -38,6 +40,7 @@ export default class Schedule {
     this._student = input.student;
     this._curriculum = input.curriculum;
     this._lessonsList = input.lessonsList;
+    this._lifecycle = Lifecycle.from(input.state ?? StatesEnum.ACTIVE);
   }
 
   /**
@@ -160,5 +163,25 @@ export default class Schedule {
    */
   private validateLessonsList(lessons: string[]): boolean {
     return lessons.every(id => validId(id)) && areAllValuesUnique(lessons);
+  }
+
+  get state(): States {
+    return this._lifecycle.value;
+  }
+  get isActive(): boolean {
+    return !this._lifecycle.equals(StatesEnum.INACTIVE);
+  }
+  get isPending(): boolean {
+    return this._lifecycle.equals(StatesEnum.PENDING);
+  }
+
+  deactivate(): void {
+    this._lifecycle = this._lifecycle.deactivate();
+  }
+  reactivate(requireVerification = false): void {
+    this._lifecycle = this._lifecycle.activate(requireVerification);
+  }
+  markVerified(): void {
+    this._lifecycle = this._lifecycle.markVerified();
   }
 }
