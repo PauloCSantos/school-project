@@ -9,6 +9,7 @@ describe('MemoryAuthUserRepository unit test', () => {
     {
       email: 'teste@teste.com.br',
       password: '123456',
+      isHashed: true,
     },
     authUserService
   );
@@ -16,6 +17,7 @@ describe('MemoryAuthUserRepository unit test', () => {
     {
       email: 'teste2@teste.com.br',
       password: '123456',
+      isHashed: true,
     },
     authUserService
   );
@@ -23,12 +25,13 @@ describe('MemoryAuthUserRepository unit test', () => {
     {
       email: 'teste3@teste.com.br',
       password: '123456',
+      isHashed: true,
     },
     authUserService
   );
 
   beforeEach(() => {
-    repository = new MemoryAuthUserRepository([authUser1, authUser2]);
+    repository = new MemoryAuthUserRepository(authUserService, [authUser1, authUser2]);
   });
 
   describe('On fail', () => {
@@ -48,15 +51,13 @@ describe('MemoryAuthUserRepository unit test', () => {
         authUserService
       );
 
-      await expect(
-        repository.update(newUser, 'notfound@teste.com')
-      ).rejects.toThrow('AuthUser not found');
+      await expect(repository.update(newUser, 'notfound@teste.com')).rejects.toThrow(
+        'AuthUser not found'
+      );
     });
 
     it('should throw an error when trying to delete a non-existent user', async () => {
-      await expect(repository.delete('notfound@teste.com')).rejects.toThrow(
-        'AuthUser not found'
-      );
+      await expect(repository.delete(authUser3)).rejects.toThrow('AuthUser not found');
     });
 
     it('should return false when verifying a non-existent authUser', async () => {
@@ -99,11 +100,11 @@ describe('MemoryAuthUserRepository unit test', () => {
     });
 
     it('should delete an existing authUser', async () => {
-      const response = await repository.delete(authUser1.email);
-
+      authUser1.deactivate();
+      const response = await repository.delete(authUser1);
       expect(response).toBe('Operação concluída com sucesso');
       const deletedUser = await repository.find(authUser1.email);
-      expect(await deletedUser?.getStatus()).toBeFalsy();
+      expect(deletedUser?.isActive).toBeFalsy();
     });
 
     it('should verify an existing authUser', async () => {

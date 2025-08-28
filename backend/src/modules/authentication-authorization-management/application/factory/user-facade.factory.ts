@@ -8,7 +8,7 @@ import LoginAuthUser from '../usecases/authUser/login-user.usecase';
 import { AuthUserService } from '../../infrastructure/services/user-entity.service';
 import TokenService from '../../infrastructure/services/token.service';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
-import MemoryTenantRepository from '../../infrastructure/repositories/memory-repository/tenant.gateway';
+import MemoryTenantRepository from '../../infrastructure/repositories/memory-repository/tenant.repository';
 import { TenantService } from '../../domain/service/tenant.service';
 
 /**
@@ -21,9 +21,9 @@ export default class AuthUserFacadeFactory {
    * @returns Fully configured AuthUserFacade instance
    */
   static create(): AuthUserFacade {
-    const authUserRepository = new MemoryAuthUserRepository();
-    const tenantRepository = new MemoryTenantRepository();
     const authUserService = new AuthUserService();
+    const authUserRepository = new MemoryAuthUserRepository(authUserService);
+    const tenantRepository = new MemoryTenantRepository();
     const tenantService = new TenantService(tenantRepository);
     const tokenService = new TokenService('PxHf3H7');
     const policiesService = new PoliciesService();
@@ -35,10 +35,7 @@ export default class AuthUserFacadeFactory {
       tenantService,
       policiesService
     );
-    const deleteAuthUser = new DeleteAuthUser(
-      authUserRepository,
-      policiesService
-    );
+    const deleteAuthUser = new DeleteAuthUser(authUserRepository, policiesService);
     const findAuthUser = new FindAuthUser(authUserRepository, policiesService);
     const updateAuthUser = new UpdateAuthUser(
       authUserRepository,

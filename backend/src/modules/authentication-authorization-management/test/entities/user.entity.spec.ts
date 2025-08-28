@@ -59,13 +59,6 @@ describe('AuthUser unit test', () => {
         new AuthUser({ ...baseUserData, isHashed: 'true' });
       }).toThrow('The field isHashed must be a boolean');
     });
-
-    it('should throw an error when isActive flag is not a boolean', () => {
-      expect(() => {
-        //@ts-expect-error
-        new AuthUser({ ...baseUserData, isActive: 'true' });
-      }).toThrow('The field isActive must be a boolean');
-    });
   });
 
   describe('Success cases', () => {
@@ -106,9 +99,7 @@ describe('AuthUser unit test', () => {
     });
 
     it('should respect isHashed flag and not rehash an already hashed password', async () => {
-      const hashedPassword = await authUserService.generateHash(
-        baseUserData.password
-      );
+      const hashedPassword = await authUserService.generateHash(baseUserData.password);
       const preHashedUser = new AuthUser(
         { ...baseUserData, password: hashedPassword, isHashed: true },
         authUserService
@@ -140,16 +131,16 @@ describe('AuthUser unit test', () => {
     });
 
     it('should report active status true by default', async () => {
-      const status = await authUser.getStatus();
+      const status = authUser.isActive;
       expect(status).toBe(true);
     });
 
     it('should deactivate and activate the user correctly', async () => {
-      await authUser.deactivate();
-      expect(await authUser.getStatus()).toBe(false);
+      authUser.deactivate();
+      expect(authUser.isActive).toBe(false);
 
-      await authUser.activate();
-      expect(await authUser.getStatus()).toBe(true);
+      authUser.reactivate();
+      expect(await authUser.isActive).toBe(true);
     });
   });
 });

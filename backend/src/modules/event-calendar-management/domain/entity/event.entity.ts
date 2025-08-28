@@ -283,7 +283,7 @@ export default class Event {
     return this._lifecycle.value;
   }
   get isActive(): boolean {
-    return this._lifecycle.equals(StatesEnum.INACTIVE);
+    return !this._lifecycle.equals(StatesEnum.INACTIVE);
   }
   get isPending(): boolean {
     return this._lifecycle.equals(StatesEnum.PENDING);

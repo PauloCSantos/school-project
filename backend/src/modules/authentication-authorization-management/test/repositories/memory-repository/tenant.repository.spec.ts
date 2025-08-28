@@ -1,7 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import Tenant from '@/modules/authentication-authorization-management/domain/entity/tenant.entity';
-import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.gateway';
+import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.repository';
 
 describe('MemoryTenantRepository unit test', () => {
   let repository: MemoryTenantRepository;
@@ -21,22 +21,17 @@ describe('MemoryTenantRepository unit test', () => {
     });
 
     it('should throw an error when updating a non-existent tenant', async () => {
-      await expect(
-        //@ts-expect-error
-        repository.update('nonexistent-id', '00000000000000')
-      ).rejects.toThrow('Tenant not found');
-    });
-
-    it('should throw an error when deleting a non-existent tenant', async () => {
-      await expect(repository.delete('nonexistent-id')).rejects.toThrow(
+      await expect(repository.update('nonexistent-id', tenant3)).rejects.toThrow(
         'Tenant not found'
       );
     });
 
+    it('should throw an error when deleting a non-existent tenant', async () => {
+      await expect(repository.delete(tenant3)).rejects.toThrow('Tenant not found');
+    });
+
     it('should throw an error when creating a tenant with an existing id', async () => {
-      await expect(repository.create(tenant1)).rejects.toThrow(
-        'Tenant already exists'
-      );
+      await expect(repository.create(tenant1)).rejects.toThrow('Tenant already exists');
     });
   });
 
@@ -66,9 +61,14 @@ describe('MemoryTenantRepository unit test', () => {
     });
 
     it('should delete an existing tenant', async () => {
-      await repository.delete(tenant1.id);
+      tenant1.addTenantUserRole('test@t.com', RoleUsersEnum.STUDENT);
+      await repository.update(tenant1.id, tenant1);
+
+      const role = tenant1.tenantUserRolesMap.get('test@t.com');
+      role![0].deactivate();
+      await repository.delete(tenant1);
       const found = await repository.find(tenant1.id);
-      expect(found).toBeNull();
+      expect(found?.tenantUserRolesMap.get('test@t.com')![0].isActive).toBeFalsy();
     });
 
     it('should create a new tenant and persist it', async () => {

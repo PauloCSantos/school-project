@@ -90,16 +90,13 @@ export default class Tenant {
 
     if (existing) {
       if (existing.isActive) {
-        throw new Error(
-          `User already has the role '${role}' active in this tenant.`
-        );
+        throw new Error(`User already has the role '${role}' active in this tenant.`);
       }
-      existing.activate(true);
+      existing.reactivate(true);
     } else {
       const newRole = new TenantUserRole({
         email,
         role,
-        isActive: true,
       });
       roles.push(newRole);
     }
@@ -132,14 +129,12 @@ export default class Tenant {
     const targetRole = roles.find(r => r.role === newRole);
 
     if (targetRole && targetRole.isActive) {
-      throw new Error(
-        `User already has the role '${newRole}' active in this tenant.`
-      );
+      throw new Error(`User already has the role '${newRole}' active in this tenant.`);
     }
 
     if (targetRole && !targetRole.isActive) {
       oldTenantRole.deactivate();
-      targetRole.activate(true);
+      targetRole.reactivate(true);
       return;
     }
 
@@ -147,7 +142,6 @@ export default class Tenant {
     const newTenantRole = new TenantUserRole({
       email,
       role: newRole,
-      isActive: true,
     });
     roles.push(newTenantRole);
 
@@ -176,5 +170,16 @@ export default class Tenant {
 
     this._tenantsUserRole.set(newEmail, roles);
     this._tenantsUserRole.delete(oldEmail);
+  }
+
+  public setRoles(entries: Iterable<[string, TenantUserRole[]]>): void {
+    if (this._tenantsUserRole.size > 0) {
+      throw new Error('Tenant roles already initialized');
+    }
+    const next = new Map<string, TenantUserRole[]>();
+    for (const [email, roles] of entries) {
+      next.set(email, roles.slice());
+    }
+    this._tenantsUserRole = next;
   }
 }

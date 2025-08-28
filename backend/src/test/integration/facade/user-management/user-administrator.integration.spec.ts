@@ -26,7 +26,7 @@ import {
 } from '@/modules/@shared/application/services/policies.service';
 import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
-import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.gateway';
+import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.repository';
 import {
   TenantService,
   TenantServiceInterface,
@@ -145,12 +145,12 @@ describe('User Administrator facade integration test', () => {
   }
 
   beforeEach(() => {
-    authUserRepository = new MemoryAuthUserRepository();
+    authUserService = new AuthUserService();
+    authUserRepository = new MemoryAuthUserRepository(authUserService);
     administratorRepository = new MemoryAdministratorRepository();
     tenantRepository = new MemoryTenantRepository();
     userRepository = new MemoryUserRepository();
     emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
-    authUserService = new AuthUserService();
     tenantService = new TenantService(tenantRepository);
     tokenService = new TokenService('PxHf3H7');
     userService = new UserService(userRepository);

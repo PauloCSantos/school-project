@@ -1,5 +1,8 @@
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
 import AuthUserGateway from '../../../application/gateway/user.gateway';
+import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
+
+import { AuthUserMapper, AuthUserMapperProps } from '../../mapper/authUser.mapper';
 
 /**
  * In-memory implementation of AuthUserGateway.
@@ -7,17 +10,19 @@ import AuthUserGateway from '../../../application/gateway/user.gateway';
  * Useful for testing and development purposes.
  */
 export default class MemoryAuthUserRepository implements AuthUserGateway {
-  private _authUser: Map<string, AuthUser>;
+  private _authUsers: Map<string, AuthUserMapperProps> = new Map();
 
   /**
    * Creates a new in-memory repository.
    * @param authUser - Optional initial array of authentication users
    */
-  constructor(authUser?: AuthUser[]) {
-    this._authUser = new Map<string, AuthUser>();
-    if (authUser) {
-      for (const user of authUser) {
-        this._authUser.set(user.email, user);
+  constructor(
+    private readonly authUserService: AuthUserServiceInterface,
+    authUsers?: AuthUser[]
+  ) {
+    if (authUsers) {
+      for (const user of authUsers) {
+        this._authUsers.set(user.email, AuthUserMapper.toObj(user));
       }
     }
   }
@@ -28,7 +33,8 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
    * @returns Promise resolving to the found AuthUser or null if not found
    */
   async find(email: string): Promise<AuthUser | null> {
-    return this._authUser.get(email) ?? null;
+    const obj = this._authUsers.get(email);
+    return obj ? AuthUserMapper.toInstance(obj, this.authUserService) : null;
   }
 
   /**
@@ -37,7 +43,7 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
    * @returns Promise resolving to an object containing the email and masterId of the created user
    */
   async create(authUser: AuthUser): Promise<{ email: string }> {
-    this._authUser.set(authUser.email, authUser);
+    this._authUsers.set(authUser.email, AuthUserMapper.toObj(authUser));
     return { email: authUser.email };
   }
 
@@ -49,10 +55,10 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
    * @throws Error if the user is not found
    */
   async update(authUser: AuthUser, email: string): Promise<AuthUser> {
-    if (!this._authUser.has(email)) {
+    if (!this._authUsers.has(email)) {
       throw new Error('AuthUser not found');
     }
-    this._authUser.set(email, authUser);
+    this._authUsers.set(email, AuthUserMapper.toObj(authUser));
     return authUser;
   }
 
@@ -62,13 +68,12 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the user is not found
    */
-  async delete(email: string): Promise<string> {
-    let user = this._authUser.get(email);
-    if (!user) {
+  async delete(authUser: AuthUser): Promise<string> {
+    if (!this._authUsers.get(authUser.email)) {
       throw new Error('AuthUser not found');
     }
-    user.deactivate();
-    this._authUser.set(email, user);
+
+    this._authUsers.set(authUser.email, AuthUserMapper.toObj(authUser));
     return 'Operação concluída com sucesso';
   }
 
@@ -78,6 +83,6 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
    * @returns Promise resolving to true if exists, false otherwise
    */
   async verify(email: string): Promise<boolean> {
-    return this._authUser.has(email);
+    return this._authUsers.has(email);
   }
 }

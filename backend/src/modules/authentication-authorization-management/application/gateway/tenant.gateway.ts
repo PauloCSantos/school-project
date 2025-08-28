@@ -5,5 +5,5 @@ export default interface TenantGateway {
   find(id: string): Promise<Tenant | null>;
   findByEmail(email: string): Promise<Tenant[]>;
   update(id: string, tenant: Tenant): Promise<void>;
-  delete(id: string): Promise<void>;
+  delete(tenant: Tenant): Promise<void>;
 }

@@ -33,7 +33,7 @@ import {
   TenantServiceInterface,
 } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
-import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.gateway';
+import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.repository';
 import UserGateway from '@/modules/user-management/application/gateway/user.gateway';
 import {
   UserService,
@@ -149,13 +149,13 @@ describe('User Teacher facade integration test', () => {
   }
 
   beforeEach(() => {
-    authUserRepository = new MemoryAuthUserRepository();
+    authUserService = new AuthUserService();
+    authUserRepository = new MemoryAuthUserRepository(authUserService);
     tenantRepository = new MemoryTenantRepository();
     teacherRepository = new MemoryTeacherRepository();
     userRepository = new MemoryUserRepository();
 
     emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
-    authUserService = new AuthUserService();
     tenantService = new TenantService(tenantRepository);
     tokenService = new TokenService('PxHf3H7');
     userService = new UserService(userRepository);

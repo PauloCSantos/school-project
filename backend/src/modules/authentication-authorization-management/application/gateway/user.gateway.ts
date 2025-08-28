@@ -32,7 +32,7 @@ export default interface AuthUserGateway {
    * @param email - The email address of the user to delete
    * @returns Promise resolving to a success message
    */
-  delete(email: string): Promise<string>;
+  delete(authUser: AuthUser): Promise<string>;
 
   verify(email: string): Promise<boolean>;
 }

@@ -16,8 +16,9 @@ import TokenService from '@/modules/authentication-authorization-management/infr
 import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
-import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.gateway';
+
 import { TenantService } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
+import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.repository';
 
 async function registerAndLoginUser(app: any, userDataOverride = {}) {
   const defaultUserData = {
@@ -29,9 +30,7 @@ async function registerAndLoginUser(app: any, userDataOverride = {}) {
 
   const userData = { ...defaultUserData, ...userDataOverride };
 
-  const registerResponse = await supertest(app)
-    .post('/register')
-    .send(userData);
+  const registerResponse = await supertest(app).post('/register').send(userData);
 
   const loginResponse = await supertest(app).post('/login').send({
     email: userData.email,
@@ -50,8 +49,8 @@ async function registerAndLoginUser(app: any, userDataOverride = {}) {
 }
 
 describe('Authentication authorization management module end to end test', () => {
-  let authUserRepository = new MemoryAuthUserRepository();
   let authUserService = new AuthUserService();
+  let authUserRepository = new MemoryAuthUserRepository(authUserService);
   let tenantRepository = new MemoryTenantRepository();
   let tenantService = new TenantService(tenantRepository);
   const tokenService = new TokenService('PxHf3H7');
@@ -59,7 +58,7 @@ describe('Authentication authorization management module end to end test', () =>
   let app: any;
 
   beforeEach(() => {
-    authUserRepository = new MemoryAuthUserRepository();
+    authUserRepository = new MemoryAuthUserRepository(authUserService);
     tenantRepository = new MemoryTenantRepository();
     tenantService = new TenantService(tenantRepository);
     const policiesService = new PoliciesService();
@@ -71,10 +70,7 @@ describe('Authentication authorization management module end to end test', () =>
       tenantService,
       policiesService
     );
-    const deleteAuthUserUsecase = new DeleteAuthUser(
-      authUserRepository,
-      policiesService
-    );
+    const deleteAuthUserUsecase = new DeleteAuthUser(authUserRepository, policiesService);
     const loginAuthUserUsecase = new LoginAuthUser(
       authUserRepository,
       authUserService,
@@ -98,16 +94,13 @@ describe('Authentication authorization management module end to end test', () =>
 
     const expressHttp = new ExpressAdapter();
     const tokenServiceInstance = tokenInstance();
-    const authUserMiddlewareAuthUser = new AuthUserMiddleware(
-      tokenServiceInstance,
-      [
-        RoleUsersEnum.MASTER,
-        RoleUsersEnum.ADMINISTRATOR,
-        RoleUsersEnum.STUDENT,
-        RoleUsersEnum.TEACHER,
-        RoleUsersEnum.WORKER,
-      ]
-    );
+    const authUserMiddlewareAuthUser = new AuthUserMiddleware(tokenServiceInstance, [
+      RoleUsersEnum.MASTER,
+      RoleUsersEnum.ADMINISTRATOR,
+      RoleUsersEnum.STUDENT,
+      RoleUsersEnum.TEACHER,
+      RoleUsersEnum.WORKER,
+    ]);
     const authUserRoute = new AuthUserRoute(
       authUserController,
       expressHttp,
@@ -203,9 +196,7 @@ describe('Authentication authorization management module end to end test', () =>
 
       describe('MIDDLEWARE /auth', () => {
         it('should return 401 when authorization header is missing', async () => {
-          const result = await supertest(app).get(
-            '/authUser/not-exists@example.com'
-          );
+          const result = await supertest(app).get('/authUser/not-exists@example.com');
           expect(result.status).toBe(401);
           expect(result.body.message).toBe('Missing Token');
         });
