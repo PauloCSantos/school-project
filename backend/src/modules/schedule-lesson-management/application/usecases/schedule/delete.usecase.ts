@@ -6,10 +6,7 @@ import {
 import ScheduleGateway from '@/modules/schedule-lesson-management/application/gateway/schedule.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for schedule operation.
@@ -38,13 +35,11 @@ export default class DeleteSchedule
       token
     );
 
-    const scheduleVerification = await this._scheduleRepository.find(
-      token.masterId,
-      id
-    );
-    if (!scheduleVerification) throw new Error('Schedule not found');
+    const schedule = await this._scheduleRepository.find(token.masterId, id);
+    if (!schedule) throw new Error('Schedule not found');
+    schedule.deactivate();
 
-    const result = await this._scheduleRepository.delete(token.masterId, id);
+    const result = await this._scheduleRepository.delete(token.masterId, schedule);
 
     return { message: result };
   }

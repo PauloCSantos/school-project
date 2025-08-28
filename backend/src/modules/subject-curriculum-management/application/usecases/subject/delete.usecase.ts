@@ -6,10 +6,7 @@ import {
 import SubjectGateway from '@/modules/subject-curriculum-management/application/gateway/subject.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 export default class DeleteSubject
   implements UseCaseInterface<DeleteSubjectInputDto, DeleteSubjectOutputDto>
@@ -31,13 +28,11 @@ export default class DeleteSubject
       FunctionCalledEnum.DELETE,
       token
     );
-    const subjectVerification = await this._subjectRepository.find(
-      token.masterId,
-      id
-    );
-    if (!subjectVerification) throw new Error('Subject not found');
+    const subject = await this._subjectRepository.find(token.masterId, id);
+    if (!subject) throw new Error('Subject not found');
+    subject.deactivate();
 
-    const result = await this._subjectRepository.delete(token.masterId, id);
+    const result = await this._subjectRepository.delete(token.masterId, subject);
 
     return { message: result };
   }

@@ -18,11 +18,7 @@ export default interface EvaluationGateway {
    * @param offSet - Optional number of records to skip for pagination
    * @returns Promise resolving to an array of Evaluation entities
    */
-  findAll(
-    masterId: string,
-    quantity?: number,
-    offSet?: number
-  ): Promise<Evaluation[]>;
+  findAll(masterId: string, quantity?: number, offSet?: number): Promise<Evaluation[]>;
 
   /**
    * Creates a new evaluation.
@@ -43,5 +39,5 @@ export default interface EvaluationGateway {
    * @param id - The unique identifier of the evaluation to delete
    * @returns Promise resolving to a success message
    */
-  delete(masterId: string, id: string): Promise<string>;
+  delete(masterId: string, evaluation: Evaluation): Promise<string>;
 }

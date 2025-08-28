@@ -18,11 +18,7 @@ export default interface AttendanceGateway {
    * @param offSet - Optional number of records to skip for pagination
    * @returns Promise resolving to an array of Attendance entities
    */
-  findAll(
-    masterId: string,
-    quantity?: number,
-    offSet?: number
-  ): Promise<Attendance[]>;
+  findAll(masterId: string, quantity?: number, offSet?: number): Promise<Attendance[]>;
 
   /**
    * Creates a new attendance record.
@@ -43,7 +39,7 @@ export default interface AttendanceGateway {
    * @param id - The unique identifier of the attendance record to delete
    * @returns Promise resolving to a success message
    */
-  delete(masterId: string, id: string): Promise<string>;
+  delete(masterId: string, attendance: Attendance): Promise<string>;
 
   /**
    * Adds students to an existing attendance record.
@@ -51,11 +47,7 @@ export default interface AttendanceGateway {
    * @param attendance - The attendance entity with updated students
    * @returns Promise resolving to a success message
    */
-  addStudent(
-    masterId: string,
-    id: string,
-    attendance: Attendance
-  ): Promise<string>;
+  addStudent(masterId: string, id: string, attendance: Attendance): Promise<string>;
 
   /**
    * Removes students from an existing attendance record.
@@ -63,9 +55,5 @@ export default interface AttendanceGateway {
    * @param attendance - The attendance entity with updated students
    * @returns Promise resolving to a success message
    */
-  removeStudent(
-    masterId: string,
-    id: string,
-    attendance: Attendance
-  ): Promise<string>;
+  removeStudent(masterId: string, id: string, attendance: Attendance): Promise<string>;
 }

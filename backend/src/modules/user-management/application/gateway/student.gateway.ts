@@ -6,5 +6,5 @@ export default interface UserStudentGateway {
   findAll(masterId: string, quantity?: number, offSet?: number): Promise<UserStudent[]>;
   create(masterId: string, userStudent: UserStudent): Promise<string>;
   update(masterId: string, userStudent: UserStudent): Promise<UserStudent>;
-  delete(masterId: string, id: string): Promise<string>;
+  delete(masterId: string, userStudent: UserStudent): Promise<string>;
 }

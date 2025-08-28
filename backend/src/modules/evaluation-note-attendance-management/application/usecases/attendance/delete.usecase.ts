@@ -6,10 +6,7 @@ import {
 import AttendanceGateway from '@/modules/evaluation-note-attendance-management/application/gateway/attendance.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for deleting an attendance record.
@@ -17,8 +14,7 @@ import {
  * Verifies attendance existence before proceeding with deletion.
  */
 export default class DeleteAttendance
-  implements
-    UseCaseInterface<DeleteAttendanceInputDto, DeleteAttendanceOutputDto>
+  implements UseCaseInterface<DeleteAttendanceInputDto, DeleteAttendanceOutputDto>
 {
   /** Repository for persisting and retrieving attendance records */
   private readonly _attendanceRepository: AttendanceGateway;
@@ -52,16 +48,14 @@ export default class DeleteAttendance
       token
     );
 
-    const attendanceVerification = await this._attendanceRepository.find(
-      token.masterId,
-      id
-    );
+    const attendance = await this._attendanceRepository.find(token.masterId, id);
 
-    if (!attendanceVerification) {
+    if (!attendance) {
       throw new Error('Attendance not found');
     }
+    attendance.deactivate();
 
-    const result = await this._attendanceRepository.delete(token.masterId, id);
+    const result = await this._attendanceRepository.delete(token.masterId, attendance);
 
     return { message: result };
   }

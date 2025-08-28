@@ -6,10 +6,7 @@ import {
 import ScheduleGateway from '@/modules/schedule-lesson-management/application/gateway/schedule.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for schedule operation.
@@ -42,10 +39,11 @@ export default class UpdateSchedule
     if (!schedule) throw new Error('Schedule not found');
     curriculum !== undefined && (schedule.curriculum = curriculum);
 
-    const result = await this._scheduleRepository.update(
-      token.masterId,
-      schedule
-    );
+    if (schedule.isPending) {
+      schedule.markVerified();
+    }
+
+    const result = await this._scheduleRepository.update(token.masterId, schedule);
 
     return {
       id: result.id.value,

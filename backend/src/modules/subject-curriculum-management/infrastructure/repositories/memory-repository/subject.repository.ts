@@ -14,9 +14,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
    * @param subjectsRecords - Optional initial array of subject records
    *  Ex.: new MemorySubjectRepository([{ masterId, records: [s1, s2] }])
    */
-  constructor(
-    subjectsRecords?: Array<{ masterId: string; records: Subject[] }>
-  ) {
+  constructor(subjectsRecords?: Array<{ masterId: string; records: Subject[] }>) {
     if (subjectsRecords) {
       for (const { masterId, records } of subjectsRecords) {
         let subjects = this._subjects.get(masterId);
@@ -97,12 +95,12 @@ export default class MemorySubjectRepository implements SubjectGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the subject record is not found
    */
-  async delete(masterId: string, id: string): Promise<string> {
+  async delete(masterId: string, subject: Subject): Promise<string> {
     const subjects = this._subjects.get(masterId);
-    if (!subjects || !subjects.has(id)) {
+    if (!subjects || !subjects.has(subject.id.value)) {
       throw new Error('Subject not found');
     }
-    subjects.delete(id);
+    subjects.set(subject.id.value, SubjectMapper.toObj(subject));
     return 'Operação concluída com sucesso';
   }
 

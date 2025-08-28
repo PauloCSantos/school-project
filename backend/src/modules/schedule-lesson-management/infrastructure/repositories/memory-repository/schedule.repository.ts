@@ -1,9 +1,6 @@
 import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
 import ScheduleGateway from '../../../application/gateway/schedule.gateway';
-import {
-  ScheduleMapper,
-  ScheduleMapperProps,
-} from '../../mapper/schedule.mapper';
+import { ScheduleMapper, ScheduleMapperProps } from '../../mapper/schedule.mapper';
 
 /**
  * In-memory implementation of ScheduleGateway.
@@ -18,9 +15,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
    * @param schedulesRecords - Optional initial array of schedule records
    *  Ex.: new MemoryScheduleRepository([{ masterId, records: [a1, a2] }])
    */
-  constructor(
-    schedulesRecords?: Array<{ masterId: string; records: Schedule[] }>
-  ) {
+  constructor(schedulesRecords?: Array<{ masterId: string; records: Schedule[] }>) {
     if (schedulesRecords && schedulesRecords.length > 0) {
       for (const bucket of schedulesRecords) {
         const map = this.getOrCreateBucket(bucket.masterId);
@@ -97,12 +92,12 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the schedule is not found
    */
-  async delete(masterId: string, id: string): Promise<string> {
+  async delete(masterId: string, schedule: Schedule): Promise<string> {
     const schedules = this._schedules.get(masterId);
-    if (!schedules || !schedules.has(id)) {
+    if (!schedules || !schedules.has(schedule.id.value)) {
       throw new Error('Schedule not found');
     }
-    schedules.delete(id);
+    schedules.set(schedule.id.value, ScheduleMapper.toObj(schedule));
     return 'Operação concluída com sucesso';
   }
 
@@ -114,11 +109,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the schedule is not found or if adding lessons fails
    */
-  async addLessons(
-    masterId: string,
-    id: string,
-    schedule: Schedule
-  ): Promise<string> {
+  async addLessons(masterId: string, id: string, schedule: Schedule): Promise<string> {
     const schedules = this._schedules.get(masterId);
     const obj = schedules?.get(id);
     if (!obj) {
@@ -126,9 +117,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
     }
     schedules!.set(id, ScheduleMapper.toObj(schedule));
     const totalLessons = schedule.lessonsList.length - obj.lessonsList.length;
-    return `${totalLessons} ${
-      totalLessons === 1 ? 'value was' : 'values were'
-    } entered`;
+    return `${totalLessons} ${totalLessons === 1 ? 'value was' : 'values were'} entered`;
   }
 
   /**
@@ -139,11 +128,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the schedule is not found or if removing lessons fails
    */
-  async removeLessons(
-    masterId: string,
-    id: string,
-    schedule: Schedule
-  ): Promise<string> {
+  async removeLessons(masterId: string, id: string, schedule: Schedule): Promise<string> {
     const schedules = this._schedules.get(masterId);
     const obj = schedules?.get(id);
     if (!obj) {
@@ -151,14 +136,10 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
     }
     schedules!.set(id, ScheduleMapper.toObj(schedule));
     const totalLessons = obj.lessonsList.length - schedule.lessonsList.length;
-    return `${totalLessons} ${
-      totalLessons === 1 ? 'value was' : 'values were'
-    } removed`;
+    return `${totalLessons} ${totalLessons === 1 ? 'value was' : 'values were'} removed`;
   }
 
-  private getOrCreateBucket(
-    masterId: string
-  ): Map<string, ScheduleMapperProps> {
+  private getOrCreateBucket(masterId: string): Map<string, ScheduleMapperProps> {
     let schedules = this._schedules.get(masterId);
     if (!schedules) {
       schedules = new Map<string, ScheduleMapperProps>();

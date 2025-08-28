@@ -111,10 +111,7 @@ describe('UpdateEvent usecase unit test', () => {
         token
       );
 
-      expect(repository.find).toHaveBeenCalledWith(
-        token.masterId,
-        event.id.value
-      );
+      expect(repository.find).toHaveBeenCalledWith(token.masterId, event.id.value);
       expect(repository.update).toHaveBeenCalled();
       expect(result).toStrictEqual({
         id: event.id.value,
@@ -125,6 +122,7 @@ describe('UpdateEvent usecase unit test', () => {
         day: dataToUpdate.day,
         type: dataToUpdate.type,
         place: dataToUpdate.place,
+        state: 'active',
       });
     });
 

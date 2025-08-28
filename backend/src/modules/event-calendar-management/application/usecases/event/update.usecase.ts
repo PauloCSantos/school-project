@@ -1,15 +1,9 @@
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
-import {
-  UpdateEventInputDto,
-  UpdateEventOutputDto,
-} from '../../dto/event-usecase.dto';
+import { UpdateEventInputDto, UpdateEventOutputDto } from '../../dto/event-usecase.dto';
 import EventGateway from '@/modules/event-calendar-management/application/gateway/event.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import { EventMapper } from '@/modules/event-calendar-management/infrastructure/mapper/event.mapper';
 
 /**
@@ -83,6 +77,10 @@ export default class UpdateEvent
 
     if (type !== undefined) {
       event.type = type;
+    }
+
+    if (event.isPending) {
+      event.markVerified();
     }
 
     const result = await this._eventRepository.update(token.masterId, event);

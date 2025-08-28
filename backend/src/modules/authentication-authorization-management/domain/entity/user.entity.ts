@@ -1,5 +1,8 @@
+import { States } from '@/modules/@shared/type/sharedTypes';
 import { AuthUserServiceInterface } from '../service/interface/user-entity-service.interface';
 import { isNotEmpty, validEmail } from '@/modules/@shared/utils/validations';
+import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
+import { StatesEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * Properties required to create an authenticated user.
@@ -9,10 +12,9 @@ export type AuthUserProps = {
   email: string;
   /** User's password (plaintext or already hashed if `isHashed` is true) */
   password: string;
-  /** Whether the user is active. Defaults to true if omitted. */
-  isActive?: boolean;
   /** Whether the password is already hashed. Defaults to false if omitted. */
   isHashed?: boolean;
+  state?: States;
 };
 
 /**
@@ -25,10 +27,9 @@ export default class AuthUser {
   private _email: string;
   /** User's password or hashed password */
   private _password: string;
-  /** Whether the user account is active */
-  private _isActive: boolean = true;
   /** Whether the password is already hashed */
   private _isHashed: boolean;
+  private _lifecycle: Lifecycle;
 
   /**
    * Creates a new authenticated user.
@@ -45,8 +46,8 @@ export default class AuthUser {
 
     this._email = input.email;
     this._password = input.password;
-    this._isActive = !!!input.isActive;
     this._isHashed = input.isHashed === true;
+    this._lifecycle = Lifecycle.from(input.state ?? StatesEnum.ACTIVE);
   }
 
   /**
@@ -70,10 +71,6 @@ export default class AuthUser {
 
     if (input.isHashed !== undefined && typeof input.isHashed !== 'boolean') {
       throw new Error('The field isHashed must be a boolean');
-    }
-
-    if (input.isActive !== undefined && typeof input.isActive !== 'boolean') {
-      throw new Error('The field isActive must be a boolean');
     }
   }
 
@@ -140,29 +137,6 @@ export default class AuthUser {
   }
 
   /**
-   * Gets the active status of the user.
-   *
-   * @returns True if the user is active, false otherwise.
-   */
-  async getStatus(): Promise<boolean> {
-    return this._isActive;
-  }
-
-  /**
-   * Activates the user account.
-   */
-  async activate(): Promise<void> {
-    this._isActive = true;
-  }
-
-  /**
-   * Deactivates the user account.
-   */
-  async deactivate(): Promise<void> {
-    this._isActive = false;
-  }
-
-  /**
    * Compares a plain text password with the stored hashed password.
    *
    * @param input - Plain text password to compare.
@@ -199,5 +173,25 @@ export default class AuthUser {
    */
   private validatePassword(input: string): boolean {
     return isNotEmpty(input);
+  }
+
+  get state(): States {
+    return this._lifecycle.value;
+  }
+  get isActive(): boolean {
+    return !this._lifecycle.equals(StatesEnum.INACTIVE);
+  }
+  get isPending(): boolean {
+    return this._lifecycle.equals(StatesEnum.PENDING);
+  }
+
+  deactivate(): void {
+    this._lifecycle = this._lifecycle.deactivate();
+  }
+  reactivate(requireVerification = false): void {
+    this._lifecycle = this._lifecycle.activate(requireVerification);
+  }
+  markVerified(): void {
+    this._lifecycle = this._lifecycle.markVerified();
   }
 }

@@ -91,12 +91,12 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the evaluation is not found
    */
-  async delete(masterId: string, id: string): Promise<string> {
+  async delete(masterId: string, evaluation: Evaluation): Promise<string> {
     const evaluations = this._evaluations.get(masterId);
-    if (!evaluations || !evaluations.has(id)) {
+    if (!evaluations || !evaluations.has(evaluation.id.value)) {
       throw new Error('Evaluation not found');
     }
-    evaluations.delete(id);
+    evaluations.set(evaluation.id.value, EvaluationMapper.toObj(evaluation));
     return 'Operação concluída com sucesso';
   }
 

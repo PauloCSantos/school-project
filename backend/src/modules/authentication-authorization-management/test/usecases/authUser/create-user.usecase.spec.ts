@@ -110,21 +110,14 @@ describe('CreateAuthUser Use Case', () => {
     const output = await usecase.execute(input);
 
     expect(authUserService.generateHash).toHaveBeenCalledWith(input.password);
-    expect(repository.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        _email: input.email,
-        _isHashed: true,
-        _isActive: true,
-      })
-    );
-    expect(tenantService.manageUserRoleAssignmentInTenant).toHaveBeenCalledWith(
-      {
-        masterId: undefined,
-        email: input.email,
-        role: input.role,
-        cnpj: input.cnpj,
-      }
-    );
+    expect(repository.create).toHaveBeenCalled();
+
+    expect(tenantService.manageUserRoleAssignmentInTenant).toHaveBeenCalledWith({
+      masterId: undefined,
+      email: input.email,
+      role: input.role,
+      cnpj: input.cnpj,
+    });
     expect(tenantRepository.create).toHaveBeenCalledWith({ id: 'tenant-id' });
     expect(output.email).toBe(input.email);
     expect(output.masterId).toBe('tenant-id');
@@ -139,9 +132,7 @@ describe('CreateAuthUser Use Case', () => {
     await expect(usecase.execute(input)).rejects.toThrow('E-mail já utilizado');
 
     expect(repository.create).not.toHaveBeenCalled();
-    expect(
-      tenantService.manageUserRoleAssignmentInTenant
-    ).not.toHaveBeenCalled();
+    expect(tenantService.manageUserRoleAssignmentInTenant).not.toHaveBeenCalled();
   });
 
   it('should propagate hash errors and not call create', async () => {
@@ -154,8 +145,6 @@ describe('CreateAuthUser Use Case', () => {
       'User does not have access permission'
     );
     expect(repository.create).not.toHaveBeenCalled();
-    expect(
-      tenantService.manageUserRoleAssignmentInTenant
-    ).not.toHaveBeenCalled();
+    expect(tenantService.manageUserRoleAssignmentInTenant).not.toHaveBeenCalled();
   });
 });

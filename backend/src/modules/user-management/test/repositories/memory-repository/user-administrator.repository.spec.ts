@@ -111,7 +111,13 @@ describe('MemoryUserAdministratorRepository unit test', () => {
       );
     });
     it('should generate an error when trying to remove the user with the wrong ID', async () => {
-      await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
+      const userAdministrator = new UserAdministrator({
+        id: new Id().value,
+        userId: new Id().value,
+        graduation: graduation3,
+        salary: salary3,
+      });
+      await expect(repository.delete(masterId, userAdministrator)).rejects.toThrow(
         'User not found'
       );
     });
@@ -168,7 +174,7 @@ describe('MemoryUserAdministratorRepository unit test', () => {
       );
     });
     it('should remove the user', async () => {
-      const response = await repository.delete(masterId, userAdministrator1.id.value);
+      const response = await repository.delete(masterId, userAdministrator1);
 
       expect(response).toBe('Operação concluída com sucesso');
     });

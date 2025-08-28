@@ -1,15 +1,9 @@
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
-import {
-  DeleteEventInputDto,
-  DeleteEventOutputDto,
-} from '../../dto/event-usecase.dto';
+import { DeleteEventInputDto, DeleteEventOutputDto } from '../../dto/event-usecase.dto';
 import EventGateway from '@/modules/event-calendar-management/application/gateway/event.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for deleting a calendar event.
@@ -51,10 +45,11 @@ export default class DeleteEvent
       token
     );
 
-    const existingEvent = await this._eventRepository.find(token.masterId, id);
-    if (!existingEvent) throw new Error('Event not found');
+    const event = await this._eventRepository.find(token.masterId, id);
+    if (!event) throw new Error('Event not found');
+    event.deactivate();
 
-    const result = await this._eventRepository.delete(token.masterId, id);
+    const result = await this._eventRepository.delete(token.masterId, event);
 
     return { message: result };
   }

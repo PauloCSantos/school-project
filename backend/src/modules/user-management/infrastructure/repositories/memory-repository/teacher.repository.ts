@@ -115,12 +115,12 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the teacher record is not found
    */
-  async delete(masterId: string, id: string): Promise<string> {
+  async delete(masterId: string, userTeacher: UserTeacher): Promise<string> {
     const teacherUsers = this._teacherUsers.get(masterId);
-    if (!teacherUsers || !teacherUsers.has(id)) {
+    if (!teacherUsers || !teacherUsers.has(userTeacher.id.value)) {
       throw new Error('User not found');
     }
-    teacherUsers.delete(id);
+    teacherUsers.set(userTeacher.id.value, TeacherMapper.toObj(userTeacher));
     return 'Operação concluída com sucesso';
   }
 

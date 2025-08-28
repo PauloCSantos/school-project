@@ -104,7 +104,12 @@ describe('MemoryUserStudentRepository unit test', () => {
       );
     });
     it('should generate an error when trying to remove the user with the wrong ID', async () => {
-      await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
+      const userStudent = new UserStudent({
+        id: new Id().value,
+        userId: new Id().value,
+        paymentYear: paymentYear3,
+      });
+      await expect(repository.delete(masterId, userStudent)).rejects.toThrow(
         'User not found'
       );
     });
@@ -152,7 +157,7 @@ describe('MemoryUserStudentRepository unit test', () => {
       expect(allStudentUsers[1].paymentYear).toStrictEqual(userStudent2.paymentYear);
     });
     it('should remove the user', async () => {
-      const response = await repository.delete(masterId, userStudent1.id.value);
+      const response = await repository.delete(masterId, userStudent1);
 
       expect(response).toBe('Operação concluída com sucesso');
     });

@@ -8,10 +8,7 @@ import AuthUser from '@/modules/authentication-authorization-management/domain/e
 
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import TenantGateway from '../../gateway/tenant.gateway';
 import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
 import { TenantServiceInterface } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
@@ -79,17 +76,17 @@ export default class UpdateAuthUser
     }
     let role = token.role;
     if (authUserDataToUpdate.role !== undefined) {
-      tenant.changeTenantUserRole(
-        authUser.email,
-        token.role,
-        authUserDataToUpdate.role
-      );
+      tenant.changeTenantUserRole(authUser.email, token.role, authUserDataToUpdate.role);
       role = authUserDataToUpdate.role;
     }
 
     if (authUserDataToUpdate.password !== undefined) {
       authUser.password = authUserDataToUpdate.password;
       await authUser.hashPassword();
+    }
+
+    if (authUser.isPending) {
+      authUser.markVerified();
     }
 
     const result = await this.authUserRepository.update(authUser, email);

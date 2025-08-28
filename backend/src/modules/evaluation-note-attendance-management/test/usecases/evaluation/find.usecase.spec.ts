@@ -58,6 +58,7 @@ describe('findEvaluation usecase unit test', () => {
         teacher: evaluation1.teacher,
         type: evaluation1.type,
         value: evaluation1.value,
+        state: evaluation1.state,
       });
     });
 

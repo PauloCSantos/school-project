@@ -32,9 +32,9 @@ export default class UpdateUserWorker
       token
     );
 
-    const userAdm = await this._userWorkerRepository.find(token.masterId, id);
-    if (!userAdm) throw new Error('User not found');
-    const baseUser = await this.userService.findBaseUser(userAdm.userId);
+    const userWorker = await this._userWorkerRepository.find(token.masterId, id);
+    if (!userWorker) throw new Error('User not found');
+    const baseUser = await this.userService.findBaseUser(userWorker.userId);
 
     name?.firstName !== undefined && (baseUser!.name.firstName = name.firstName);
     name?.middleName !== undefined && (baseUser!.name.middleName = name.middleName);
@@ -47,11 +47,15 @@ export default class UpdateUserWorker
     address?.state !== undefined && (baseUser!.address.state = address.state);
     email !== undefined && (baseUser!.email = email);
     birthday !== undefined && (baseUser!.birthday = new Date(birthday));
-    salary?.currency !== undefined && (userAdm.salary.currency = salary.currency);
-    salary?.salary !== undefined && (userAdm.salary.salary = salary.salary);
+    salary?.currency !== undefined && (userWorker.salary.currency = salary.currency);
+    salary?.salary !== undefined && (userWorker.salary.salary = salary.salary);
+
+    if (userWorker.isPending) {
+      userWorker.markVerified();
+    }
 
     const baseUserUpdated = await this.userService.update(baseUser!);
-    const result = await this._userWorkerRepository.update(token.masterId, userAdm);
+    const result = await this._userWorkerRepository.update(token.masterId, userWorker);
 
     return WorkerAssembler.toObj(baseUserUpdated, result);
   }

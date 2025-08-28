@@ -49,6 +49,10 @@ export default class UpdateUserStudent
     birthday !== undefined && (baseUser!.birthday = new Date(birthday));
     paymentYear !== undefined && (userStudent.paymentYear = paymentYear);
 
+    if (userStudent.isPending) {
+      userStudent.markVerified();
+    }
+
     const baseUserUpdated = await this.userService.update(baseUser!);
     const result = await this._userStudentRepository.update(token.masterId, userStudent);
 

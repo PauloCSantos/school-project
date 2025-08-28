@@ -1,26 +1,20 @@
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
 import AttendanceGateway from '../../../application/gateway/attendance.gateway';
-import {
-  AttendanceMapper,
-  AttendanceMapperProps,
-} from '../../mapper/attendance.mapper';
+import { AttendanceMapper, AttendanceMapperProps } from '../../mapper/attendance.mapper';
 
 /**
  * In-memory implementation of AttendanceGateway.
  * Stores and manipulates attendance records in memory.
  */
 export default class MemoryAttendanceRepository implements AttendanceGateway {
-  private _attendances: Map<string, Map<string, AttendanceMapperProps>> =
-    new Map();
+  private _attendances: Map<string, Map<string, AttendanceMapperProps>> = new Map();
 
   /**
  * Creates a new in-memory repository.
  * @param attendancesRecords - Optional initial array of attendance records
   Ex.: new MemoryAttendanceRepository([{ masterId, records: [a1, a2] }])
  */
-  constructor(
-    attendancesRecords?: Array<{ masterId: string; records: Attendance[] }>
-  ) {
+  constructor(attendancesRecords?: Array<{ masterId: string; records: Attendance[] }>) {
     if (attendancesRecords) {
       for (const { masterId, records } of attendancesRecords) {
         let attendances = this._attendances.get(masterId);
@@ -29,10 +23,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
           this._attendances.set(masterId, attendances);
         }
         for (const attendance of records) {
-          attendances.set(
-            attendance.id.value,
-            AttendanceMapper.toObj(attendance)
-          );
+          attendances.set(attendance.id.value, AttendanceMapper.toObj(attendance));
         }
       }
     }
@@ -104,12 +95,12 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
    * @returns Promise resolving to a success message
    * @throws Error if the attendance record is not found
    */
-  async delete(masterId: string, id: string): Promise<string> {
+  async delete(masterId: string, attendance: Attendance): Promise<string> {
     const attendances = this._attendances.get(masterId);
-    if (!attendances || !attendances.has(id)) {
+    if (!attendances || !attendances.has(attendance.id.value)) {
       throw new Error('Attendance not found');
     }
-    attendances.delete(id);
+    attendances.set(attendance.id.value, AttendanceMapper.toObj(attendance));
     return 'Operação concluída com sucesso';
   }
 
@@ -132,8 +123,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
       throw new Error('Attendance not found');
     }
     attendances!.set(id, AttendanceMapper.toObj(attendance));
-    const totalStudents =
-      attendance.studentsPresent.length - obj.studentsPresent.length;
+    const totalStudents = attendance.studentsPresent.length - obj.studentsPresent.length;
     return `${totalStudents} ${
       totalStudents === 1 ? 'value was' : 'values were'
     } entered`;
@@ -160,16 +150,13 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
 
     attendances!.set(id, AttendanceMapper.toObj(attendance));
 
-    const totalStudents =
-      obj.studentsPresent.length - attendance.studentsPresent.length;
+    const totalStudents = obj.studentsPresent.length - attendance.studentsPresent.length;
     return `${totalStudents} ${
       totalStudents === 1 ? 'value was' : 'values were'
     } removed`;
   }
 
-  private getOrCreateBucket(
-    masterId: string
-  ): Map<string, AttendanceMapperProps> {
+  private getOrCreateBucket(masterId: string): Map<string, AttendanceMapperProps> {
     let attendances = this._attendances.get(masterId);
     if (!attendances) {
       attendances = new Map<string, AttendanceMapperProps>();

@@ -1,6 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
-import type { IFindAttendanceOutput as AttendanceMapperProps } from '../../application/dto/base-attendance.dto';
+import type { IFindAttendanceOutput as AttendanceMapperProps } from '../dto/base-attendance.dto';
+import { toStateType } from '@/modules/@shared/utils/formatting';
 
 /**
  * Interface that defines the data structure for mapping Attendance entities
@@ -27,6 +28,7 @@ export class AttendanceMapper {
       hour: input.hour,
       lesson: input.lesson,
       studentsPresent: input.studentsPresent,
+      state: input.state,
     };
   }
 
@@ -48,6 +50,7 @@ export class AttendanceMapper {
       hour: input.hour as Hour,
       lesson: input.lesson,
       studentsPresent: input.studentsPresent || [],
+      state: toStateType(input.state),
     });
   }
 

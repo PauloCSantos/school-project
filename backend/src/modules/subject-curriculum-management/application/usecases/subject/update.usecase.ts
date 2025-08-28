@@ -6,10 +6,7 @@ import {
 import SubjectGateway from '@/modules/subject-curriculum-management/application/gateway/subject.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 export default class UpdateSubject
   implements UseCaseInterface<UpdateSubjectInputDto, UpdateSubjectOutputDto>
@@ -38,10 +35,11 @@ export default class UpdateSubject
     name !== undefined && (subject.name = name);
     description !== undefined && (subject.description = description);
 
-    const result = await this._subjectRepository.update(
-      token.masterId,
-      subject
-    );
+    if (subject.isPending) {
+      subject.markVerified();
+    }
+
+    const result = await this._subjectRepository.update(token.masterId, subject);
 
     return {
       id: result.id.value,

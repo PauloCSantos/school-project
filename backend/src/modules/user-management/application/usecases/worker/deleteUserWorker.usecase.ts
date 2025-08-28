@@ -29,10 +29,11 @@ export default class DeleteUserWorker
       token
     );
 
-    const userVerification = await this._userWorkerRepository.find(token.masterId, id);
-    if (!userVerification) throw new Error('User not found');
+    const userWorker = await this._userWorkerRepository.find(token.masterId, id);
+    if (!userWorker) throw new Error('User not found');
 
-    const result = await this._userWorkerRepository.delete(token.masterId, id);
+    userWorker.deactivate();
+    const result = await this._userWorkerRepository.delete(token.masterId, userWorker);
 
     return { message: result };
   }

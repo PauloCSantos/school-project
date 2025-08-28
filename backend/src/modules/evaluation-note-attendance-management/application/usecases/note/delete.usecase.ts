@@ -1,15 +1,9 @@
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
-import {
-  DeleteNoteInputDto,
-  DeleteNoteOutputDto,
-} from '../../dto/note-usecase.dto';
+import { DeleteNoteInputDto, DeleteNoteOutputDto } from '../../dto/note-usecase.dto';
 import NoteGateway from '@/modules/evaluation-note-attendance-management/application/gateway/note.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * Use case responsible for deleting a note.
@@ -51,10 +45,11 @@ export default class DeleteNote
       token
     );
 
-    const noteVerification = await this._noteRepository.find(token.masterId, id);
-    if (!noteVerification) throw new Error('Note not found');
+    const note = await this._noteRepository.find(token.masterId, id);
+    if (!note) throw new Error('Note not found');
+    note.deactivate();
 
-    const result = await this._noteRepository.delete(token.masterId, id);
+    const result = await this._noteRepository.delete(token.masterId, note);
 
     return { message: result };
   }

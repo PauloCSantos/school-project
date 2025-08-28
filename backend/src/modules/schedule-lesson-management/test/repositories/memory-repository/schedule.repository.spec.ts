@@ -1,4 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { States } from '@/modules/@shared/type/sharedTypes';
 import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
 import { ScheduleMapper } from '@/modules/schedule-lesson-management/infrastructure/mapper/schedule.mapper';
 import MemoryScheduleRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/schedule.repository';
@@ -59,7 +60,13 @@ describe('MemoryScheduleRepository unit test', () => {
       );
     });
     it('should generate an error when trying to remove the schedule with the wrong ID', async () => {
-      await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
+      const schedule = new Schedule({
+        id: new Id(),
+        student: student3,
+        curriculum: curriculum3,
+        lessonsList: lessonsList3,
+      });
+      await expect(repository.delete(masterId, schedule)).rejects.toThrow(
         'Schedule not found'
       );
     });
@@ -101,7 +108,7 @@ describe('MemoryScheduleRepository unit test', () => {
       expect(allSchedules[1].lessonsList).toBe(schedule2.lessonsList);
     });
     it('should remove the schedule', async () => {
-      const response = await repository.delete(masterId, schedule1.id.value);
+      const response = await repository.delete(masterId, schedule1);
 
       expect(response).toBe('Operação concluída com sucesso');
     });
@@ -112,6 +119,7 @@ describe('MemoryScheduleRepository unit test', () => {
         ...scheduleObj,
         id: new Id(scheduleObj.id),
         lessonsList: [...scheduleObj.lessonsList],
+        state: scheduleObj.state as States,
       });
       updatedSchedule.addLesson(new Id().value);
       const response = await repository.addLessons(
@@ -127,6 +135,7 @@ describe('MemoryScheduleRepository unit test', () => {
         ...scheduleObj,
         id: new Id(scheduleObj.id),
         lessonsList: [...scheduleObj.lessonsList],
+        state: scheduleObj.state as States,
       });
       updatedSchedule.removeLesson(schedule1.lessonsList[0]);
       const response = await repository.removeLessons(

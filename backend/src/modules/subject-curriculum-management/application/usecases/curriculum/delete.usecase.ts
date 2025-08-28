@@ -6,14 +6,10 @@ import {
 import CurriculumGateway from '@/modules/subject-curriculum-management/application/gateway/curriculum.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 export default class DeleteCurriculum
-  implements
-    UseCaseInterface<DeleteCurriculumInputDto, DeleteCurriculumOutputDto>
+  implements UseCaseInterface<DeleteCurriculumInputDto, DeleteCurriculumOutputDto>
 {
   private _curriculumRepository: CurriculumGateway;
 
@@ -33,13 +29,11 @@ export default class DeleteCurriculum
       token
     );
 
-    const curriculumVerification = await this._curriculumRepository.find(
-      token.masterId,
-      id
-    );
-    if (!curriculumVerification) throw new Error('Curriculum not found');
+    const curriculum = await this._curriculumRepository.find(token.masterId, id);
+    if (!curriculum) throw new Error('Curriculum not found');
+    curriculum.deactivate();
 
-    const result = await this._curriculumRepository.delete(token.masterId, id);
+    const result = await this._curriculumRepository.delete(token.masterId, curriculum);
 
     return { message: result };
   }

@@ -9,12 +9,16 @@ import {
 
 import Salary from '../@shared/value-object/salary.value-object';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { States } from '@/modules/@shared/type/sharedTypes';
+import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
+import { StatesEnum } from '@/modules/@shared/enums/enums';
 
 type AdministratorUserProps = {
   id?: string;
   userId: string;
   salary: Salary;
   graduation: string;
+  state?: States;
 };
 
 export default class UserAdministrator {
@@ -22,8 +26,9 @@ export default class UserAdministrator {
   private _userId;
   private _salary;
   private _graduation;
+  private _lifecycle: Lifecycle;
 
-  constructor({ id, userId, graduation, salary }: AdministratorUserProps) {
+  constructor({ id, userId, graduation, salary, state }: AdministratorUserProps) {
     if (userId === undefined || salary === undefined || graduation === undefined)
       throw new Error('Salary and graduation are mandatory');
     if (!this.validateGraduation(graduation))
@@ -39,6 +44,7 @@ export default class UserAdministrator {
     this._userId = userId;
     this._salary = salary;
     this._graduation = graduation;
+    this._lifecycle = Lifecycle.from(state ?? StatesEnum.ACTIVE);
   }
 
   get id(): Id {
@@ -70,5 +76,25 @@ export default class UserAdministrator {
       minLength(input, 3) &&
       maxLengthInclusive(input, 255)
     );
+  }
+
+  get state(): States {
+    return this._lifecycle.value;
+  }
+  get isActive(): boolean {
+    return !this._lifecycle.equals(StatesEnum.INACTIVE);
+  }
+  get isPending(): boolean {
+    return this._lifecycle.equals(StatesEnum.PENDING);
+  }
+
+  deactivate(): void {
+    this._lifecycle = this._lifecycle.deactivate();
+  }
+  reactivate(requireVerification = false): void {
+    this._lifecycle = this._lifecycle.activate(requireVerification);
+  }
+  markVerified(): void {
+    this._lifecycle = this._lifecycle.markVerified();
   }
 }

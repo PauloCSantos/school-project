@@ -137,12 +137,15 @@ export default class MemoryUserAdministratorRepository
    * @returns Promise resolving to a success message
    * @throws Error if the administrator record is not found
    */
-  async delete(masterId: string, id: string): Promise<string> {
+  async delete(masterId: string, userAdministrator: UserAdministrator): Promise<string> {
     const administratorUsers = this._administratorUsers.get(masterId);
-    if (!administratorUsers || !administratorUsers.has(id)) {
+    if (!administratorUsers || !administratorUsers.has(userAdministrator.id.value)) {
       throw new Error('User not found');
     }
-    administratorUsers.delete(id);
+    administratorUsers.set(
+      userAdministrator.id.value,
+      AdministratorMapper.toObj(userAdministrator)
+    );
     return 'Operação concluída com sucesso';
   }
 

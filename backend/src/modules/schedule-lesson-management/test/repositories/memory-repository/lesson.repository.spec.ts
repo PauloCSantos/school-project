@@ -1,4 +1,5 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { States } from '@/modules/@shared/type/sharedTypes';
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
 import { LessonMapper } from '@/modules/schedule-lesson-management/infrastructure/mapper/lesson.mapper';
 import MemoryLessonRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/lesson.repository';
@@ -64,9 +65,7 @@ describe('MemoryLessonRepository unit test', () => {
   });
 
   beforeEach(() => {
-    repository = new MemoryLessonRepository([
-      { masterId, records: [lesson1, lesson2] },
-    ]);
+    repository = new MemoryLessonRepository([{ masterId, records: [lesson1, lesson2] }]);
   });
 
   describe('On fail', () => {
@@ -89,12 +88,23 @@ describe('MemoryLessonRepository unit test', () => {
         semester: semester3,
       });
 
-      await expect(
-        repository.update(masterId, lesson.id.value, lesson)
-      ).rejects.toThrow('Lesson not found');
+      await expect(repository.update(masterId, lesson.id.value, lesson)).rejects.toThrow(
+        'Lesson not found'
+      );
     });
     it('should generate an error when trying to remove the lesson with the wrong ID', async () => {
-      await expect(repository.delete(masterId, new Id().value)).rejects.toThrow(
+      const lesson = new Lesson({
+        id: new Id(),
+        name: name3,
+        duration: duration3,
+        teacher: teacher3,
+        studentsList: studentsList3,
+        subject: subject3,
+        days: days3,
+        times: times3,
+        semester: semester3,
+      });
+      await expect(repository.delete(masterId, lesson)).rejects.toThrow(
         'Lesson not found'
       );
     });
@@ -122,11 +132,7 @@ describe('MemoryLessonRepository unit test', () => {
       const updatedLesson: Lesson = lesson2;
       updatedLesson.name = 'Math advanced';
 
-      const result = await repository.update(
-        masterId,
-        lesson2.id.value,
-        updatedLesson
-      );
+      const result = await repository.update(masterId, lesson2.id.value, updatedLesson);
 
       expect(result).toEqual(updatedLesson);
     });
@@ -140,7 +146,7 @@ describe('MemoryLessonRepository unit test', () => {
       expect(allLessons[1].studentsList).toBe(lesson2.studentsList);
     });
     it('should remove the lesson', async () => {
-      const response = await repository.delete(masterId, lesson1.id.value);
+      const response = await repository.delete(masterId, lesson1);
 
       expect(response).toBe('Operação concluída com sucesso');
     });
@@ -154,6 +160,7 @@ describe('MemoryLessonRepository unit test', () => {
         times: [...lessonObj.times] as Hour[],
         semester: lessonObj.semester as 1 | 2,
         studentsList: [...lessonObj.studentsList],
+        state: lessonObj.state as States,
       });
       updatedLesson.addStudent(new Id().value);
       const response = await repository.addStudents(
@@ -173,6 +180,7 @@ describe('MemoryLessonRepository unit test', () => {
         times: [...lessonObj.times] as Hour[],
         semester: lessonObj.semester as 1 | 2,
         studentsList: [...lessonObj.studentsList],
+        state: lessonObj.state as States,
       });
       updatedLesson.removeStudent(lesson1.studentsList[0]);
       const response = await repository.removeStudents(
@@ -193,13 +201,10 @@ describe('MemoryLessonRepository unit test', () => {
         times: [...lessonObj.times] as Hour[],
         semester: lessonObj.semester as 1 | 2,
         studentsList: [...lessonObj.studentsList],
+        state: lessonObj.state as States,
       });
       updatedLesson.addDay('sun');
-      const response = await repository.addDay(
-        masterId,
-        lesson1.id.value,
-        updatedLesson
-      );
+      const response = await repository.addDay(masterId, lesson1.id.value, updatedLesson);
 
       expect(response).toBe('1 value was entered');
     });
@@ -213,6 +218,7 @@ describe('MemoryLessonRepository unit test', () => {
         times: [...lessonObj.times] as Hour[],
         semester: lessonObj.semester as 1 | 2,
         studentsList: [...lessonObj.studentsList],
+        state: lessonObj.state as States,
       });
       updatedLesson.removeDay('mon');
 
@@ -234,6 +240,7 @@ describe('MemoryLessonRepository unit test', () => {
         times: [...lessonObj.times] as Hour[],
         semester: lessonObj.semester as 1 | 2,
         studentsList: [...lessonObj.studentsList],
+        state: lessonObj.state as States,
       });
       updatedLesson.addTime('10:00');
       updatedLesson.addTime('20:00');
@@ -255,6 +262,7 @@ describe('MemoryLessonRepository unit test', () => {
         times: [...lessonObj.times] as Hour[],
         semester: lessonObj.semester as 1 | 2,
         studentsList: [...lessonObj.studentsList],
+        state: lessonObj.state as States,
       });
       updatedLesson.removeTime('07:00');
 

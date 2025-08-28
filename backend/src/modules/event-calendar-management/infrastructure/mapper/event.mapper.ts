@@ -1,6 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Event from '../../domain/entity/event.entity';
-import type { IFindEventOutput as EventMapperProps } from '../../application/dto/base-event.dto';
+import type { IFindEventOutput as EventMapperProps } from '../dto/base-event.dto';
+import { toStateType } from '@/modules/@shared/utils/formatting';
 
 /**
  * Interface that defines the data structure for mapping Event entities
@@ -29,6 +30,7 @@ export class EventMapper {
       day: input.day,
       type: input.type,
       place: input.place,
+      state: input.state,
     };
   }
 
@@ -44,14 +46,15 @@ export class EventMapper {
     }
 
     return new Event({
-        id: new Id(input.id),
-        creator: input.creator,
-        name: input.name,
-        date: input.date,
-        hour: input.hour as Hour,
-        day: input.day as DayOfWeek,
-        type: input.type,
-        place: input.place
+      id: new Id(input.id),
+      creator: input.creator,
+      name: input.name,
+      date: input.date,
+      hour: input.hour as Hour,
+      day: input.day as DayOfWeek,
+      type: input.type,
+      place: input.place,
+      state: toStateType(input.state),
     });
   }
 

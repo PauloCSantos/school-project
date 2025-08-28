@@ -73,18 +73,12 @@ describe('DeleteAttendance usecase unit test', () => {
       repository.find.mockResolvedValue(attendance);
       repository.delete.mockRejectedValueOnce(new Error('Database error'));
 
-      await expect(
-        usecase.execute({ id: attendance.id.value }, token)
-      ).rejects.toThrow('Database error');
+      await expect(usecase.execute({ id: attendance.id.value }, token)).rejects.toThrow(
+        'Database error'
+      );
 
-      expect(repository.find).toHaveBeenCalledWith(
-        token.masterId,
-        attendance.id.value
-      );
-      expect(repository.delete).toHaveBeenCalledWith(
-        token.masterId,
-        attendance.id.value
-      );
+      expect(repository.find).toHaveBeenCalledWith(token.masterId, attendance.id.value);
+      expect(repository.delete).toHaveBeenCalledWith(token.masterId, attendance);
     });
   });
 
@@ -94,14 +88,8 @@ describe('DeleteAttendance usecase unit test', () => {
       repository.delete.mockResolvedValue('Operação concluída com sucesso');
       const result = await usecase.execute({ id: attendance.id.value }, token);
 
-      expect(repository.find).toHaveBeenCalledWith(
-        token.masterId,
-        attendance.id.value
-      );
-      expect(repository.delete).toHaveBeenCalledWith(
-        token.masterId,
-        attendance.id.value
-      );
+      expect(repository.find).toHaveBeenCalledWith(token.masterId, attendance.id.value);
+      expect(repository.delete).toHaveBeenCalledWith(token.masterId, attendance);
       expect(result).toBeDefined();
       expect(result.message).toBe('Operação concluída com sucesso');
     });

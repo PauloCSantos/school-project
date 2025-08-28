@@ -6,10 +6,7 @@ import {
 import LessonGateway from '@/modules/schedule-lesson-management/application/gateway/lesson.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import LessonMapper from '../../mapper/lesson-usecase.mapper';
 
 /**
@@ -48,6 +45,10 @@ export default class UpdateLesson
     semester !== undefined && (lesson.semester = semester);
     subject !== undefined && (lesson.subject = subject);
     teacher !== undefined && (lesson.teacher = teacher);
+
+    if (lesson.isPending) {
+      lesson.markVerified();
+    }
 
     const result = await this._lessonRepository.update(
       token.masterId,

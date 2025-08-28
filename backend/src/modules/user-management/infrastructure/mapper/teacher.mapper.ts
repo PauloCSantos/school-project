@@ -1,15 +1,12 @@
 import Teacher from '../../domain/entity/teacher.entity';
 import Salary from '../../domain/@shared/value-object/salary.value-object';
-import type { IFindUserTeacherOutput } from '../dto/base-teacher.dto';
+import type { IFindUserTeacherOutput as TeacherMapperProps } from '../dto/base-teacher.dto';
+import { toStateType } from '@/modules/@shared/utils/formatting';
 
 /**
  * Interface that defines the data structure for mapping Teacher entities
  */
-type Override<T, R> = Omit<T, keyof R> & R;
-export type TeacherMapperProps = Override<
-  IFindUserTeacherOutput,
-  { salary: { salary: number; currency: 'R$' | '€' | '$' } }
->;
+export type { TeacherMapperProps };
 
 /**
  * Mapper responsible for converting between Teacher entity and DTOs
@@ -31,6 +28,7 @@ export class TeacherMapper {
       salary: { salary: input.salary.salary, currency: input.salary.currency },
       graduation: input.graduation,
       academicDegrees: input.academicDegrees,
+      state: input.state,
     };
   }
 
@@ -54,6 +52,7 @@ export class TeacherMapper {
       }),
       graduation: input.graduation,
       academicDegrees: input.academicDegrees,
+      state: toStateType(input.state),
     });
   }
 

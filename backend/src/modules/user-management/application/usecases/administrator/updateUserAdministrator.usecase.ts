@@ -60,6 +60,10 @@ export default class UpdateUserAdministrator
     salary?.currency !== undefined && (userAdm.salary.currency = salary.currency);
     salary?.salary !== undefined && (userAdm.salary.salary = salary.salary);
 
+    if (userAdm.isPending) {
+      userAdm.markVerified();
+    }
+
     const baseUserUpdated = await this.userService.update(baseUser!);
     const administratorUpdated = await this._userAdministratorRepository.update(
       token.masterId,

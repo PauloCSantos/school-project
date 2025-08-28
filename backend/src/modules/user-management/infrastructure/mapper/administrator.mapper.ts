@@ -1,16 +1,13 @@
 import Administrator from '../../domain/entity/administrator.entity';
 import Salary from '../../domain/@shared/value-object/salary.value-object';
-import type { IFindUserAdministratorOutput } from '../dto/base-administrator.dto';
+import type { IFindUserAdministratorOutput as AdministratorMapperProps } from '../dto/base-administrator.dto';
+import { toStateType } from '@/modules/@shared/utils/formatting';
 
 /**
  * Interface that defines the data structure for mapping Administrator entities
  */
-type Override<T, R> = Omit<T, keyof R> & R;
 
-export type AdministratorMapperProps = Override<
-  IFindUserAdministratorOutput,
-  { salary: { salary: number; currency: 'R$' | '€' | '$' } }
->;
+export type { AdministratorMapperProps };
 
 /**
  * Mapper responsible for converting between Administrator entity and DTOs
@@ -31,6 +28,7 @@ export class AdministratorMapper {
       userId: input.userId,
       salary: { salary: input.salary.salary, currency: input.salary.currency },
       graduation: input.graduation,
+      state: input.state,
     };
   }
 
@@ -53,6 +51,7 @@ export class AdministratorMapper {
         currency: input.salary.currency,
       }),
       graduation: input.graduation,
+      state: toStateType(input.state),
     });
   }
 

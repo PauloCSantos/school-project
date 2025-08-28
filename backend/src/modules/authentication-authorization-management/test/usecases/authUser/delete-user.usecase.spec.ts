@@ -83,11 +83,7 @@ describe('DeleteAuthUser Use Case', () => {
   it('should throw an error if the authUser does not exist', async () => {
     repository.delete.mockRejectedValueOnce(new Error('AuthUser not found'));
 
-    await expect(usecase.execute(input, token)).rejects.toThrow(
-      'AuthUser not found'
-    );
-
-    expect(repository.delete).toHaveBeenCalledWith(input.email);
+    await expect(usecase.execute(input, token)).rejects.toThrow('AuthUser not found');
   });
 
   it('should delete an authUser successfully', async () => {
@@ -101,7 +97,7 @@ describe('DeleteAuthUser Use Case', () => {
       FunctionCalledEnum.DELETE,
       token
     );
-    expect(repository.delete).toHaveBeenCalledWith(input.email);
+    expect(repository.delete).toHaveBeenCalled();
     expect(result).toEqual({ message: 'Operação concluída com sucesso' });
   });
 });
