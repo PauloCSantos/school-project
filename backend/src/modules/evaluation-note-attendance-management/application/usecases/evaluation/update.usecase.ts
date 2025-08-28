@@ -6,10 +6,7 @@ import {
 import EvaluationGateway from '@/modules/evaluation-note-attendance-management/application/gateway/evaluation.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import { EvaluationMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/evaluation.mapper';
 
 /**
@@ -18,8 +15,7 @@ import { EvaluationMapper } from '@/modules/evaluation-note-attendance-managemen
  * Verifies evaluation existence, applies updates, and persists changes.
  */
 export default class UpdateEvaluation
-  implements
-    UseCaseInterface<UpdateEvaluationInputDto, UpdateEvaluationOutputDto>
+  implements UseCaseInterface<UpdateEvaluationInputDto, UpdateEvaluationOutputDto>
 {
   /** Repository for persisting and retrieving evaluation records */
   private readonly _evaluationRepository: EvaluationGateway;
@@ -53,10 +49,7 @@ export default class UpdateEvaluation
       FunctionCalledEnum.CREATE,
       token
     );
-    const evaluation = await this._evaluationRepository.find(
-      token.masterId,
-      id
-    );
+    const evaluation = await this._evaluationRepository.find(token.masterId, id);
 
     if (!evaluation) {
       throw new Error('Evaluation not found');
@@ -67,10 +60,11 @@ export default class UpdateEvaluation
     type !== undefined && (evaluation.type = type);
     value !== undefined && (evaluation.value = value);
 
-    const result = await this._evaluationRepository.update(
-      token.masterId,
-      evaluation
-    );
+    if (evaluation.isPending) {
+      evaluation.markVerified();
+    }
+
+    const result = await this._evaluationRepository.update(token.masterId, evaluation);
 
     return EvaluationMapper.toObj(result);
   }

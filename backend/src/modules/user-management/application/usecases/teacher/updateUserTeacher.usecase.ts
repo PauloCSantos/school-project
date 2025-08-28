@@ -61,6 +61,10 @@ export default class UpdateUserTeacher
     salary?.salary !== undefined && (userTeacher.salary.salary = salary.salary);
     academicDegrees !== undefined && (userTeacher.academicDegrees = academicDegrees);
 
+    if (userTeacher.isPending) {
+      userTeacher.markVerified();
+    }
+
     const baseUserUpdated = await this.userService.update(baseUser!);
     const result = await this._userTeacherRepository.update(token.masterId, userTeacher);
 

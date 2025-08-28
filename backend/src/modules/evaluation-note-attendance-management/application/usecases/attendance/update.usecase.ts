@@ -6,10 +6,7 @@ import {
 import AttendanceGateway from '@/modules/evaluation-note-attendance-management/application/gateway/attendance.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import { AttendanceMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/attendance.mapper';
 
 /**
@@ -18,8 +15,7 @@ import { AttendanceMapper } from '@/modules/evaluation-note-attendance-managemen
  * Verifies attendance existence, applies updates, and persists changes.
  */
 export default class UpdateAttendance
-  implements
-    UseCaseInterface<UpdateAttendanceInputDto, UpdateAttendanceOutputDto>
+  implements UseCaseInterface<UpdateAttendanceInputDto, UpdateAttendanceOutputDto>
 {
   /** Repository for persisting and retrieving attendance records */
   private readonly _attendanceRepository: AttendanceGateway;
@@ -54,10 +50,7 @@ export default class UpdateAttendance
       token
     );
 
-    const attendance = await this._attendanceRepository.find(
-      token.masterId,
-      id
-    );
+    const attendance = await this._attendanceRepository.find(token.masterId, id);
 
     if (!attendance) {
       throw new Error('Attendance not found');
@@ -68,11 +61,12 @@ export default class UpdateAttendance
     hour !== undefined && (attendance.hour = hour);
     lesson !== undefined && (attendance.lesson = lesson);
 
-    const result = await this._attendanceRepository.update(
-      token.masterId,
-      attendance
-    );
+    if (attendance.isPending) {
+      attendance.markVerified();
+    }
 
-    return AttendanceMapper.toObj(result)
+    const result = await this._attendanceRepository.update(token.masterId, attendance);
+
+    return AttendanceMapper.toObj(result);
   }
 }

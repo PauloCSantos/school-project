@@ -6,14 +6,10 @@ import {
 import CurriculumGateway from '@/modules/subject-curriculum-management/application/gateway/curriculum.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 
 export default class UpdateCurriculum
-  implements
-    UseCaseInterface<UpdateCurriculumInputDto, UpdateCurriculumOutputDto>
+  implements UseCaseInterface<UpdateCurriculumInputDto, UpdateCurriculumOutputDto>
 {
   private _curriculumRepository: CurriculumGateway;
 
@@ -33,19 +29,17 @@ export default class UpdateCurriculum
       token
     );
 
-    const curriculum = await this._curriculumRepository.find(
-      token.masterId,
-      id
-    );
+    const curriculum = await this._curriculumRepository.find(token.masterId, id);
     if (!curriculum) throw new Error('Curriculum not found');
 
     name !== undefined && (curriculum.name = name);
     yearsToComplete !== undefined && (curriculum.year = yearsToComplete);
 
-    const result = await this._curriculumRepository.update(
-      token.masterId,
-      curriculum
-    );
+    if (curriculum.isPending) {
+      curriculum.markVerified();
+    }
+
+    const result = await this._curriculumRepository.update(token.masterId, curriculum);
 
     return {
       id: result.id.value,
