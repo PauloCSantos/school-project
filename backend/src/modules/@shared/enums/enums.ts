@@ -16,13 +16,6 @@ export enum FunctionCalledEnum {
   REMOVE = 'remove',
 }
 
-export enum StatusCodeEnum {
-  OK = 200,
-  CREATED = 201,
-  NO_CONTENT = 204,
-  NOT_FOUND = 404,
-}
-
 export enum StatusMessageEnum {
   OK = 'OK',
   CREATED = 'Created',
@@ -49,9 +42,17 @@ export enum ModulesNameEnum {
 }
 
 export enum HttpStatus {
+  OK = 200,
+  CREATED = 201,
+  NO_CONTENT = 204,
+  BAD_REQUEST = 400,
   UNAUTHORIZED = 401,
   FORBIDDEN = 403,
+  NOT_FOUND = 404,
+  CONFLICT = 409,
+  UNPROCESSABLE_ENTITY = 422,
   INTERNAL_SERVER_ERROR = 500,
+  SERVICE_UNAVAILABLE = 503,
 }
 
 export enum ErrorMessage {
@@ -65,4 +66,15 @@ export enum StatesEnum {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
   PENDING = 'pending',
+}
+
+export enum ErrorKindEnum {
+  NOT_FOUND = 'NOT_FOUND',
+  BAD_REQUEST = 'BAD_REQUEST',
+  VALIDATION = 'VALIDATION',
+  CONFLICT = 'CONFLICT',
+  FORBIDDEN = 'FORBIDDEN',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  INTEGRATION = 'INTEGRATION',
+  INTERNAL = 'INTERNAL',
 }
