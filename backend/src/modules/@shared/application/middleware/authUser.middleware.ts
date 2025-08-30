@@ -5,12 +5,14 @@ import {
   HttpResponseData,
   HttpMiddleware,
 } from '../../infraestructure/http/http.interface';
-import { RoleUsers } from '../../type/sharedTypes';
-import { ErrorMessage, HttpStatus } from '../../enums/enums';
+import { ErrorBody, ErrorKind, RoleUsers } from '../../type/sharedTypes';
+import { ErrorKindEnum, ErrorMessage, HttpStatus } from '../../enums/enums';
 
-export default class AuthUserMiddleware
-  implements HttpMiddleware<any, any, any, any>
-{
+type ErrorAuthUser = {
+  statusCode: number;
+  body: ErrorBody;
+};
+export default class AuthUserMiddleware implements HttpMiddleware<any, any, any, any> {
   constructor(
     private readonly tokenService: TokenServiceInterface,
     private readonly allowedRoles: RoleUsers[] = []
@@ -24,41 +26,43 @@ export default class AuthUserMiddleware
     const authHeader = req.headers?.authorization;
 
     if (!authHeader || !isNotEmpty(authHeader)) {
-      return {
-        statusCode: HttpStatus.UNAUTHORIZED,
-        body: { message: ErrorMessage.MISSING_TOKEN },
-      };
+      return this.buildError(
+        HttpStatus.UNAUTHORIZED,
+        ErrorMessage.MISSING_TOKEN,
+        ErrorKindEnum.UNAUTHORIZED
+      );
     }
 
-    const token = authHeader.startsWith('Bearer ')
-      ? authHeader.slice(7)
-      : authHeader;
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
 
     let decoded;
     try {
       decoded = await this.tokenService.validateToken(token);
     } catch {
-      return {
-        statusCode: HttpStatus.UNAUTHORIZED,
-        body: { message: ErrorMessage.INVALID_TOKEN },
-      };
+      return this.buildError(
+        HttpStatus.UNAUTHORIZED,
+        ErrorMessage.INVALID_TOKEN,
+        ErrorKindEnum.UNAUTHORIZED
+      );
     }
 
     if (!decoded) {
-      return {
-        statusCode: HttpStatus.UNAUTHORIZED,
-        body: { message: ErrorMessage.INVALID_TOKEN },
-      };
+      return this.buildError(
+        HttpStatus.UNAUTHORIZED,
+        ErrorMessage.INVALID_TOKEN,
+        ErrorKindEnum.UNAUTHORIZED
+      );
     }
 
     if (
       this.allowedRoles.length > 0 &&
       !this.allowedRoles.includes(decoded.role as RoleUsers)
     ) {
-      return {
-        statusCode: HttpStatus.FORBIDDEN,
-        body: { message: ErrorMessage.ACCESS_DENIED },
-      };
+      return this.buildError(
+        HttpStatus.FORBIDDEN,
+        ErrorMessage.ACCESS_DENIED,
+        ErrorKindEnum.FORBIDDEN
+      );
     }
 
     req.tokenData = {
@@ -67,5 +71,17 @@ export default class AuthUserMiddleware
       masterId: decoded.masterId,
     };
     return next();
+  }
+
+  private buildError(
+    status: HttpStatus,
+    message: string,
+    code: ErrorKind,
+    details?: ErrorBody['details']
+  ): ErrorAuthUser {
+    return {
+      statusCode: status,
+      body: { code, message, details } as ErrorBody,
+    };
   }
 }
