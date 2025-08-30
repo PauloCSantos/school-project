@@ -7,6 +7,7 @@ import UserAdministratorGateway from '@/modules/user-management/application/gate
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { UserNotFoundError } from '../../errors/user-not-found.error';
 
 export default class DeleteUserAdministrator
   implements
@@ -34,7 +35,7 @@ export default class DeleteUserAdministrator
       token.masterId,
       id
     );
-    if (!userAdministrator) throw new Error('User not found');
+    if (!userAdministrator) throw new UserNotFoundError(id);
     userAdministrator.deactivate();
 
     const result = await this._userAdministratorRepository.delete(

@@ -7,6 +7,7 @@ import AuthUserGateway from '@/modules/authentication-authorization-management/a
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { AuthUserNotFoundError } from '../../errors/authUser-not-found.error';
 
 /**
  * Use case responsible for deleting an authenticated user.
@@ -50,7 +51,7 @@ export default class DeleteAuthUser
 
     const authUser = await this._authUserRepository.find(email);
     if (!authUser) {
-      throw new Error('AuthUser not found');
+      throw new AuthUserNotFoundError(email);
     }
     authUser.deactivate();
     const result = await this._authUserRepository.delete(authUser);

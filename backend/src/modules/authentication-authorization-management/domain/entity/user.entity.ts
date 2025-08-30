@@ -3,6 +3,8 @@ import { AuthUserServiceInterface } from '../service/interface/user-entity-servi
 import { isNotEmpty, validEmail } from '@/modules/@shared/utils/validations';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
+import { InternalError } from '@/modules/@shared/application/errors/internal.error';
 
 /**
  * Properties required to create an authenticated user.
@@ -58,19 +60,19 @@ export default class AuthUser {
    */
   private validateConstructorParams(input: AuthUserProps): void {
     if (input.email === undefined || input.password === undefined) {
-      throw new Error('All fields are mandatory');
+      throw new ValidationError('All fields are mandatory');
     }
 
     if (!this.validateEmail(input.email)) {
-      throw new Error('Field email is not valid');
+      throw new ValidationError('Field email is not valid');
     }
 
     if (!this.validatePassword(input.password)) {
-      throw new Error('Field password is not valid');
+      throw new ValidationError('Field password is not valid');
     }
 
     if (input.isHashed !== undefined && typeof input.isHashed !== 'boolean') {
-      throw new Error('The field isHashed must be a boolean');
+      throw new ValidationError('The field isHashed must be a boolean');
     }
   }
 
@@ -88,7 +90,7 @@ export default class AuthUser {
    */
   set email(input: string) {
     if (!this.validateEmail(input)) {
-      throw new Error('Field email is not valid');
+      throw new ValidationError('Field email is not valid');
     }
     this._email = input;
   }
@@ -107,7 +109,7 @@ export default class AuthUser {
    */
   get password(): string {
     if (!this._isHashed) {
-      throw new Error('Use the method to hash before get');
+      throw new InternalError('Use the method to hash before get');
     }
     return this._password;
   }
@@ -120,7 +122,7 @@ export default class AuthUser {
    */
   set password(input: string) {
     if (!this.validatePassword(input)) {
-      throw new Error('Field password is not valid');
+      throw new ValidationError('Field password is not valid');
     }
     this._password = input;
     this._isHashed = false;
@@ -145,11 +147,11 @@ export default class AuthUser {
    */
   async comparePassword(input: string): Promise<boolean> {
     if (!this.validatePassword(input)) {
-      throw new Error('Field password is not valid');
+      throw new ValidationError('Field password is not valid');
     }
 
     if (!this._isHashed) {
-      throw new Error('Use the method to hash before comparing');
+      throw new InternalError('Use the method to hash before comparing');
     }
 
     return this.authService.comparePassword(input, this._password);

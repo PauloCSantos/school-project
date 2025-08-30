@@ -1,3 +1,4 @@
+import { MapperError } from '../../application/errors/mapper.error';
 import { TenantUserRole } from '../../domain/entity/tenant-user.entity';
 import Tenant from '../../domain/entity/tenant.entity';
 import type { IFindTenantOutput as TenantMapperProps } from '../dto/base-tenant.dto';
@@ -20,7 +21,7 @@ export class TenantMapper {
    */
   static toObj(input: Tenant): TenantMapperProps {
     if (!input || !(input instanceof Tenant)) {
-      throw new Error('Invalid Tenant entity provided to mapper');
+      throw new MapperError('Invalid Tenant entity provided to mapper');
     }
 
     const tenantUsers = Array.from(input.tenantUserRolesMap.entries()).flatMap(
@@ -47,7 +48,7 @@ export class TenantMapper {
    */
   static toInstance(input: TenantMapperProps): Tenant {
     if (!input || !input.id) {
-      throw new Error('Invalid Tenant data provided to mapper');
+      throw new MapperError('Invalid Tenant data provided to mapper');
     }
 
     const tenant = new Tenant({

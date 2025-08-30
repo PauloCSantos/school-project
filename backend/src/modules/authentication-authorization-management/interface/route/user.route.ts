@@ -2,6 +2,7 @@ import {
   HttpServer,
   HttpResponseData,
   HttpRequest,
+  HttpMiddleware,
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import AuthUserController from '../controller/user.controller';
 import {
@@ -10,19 +11,16 @@ import {
   LoginAuthUserInputDto,
   UpdateAuthUserInputDto,
 } from '../../application/dto/user-usecase.dto';
-import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
-import {
-  FunctionCalledEnum,
-  StatusCodeEnum,
-  StatusMessageEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, HttpStatus } from '@/modules/@shared/enums/enums';
+import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
+import { AuthUserNotFoundError } from '../../application/errors/authUser-not-found.error';
 
 export default class AuthUserRoute {
   constructor(
     private readonly authUserController: AuthUserController,
     private readonly httpGateway: HttpServer,
-    private readonly authMiddleware: AuthUserMiddleware
+    private readonly authMiddleware: HttpMiddleware
   ) {}
 
   public routes(): void {
@@ -39,14 +37,10 @@ export default class AuthUserRoute {
       createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
     ]);
 
-    this.httpGateway.delete(
-      '/authUser/:email',
-      this.deleteAuthUser.bind(this),
-      [
-        this.authMiddleware,
-        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
-      ]
-    );
+    this.httpGateway.delete('/authUser/:email', this.deleteAuthUser.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
+    ]);
 
     this.httpGateway.post('/register', this.createAuthUser.bind(this), [
       createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
@@ -62,12 +56,9 @@ export default class AuthUserRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.authUserController.create(
-        input,
-        req.tokenData!
-      );
+      const response = await this.authUserController.create(input, req.tokenData!);
       return {
-        statusCode: StatusCodeEnum.CREATED,
+        statusCode: HttpStatus.CREATED,
         body: response,
       };
     } catch (error) {
@@ -80,18 +71,13 @@ export default class AuthUserRoute {
   ): Promise<HttpResponseData> {
     try {
       const { email } = req.params;
-      const response = await this.authUserController.find(
-        { email },
-        req.tokenData!
-      );
+      const response = await this.authUserController.find({ email }, req.tokenData!);
       if (!response) {
-        return {
-          statusCode: StatusCodeEnum.NOT_FOUND,
-          body: { error: StatusMessageEnum.NOT_FOUND },
-        };
+        const body = new AuthUserNotFoundError(email);
+        return { statusCode: HttpStatus.NOT_FOUND, body };
       }
       return {
-        statusCode: StatusCodeEnum.OK,
+        statusCode: HttpStatus.OK,
         body: response,
       };
     } catch (error) {
@@ -104,12 +90,9 @@ export default class AuthUserRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.authUserController.update(
-        input,
-        req.tokenData!
-      );
+      const response = await this.authUserController.update(input, req.tokenData!);
       return {
-        statusCode: StatusCodeEnum.OK,
+        statusCode: HttpStatus.OK,
         body: response,
       };
     } catch (error) {
@@ -122,12 +105,9 @@ export default class AuthUserRoute {
   ): Promise<HttpResponseData> {
     try {
       const { email } = req.params;
-      const response = await this.authUserController.delete(
-        { email },
-        req.tokenData!
-      );
+      const response = await this.authUserController.delete({ email }, req.tokenData!);
       return {
-        statusCode: StatusCodeEnum.OK,
+        statusCode: HttpStatus.OK,
         body: response,
       };
     } catch (error) {
@@ -147,7 +127,7 @@ export default class AuthUserRoute {
         masterId,
       });
       return {
-        statusCode: StatusCodeEnum.OK,
+        statusCode: HttpStatus.OK,
         body: response,
       };
     } catch (error) {
@@ -155,16 +135,7 @@ export default class AuthUserRoute {
     }
   }
 
-  private handleError(error: unknown, statusCode = 400): HttpResponseData {
-    if (error instanceof Error) {
-      return {
-        statusCode,
-        body: { error: error.message },
-      };
-    }
-    return {
-      statusCode: 500,
-      body: { error: 'Erro interno do servidor' },
-    };
+  private handleError(error: unknown): HttpResponseData {
+    return mapErrorToHttp(error);
   }
 }

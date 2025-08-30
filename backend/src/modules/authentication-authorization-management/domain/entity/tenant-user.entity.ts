@@ -1,3 +1,5 @@
+import { RoleTypeError } from '@/modules/@shared/application/errors/role-type.error';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { RoleUsersEnum, StatesEnum } from '@/modules/@shared/enums/enums';
 import { RoleUsers, States } from '@/modules/@shared/type/sharedTypes';
@@ -31,9 +33,9 @@ export class TenantUserRole {
    *         or boolean flags are not of type boolean.
    */
   constructor({ email, role, state }: TenantUserRoleProps) {
-    if (!this.validateEmail(email)) throw new Error('Field email is not valid');
+    if (!this.validateEmail(email)) throw new ValidationError('Field email is not valid');
     if (!Object.values(RoleUsersEnum).includes(role)) {
-      throw new Error(`Invalid role: ${role}`);
+      throw new RoleTypeError(role);
     }
 
     this._email = email;
