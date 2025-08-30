@@ -13,9 +13,10 @@ import {
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
   FunctionCalledEnum,
-  StatusCodeEnum,
+  HttpStatus,
   StatusMessageEnum,
 } from '@/modules/@shared/enums/enums';
+import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
 
 export class UserMasterRoute {
   constructor(
@@ -50,7 +51,7 @@ export class UserMasterRoute {
     try {
       const input = req.body;
       const reponse = await this.userMasterController.create(input, req.tokenData!);
-      return { statusCode: StatusCodeEnum.CREATED, body: reponse };
+      return { statusCode: HttpStatus.CREATED, body: reponse };
     } catch (error) {
       return this.handleError(error);
     }
@@ -64,11 +65,11 @@ export class UserMasterRoute {
       const response = await this.userMasterController.find({ id }, req.tokenData!);
       if (!response) {
         return {
-          statusCode: StatusCodeEnum.NOT_FOUND,
+          statusCode: HttpStatus.NOT_FOUND,
           body: { error: StatusMessageEnum.NOT_FOUND },
         };
       }
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -81,16 +82,13 @@ export class UserMasterRoute {
       const input = req.body;
       const response = await this.userMasterController.update(input, req.tokenData!);
 
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
-  private handleError(error: unknown, statusCode = 400): HttpResponseData {
-    if (error instanceof Error) {
-      return { statusCode, body: { error: error.message } };
-    }
-    return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
+  private handleError(error: unknown): HttpResponseData {
+    return mapErrorToHttp(error);
   }
 }
