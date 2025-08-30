@@ -21,9 +21,10 @@ import {
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
   FunctionCalledEnum,
-  StatusCodeEnum,
+  HttpStatus,
   StatusMessageEnum,
 } from '@/modules/@shared/enums/enums';
+import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
 
 /**
  * Route handler for lesson management endpoints.
@@ -78,32 +79,19 @@ export default class LessonRoute {
     ]);
     this.httpGateway.post('/lesson/student/add', this.addStudents.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(
-        FunctionCalledEnum.ADD,
-        REQUIRED_FIELDS_ADD_STUDENT
-      ),
+      createRequestMiddleware(FunctionCalledEnum.ADD, REQUIRED_FIELDS_ADD_STUDENT),
     ]);
-    this.httpGateway.post(
-      '/lesson/student/remove',
-      this.removeStudents.bind(this),
-      [
-        this.authMiddleware,
-        createRequestMiddleware(
-          FunctionCalledEnum.REMOVE,
-          REQUIRED_FIELDS_REMOVE_STUDENT
-        ),
-      ]
-    );
+    this.httpGateway.post('/lesson/student/remove', this.removeStudents.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.REMOVE, REQUIRED_FIELDS_REMOVE_STUDENT),
+    ]);
     this.httpGateway.post('/lesson/day/add', this.addDay.bind(this), [
       this.authMiddleware,
       createRequestMiddleware(FunctionCalledEnum.ADD, REQUIRED_FIELDS_ADD_DAY),
     ]);
     this.httpGateway.post('/lesson/day/remove', this.removeDay.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(
-        FunctionCalledEnum.REMOVE,
-        REQUIRED_FIELDS_REMOVE_DAY
-      ),
+      createRequestMiddleware(FunctionCalledEnum.REMOVE, REQUIRED_FIELDS_REMOVE_DAY),
     ]);
     this.httpGateway.post('/lesson/time/add', this.addTime.bind(this), [
       this.authMiddleware,
@@ -111,10 +99,7 @@ export default class LessonRoute {
     ]);
     this.httpGateway.post('/lesson/time/remove', this.removeTime.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(
-        FunctionCalledEnum.REMOVE,
-        REQUIRED_FIELDS_REMOVE_TIME
-      ),
+      createRequestMiddleware(FunctionCalledEnum.REMOVE, REQUIRED_FIELDS_REMOVE_TIME),
     ]);
   }
 
@@ -127,7 +112,7 @@ export default class LessonRoute {
         { quantity, offset },
         req.tokenData!
       );
-      return { statusCode: StatusCodeEnum.OK, body: lessons };
+      return { statusCode: HttpStatus.OK, body: lessons };
     } catch (error) {
       return this.handleError(error);
     }
@@ -141,11 +126,11 @@ export default class LessonRoute {
       const lesson = await this.lessonController.find({ id }, req.tokenData!);
       if (!lesson) {
         return {
-          statusCode: StatusCodeEnum.NOT_FOUND,
+          statusCode: HttpStatus.NOT_FOUND,
           body: { error: StatusMessageEnum.NOT_FOUND },
         };
       }
-      return { statusCode: StatusCodeEnum.OK, body: lesson };
+      return { statusCode: HttpStatus.OK, body: lesson };
     } catch (error) {
       return this.handleError(error);
     }
@@ -157,7 +142,7 @@ export default class LessonRoute {
     try {
       const input = req.body;
       const lesson = await this.lessonController.create(input, req.tokenData!);
-      return { statusCode: StatusCodeEnum.CREATED, body: lesson };
+      return { statusCode: HttpStatus.CREATED, body: lesson };
     } catch (error) {
       return this.handleError(error);
     }
@@ -168,11 +153,8 @@ export default class LessonRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.lessonController.update(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.lessonController.update(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -183,11 +165,8 @@ export default class LessonRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.lessonController.delete(
-        { id },
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.lessonController.delete({ id }, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -198,11 +177,8 @@ export default class LessonRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.lessonController.addStudents(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.lessonController.addStudents(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -213,11 +189,8 @@ export default class LessonRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.lessonController.removeStudents(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.lessonController.removeStudents(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -228,11 +201,8 @@ export default class LessonRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.lessonController.addDay(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.lessonController.addDay(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -243,11 +213,8 @@ export default class LessonRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.lessonController.removeDay(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.lessonController.removeDay(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -258,11 +225,8 @@ export default class LessonRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.lessonController.addTime(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.lessonController.addTime(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -273,20 +237,14 @@ export default class LessonRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.lessonController.removeTime(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.lessonController.removeTime(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
-  private handleError(error: unknown, statusCode = 400): HttpResponseData {
-    if (error instanceof Error) {
-      return { statusCode, body: { error: error.message } };
-    }
-    return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
+  private handleError(error: unknown): HttpResponseData {
+    return mapErrorToHttp(error);
   }
 }

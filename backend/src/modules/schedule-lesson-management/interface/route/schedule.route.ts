@@ -17,9 +17,10 @@ import {
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
   FunctionCalledEnum,
-  StatusCodeEnum,
+  HttpStatus,
   StatusMessageEnum,
 } from '@/modules/@shared/enums/enums';
+import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
 
 /**
  * Route handler for schedule management endpoint.
@@ -62,17 +63,10 @@ export default class ScheduleRoute {
       this.authMiddleware,
       createRequestMiddleware(FunctionCalledEnum.ADD, REQUIRED_FIELDS_ADD),
     ]);
-    this.httpGateway.post(
-      '/schedule/lesson/remove',
-      this.removeLessons.bind(this),
-      [
-        this.authMiddleware,
-        createRequestMiddleware(
-          FunctionCalledEnum.REMOVE,
-          REQUIRED_FIELDS_REMOVE
-        ),
-      ]
-    );
+    this.httpGateway.post('/schedule/lesson/remove', this.removeLessons.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.REMOVE, REQUIRED_FIELDS_REMOVE),
+    ]);
   }
 
   private async findAllSchedules(
@@ -87,7 +81,7 @@ export default class ScheduleRoute {
         },
         req.tokenData!
       );
-      return { statusCode: StatusCodeEnum.OK, body: schedules };
+      return { statusCode: HttpStatus.OK, body: schedules };
     } catch (error) {
       return this.handleError(error);
     }
@@ -98,11 +92,8 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const schedule = await this.scheduleController.create(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.CREATED, body: schedule };
+      const schedule = await this.scheduleController.create(input, req.tokenData!);
+      return { statusCode: HttpStatus.CREATED, body: schedule };
     } catch (error) {
       return this.handleError(error);
     }
@@ -113,17 +104,14 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.scheduleController.find(
-        { id },
-        req.tokenData!
-      );
+      const response = await this.scheduleController.find({ id }, req.tokenData!);
       if (!response) {
         return {
-          statusCode: StatusCodeEnum.NOT_FOUND,
+          statusCode: HttpStatus.NOT_FOUND,
           body: { error: StatusMessageEnum.NOT_FOUND },
         };
       }
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -134,11 +122,8 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.scheduleController.update(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.scheduleController.update(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -149,11 +134,8 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.scheduleController.delete(
-        { id },
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.scheduleController.delete({ id }, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -164,11 +146,8 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.scheduleController.addLessons(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.scheduleController.addLessons(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -179,20 +158,14 @@ export default class ScheduleRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.scheduleController.removeLessons(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.scheduleController.removeLessons(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
-  private handleError(error: unknown, statusCode = 400): HttpResponseData {
-    if (error instanceof Error) {
-      return { statusCode, body: { error: error.message } };
-    }
-    return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
+  private handleError(error: unknown): HttpResponseData {
+    return mapErrorToHttp(error);
   }
 }
