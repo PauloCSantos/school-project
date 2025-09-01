@@ -6,9 +6,14 @@ import {
 import UserStudentGateway from '@/modules/user-management/application/gateway/student.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import {
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  RoleUsersEnum,
+} from '@/modules/@shared/enums/enums';
 import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
 import { StudentAssembler } from '../../assemblers/student.assembler';
+import { UserNotFoundError } from '../../errors/user-not-found.error';
 
 export default class UpdateUserStudent
   implements UseCaseInterface<UpdateUserStudentInputDto, UpdateUserStudentOutputDto>
@@ -33,7 +38,7 @@ export default class UpdateUserStudent
     );
 
     const userStudent = await this._userStudentRepository.find(token.masterId, id);
-    if (!userStudent) throw new Error('User not found');
+    if (!userStudent) throw new UserNotFoundError(RoleUsersEnum.STUDENT, id);
     const baseUser = await this.userService.findBaseUser(userStudent.userId);
 
     name?.firstName !== undefined && (baseUser!.name.firstName = name.firstName);

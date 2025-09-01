@@ -4,6 +4,8 @@ import {
   AdministratorMapper,
   AdministratorMapperProps,
 } from '../../mapper/administrator.mapper';
+import { UserNotFoundError } from '@/modules/user-management/application/errors/user-not-found.error';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * In-memory implementation of AdministratorGateway.
@@ -121,7 +123,10 @@ export default class MemoryUserAdministratorRepository
   ): Promise<UserAdministrator> {
     const administratorUsers = this._administratorUsers.get(masterId);
     if (!administratorUsers || !administratorUsers.has(userAdministrator.id.value)) {
-      throw new Error('User not found');
+      throw new UserNotFoundError(
+        RoleUsersEnum.ADMINISTRATOR,
+        userAdministrator.id.value
+      );
     }
     administratorUsers.set(
       userAdministrator.id.value,
@@ -140,7 +145,10 @@ export default class MemoryUserAdministratorRepository
   async delete(masterId: string, userAdministrator: UserAdministrator): Promise<string> {
     const administratorUsers = this._administratorUsers.get(masterId);
     if (!administratorUsers || !administratorUsers.has(userAdministrator.id.value)) {
-      throw new Error('User not found');
+      throw new UserNotFoundError(
+        RoleUsersEnum.ADMINISTRATOR,
+        userAdministrator.id.value
+      );
     }
     administratorUsers.set(
       userAdministrator.id.value,

@@ -4,6 +4,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { States } from '@/modules/@shared/type/sharedTypes';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 
 type WorkerUserProps = {
   id?: string;
@@ -19,12 +20,12 @@ export default class UserWorker {
   private _lifecycle: Lifecycle;
 
   constructor({ id, userId, salary, state }: WorkerUserProps) {
-    if (userId === undefined) throw new Error('Master user needs id');
-    if (!validId(userId)) throw new Error('Invalid id');
-    if (salary === undefined) throw new Error('Salary field is mandatory');
-    if (!(salary instanceof Salary)) throw new Error('Invalid salary');
+    if (userId === undefined) throw new ValidationError('Master user needs id');
+    if (!validId(userId)) throw new ValidationError('Invalid id');
+    if (salary === undefined) throw new ValidationError('Salary field is mandatory');
+    if (!(salary instanceof Salary)) throw new ValidationError('Invalid salary');
     if (id) {
-      if (!validId(id)) throw new Error('Invalid id');
+      if (!validId(id)) throw new ValidationError('Invalid id');
       this._id = new Id(id);
     } else {
       this._id = new Id();

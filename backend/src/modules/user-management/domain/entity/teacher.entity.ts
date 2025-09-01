@@ -11,6 +11,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { States } from '@/modules/@shared/type/sharedTypes';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 
 type TeacherUserProps = {
   id?: string;
@@ -43,16 +44,18 @@ export default class UserTeacher {
       graduation === undefined ||
       academicDegrees === undefined
     )
-      throw new Error('User Id, salary, graduation and academic degrees are mandatory');
-    if (userId === undefined) throw new Error('Master user needs id');
-    if (!validId(userId)) throw new Error('Invalid id');
+      throw new ValidationError(
+        'User Id, salary, graduation and academic degrees are mandatory'
+      );
+    if (userId === undefined) throw new ValidationError('Master user needs id');
+    if (!validId(userId)) throw new ValidationError('Invalid id');
     if (!this.validateGraduation(graduation))
-      throw new Error('Field graduation is not valid');
+      throw new ValidationError('Field graduation is not valid');
     if (!this.validateAcademicDegrees(academicDegrees))
-      throw new Error('Field academic degrees is not valid');
-    if (!(salary instanceof Salary)) throw new Error('Invalid salary');
+      throw new ValidationError('Field academic degrees is not valid');
+    if (!(salary instanceof Salary)) throw new ValidationError('Invalid salary');
     if (id) {
-      if (!validId(id)) throw new Error('Invalid id');
+      if (!validId(id)) throw new ValidationError('Invalid id');
       this._id = new Id(id);
     } else {
       this._id = new Id();
@@ -85,13 +88,14 @@ export default class UserTeacher {
   }
 
   set graduation(input: string) {
-    if (!this.validateGraduation(input)) throw new Error('Field graduation is not valid');
+    if (!this.validateGraduation(input))
+      throw new ValidationError('Field graduation is not valid');
     this._graduation = input;
   }
 
   set academicDegrees(input: string) {
     if (!this.validateAcademicDegrees(input))
-      throw new Error('Field academic degrees is not valid');
+      throw new ValidationError('Field academic degrees is not valid');
     this._academicDegrees = input;
   }
 

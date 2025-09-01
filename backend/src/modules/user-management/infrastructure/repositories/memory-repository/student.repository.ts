@@ -1,6 +1,8 @@
 import UserStudentGateway from '../../../application/gateway/student.gateway';
 import UserStudent from '@/modules/user-management/domain/entity/student.entity';
 import { StudentMapper, StudentMapperProps } from '../../mapper/student.mapper';
+import { UserNotFoundError } from '@/modules/user-management/application/errors/user-not-found.error';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * In-memory implementation of StudentGateway.
@@ -102,7 +104,7 @@ export default class MemoryUserStudentRepository implements UserStudentGateway {
   async update(masterId: string, userStudent: UserStudent): Promise<UserStudent> {
     const studentUsers = this._studentUsers.get(masterId);
     if (!studentUsers || !studentUsers.has(userStudent.id.value)) {
-      throw new Error('User not found');
+      throw new UserNotFoundError(RoleUsersEnum.STUDENT, userStudent.id.value);
     }
     studentUsers.set(userStudent.id.value, StudentMapper.toObj(userStudent));
     return userStudent;
@@ -118,7 +120,7 @@ export default class MemoryUserStudentRepository implements UserStudentGateway {
   async delete(masterId: string, userStudent: UserStudent): Promise<string> {
     const studentUsers = this._studentUsers.get(masterId);
     if (!studentUsers || !studentUsers.has(userStudent.id.value)) {
-      throw new Error('User not found');
+      throw new UserNotFoundError(RoleUsersEnum.STUDENT, userStudent.id.value);
     }
     studentUsers.set(userStudent.id.value, StudentMapper.toObj(userStudent));
     return 'Operação concluída com sucesso';

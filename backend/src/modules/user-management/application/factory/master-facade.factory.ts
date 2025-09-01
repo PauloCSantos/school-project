@@ -8,11 +8,13 @@ import { EmailAuthValidatorService } from '../services/email-auth-validator.serv
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import { UserService } from '../../domain/services/user.service';
 import MemoryUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
+import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
 
 export default class MasterFacadeFactory {
   static create(): MasterFacade {
     const repository = new MemoryUserMasterRepository();
-    const authUserRepository = new MemoryAuthUserRepository();
+    const authUserService = new AuthUserService();
+    const authUserRepository = new MemoryAuthUserRepository(authUserService);
     const userRepository = new MemoryUserRepository();
     const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
     const policiesService = new PoliciesService();

@@ -16,9 +16,10 @@ import { createRequestMiddleware } from '@/modules/@shared/application/middlewar
 import {
   FunctionCalledEnum,
   HttpStatus,
-  StatusMessageEnum,
+  RoleUsersEnum,
 } from '@/modules/@shared/enums/enums';
 import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
+import { UserNotFoundError } from '../../application/errors/user-not-found.error';
 
 export class UserAdministratorRoute {
   constructor(
@@ -113,10 +114,7 @@ export class UserAdministratorRoute {
         req.tokenData!
       );
       if (!response) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          body: { error: StatusMessageEnum.NOT_FOUND },
-        };
+        throw new UserNotFoundError(RoleUsersEnum.ADMINISTRATOR, id);
       }
       return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {

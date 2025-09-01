@@ -2,6 +2,7 @@ import Worker from '../../domain/entity/worker.entity';
 import Salary from '../../domain/@shared/value-object/salary.value-object';
 import type { IFindUserWorkerOutput as WorkerMapperProps } from '../dto/base-worker.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping Worker entities
@@ -19,7 +20,7 @@ export class WorkerMapper {
    */
   static toObj(input: Worker): WorkerMapperProps {
     if (!input || !(input instanceof Worker)) {
-      throw new Error('Invalid Worker entity provided to mapper');
+      throw new MapperError('Invalid Worker entity provided to mapper');
     }
 
     return {
@@ -38,7 +39,7 @@ export class WorkerMapper {
    */
   static toInstance(input: WorkerMapperProps): Worker {
     if (!input || !input.id) {
-      throw new Error('Invalid Worker data provided to mapper');
+      throw new MapperError('Invalid Worker data provided to mapper');
     }
 
     return new Worker({

@@ -12,6 +12,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { States } from '@/modules/@shared/type/sharedTypes';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 
 type AdministratorUserProps = {
   id?: string;
@@ -30,13 +31,13 @@ export default class UserAdministrator {
 
   constructor({ id, userId, graduation, salary, state }: AdministratorUserProps) {
     if (userId === undefined || salary === undefined || graduation === undefined)
-      throw new Error('Salary and graduation are mandatory');
+      throw new ValidationError('Salary and graduation are mandatory');
     if (!this.validateGraduation(graduation))
-      throw new Error('Field graduation is not valid');
-    if (!(salary instanceof Salary)) throw new Error('Invalid salary');
-    if (!validId(userId)) throw new Error('Invalid id');
+      throw new ValidationError('Field graduation is not valid');
+    if (!(salary instanceof Salary)) throw new ValidationError('Invalid salary');
+    if (!validId(userId)) throw new ValidationError('Invalid id');
     if (id) {
-      if (!validId(id)) throw new Error('Invalid id');
+      if (!validId(id)) throw new ValidationError('Invalid id');
       this._id = new Id(id);
     } else {
       this._id = new Id();
@@ -64,7 +65,8 @@ export default class UserAdministrator {
   }
 
   set graduation(input: string) {
-    if (!this.validateGraduation(input)) throw new Error('Field graduation is not valid');
+    if (!this.validateGraduation(input))
+      throw new ValidationError('Field graduation is not valid');
     this._graduation = input;
   }
 

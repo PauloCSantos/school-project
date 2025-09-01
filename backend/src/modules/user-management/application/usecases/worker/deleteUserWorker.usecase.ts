@@ -6,7 +6,12 @@ import {
 import UserWorkerGateway from '@/modules/user-management/application/gateway/worker.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import {
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  RoleUsersEnum,
+} from '@/modules/@shared/enums/enums';
+import { UserNotFoundError } from '../../errors/user-not-found.error';
 
 export default class DeleteUserWorker
   implements UseCaseInterface<DeleteUserWorkerInputDto, DeleteUserWorkerOutputDto>
@@ -30,7 +35,7 @@ export default class DeleteUserWorker
     );
 
     const userWorker = await this._userWorkerRepository.find(token.masterId, id);
-    if (!userWorker) throw new Error('User not found');
+    if (!userWorker) throw new UserNotFoundError(RoleUsersEnum.WORKER, id);
 
     userWorker.deactivate();
     const result = await this._userWorkerRepository.delete(token.masterId, userWorker);

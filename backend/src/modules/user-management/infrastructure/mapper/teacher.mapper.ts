@@ -2,6 +2,7 @@ import Teacher from '../../domain/entity/teacher.entity';
 import Salary from '../../domain/@shared/value-object/salary.value-object';
 import type { IFindUserTeacherOutput as TeacherMapperProps } from '../dto/base-teacher.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping Teacher entities
@@ -19,7 +20,7 @@ export class TeacherMapper {
    */
   static toObj(input: Teacher): TeacherMapperProps {
     if (!input || !(input instanceof Teacher)) {
-      throw new Error('Invalid Teacher entity provided to mapper');
+      throw new MapperError('Invalid Teacher entity provided to mapper');
     }
 
     return {
@@ -40,7 +41,7 @@ export class TeacherMapper {
    */
   static toInstance(input: TeacherMapperProps): Teacher {
     if (!input || !input.id) {
-      throw new Error('Invalid Teacher data provided to mapper');
+      throw new MapperError('Invalid Teacher data provided to mapper');
     }
 
     return new Teacher({

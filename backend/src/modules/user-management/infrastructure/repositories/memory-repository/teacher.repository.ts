@@ -1,6 +1,8 @@
 import UserTeacherGateway from '../../../application/gateway/teacher.gateway';
 import UserTeacher from '@/modules/user-management/domain/entity/teacher.entity';
 import { TeacherMapper, TeacherMapperProps } from '../../mapper/teacher.mapper';
+import { UserNotFoundError } from '@/modules/user-management/application/errors/user-not-found.error';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * In-memory implementation of TeacherGateway.
@@ -102,7 +104,7 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
   async update(masterId: string, userTeacher: UserTeacher): Promise<UserTeacher> {
     const teacherUsers = this._teacherUsers.get(masterId);
     if (!teacherUsers || !teacherUsers.has(userTeacher.id.value)) {
-      throw new Error('User not found');
+      throw new UserNotFoundError(RoleUsersEnum.TEACHER, userTeacher.id.value);
     }
     teacherUsers.set(userTeacher.id.value, TeacherMapper.toObj(userTeacher));
     return userTeacher;
@@ -118,7 +120,7 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
   async delete(masterId: string, userTeacher: UserTeacher): Promise<string> {
     const teacherUsers = this._teacherUsers.get(masterId);
     if (!teacherUsers || !teacherUsers.has(userTeacher.id.value)) {
-      throw new Error('User not found');
+      throw new UserNotFoundError(RoleUsersEnum.TEACHER, userTeacher.id.value);
     }
     teacherUsers.set(userTeacher.id.value, TeacherMapper.toObj(userTeacher));
     return 'Operação concluída com sucesso';

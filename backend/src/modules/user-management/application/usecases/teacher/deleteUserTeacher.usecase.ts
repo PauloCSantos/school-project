@@ -6,7 +6,12 @@ import {
 import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import {
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  RoleUsersEnum,
+} from '@/modules/@shared/enums/enums';
+import { UserNotFoundError } from '../../errors/user-not-found.error';
 
 export default class DeleteUserTeacher
   implements UseCaseInterface<DeleteUserTeacherInputDto, DeleteUserTeacherOutputDto>
@@ -30,7 +35,7 @@ export default class DeleteUserTeacher
     );
 
     const userTeacher = await this._userTeacherRepository.find(token.masterId, id);
-    if (!userTeacher) throw new Error('User not found');
+    if (!userTeacher) throw new UserNotFoundError(RoleUsersEnum.TEACHER, id);
     userTeacher.deactivate();
 
     const result = await this._userTeacherRepository.delete(token.masterId, userTeacher);

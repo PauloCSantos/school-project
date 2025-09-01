@@ -16,9 +16,10 @@ import { createRequestMiddleware } from '@/modules/@shared/application/middlewar
 import {
   FunctionCalledEnum,
   HttpStatus,
-  StatusMessageEnum,
+  RoleUsersEnum,
 } from '@/modules/@shared/enums/enums';
 import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
+import { UserNotFoundError } from '../../application/errors/user-not-found.error';
 
 export class UserTeacherRoute {
   constructor(
@@ -103,10 +104,7 @@ export class UserTeacherRoute {
       const { id } = req.params;
       const response = await this.userTeacherController.find({ id }, req.tokenData!);
       if (!response) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          body: { error: StatusMessageEnum.NOT_FOUND },
-        };
+        throw new UserNotFoundError(RoleUsersEnum.TEACHER, id);
       }
       return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
@@ -119,8 +117,8 @@ export class UserTeacherRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const resolve = await this.userTeacherController.update(input, req.tokenData!);
-      return { statusCode: HttpStatus.OK, body: resolve };
+      const response = await this.userTeacherController.update(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }

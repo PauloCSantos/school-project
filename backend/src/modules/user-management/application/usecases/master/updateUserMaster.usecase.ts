@@ -6,9 +6,14 @@ import {
 import UserMasterGateway from '@/modules/user-management/application/gateway/master.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import {
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  RoleUsersEnum,
+} from '@/modules/@shared/enums/enums';
 import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
 import { MasterAssembler } from '../../assemblers/master.assembler';
+import { UserNotFoundError } from '../../errors/user-not-found.error';
 
 export default class UpdateUserMaster
   implements UseCaseInterface<UpdateUserMasterInputDto, UpdateUserMasterOutputDto>
@@ -33,7 +38,7 @@ export default class UpdateUserMaster
     );
 
     const userMaster = await this._userMasterRepository.find(token.masterId, id);
-    if (!userMaster) throw new Error('User not found');
+    if (!userMaster) throw new UserNotFoundError(RoleUsersEnum.MASTER, id);
     const baseUser = await this.userService.findBaseUser(userMaster.userId);
     name?.firstName !== undefined && (baseUser!.name.firstName = name.firstName);
     name?.middleName !== undefined && (baseUser!.name.middleName = name.middleName);
