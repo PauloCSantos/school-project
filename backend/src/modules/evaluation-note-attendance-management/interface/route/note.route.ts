@@ -14,12 +14,9 @@ import {
   DeleteNoteInputDto,
 } from '../../application/dto/note-usecase.dto';
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
-import {
-  FunctionCalledEnum,
-  HttpStatus,
-  StatusMessageEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, HttpStatus } from '@/modules/@shared/enums/enums';
 import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
+import { NoteNotFoundError } from '../../application/errors/note-not-found.error';
 
 export default class NoteRoute {
   constructor(
@@ -93,10 +90,7 @@ export default class NoteRoute {
       const { id } = req.params;
       const response = await this.noteController.find({ id }, req.tokenData!);
       if (!response) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          body: { error: StatusMessageEnum.NOT_FOUND },
-        };
+        throw new NoteNotFoundError(id);
       }
       return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {

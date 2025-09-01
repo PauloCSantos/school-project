@@ -1,3 +1,5 @@
+import { ConflictError } from '@/modules/@shared/application/errors/conflict.error';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
@@ -66,31 +68,31 @@ export default class Attendance {
       input.day === undefined ||
       input.studentsPresent === undefined
     ) {
-      throw new Error('All attendance fields are mandatory');
+      throw new ValidationError('All attendance fields are mandatory');
     }
 
     if (input.id && !(input.id instanceof Id)) {
-      throw new Error('Invalid id');
+      throw new ValidationError('Invalid id');
     }
 
     if (!validId(input.lesson)) {
-      throw new Error('Lesson id is not valid');
+      throw new ValidationError('Lesson id is not valid');
     }
 
     if (!validDate(input.date)) {
-      throw new Error('Date is not up to standard');
+      throw new ValidationError('Date is not up to standard');
     }
 
     if (!validHour24h(input.hour)) {
-      throw new Error('Hour is not up to standard');
+      throw new ValidationError('Hour is not up to standard');
     }
 
     if (!validDay(input.day)) {
-      throw new Error('Day is not up to standard');
+      throw new ValidationError('Day is not up to standard');
     }
 
     if (!this.validateStudentsList(input.studentsPresent)) {
-      throw new Error('All student IDs do not follow standards');
+      throw new ValidationError('All student IDs do not follow standards');
     }
   }
 
@@ -113,7 +115,7 @@ export default class Attendance {
    */
   set lesson(value: string) {
     if (!validId(value)) {
-      throw new Error('Lesson id is not valid');
+      throw new ValidationError('Lesson id is not valid');
     }
     this._lesson = value;
   }
@@ -130,7 +132,7 @@ export default class Attendance {
    */
   set date(value: Date) {
     if (!validDate(value)) {
-      throw new Error('Date is not up to standard');
+      throw new ValidationError('Date is not up to standard');
     }
     this._date = value;
   }
@@ -147,7 +149,7 @@ export default class Attendance {
    */
   set hour(value: Hour) {
     if (!validHour24h(value)) {
-      throw new Error('Hour is not up to standard');
+      throw new ValidationError('Hour is not up to standard');
     }
     this._hour = value;
   }
@@ -164,7 +166,7 @@ export default class Attendance {
    */
   set day(value: DayOfWeek) {
     if (!validDay(value)) {
-      throw new Error('Day is not up to standard');
+      throw new ValidationError('Day is not up to standard');
     }
     this._day = value;
   }
@@ -184,13 +186,13 @@ export default class Attendance {
    */
   addStudent(input: string): void {
     if (!validId(input)) {
-      throw new Error('Student id is not valid');
+      throw new ValidationError('Student id is not valid');
     }
 
     if (this.findIndex(input) === -1) {
       this._studentsPresent.push(input);
     } else {
-      throw new Error('This student is already on the attendance');
+      throw new ConflictError('This student is already on the attendance');
     }
   }
 
@@ -202,14 +204,14 @@ export default class Attendance {
    */
   removeStudent(input: string): void {
     if (!validId(input)) {
-      throw new Error('Student id is not valid');
+      throw new ValidationError('Student id is not valid');
     }
 
     const index = this.findIndex(input);
     if (index !== -1) {
       this._studentsPresent.splice(index, 1);
     } else {
-      throw new Error('This student is not included in the attendance');
+      throw new ConflictError('This student is not included in the attendance');
     }
   }
 

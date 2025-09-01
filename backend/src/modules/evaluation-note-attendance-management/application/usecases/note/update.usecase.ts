@@ -5,6 +5,7 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import { NoteMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/note.mapper';
+import { NoteNotFoundError } from '../../errors/note-not-found.error';
 
 /**
  * Use case responsible for updating a note.
@@ -47,7 +48,7 @@ export default class UpdateNote
     );
 
     const noteInstance = await this._noteRepository.find(token.masterId, id);
-    if (!noteInstance) throw new Error('Note not found');
+    if (!noteInstance) throw new NoteNotFoundError(id);
 
     evaluation !== undefined && (noteInstance.evaluation = evaluation);
     note !== undefined && (noteInstance.note = note);

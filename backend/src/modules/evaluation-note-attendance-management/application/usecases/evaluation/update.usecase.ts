@@ -8,6 +8,7 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import { EvaluationMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/evaluation.mapper';
+import { EvaluationNotFoundError } from '../../errors/evaluation-not-found.error';
 
 /**
  * Use case responsible for updating an evaluation record.
@@ -52,7 +53,7 @@ export default class UpdateEvaluation
     const evaluation = await this._evaluationRepository.find(token.masterId, id);
 
     if (!evaluation) {
-      throw new Error('Evaluation not found');
+      throw new EvaluationNotFoundError(id);
     }
 
     lesson !== undefined && (evaluation.lesson = lesson);

@@ -14,12 +14,9 @@ import {
 } from '../../application/dto/evaluation-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
-import {
-  FunctionCalledEnum,
-  HttpStatus,
-  StatusMessageEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, HttpStatus } from '@/modules/@shared/enums/enums';
 import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
+import { EvaluationNotFoundError } from '../../application/errors/evaluation-not-found.error';
 
 export default class EvaluationRoute {
   constructor(
@@ -95,10 +92,7 @@ export default class EvaluationRoute {
       const { id } = req.params;
       const response = await this.evaluationController.find({ id }, req.tokenData!);
       if (!response) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          body: { error: StatusMessageEnum.NOT_FOUND },
-        };
+        throw new EvaluationNotFoundError(id);
       }
       return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {

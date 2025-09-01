@@ -15,12 +15,9 @@ import {
 } from '../../application/dto/attendance-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
-import {
-  FunctionCalledEnum,
-  HttpStatus,
-  StatusMessageEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, HttpStatus } from '@/modules/@shared/enums/enums';
 import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
+import { AttendanceNotFoundError } from '../../application/errors/attendance-not-found.error';
 
 export default class AttendanceRoute {
   constructor(
@@ -100,7 +97,6 @@ export default class AttendanceRoute {
 
       return { statusCode: HttpStatus.CREATED, body: response };
     } catch (error) {
-      console.log(error);
       return this.handleError(error);
     }
   }
@@ -113,10 +109,7 @@ export default class AttendanceRoute {
       const response = await this.attendanceController.find({ id }, req.tokenData!);
 
       if (!response) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          body: { error: StatusMessageEnum.NOT_FOUND },
-        };
+        throw new AttendanceNotFoundError(id);
       }
 
       return { statusCode: HttpStatus.OK, body: response };

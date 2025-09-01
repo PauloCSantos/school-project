@@ -2,6 +2,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
 import type { IFindAttendanceOutput as AttendanceMapperProps } from '../dto/base-attendance.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping Attendance entities
@@ -18,7 +19,7 @@ export class AttendanceMapper {
    */
   static toObj(input: Attendance): AttendanceMapperProps {
     if (!input || !(input instanceof Attendance)) {
-      throw new Error('Invalid Attendance entity provided to mapper');
+      throw new MapperError('Invalid Attendance entity provided to mapper');
     }
 
     return {
@@ -40,7 +41,7 @@ export class AttendanceMapper {
    */
   static toInstance(input: AttendanceMapperProps): Attendance {
     if (!input || !input.id) {
-      throw new Error('Invalid attendance data provided to mapper');
+      throw new MapperError('Invalid attendance data provided to mapper');
     }
 
     return new Attendance({

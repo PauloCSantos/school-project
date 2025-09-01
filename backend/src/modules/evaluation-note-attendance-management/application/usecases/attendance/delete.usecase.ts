@@ -7,6 +7,7 @@ import AttendanceGateway from '@/modules/evaluation-note-attendance-management/a
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { AttendanceNotFoundError } from '../../errors/attendance-not-found.error';
 
 /**
  * Use case responsible for deleting an attendance record.
@@ -51,7 +52,7 @@ export default class DeleteAttendance
     const attendance = await this._attendanceRepository.find(token.masterId, id);
 
     if (!attendance) {
-      throw new Error('Attendance not found');
+      throw new AttendanceNotFoundError(id);
     }
     attendance.deactivate();
 

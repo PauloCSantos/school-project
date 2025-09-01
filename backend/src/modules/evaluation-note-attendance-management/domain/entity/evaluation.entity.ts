@@ -1,3 +1,4 @@
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
@@ -64,27 +65,27 @@ export default class Evaluation {
       input.type === undefined ||
       input.value === undefined
     ) {
-      throw new Error('All evaluation fields are mandatory');
+      throw new ValidationError('All evaluation fields are mandatory');
     }
 
     if (input.id && !(input.id instanceof Id)) {
-      throw new Error('Invalid id');
+      throw new ValidationError('Invalid id');
     }
 
     if (!validId(input.teacher)) {
-      throw new Error('Teacher id is not valid');
+      throw new ValidationError('Teacher id is not valid');
     }
 
     if (!validId(input.lesson)) {
-      throw new Error('Lesson id is not valid');
+      throw new ValidationError('Lesson id is not valid');
     }
 
     if (!this.validateType(input.type)) {
-      throw new Error('Type field is not valid');
+      throw new ValidationError('Type field is not valid');
     }
 
     if (!this.validateValue(input.value)) {
-      throw new Error('The value field must be numeric and between 0 and 10');
+      throw new ValidationError('The value field must be numeric and between 0 and 10');
     }
   }
 
@@ -107,7 +108,7 @@ export default class Evaluation {
    */
   set teacher(value: string) {
     if (!validId(value)) {
-      throw new Error('Teacher id is not valid');
+      throw new ValidationError('Teacher id is not valid');
     }
     this._teacher = value;
   }
@@ -124,7 +125,7 @@ export default class Evaluation {
    */
   set lesson(value: string) {
     if (!validId(value)) {
-      throw new Error('Lesson id is not valid');
+      throw new ValidationError('Lesson id is not valid');
     }
     this._lesson = value;
   }
@@ -141,7 +142,7 @@ export default class Evaluation {
    */
   set type(value: string) {
     if (!this.validateType(value)) {
-      throw new Error('Type field is not valid');
+      throw new ValidationError('Type field is not valid');
     }
     this._type = value;
   }
@@ -158,7 +159,7 @@ export default class Evaluation {
    */
   set value(value: number) {
     if (!this.validateValue(value)) {
-      throw new Error('The value field must be numeric and between 0 and 10');
+      throw new ValidationError('The value field must be numeric and between 0 and 10');
     }
     this._value = value;
   }

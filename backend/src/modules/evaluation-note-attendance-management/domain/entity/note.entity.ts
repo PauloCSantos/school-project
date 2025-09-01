@@ -1,3 +1,4 @@
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
@@ -52,23 +53,23 @@ export default class Note {
       input.student === undefined ||
       input.note === undefined
     ) {
-      throw new Error('All note fields are mandatory');
+      throw new ValidationError('All note fields are mandatory');
     }
 
     if (input.id && !(input.id instanceof Id)) {
-      throw new Error('Invalid id');
+      throw new ValidationError('Invalid id');
     }
 
     if (!validId(input.evaluation)) {
-      throw new Error('Evaluation id is not valid');
+      throw new ValidationError('Evaluation id is not valid');
     }
 
     if (!validId(input.student)) {
-      throw new Error('Student id is not valid');
+      throw new ValidationError('Student id is not valid');
     }
 
     if (!this.validateNote(input.note)) {
-      throw new Error('The note field must be numeric and between 0 and 10');
+      throw new ValidationError('The note field must be numeric and between 0 and 10');
     }
   }
 
@@ -91,7 +92,7 @@ export default class Note {
    */
   set evaluation(value: string) {
     if (!validId(value)) {
-      throw new Error('Evaluation id is not valid');
+      throw new ValidationError('Evaluation id is not valid');
     }
     this._evaluation = value;
   }
@@ -108,7 +109,7 @@ export default class Note {
    */
   set student(value: string) {
     if (!validId(value)) {
-      throw new Error('Student id is not valid');
+      throw new ValidationError('Student id is not valid');
     }
     this._student = value;
   }
@@ -125,7 +126,7 @@ export default class Note {
    */
   set note(value: number) {
     if (!this.validateNote(value)) {
-      throw new Error('The note field must be numeric and between 0 and 10');
+      throw new ValidationError('The note field must be numeric and between 0 and 10');
     }
     this._note = value;
   }

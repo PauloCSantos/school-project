@@ -6,10 +6,8 @@ import {
 import AttendanceGateway from '@/modules/evaluation-note-attendance-management/application/gateway/attendance.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { AttendanceNotFoundError } from '../../errors/attendance-not-found.error';
 
 /**
  * Use case responsible for removing students from an attendance record.
@@ -52,13 +50,10 @@ export default class RemoveStudents
       token
     );
 
-    const attendance = await this._attendanceRepository.find(
-      token.masterId,
-      id
-    );
+    const attendance = await this._attendanceRepository.find(token.masterId, id);
 
     if (!attendance) {
-      throw new Error('Attendance not found');
+      throw new AttendanceNotFoundError(id);
     }
 
     studentsListToRemove.forEach(studentId => {
