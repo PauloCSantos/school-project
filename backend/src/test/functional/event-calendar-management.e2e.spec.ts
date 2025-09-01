@@ -25,7 +25,6 @@ async function makeToken(): Promise<string> {
       email: 'eventsuite@example.com',
       password: 'StrongPass1!',
       isHashed: false,
-      isActive: true,
     },
     authService
   );
@@ -53,23 +52,11 @@ describe('Event calendar management module end to end test', () => {
 
     tokenService = new TokenService('e2e-secret');
 
-    const createEventUsecase = new CreateEvent(
-      eventRepository,
-      policiesService
-    );
+    const createEventUsecase = new CreateEvent(eventRepository, policiesService);
     const findEventUsecase = new FindEvent(eventRepository, policiesService);
-    const findAllEventUsecase = new FindAllEvent(
-      eventRepository,
-      policiesService
-    );
-    const updateEventUsecase = new UpdateEvent(
-      eventRepository,
-      policiesService
-    );
-    const deleteEventUsecase = new DeleteEvent(
-      eventRepository,
-      policiesService
-    );
+    const findAllEventUsecase = new FindAllEvent(eventRepository, policiesService);
+    const updateEventUsecase = new UpdateEvent(eventRepository, policiesService);
+    const deleteEventUsecase = new DeleteEvent(eventRepository, policiesService);
 
     const eventController = new EventController(
       createEventUsecase,
@@ -96,27 +83,26 @@ describe('Event calendar management module end to end test', () => {
   describe('Event', () => {
     describe('On error', () => {
       describe('POST /event', () => {
-        it('should return 400 when the data to create an event is wrong', async () => {
+        it('should return 422 when the data to create an event is wrong', async () => {
           const headers = await authHeader();
-          const response = await supertest(app)
-            .post('/event')
-            .set(headers)
-            .send({
-              creator: 'John',
-              name: 123,
-              date: 'not-a-date',
-              day: 'abc',
-              hour: '25:99',
-              place: 777,
-              type: 'invalid',
-            });
-          expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined();
+          const response = await supertest(app).post('/event').set(headers).send({
+            creator: 'John',
+            name: 123,
+            date: 'not-a-date',
+            day: 'abc',
+            hour: '25:99',
+            place: 777,
+            type: 'invalid',
+          });
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when day is invalid', async () => {
+        it('should return 422 when day is invalid', async () => {
           const headers = await authHeader();
-          const res = await supertest(app).post('/event').set(headers).send({
+          const response = await supertest(app).post('/event').set(headers).send({
             creator: new Id().value,
             name: 'School meeting',
             date: new Date(),
@@ -125,13 +111,15 @@ describe('Event calendar management module end to end test', () => {
             place: 'Auditorium',
             type: 'event',
           });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when hour is invalid', async () => {
+        it('should return 422 when hour is invalid', async () => {
           const headers = await authHeader();
-          const res = await supertest(app).post('/event').set(headers).send({
+          const response = await supertest(app).post('/event').set(headers).send({
             creator: new Id().value,
             name: 'Meeting',
             date: new Date(),
@@ -140,13 +128,15 @@ describe('Event calendar management module end to end test', () => {
             place: 'Room 1',
             type: 'event',
           });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when date is invalid', async () => {
+        it('should return 422 when date is invalid', async () => {
           const headers = await authHeader();
-          const res = await supertest(app).post('/event').set(headers).send({
+          const response = await supertest(app).post('/event').set(headers).send({
             creator: new Id().value,
             name: 'Conference',
             date: '32/13/2024',
@@ -155,128 +145,133 @@ describe('Event calendar management module end to end test', () => {
             place: 'Hall',
             type: 'event',
           });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('GET /event/:id', () => {
-        it('should return 400 when the ID is wrong or non-standard', async () => {
+        it('should return 422 when the ID is wrong or non-standard', async () => {
           const headers = await authHeader();
-          const event = await supertest(app).get('/event/123').set(headers);
-          expect(event.status).toBe(400);
-          expect(event.body.error).toBeDefined();
+          const response = await supertest(app).get('/event/123').set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when event does not exist', async () => {
           const headers = await authHeader();
-          const result = await supertest(app)
+          const response = await supertest(app)
             .get(`/event/${new Id().value}`)
             .set(headers);
-          expect(result.status).toBe(404);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('PATCH /event', () => {
         it('should return 400 when the data to update an event is wrong', async () => {
           const headers = await authHeader();
+          const created = await supertest(app).post('/event').set(headers).send({
+            creator: new Id().value,
+            name: 'Sports day',
+            date: new Date(),
+            day: 'fri',
+            hour: '09:00',
+            place: 'Field',
+            type: 'event',
+          });
 
-          const created = await supertest(app)
-            .post('/event')
-            .set(headers)
-            .send({
-              creator: new Id().value,
-              name: 'Sports day',
-              date: new Date(),
-              day: 'fri',
-              hour: '09:00',
-              place: 'Field',
-              type: 'event',
-            });
+          const response = await supertest(app).patch('/event').set(headers).send({
+            id: created.body.id,
+            name: 999,
+          });
 
-          const updated = await supertest(app)
-            .patch('/event')
-            .set(headers)
-            .send({
-              id: created.body.id,
-              name: 999,
-            });
-
-          expect(updated.status).toBe(400);
-          expect(updated.body.error).toBeDefined();
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 400 when id is missing on body', async () => {
           const headers = await authHeader();
-          const updated = await supertest(app)
-            .patch('/event')
-            .set(headers)
-            .send({
-              name: 'No id here',
-            });
-          expect(updated.status).toBe(400);
-          expect(updated.body.error).toBeDefined();
+          const response = await supertest(app).patch('/event').set(headers).send({
+            name: 'No id here',
+          });
+
+          expect(response.status).toBe(400);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when id is malformed', async () => {
+        it('should return 422 when id is malformed', async () => {
           const headers = await authHeader();
-          const updated = await supertest(app)
-            .patch('/event')
-            .set(headers)
-            .send({
-              id: '123',
-              name: 'Bad id',
-            });
-          expect(updated.status).toBe(400);
-          expect(updated.body.error).toBeDefined();
+          const response = await supertest(app).patch('/event').set(headers).send({
+            id: '123',
+            name: 'Bad id',
+          });
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when trying to update a non-existent event', async () => {
           const headers = await authHeader();
-          const updated = await supertest(app)
-            .patch('/event')
-            .set(headers)
-            .send({
-              id: new Id().value,
-              name: 'Edited',
-            });
-          expect(updated.status).toBe(400);
-          expect(updated.body.error).toBeDefined();
+          const response = await supertest(app).patch('/event').set(headers).send({
+            id: new Id().value,
+            name: 'Edited',
+          });
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('DELETE /event/:id', () => {
-        it('should return 400 when the ID is wrong or non-standard', async () => {
+        it('should return 422 when the ID is wrong or non-standard', async () => {
           const headers = await authHeader();
-          const result = await supertest(app).delete('/event/123').set(headers);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+          const response = await supertest(app).delete('/event/123').set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when trying to delete a non-existent event', async () => {
           const headers = await authHeader();
-          const result = await supertest(app)
+          const response = await supertest(app)
             .delete(`/event/${new Id().value}`)
             .set(headers);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('MIDDLEWARE /event', () => {
         it('should return 401 when authorization header is missing', async () => {
-          const result = await supertest(app).get('/events');
-          expect(result.status).toBe(401);
-          expect(result.body).toBeDefined();
+          const response = await supertest(app).get('/events');
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 401 when token is invalid', async () => {
-          const result = await supertest(app)
+          const response = await supertest(app)
             .get('/events')
             .set('authorization', 'invalid-token');
-          expect(result.status).toBe(401);
-          expect(result.body).toBeDefined();
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
     });
@@ -286,6 +281,7 @@ describe('Event calendar management module end to end test', () => {
         it('should return empty array when there are no events', async () => {
           const headers = await authHeader();
           const response = await supertest(app).get('/events').set(headers);
+
           expect(response.status).toBe(200);
           expect(Array.isArray(response.body)).toBe(true);
           expect(response.body.length).toBe(0);
@@ -295,18 +291,15 @@ describe('Event calendar management module end to end test', () => {
       describe('POST /event', () => {
         it('should create an event', async () => {
           const headers = await authHeader();
-          const response = await supertest(app)
-            .post('/event')
-            .set(headers)
-            .send({
-              creator: new Id().value,
-              name: 'Hackathon',
-              date: new Date(),
-              day: 'sat',
-              hour: '10:30',
-              type: 'event',
-              place: 'Lab',
-            });
+          const response = await supertest(app).post('/event').set(headers).send({
+            creator: new Id().value,
+            name: 'Hackathon',
+            date: new Date(),
+            day: 'sat',
+            hour: '10:30',
+            type: 'event',
+            place: 'Lab',
+          });
 
           expect(response.status).toBe(201);
           expect(response.body).toBeDefined();
@@ -317,25 +310,22 @@ describe('Event calendar management module end to end test', () => {
       describe('GET /event/:id', () => {
         it('should find an event by ID', async () => {
           const headers = await authHeader();
-          const created = await supertest(app)
-            .post('/event')
-            .set(headers)
-            .send({
-              creator: new Id().value,
-              name: 'Conference',
-              date: new Date(),
-              day: 'mon',
-              hour: '14:00',
-              place: 'Main hall',
-              type: 'event',
-            });
+          const created = await supertest(app).post('/event').set(headers).send({
+            creator: new Id().value,
+            name: 'Conference',
+            date: new Date(),
+            day: 'mon',
+            hour: '14:00',
+            place: 'Main hall',
+            type: 'event',
+          });
 
-          const event = await supertest(app)
+          const response = await supertest(app)
             .get(`/event/${created.body.id}`)
             .set(headers);
 
-          expect(event.status).toBe(200);
-          expect(event.body).toBeDefined();
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
 
@@ -352,7 +342,6 @@ describe('Event calendar management module end to end test', () => {
             place: 'Room A',
             type: 'event',
           });
-
           await supertest(app).post('/event').set(headers).send({
             creator: new Id().value,
             name: 'Meeting 2',
@@ -364,6 +353,7 @@ describe('Event calendar management module end to end test', () => {
           });
 
           const response = await supertest(app).get('/events').set(headers);
+
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -373,55 +363,46 @@ describe('Event calendar management module end to end test', () => {
       describe('PATCH /event', () => {
         it('should update an event by ID', async () => {
           const headers = await authHeader();
-          const created = await supertest(app)
-            .post('/event')
-            .set(headers)
-            .send({
-              creator: new Id().value,
-              name: 'Workshop',
-              date: new Date(),
-              day: 'thu',
-              hour: '15:00',
-              place: 'Room C',
-              type: 'event',
-            });
+          const created = await supertest(app).post('/event').set(headers).send({
+            creator: new Id().value,
+            name: 'Workshop',
+            date: new Date(),
+            day: 'thu',
+            hour: '15:00',
+            place: 'Room C',
+            type: 'event',
+          });
 
-          const updated = await supertest(app)
-            .patch('/event')
-            .set(headers)
-            .send({
-              id: created.body.id,
-              name: 'Workshop - Updated',
-              hour: '16:00',
-            });
+          const response = await supertest(app).patch('/event').set(headers).send({
+            id: created.body.id,
+            name: 'Workshop - Updated',
+            hour: '16:00',
+          });
 
-          expect(updated.status).toBe(200);
-          expect(updated.body).toBeDefined();
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
 
       describe('DELETE /event/:id', () => {
         it('should delete an event by ID', async () => {
           const headers = await authHeader();
-          const created = await supertest(app)
-            .post('/event')
-            .set(headers)
-            .send({
-              creator: new Id().value,
-              name: 'Cleanup',
-              date: new Date(),
-              day: 'fri',
-              hour: '18:00',
-              place: 'Room D',
-              type: 'event',
-            });
+          const created = await supertest(app).post('/event').set(headers).send({
+            creator: new Id().value,
+            name: 'Cleanup',
+            date: new Date(),
+            day: 'fri',
+            hour: '18:00',
+            place: 'Room D',
+            type: 'event',
+          });
 
-          const result = await supertest(app)
+          const response = await supertest(app)
             .delete(`/event/${created.body.id}`)
             .set(headers);
 
-          expect(result.status).toBe(200);
-          expect(result.body).toBeDefined();
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
     });

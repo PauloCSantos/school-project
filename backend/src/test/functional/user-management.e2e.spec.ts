@@ -357,32 +357,39 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
             });
 
-          expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined();
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('GET /user-administrator/:id', () => {
         it('should return 401 when authorization header is missing on /users-administrator', async () => {
-          const res = await supertest(app).get('/users-administrator');
-          expect(res.status).toBe(401);
-          expect(res.body).toBeDefined();
+          const response = await supertest(app).get('/users-administrator');
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 401 when token is invalid on /users-administrator', async () => {
-          const res = await supertest(app)
+          const response = await supertest(app)
             .get('/users-administrator')
             .set('authorization', 'invalid');
-          expect(res.status).toBe(401);
-          expect(res.body).toBeDefined();
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when GET /user-administrator/:id does not exist', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .get(`/user-administrator/${new Id().value}`)
             .set(headers);
-          expect(res.status).toBe(404);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return empty string when the ID is wrong or non-standard', async () => {
@@ -411,41 +418,52 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
             });
-          const userAdministrator = await supertest(app)
+
+          const response = await supertest(app)
             .get(`/user-administrator/123`)
             .set(headers);
-          expect(userAdministrator.status).toBe(400);
-          expect(userAdministrator.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('PATCH /user-administrator', () => {
         it('should return 400 when PATCH /user-administrator is missing id', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-administrator')
             .set(headers)
             .send({
               name: { firstName: 'No', lastName: 'Id' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(400);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when PATCH /user-administrator has malformed id', async () => {
+        it('should return 422 when PATCH /user-administrator has malformed id', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-administrator')
             .set(headers)
             .send({
               id: '123',
               name: { firstName: 'Bad', lastName: 'Id' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when PATCH /user-administrator has invalid payload', async () => {
+        it('should return 422 when PATCH /user-administrator has invalid payload', async () => {
           const headers = await authHeader();
+          await createAuthUserInMemory(
+            'valid_administrator@example.com',
+            authUserRepository
+          );
           const created = await supertest(app)
             .post('/user-administrator')
             .set(headers)
@@ -453,35 +471,53 @@ describe('User management module end to end test', () => {
               email: 'valid_administrator@example.com',
               password: 'StrongPass1!',
               name: { firstName: 'Valid', lastName: 'administrator' },
+              address: {
+                street: 'Street A',
+                city: 'City A',
+                zip: '111111-111',
+                number: 1,
+                avenue: 'Avenue A',
+                state: 'State A',
+              },
+              salary: {
+                salary: 5000,
+              },
+              birthday: '11-12-1995',
+              graduation: 'Math',
             });
-          const upd = await supertest(app)
+
+          const response = await supertest(app)
             .patch('/user-administrator')
             .set(headers)
             .send({
               id: created.body.id,
-              name: 123,
+              name: { firstName: 123 },
             });
-          expect(upd.status).toBe(400);
-          expect(upd.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when PATCH /user-administrator updates a non-existent user', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-administrator')
             .set(headers)
             .send({
               id: new Id().value,
               name: { firstName: 'John', lastName: 'Doe' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should throw an error when the data to update a user is wrong', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-administrator')
             .set(headers)
             .send({
@@ -504,8 +540,9 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
             });
-          const id = response.body.id;
-          const updatedUser = await supertest(app)
+          const id = created.body.id;
+
+          const response = await supertest(app)
             .patch(`/user-administrator`)
             .set(headers)
             .send({
@@ -515,18 +552,22 @@ describe('User management module end to end test', () => {
                 state: '',
               },
             });
-          expect(updatedUser.status).toBe(400);
-          expect(updatedUser.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('DELETE /user-administrator/:id', () => {
         it('should return 404 when DELETE /user-administrator/:id does not exist', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .delete(`/user-administrator/${new Id().value}`)
             .set(headers);
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should throw an error when the ID is wrong or non-standard', async () => {
@@ -555,18 +596,20 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
             });
-          const result = await supertest(app)
+
+          const response = await supertest(app)
             .delete(`/user-administrator/123`)
             .set(headers);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
     });
     describe('On success', () => {
       describe('POST /user-administrator', () => {
         it('should create a user', async () => {
-          //aqui
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
           const response = await supertest(app)
             .post('/user-administrator')
@@ -600,7 +643,7 @@ describe('User management module end to end test', () => {
         it('should find a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste2@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-administrator')
             .set(headers)
             .send({
@@ -623,22 +666,26 @@ describe('User management module end to end test', () => {
               email: 'teste2@test.com',
               graduation: 'Math',
             });
-          const id = response.body.id;
-          const userAdministrator = await supertest(app)
+          const id = created.body.id;
+
+          const response = await supertest(app)
             .get(`/user-administrator/${id}`)
             .set(headers);
-          expect(userAdministrator.status).toBe(200);
-          expect(userAdministrator.body).toBeDefined();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
       describe('GET /users-administrator', () => {
         it('should return empty array on GET /users-administrator when there are no administrators', async () => {
           const headers = await authHeader();
-          const res = await supertest(app).get('/users-administrator').set(headers);
-          expect(res.status).toBe(200);
-          expect(Array.isArray(res.body)).toBe(true);
-          expect(res.body.length).toBe(0);
+          const response = await supertest(app).get('/users-administrator').set(headers);
+
+          expect(response.status).toBe(200);
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body.length).toBe(0);
         });
+
         it('should find all users', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
@@ -689,7 +736,9 @@ describe('User management module end to end test', () => {
               email: 'teste2@test.com',
               graduation: 'Spanish',
             });
+
           const response = await supertest(app).get('/users-administrator').set(headers);
+
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -699,7 +748,7 @@ describe('User management module end to end test', () => {
         it('should update a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-administrator')
             .set(headers)
             .send({
@@ -722,8 +771,9 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
             });
-          const id = response.body.id;
-          const updatedUser = await supertest(app)
+          const id = created.body.id;
+
+          const response = await supertest(app)
             .patch(`/user-administrator`)
             .set(headers)
             .send({
@@ -737,15 +787,16 @@ describe('User management module end to end test', () => {
                 state: 'State B',
               },
             });
-          expect(updatedUser.status).toBe(200);
-          expect(updatedUser.body).toBeDefined();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
       describe('DELETE /user-administrator/:id', () => {
         it('should delete a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-administrator')
             .set(headers)
             .send({
@@ -768,12 +819,14 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
             });
-          const id = response.body.id;
-          const result = await supertest(app)
+          const id = created.body.id;
+
+          const response = await supertest(app)
             .delete(`/user-administrator/${id}`)
             .set(headers);
-          expect(result.status).toBe(200);
-          expect(result.body.message).toBe('Operação concluída com sucesso');
+
+          expect(response.status).toBe(200);
+          expect(response.body.message).toBe('Operação concluída com sucesso');
         });
       });
     });
@@ -803,32 +856,39 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
             });
-          expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('GET /user-master/:id', () => {
         it('should return 401 when authorization header is missing on GET /user-master/:id', async () => {
-          const res = await supertest(app).get(`/user-master/${new Id().value}`);
-          expect(res.status).toBe(401);
-          expect(res.body).toBeDefined();
+          const response = await supertest(app).get(`/user-master/${new Id().value}`);
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 401 when token is invalid on GET /user-master/:id', async () => {
-          const res = await supertest(app)
+          const response = await supertest(app)
             .get(`/user-master/${new Id().value}`)
             .set('authorization', 'invalid');
-          expect(res.status).toBe(401);
-          expect(res.body).toBeDefined();
+
+          expect(response.status).toBe(401);
+          expect(response.body).toBeDefined();
         });
 
         it('should return 404 when GET /user-master/:id does not exist', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .get(`/user-master/${new Id().value}`)
             .set(headers);
-          expect(res.status).toBe(404);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return empty string when the ID is wrong or non-standard', async () => {
@@ -854,52 +914,62 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
             });
+
           const response = await supertest(app).get(`/user-master/123`).set(headers);
-          expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('PATCH /user-master', () => {
         it('should return 400 when PATCH /user-master is missing id', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-master')
             .set(headers)
             .send({
               name: { firstName: 'No', lastName: 'Id' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(400);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when PATCH /user-master has malformed id', async () => {
+        it('should return 422 when PATCH /user-master has malformed id', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-master')
             .set(headers)
             .send({
               id: '123',
               name: { firstName: 'Bad', lastName: 'Id' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when PATCH /user-master updates a non-existent user', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-master')
             .set(headers)
             .send({
               id: new Id().value,
               name: { firstName: 'Ghost', lastName: 'User' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when PATCH /user-master has invalid payload', async () => {
+        it('should return 422 when PATCH /user-master has invalid payload', async () => {
           const headers = await authHeader();
+          await createAuthUserInMemory('valid_master@example.com', authUserRepository);
           const created = await supertest(app)
             .post('/user-master')
             .set(headers)
@@ -907,19 +977,34 @@ describe('User management module end to end test', () => {
               email: 'valid_master@example.com',
               password: 'StrongPass1!',
               name: { firstName: 'Valid', lastName: 'Master' },
+              address: {
+                street: 'Street A',
+                city: 'City A',
+                zip: '111111-111',
+                number: 1,
+                avenue: 'Avenue A',
+                state: 'State A',
+              },
+              birthday: '11-12-1995',
+              cnpj: '35.741.901/0001-58',
             });
-          const upd = await supertest(app).patch('/user-master').set(headers).send({
-            id: created.body.id,
-            name: 123,
-          });
-          expect(upd.status).toBe(400);
-          expect(upd.body.error).toBeDefined();
+          const response = await supertest(app)
+            .patch('/user-master')
+            .set(headers)
+            .send({
+              id: created.body.id,
+              name: { firstName: 123 },
+            });
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should throw an error when the data to update a user is wrong', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-master')
             .set(headers)
             .send({
@@ -939,16 +1024,16 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
             });
-          const id = response.body.id;
-          const updatedUser = await supertest(app)
-            .patch(`/user-master`)
-            .set(headers)
-            .send({
-              id,
-              cnpj: '142154654',
-            });
-          expect(updatedUser.status).toBe(400);
-          expect(updatedUser.body.error).toBeDefined();
+          const id = created.body.id;
+
+          const response = await supertest(app).patch(`/user-master`).set(headers).send({
+            id,
+            cnpj: '142154654',
+          });
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
     });
@@ -977,6 +1062,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
             });
+
           expect(response.status).toBe(201);
           expect(response.body.id).toBeDefined();
         });
@@ -985,7 +1071,7 @@ describe('User management module end to end test', () => {
         it('should find a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-master')
             .set(headers)
             .send({
@@ -1006,17 +1092,19 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
             });
-          const id = response.body.id;
-          const userMaster = await supertest(app).get(`/user-master/${id}`).set(headers);
-          expect(userMaster.status).toBe(200);
-          expect(userMaster.body).toBeDefined();
+          const id = created.body.id;
+
+          const response = await supertest(app).get(`/user-master/${id}`).set(headers);
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
       describe('PATCH /user-master', () => {
         it('should update a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste2@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-master')
             .set(headers)
             .send({
@@ -1037,17 +1125,16 @@ describe('User management module end to end test', () => {
               email: 'teste2@test.com',
               cnpj: '35.741.901/0001-58',
             });
-          const id = response.body.id;
-          const updatedUser = await supertest(app)
-            .patch(`/user-master`)
-            .set(headers)
-            .send({
-              id,
-              cnpj: '35.845.901/0001-58',
-              email: 'teste123@test.com',
-            });
-          expect(updatedUser.status).toBe(200);
-          expect(updatedUser.body).toBeDefined();
+          const id = created.body.id;
+
+          const response = await supertest(app).patch(`/user-master`).set(headers).send({
+            id,
+            cnpj: '35.845.901/0001-58',
+            email: 'teste123@test.com',
+          });
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
     });
@@ -1077,23 +1164,29 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: '0',
             });
-          expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('GET /user-student/:id', () => {
         it('should return 401 when authorization header is missing on /users-student', async () => {
-          const res = await supertest(app).get('/users-student');
-          expect(res.status).toBe(401);
-          expect(res.body).toBeDefined();
+          const response = await supertest(app).get('/users-student');
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 401 when token is invalid on /users-student', async () => {
-          const res = await supertest(app)
+          const response = await supertest(app)
             .get('/users-student')
             .set('authorization', 'invalid');
-          expect(res.status).toBe(401);
-          expect(res.body).toBeDefined();
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return empty string when the ID is wrong or non-standard', async () => {
@@ -1119,70 +1212,84 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
-          const userStudent = await supertest(app).get(`/user-student/123`).set(headers);
-          expect(userStudent.status).toBe(400);
-          expect(userStudent.body.error).toBeDefined();
+
+          const response = await supertest(app).get(`/user-student/123`).set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('PATCH /user-student', () => {
         it('should return 404 when GET /user-student/:id does not exist', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .get(`/user-student/${new Id().value}`)
             .set(headers);
-          expect(res.status).toBe(404);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when DELETE /user-student/:id does not exist', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .delete(`/user-student/${new Id().value}`)
             .set(headers);
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when PATCH /user-student updates a non-existent user', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-student')
             .set(headers)
             .send({
               id: new Id().value,
               name: { firstName: 'John', lastName: 'Doe' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 400 when PATCH /user-student is missing id', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-student')
             .set(headers)
             .send({
               name: { firstName: 'No', lastName: 'Id' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(400);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when PATCH /user-student has malformed id', async () => {
+        it('should return 422 when PATCH /user-student has malformed id', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-student')
             .set(headers)
             .send({
               id: '123',
               name: { firstName: 'Bad', lastName: 'Id' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when PATCH /user-student has invalid payload', async () => {
+        it('should return 422 when PATCH /user-student has invalid payload', async () => {
           const headers = await authHeader();
+          await createAuthUserInMemory('valid_student@example.com', authUserRepository);
           const created = await supertest(app)
             .post('/user-student')
             .set(headers)
@@ -1190,19 +1297,35 @@ describe('User management module end to end test', () => {
               email: 'valid_student@example.com',
               password: 'StrongPass1!',
               name: { firstName: 'Valid', lastName: 'student' },
+              address: {
+                street: 'Street A',
+                city: 'City A',
+                zip: '111111-111',
+                number: 1,
+                avenue: 'Avenue A',
+                state: 'State A',
+              },
+              birthday: new Date('11-12-1995'),
+              paymentYear: 20000,
             });
-          const upd = await supertest(app).patch('/user-student').set(headers).send({
-            id: created.body.id,
-            name: 123,
-          });
-          expect(upd.status).toBe(400);
-          expect(upd.body.error).toBeDefined();
+
+          const response = await supertest(app)
+            .patch('/user-student')
+            .set(headers)
+            .send({
+              id: created.body.id,
+              name: { lastName: 123 },
+            });
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should throw an error when the data to update a user is wrong', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-student')
             .set(headers)
             .send({
@@ -1222,16 +1345,16 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
-          const id = response.body.id;
-          const updatedUser = await supertest(app)
-            .patch(`/user-student`)
-            .set(headers)
-            .send({
-              id,
-              paymentYear: 0,
-            });
-          expect(updatedUser.status).toBe(400);
-          expect(updatedUser.body.error).toBeDefined();
+          const id = created.body.id;
+
+          const response = await supertest(app).patch(`/user-student`).set(headers).send({
+            id,
+            paymentYear: 0,
+          });
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('DELETE /user-student/:id', () => {
@@ -1258,9 +1381,12 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
-          const result = await supertest(app).delete(`/user-student/123`).set(headers);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+
+          const response = await supertest(app).delete(`/user-student/123`).set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
     });
@@ -1288,6 +1414,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
+
           expect(response.status).toBe(201);
           expect(response.body.id).toBeDefined();
         });
@@ -1296,7 +1423,7 @@ describe('User management module end to end test', () => {
         it('should find a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-student')
             .set(headers)
             .send({
@@ -1316,21 +1443,22 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
-          const id = response.body.id;
-          const userStudent = await supertest(app)
-            .get(`/user-student/${id}`)
-            .set(headers);
-          expect(userStudent.status).toBe(200);
-          expect(userStudent.body).toBeDefined();
+          const id = created.body.id;
+
+          const response = await supertest(app).get(`/user-student/${id}`).set(headers);
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
       describe('GET /users-student', () => {
         it('should return empty array on GET /users-student when there are no students', async () => {
           const headers = await authHeader();
-          const res = await supertest(app).get('/users-student').set(headers);
-          expect(res.status).toBe(200);
-          expect(Array.isArray(res.body)).toBe(true);
-          expect(res.body.length).toBe(0);
+          const response = await supertest(app).get('/users-student').set(headers);
+
+          expect(response.status).toBe(200);
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body.length).toBe(0);
         });
         it('should find all users', async () => {
           const headers = await authHeader();
@@ -1376,7 +1504,9 @@ describe('User management module end to end test', () => {
               email: 'teste2@test.com',
               paymentYear: 20000,
             });
+
           const response = await supertest(app).get('/users-student').set(headers);
+
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -1386,7 +1516,7 @@ describe('User management module end to end test', () => {
         it('should update a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-student')
             .set(headers)
             .send({
@@ -1406,8 +1536,9 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
-          const id = response.body.id;
-          const updatedUser = await supertest(app)
+          const id = created.body.id;
+
+          const response = await supertest(app)
             .patch(`/user-student`)
             .set(headers)
             .send({
@@ -1427,15 +1558,16 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
-          expect(updatedUser.status).toBe(200);
-          expect(updatedUser.body).toBeDefined();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
       describe('DELETE /user-student/:id', () => {
         it('should delete a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-student')
             .set(headers)
             .send({
@@ -1455,10 +1587,14 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               paymentYear: 20000,
             });
-          const id = response.body.id;
-          const result = await supertest(app).delete(`/user-student/${id}`).set(headers);
-          expect(result.status).toBe(200);
-          expect(result.body.message).toBe('Operação concluída com sucesso');
+          const id = created.body.id;
+
+          const response = await supertest(app)
+            .delete(`/user-student/${id}`)
+            .set(headers);
+
+          expect(response.status).toBe(200);
+          expect(response.body.message).toBe('Operação concluída com sucesso');
         });
       });
     });
@@ -1492,23 +1628,40 @@ describe('User management module end to end test', () => {
               graduation: 'Mh',
               academicDegrees: 'Mc',
             });
-          expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('GET /user-teacher/:id', () => {
         it('should return 401 when authorization header is missing on /users-teacher', async () => {
-          const res = await supertest(app).get('/users-teacher');
-          expect(res.status).toBe(401);
-          expect(res.body).toBeDefined();
+          const response = await supertest(app).get('/users-teacher');
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 401 when token is invalid on /users-teacher', async () => {
-          const res = await supertest(app)
+          const response = await supertest(app)
             .get('/users-teacher')
             .set('authorization', 'invalid');
-          expect(res.status).toBe(401);
-          expect(res.body).toBeDefined();
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
+        });
+
+        it('should return 404 when GET /user-teacher/:id does not exist', async () => {
+          const headers = await authHeader();
+          const response = await supertest(app)
+            .get(`/user-teacher/${new Id().value}`)
+            .set(headers);
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return empty string when the ID is wrong or non-standard', async () => {
@@ -1538,70 +1691,73 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          const userTeacher = await supertest(app).get(`/user-teacher/123`).set(headers);
-          expect(userTeacher.status).toBe(400);
-          expect(userTeacher.body.error).toBeDefined();
+
+          const response = await supertest(app).get(`/user-teacher/123`).set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('PATCH /user-teacher', () => {
-        it('should return 404 when GET /user-teacher/:id does not exist', async () => {
-          const headers = await authHeader();
-          const res = await supertest(app)
-            .get(`/user-teacher/${new Id().value}`)
-            .set(headers);
-          expect(res.status).toBe(404);
-          expect(res.body.error).toBeDefined();
-        });
-
         it('should return 404 when DELETE /user-teacher/:id does not exist', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .delete(`/user-teacher/${new Id().value}`)
             .set(headers);
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when PATCH /user-teacher updates a non-existent user', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-teacher')
             .set(headers)
             .send({
               id: new Id().value,
               name: { firstName: 'John', lastName: 'Doe' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 400 when PATCH /user-teacher is missing id', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-teacher')
             .set(headers)
             .send({
               name: { firstName: 'No', lastName: 'Id' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(400);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when PATCH /user-teacher has malformed id', async () => {
+        it('should return 422 when PATCH /user-teacher has malformed id', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-teacher')
             .set(headers)
             .send({
               id: '123',
               name: { firstName: 'Bad', lastName: 'Id' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when PATCH /user-teacher has invalid payload', async () => {
+        it('should return 422 when PATCH /user-teacher has invalid payload', async () => {
           const headers = await authHeader();
+          await createAuthUserInMemory('valid_teacher@example.com', authUserRepository);
           const created = await supertest(app)
             .post('/user-teacher')
             .set(headers)
@@ -1609,19 +1765,39 @@ describe('User management module end to end test', () => {
               email: 'valid_teacher@example.com',
               password: 'StrongPass1!',
               name: { firstName: 'Valid', lastName: 'teacher' },
+              address: {
+                street: 'Street A',
+                city: 'City A',
+                zip: '111111-111',
+                number: 1,
+                avenue: 'Avenue A',
+                state: 'State A',
+              },
+              salary: {
+                salary: 5000,
+              },
+              birthday: new Date('11-12-1995'),
+              graduation: 'Math',
+              academicDegrees: 'Msc',
             });
-          const upd = await supertest(app).patch('/user-teacher').set(headers).send({
-            id: created.body.id,
-            name: 123,
-          });
-          expect(upd.status).toBe(400);
-          expect(upd.body.error).toBeDefined();
+
+          const response = await supertest(app)
+            .patch('/user-teacher')
+            .set(headers)
+            .send({
+              id: created.body.id,
+              name: { firstName: 123 },
+            });
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should throw an error when the data to update a user is wrong', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-teacher')
             .set(headers)
             .send({
@@ -1645,17 +1821,17 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          const id = response.body.id;
-          const updatedUser = await supertest(app)
-            .patch(`/user-teacher`)
-            .set(headers)
-            .send({
-              id,
-              academicDegrees: 0,
-              birthday: '02/20/2024',
-            });
-          expect(updatedUser.status).toBe(400);
-          expect(updatedUser.body.error).toBeDefined();
+          const id = created.body.id;
+
+          const response = await supertest(app).patch(`/user-teacher`).set(headers).send({
+            id,
+            academicDegrees: 0,
+            birthday: '02/20/2024',
+          });
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('DELETE /user-teacher/:id', () => {
@@ -1686,9 +1862,11 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          const result = await supertest(app).delete(`/user-teacher/123`).set(headers);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+          const response = await supertest(app).delete(`/user-teacher/123`).set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
     });
@@ -1720,6 +1898,7 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
+
           expect(response.status).toBe(201);
           expect(response.body.id).toBeDefined();
         });
@@ -1728,7 +1907,7 @@ describe('User management module end to end test', () => {
         it('should find a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-teacher')
             .set(headers)
             .send({
@@ -1752,21 +1931,22 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          const id = response.body.id;
-          const userTeacher = await supertest(app)
-            .get(`/user-teacher/${id}`)
-            .set(headers);
-          expect(userTeacher.status).toBe(200);
-          expect(userTeacher.body).toBeDefined();
+          const id = created.body.id;
+
+          const response = await supertest(app).get(`/user-teacher/${id}`).set(headers);
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
       describe('GET /users-teacher', () => {
         it('should return empty array on GET /users-teacher when there are no teachers', async () => {
           const headers = await authHeader();
-          const res = await supertest(app).get('/users-teacher').set(headers);
-          expect(res.status).toBe(200);
-          expect(Array.isArray(res.body)).toBe(true);
-          expect(res.body.length).toBe(0);
+          const response = await supertest(app).get('/users-teacher').set(headers);
+
+          expect(response.status).toBe(200);
+          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body.length).toBe(0);
         });
 
         it('should find all users', async () => {
@@ -1821,7 +2001,9 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
+
           const response = await supertest(app).get('/users-teacher').set(headers);
+
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -1831,7 +2013,7 @@ describe('User management module end to end test', () => {
         it('should update a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-teacher')
             .set(headers)
             .send({
@@ -1855,8 +2037,9 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          const id = response.body.id;
-          const updatedUser = await supertest(app)
+          const id = created.body.id;
+
+          const response = await supertest(app)
             .patch(`/user-teacher`)
             .set(headers)
             .send({
@@ -1881,15 +2064,16 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          expect(updatedUser.status).toBe(200);
-          expect(updatedUser.body).toBeDefined();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
       describe('DELETE /user-teacher/:id', () => {
         it('should delete a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-teacher')
             .set(headers)
             .send({
@@ -1913,10 +2097,14 @@ describe('User management module end to end test', () => {
               graduation: 'Math',
               academicDegrees: 'Msc',
             });
-          const id = response.body.id;
-          const result = await supertest(app).delete(`/user-teacher/${id}`).set(headers);
-          expect(result.status).toBe(200);
-          expect(result.body.message).toBe('Operação concluída com sucesso');
+          const id = created.body.id;
+
+          const response = await supertest(app)
+            .delete(`/user-teacher/${id}`)
+            .set(headers);
+
+          expect(response.status).toBe(200);
+          expect(response.body.message).toBe('Operação concluída com sucesso');
         });
       });
     });
@@ -1948,23 +2136,29 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('GET /user-worker/:id', () => {
         it('should return 401 when authorization header is missing on /users-worker', async () => {
-          const res = await supertest(app).get('/users-worker');
-          expect(res.status).toBe(401);
-          expect(res.body).toBeDefined();
+          const response = await supertest(app).get('/users-worker');
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 401 when token is invalid on /users-worker', async () => {
-          const res = await supertest(app)
+          const response = await supertest(app)
             .get('/users-worker')
             .set('authorization', 'invalid');
-          expect(res.status).toBe(401);
-          expect(res.body).toBeDefined();
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return empty string when the ID is wrong or non-standard', async () => {
@@ -1992,70 +2186,84 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          const userWorker = await supertest(app).get(`/user-worker/123`).set(headers);
-          expect(userWorker.status).toBe(400);
-          expect(userWorker.body.error).toBeDefined();
+
+          const response = await supertest(app).get(`/user-worker/123`).set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('PATCH /user-worker', () => {
         it('should return 404 when GET /user-worker/:id does not exist', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .get(`/user-worker/${new Id().value}`)
             .set(headers);
-          expect(res.status).toBe(404);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when DELETE /user-worker/:id does not exist', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .delete(`/user-worker/${new Id().value}`)
             .set(headers);
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when PATCH /user-worker updates a non-existent user', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-worker')
             .set(headers)
             .send({
               id: new Id().value,
               name: { firstName: 'John', lastName: 'Doe' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 400 when PATCH /user-worker is missing id', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-worker')
             .set(headers)
             .send({
               name: { firstName: 'No', lastName: 'Id' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(400);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when PATCH /user-worker has malformed id', async () => {
+        it('should return 422 when PATCH /user-worker has malformed id', async () => {
           const headers = await authHeader();
-          const res = await supertest(app)
+          const response = await supertest(app)
             .patch('/user-worker')
             .set(headers)
             .send({
               id: '123',
               name: { firstName: 'Bad', lastName: 'Id' },
             });
-          expect(res.status).toBe(400);
-          expect(res.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
-        it('should return 400 when PATCH /user-worker has invalid payload', async () => {
+        it('should return 422 when PATCH /user-worker has invalid payload', async () => {
           const headers = await authHeader();
+          await createAuthUserInMemory('valid_worker@example.com', authUserRepository);
           const created = await supertest(app)
             .post('/user-worker')
             .set(headers)
@@ -2063,19 +2271,37 @@ describe('User management module end to end test', () => {
               email: 'valid_worker@example.com',
               password: 'StrongPass1!',
               name: { firstName: 'Valid', lastName: 'worker' },
+              address: {
+                street: 'Street A',
+                city: 'City A',
+                zip: '111111-111',
+                number: 1,
+                avenue: 'Avenue A',
+                state: 'State A',
+              },
+              salary: {
+                salary: 5000,
+              },
+              birthday: new Date('11-12-1995'),
             });
-          const upd = await supertest(app).patch('/user-worker').set(headers).send({
-            id: created.body.id,
-            name: 123,
-          });
-          expect(upd.status).toBe(400);
-          expect(upd.body.error).toBeDefined();
+
+          const response = await supertest(app)
+            .patch('/user-worker')
+            .set(headers)
+            .send({
+              id: created.body.id,
+              name: { firstName: 123 },
+            });
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should throw an error when the data to update a user is wrong', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-worker')
             .set(headers)
             .send({
@@ -2097,18 +2323,19 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          const id = response.body.id;
-          const updatedUser = await supertest(app)
+          const id = created.body.id;
+
+          const response = await supertest(app)
             .patch(`/user-worker`)
             .set(headers)
             .send({
-              salary: {
-                id,
-                salary: 'a',
-              },
+              id,
+              salary: { salary: 'a' },
             });
-          expect(updatedUser.status).toBe(400);
-          expect(updatedUser.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
       describe('DELETE /user-worker/:id', () => {
@@ -2137,9 +2364,12 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          const result = await supertest(app).delete(`/user-worker/123`).set(headers);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+
+          const response = await supertest(app).delete(`/user-worker/123`).set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
     });
@@ -2169,6 +2399,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
+
           expect(response.status).toBe(201);
           expect(response.body.id).toBeDefined();
         });
@@ -2177,7 +2408,7 @@ describe('User management module end to end test', () => {
         it('should find a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-worker')
             .set(headers)
             .send({
@@ -2199,19 +2430,22 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          const id = response.body.id;
-          const userWorker = await supertest(app).get(`/user-worker/${id}`).set(headers);
-          expect(userWorker.status).toBe(200);
-          expect(userWorker.body).toBeDefined();
+          const id = created.body.id;
+
+          const response = await supertest(app).get(`/user-worker/${id}`).set(headers);
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
       describe('GET /users-worker/', () => {
         it('should return empty array on GET /users-worker when there are no workers', async () => {
           const headers = await authHeader();
-          const res = await supertest(app).get('/users-worker').set(headers);
-          expect(res.status).toBe(200);
-          expect(Array.isArray(res.body)).toBe(true);
-          expect(res.body.length).toBe(0);
+          const result = await supertest(app).get('/users-worker').set(headers);
+
+          expect(result.status).toBe(200);
+          expect(Array.isArray(result.body)).toBe(true);
+          expect(result.body.length).toBe(0);
         });
 
         it('should find all users', async () => {
@@ -2262,7 +2496,9 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste2@test.com',
             });
+
           const response = await supertest(app).get('/users-worker').set(headers);
+
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -2272,7 +2508,7 @@ describe('User management module end to end test', () => {
         it('should update a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-worker')
             .set(headers)
             .send({
@@ -2294,8 +2530,9 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          const id = response.body.id;
-          const updatedUser = await supertest(app)
+          const id = created.body.id;
+
+          const response = await supertest(app)
             .patch(`/user-worker`)
             .set(headers)
             .send({
@@ -2318,15 +2555,16 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          expect(updatedUser.status).toBe(200);
-          expect(updatedUser.body).toBeDefined();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
       describe('DELETE /user-worker/:id', () => {
         it('should delete a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
-          const response = await supertest(app)
+          const created = await supertest(app)
             .post('/user-worker')
             .set(headers)
             .send({
@@ -2348,10 +2586,12 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
             });
-          const id = response.body.id;
-          const result = await supertest(app).delete(`/user-worker/${id}`).set(headers);
-          expect(result.status).toBe(200);
-          expect(result.body.message).toBe('Operação concluída com sucesso');
+          const id = created.body.id;
+
+          const response = await supertest(app).delete(`/user-worker/${id}`).set(headers);
+
+          expect(response.status).toBe(200);
+          expect(response.body.message).toBe('Operação concluída com sucesso');
         });
       });
     });

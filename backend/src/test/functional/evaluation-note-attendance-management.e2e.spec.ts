@@ -42,8 +42,6 @@ async function makeToken(): Promise<string> {
     {
       email: 'testsuite@example.com',
       password: 'StrongPass1!',
-      isHashed: false,
-      isActive: true,
     },
     authService
   );
@@ -139,10 +137,7 @@ describe('Evaluation note attendance management module end to end test', () => {
       attendanceRepository,
       policiesService
     );
-    const addStudentsUsecase = new AddStudents(
-      attendanceRepository,
-      policiesService
-    );
+    const addStudentsUsecase = new AddStudents(attendanceRepository, policiesService);
     const removeStudentsUsecase = new RemoveStudents(
       attendanceRepository,
       policiesService
@@ -200,37 +195,39 @@ describe('Evaluation note attendance management module end to end test', () => {
       describe('POST /evaluation', () => {
         it('should throw an error when the data to create an evaluation is wrong', async () => {
           const headers = await authHeader();
-          const response = await supertest(app)
-            .post('/evaluation')
-            .set(headers)
-            .send({
-              lesson: new Id().value,
-              teacher: new Id().value,
-              type: 'evaluation',
-            });
+          const response = await supertest(app).post('/evaluation').set(headers).send({
+            lesson: new Id().value,
+            teacher: new Id().value,
+            type: 'evaluation',
+          });
 
           expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined();
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
+          expect(response.body.details).toBeDefined();
         });
       });
 
       describe('GET /evaluation/:id', () => {
         it('should return empty string when the ID is wrong or non-standard', async () => {
           const headers = await authHeader();
-          const evaluation = await supertest(app)
-            .get('/evaluation/123')
-            .set(headers);
-          expect(evaluation.status).toBe(400);
-          expect(evaluation.body.error).toBeDefined();
+          const response = await supertest(app).get('/evaluation/123').set(headers);
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
+          expect(response.body.details).toBeDefined();
         });
 
         it('should return 404 when evaluation does not exist', async () => {
           const headers = await authHeader();
-          const result = await supertest(app)
+          const response = await supertest(app)
             .get(`/evaluation/${new Id().value}`)
             .set(headers);
-          expect(result.status).toBe(404);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
+          expect(response.body.details).toBeDefined();
         });
       });
 
@@ -238,81 +235,80 @@ describe('Evaluation note attendance management module end to end test', () => {
         it('should throw an error when the data to update an evaluation is wrong', async () => {
           const headers = await authHeader();
 
-          const created = await supertest(app)
-            .post('/evaluation')
-            .set(headers)
-            .send({
-              lesson: 123,
-              teacher: new Id().value,
-              type: 'evaluation',
-              value: 10,
-            });
+          const created = await supertest(app).post('/evaluation').set(headers).send({
+            lesson: new Id().value,
+            teacher: new Id().value,
+            type: 'evaluation',
+            value: 10,
+          });
 
-          const updated = await supertest(app)
-            .patch('/evaluation')
-            .set(headers)
-            .send({
-              id: created.body.id,
-              lesson: new Id().value,
-              teacher: new Id().value,
-              type: 'evaluation',
-            });
+          const response = await supertest(app).patch('/evaluation').set(headers).send({
+            id: created.body.id,
+            lesson: 123,
+            teacher: new Id().value,
+            type: 'evaluation',
+          });
 
-          expect(updated.status).toBe(400);
-          expect(updated.body.error).toBeDefined();
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when trying to update a non-existent evaluation', async () => {
           const headers = await authHeader();
-          const updated = await supertest(app)
-            .patch('/evaluation')
-            .set(headers)
-            .send({
-              id: new Id().value,
-              lesson: new Id().value,
-              teacher: new Id().value,
-              type: 'evaluation',
-              value: 7,
-            });
+          const response = await supertest(app).patch('/evaluation').set(headers).send({
+            id: new Id().value,
+            lesson: new Id().value,
+            teacher: new Id().value,
+            type: 'evaluation',
+            value: 7,
+          });
 
-          expect(updated.status).toBe(400);
-          expect(updated.body.error).toBeDefined();
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('DELETE /evaluation/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
           const headers = await authHeader();
-          const result = await supertest(app)
-            .delete('/evaluation/123')
-            .set(headers);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+          const response = await supertest(app).delete('/evaluation/123').set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when trying to delete a non-existent evaluation', async () => {
           const headers = await authHeader();
-          const result = await supertest(app)
+          const response = await supertest(app)
             .delete(`/evaluation/${new Id().value}`)
             .set(headers);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('MIDDLEWARE /evaluation', () => {
         it('should return 401 when authorization header is missing', async () => {
-          const result = await supertest(app).get('/evaluations');
-          expect(result.status).toBe(401);
-          expect(result.body).toBeDefined();
+          const response = await supertest(app).get('/evaluations');
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 401 when token is invalid', async () => {
-          const result = await supertest(app)
+          const response = await supertest(app)
             .get('/evaluations')
             .set('authorization', 'invalid');
-          expect(result.status).toBe(401);
-          expect(result.body).toBeDefined();
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
     });
@@ -321,15 +317,12 @@ describe('Evaluation note attendance management module end to end test', () => {
       describe('POST /evaluation', () => {
         it('should create an evaluation', async () => {
           const headers = await authHeader();
-          const response = await supertest(app)
-            .post('/evaluation')
-            .set(headers)
-            .send({
-              lesson: new Id().value,
-              teacher: new Id().value,
-              type: 'evaluation',
-              value: 10,
-            });
+          const response = await supertest(app).post('/evaluation').set(headers).send({
+            lesson: new Id().value,
+            teacher: new Id().value,
+            type: 'evaluation',
+            value: 10,
+          });
 
           expect(response.status).toBe(201);
           expect(response.body).toBeDefined();
@@ -340,22 +333,19 @@ describe('Evaluation note attendance management module end to end test', () => {
       describe('GET /evaluation/:id', () => {
         it('should find an evaluation by ID', async () => {
           const headers = await authHeader();
-          const created = await supertest(app)
-            .post('/evaluation')
-            .set(headers)
-            .send({
-              lesson: new Id().value,
-              teacher: new Id().value,
-              type: 'evaluation',
-              value: 10,
-            });
+          const created = await supertest(app).post('/evaluation').set(headers).send({
+            lesson: new Id().value,
+            teacher: new Id().value,
+            type: 'evaluation',
+            value: 10,
+          });
 
-          const evaluation = await supertest(app)
+          const response = await supertest(app)
             .get(`/evaluation/${created.body.id}`)
             .set(headers);
 
-          expect(evaluation.status).toBe(200);
-          expect(evaluation.body).toBeDefined();
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
 
@@ -369,7 +359,6 @@ describe('Evaluation note attendance management module end to end test', () => {
             type: 'evaluation',
             value: 10,
           });
-
           await supertest(app).post('/evaluation').set(headers).send({
             lesson: new Id().value,
             teacher: new Id().value,
@@ -377,9 +366,8 @@ describe('Evaluation note attendance management module end to end test', () => {
             value: 9,
           });
 
-          const response = await supertest(app)
-            .get('/evaluations')
-            .set(headers);
+          const response = await supertest(app).get('/evaluations').set(headers);
+
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -389,51 +377,42 @@ describe('Evaluation note attendance management module end to end test', () => {
       describe('PATCH /evaluation', () => {
         it('should update an evaluation by ID', async () => {
           const headers = await authHeader();
-          const created = await supertest(app)
-            .post('/evaluation')
-            .set(headers)
-            .send({
-              lesson: new Id().value,
-              teacher: new Id().value,
-              type: 'evaluation',
-              value: 6,
-            });
+          const created = await supertest(app).post('/evaluation').set(headers).send({
+            lesson: new Id().value,
+            teacher: new Id().value,
+            type: 'evaluation',
+            value: 6,
+          });
 
-          const updated = await supertest(app)
-            .patch('/evaluation')
-            .set(headers)
-            .send({
-              id: created.body.id,
-              lesson: new Id().value,
-              teacher: new Id().value,
-              type: 'evaluation',
-              value: 8,
-            });
+          const response = await supertest(app).patch('/evaluation').set(headers).send({
+            id: created.body.id,
+            lesson: new Id().value,
+            teacher: new Id().value,
+            type: 'evaluation',
+            value: 8,
+          });
 
-          expect(updated.status).toBe(200);
-          expect(updated.body).toBeDefined();
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
 
       describe('DELETE /evaluation/:id', () => {
         it('should delete an evaluation by ID', async () => {
           const headers = await authHeader();
-          const created = await supertest(app)
-            .post('/evaluation')
-            .set(headers)
-            .send({
-              lesson: new Id().value,
-              teacher: new Id().value,
-              type: 'evaluation',
-              value: 10,
-            });
+          const created = await supertest(app).post('/evaluation').set(headers).send({
+            lesson: new Id().value,
+            teacher: new Id().value,
+            type: 'evaluation',
+            value: 10,
+          });
 
-          const result = await supertest(app)
+          const response = await supertest(app)
             .delete(`/evaluation/${created.body.id}`)
             .set(headers);
 
-          expect(result.status).toBe(200);
-          expect(result.body).toBeDefined();
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
     });
@@ -443,103 +422,112 @@ describe('Evaluation note attendance management module end to end test', () => {
       describe('POST /note', () => {
         it('should throw an error when the data to create a user is wrong', async () => {
           const headers = await authHeader();
-          const response = await supertest(app)
-            .post('/note')
-            .set(headers)
-            .send({
-              evaluation: new Id().value,
+          const response = await supertest(app).post('/note').set(headers).send({
+            evaluation: new Id().value,
+            note: 10,
+          });
 
-              note: 10,
-            });
           expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined();
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
+          expect(response.body.details).toBeDefined();
         });
       });
 
       describe('GET /note/:id', () => {
-        it('should return empty string when the ID is wrong or non-standard', async () => {
+        it('should throw an error when the ID is wrong or non-standard', async () => {
           const headers = await authHeader();
-          const note = await supertest(app).get('/note/123').set(headers);
-          expect(note.status).toBe(400);
-          expect(note.body.error).toBeDefined();
+          const response = await supertest(app).get('/note/123').set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
+          expect(response.body.details).toBeDefined();
         });
 
         it('should return 404 when note does not exist', async () => {
           const headers = await authHeader();
-          const result = await supertest(app)
+          const response = await supertest(app)
             .get(`/note/${new Id().value}`)
             .set(headers);
-          expect(result.status).toBe(404);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
+          expect(response.body.details).toBeDefined();
         });
       });
 
       describe('PATCH /note', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const headers = await authHeader();
-
           const created = await supertest(app).post('/note').set(headers).send({
             evaluation: new Id().value,
             student: new Id().value,
             note: 7,
           });
 
-          const updated = await supertest(app)
-            .patch('/note')
-            .set(headers)
-            .send({
-              id: created.body.id,
-            });
+          const response = await supertest(app).patch('/note').set(headers).send({
+            id: created.body.id,
+          });
 
-          expect(updated.status).toBe(400);
-          expect(updated.body.error).toBeDefined();
+          expect(response.status).toBe(400);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when trying to update a non-existent note', async () => {
           const headers = await authHeader();
-          const updated = await supertest(app)
-            .patch('/note')
-            .set(headers)
-            .send({
-              id: new Id().value,
-              note: 6,
-            });
-          expect(updated.status).toBe(400);
-          expect(updated.body.error).toBeDefined();
+          const response = await supertest(app).patch('/note').set(headers).send({
+            id: new Id().value,
+            note: 6,
+          });
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('DELETE /note/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
           const headers = await authHeader();
-          const result = await supertest(app).delete('/note/123').set(headers);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+          const response = await supertest(app).delete('/note/123').set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when trying to delete a non-existent note', async () => {
           const headers = await authHeader();
-          const result = await supertest(app)
+          const response = await supertest(app)
             .delete(`/note/${new Id().value}`)
             .set(headers);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('MIDDLEWARE /note', () => {
         it('should return 401 when authorization header is missing', async () => {
-          const result = await supertest(app).get('/notes');
-          expect(result.status).toBe(401);
-          expect(result.body).toBeDefined();
+          const response = await supertest(app).get('/notes');
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 401 when token is invalid', async () => {
-          const result = await supertest(app)
+          const response = await supertest(app)
             .get('/notes')
             .set('authorization', 'invalid');
-          expect(result.status).toBe(401);
-          expect(result.body).toBeDefined();
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
     });
@@ -548,14 +536,12 @@ describe('Evaluation note attendance management module end to end test', () => {
       describe('POST /note', () => {
         it('should create a user', async () => {
           const headers = await authHeader();
-          const response = await supertest(app)
-            .post('/note')
-            .set(headers)
-            .send({
-              evaluation: new Id().value,
-              student: new Id().value,
-              note: 10,
-            });
+          const response = await supertest(app).post('/note').set(headers).send({
+            evaluation: new Id().value,
+            student: new Id().value,
+            note: 10,
+          });
+
           expect(response.status).toBe(201);
           expect(response.body).toBeDefined();
           expect(response.body.id).toBeDefined();
@@ -571,11 +557,12 @@ describe('Evaluation note attendance management module end to end test', () => {
             note: 9,
           });
 
-          const note = await supertest(app)
+          const response = await supertest(app)
             .get(`/note/${created.body.id}`)
             .set(headers);
-          expect(note.status).toBe(200);
-          expect(note.body).toBeDefined();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
 
@@ -588,7 +575,6 @@ describe('Evaluation note attendance management module end to end test', () => {
             student: new Id().value,
             note: 8,
           });
-
           await supertest(app).post('/note').set(headers).send({
             evaluation: new Id().value,
             student: new Id().value,
@@ -596,6 +582,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           });
 
           const response = await supertest(app).get('/notes').set(headers);
+
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -605,30 +592,25 @@ describe('Evaluation note attendance management module end to end test', () => {
       describe('PATCH /note', () => {
         it('should update a user by ID', async () => {
           const headers = await authHeader();
-
           const created = await supertest(app).post('/note').set(headers).send({
             evaluation: new Id().value,
             student: new Id().value,
             note: 5,
           });
 
-          const updated = await supertest(app)
-            .patch('/note')
-            .set(headers)
-            .send({
-              id: created.body.id,
-              note: 6,
-            });
+          const response = await supertest(app).patch('/note').set(headers).send({
+            id: created.body.id,
+            note: 6,
+          });
 
-          expect(updated.status).toBe(200);
-          expect(updated.body).toBeDefined();
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
 
       describe('DELETE /note/:id', () => {
         it('should delete a user by ID', async () => {
           const headers = await authHeader();
-
           const created = await supertest(app).post('/note').set(headers).send({
             evaluation: new Id().value,
             student: new Id().value,
@@ -638,6 +620,7 @@ describe('Evaluation note attendance management module end to end test', () => {
           const result = await supertest(app)
             .delete(`/note/${created.body.id}`)
             .set(headers);
+
           expect(result.status).toBe(200);
           expect(result.body).toBeDefined();
         });
@@ -653,144 +636,149 @@ describe('Evaluation note attendance management module end to end test', () => {
             .post('/attendance')
             .set(headers)
             .send({
+              lesson: new Id().value,
               date: 'invalid',
-              day: 'fri',
               hour: '06:50',
-              subject: new Id().value,
-              teacher: new Id().value,
-              classroom: new Id().value,
+              day: 'fri',
               studentsPresent: [new Id().value],
             });
-          expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('GET /attendance/:id', () => {
-        it('should return empty string when the ID is wrong or non-standard', async () => {
+        it('should throw an error when the ID is wrong or non-standard', async () => {
           const headers = await authHeader();
-          const attendance = await supertest(app)
-            .get('/attendance/123')
-            .set(headers);
-          expect(attendance.status).toBe(400);
-          expect(attendance.body.error).toBeDefined();
+          const response = await supertest(app).get('/attendance/123').set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when attendance does not exist', async () => {
           const headers = await authHeader();
-          const result = await supertest(app)
+          const response = await supertest(app)
             .get(`/attendance/${new Id().value}`)
             .set(headers);
-          expect(result.status).toBe(404);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('PATCH /attendance', () => {
         it('should throw an error when the data to update an attendance is wrong', async () => {
           const headers = await authHeader();
-
           const created = await supertest(app)
             .post('/attendance')
             .set(headers)
             .send({
               date: new Date(),
-              day: 'fri',
               hour: '06:50',
-              subject: new Id().value,
-              teacher: new Id().value,
-              classroom: new Id().value,
+              day: 'fri',
               studentsPresent: [new Id().value],
             });
 
-          const updated = await supertest(app)
-            .patch('/attendance')
-            .set(headers)
-            .send({
-              id: created.body.id,
-            });
+          const response = await supertest(app).patch('/attendance').set(headers).send({
+            id: created.body.id,
+          });
 
-          expect(updated.status).toBe(400);
-          expect(updated.body.error).toBeDefined();
+          expect(response.status).toBe(400);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when trying to update a non-existent attendance', async () => {
           const headers = await authHeader();
-          const updated = await supertest(app)
-            .patch('/attendance')
-            .set(headers)
-            .send({
-              id: new Id().value,
-              hour: '08:00',
-            });
-          expect(updated.status).toBe(400);
-          expect(updated.body.error).toBeDefined();
+          const response = await supertest(app).patch('/attendance').set(headers).send({
+            id: new Id().value,
+            hour: '08:00',
+          });
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('DELETE /attendance/:id', () => {
         it('should throw an error when the ID is wrong or non-standard', async () => {
           const headers = await authHeader();
-          const result = await supertest(app)
-            .delete('/attendance/123')
-            .set(headers);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+          const response = await supertest(app).delete('/attendance/123').set(headers);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 404 when trying to delete a non-existent attendance', async () => {
           const headers = await authHeader();
-          const result = await supertest(app)
+          const response = await supertest(app)
             .delete(`/attendance/${new Id().value}`)
             .set(headers);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('POST /attendance/add/students', () => {
         it('should return 404 when attendance does not exist', async () => {
           const headers = await authHeader();
-          const result = await supertest(app)
+          const response = await supertest(app)
             .post('/attendance/add/students')
             .set(headers)
             .send({
               id: new Id().value,
               newStudentsList: [new Id().value],
             });
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('POST /attendance/remove/students', () => {
         it('should return 404 when attendance does not exist', async () => {
           const headers = await authHeader();
-          const result = await supertest(app)
+          const response = await supertest(app)
             .post('/attendance/remove/students')
             .set(headers)
             .send({
               id: new Id().value,
               studentsListToRemove: [new Id().value],
             });
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('MIDDLEWARE /attendance', () => {
         it('should return 401 when authorization header is missing', async () => {
-          const result = await supertest(app).get('/attendances');
-          expect(result.status).toBe(401);
-          expect(result.body).toBeDefined();
+          const response = await supertest(app).get('/attendances');
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 401 when token is invalid', async () => {
-          const result = await supertest(app)
+          const response = await supertest(app)
             .get('/attendances')
             .set('authorization', 'invalid');
-          expect(result.status).toBe(401);
-          expect(result.body).toBeDefined();
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
     });
@@ -799,17 +787,16 @@ describe('Evaluation note attendance management module end to end test', () => {
       describe('POST /attendance', () => {
         it('should create an attendance', async () => {
           const headers = await authHeader();
-          const input = {
-            date: new Date(),
-            day: 'fri',
-            hour: '06:50',
-            lesson: new Id().value,
-            studentsPresent: [new Id().value, new Id().value],
-          };
           const response = await supertest(app)
             .post('/attendance')
             .set(headers)
-            .send(input);
+            .send({
+              date: new Date(),
+              day: 'fri',
+              hour: '06:50',
+              lesson: new Id().value,
+              studentsPresent: [new Id().value, new Id().value],
+            });
 
           expect(response.status).toBe(201);
           expect(response.body).toBeDefined();
@@ -830,11 +817,13 @@ describe('Evaluation note attendance management module end to end test', () => {
               lesson: new Id().value,
               studentsPresent: [new Id().value],
             });
-          const result = await supertest(app)
+
+          const response = await supertest(app)
             .get(`/attendance/${created.body.id}`)
             .set(headers);
-          expect(result.status).toBe(200);
-          expect(result.body).toBeDefined();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
 
@@ -852,7 +841,6 @@ describe('Evaluation note attendance management module end to end test', () => {
               lesson: new Id().value,
               studentsPresent: [new Id().value],
             });
-
           await supertest(app)
             .post('/attendance')
             .set(headers)
@@ -864,9 +852,8 @@ describe('Evaluation note attendance management module end to end test', () => {
               studentsPresent: [new Id().value],
             });
 
-          const response = await supertest(app)
-            .get('/attendances')
-            .set(headers);
+          const response = await supertest(app).get('/attendances').set(headers);
+
           expect(response.status).toBe(200);
           expect(response.body).toBeDefined();
           expect(response.body.length).toBe(2);
@@ -876,7 +863,6 @@ describe('Evaluation note attendance management module end to end test', () => {
       describe('PATCH /attendance', () => {
         it('should update an attendance', async () => {
           const headers = await authHeader();
-
           const created = await supertest(app)
             .post('/attendance')
             .set(headers)
@@ -888,16 +874,13 @@ describe('Evaluation note attendance management module end to end test', () => {
               studentsPresent: [new Id().value],
             });
 
-          const updated = await supertest(app)
-            .patch('/attendance')
-            .set(headers)
-            .send({
-              id: created.body.id,
-              hour: '08:00',
-            });
+          const response = await supertest(app).patch('/attendance').set(headers).send({
+            id: created.body.id,
+            hour: '08:00',
+          });
 
-          expect(updated.status).toBe(200);
-          expect(updated.body).toBeDefined();
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
 
@@ -915,18 +898,18 @@ describe('Evaluation note attendance management module end to end test', () => {
               studentsPresent: [new Id().value],
             });
 
-          const result = await supertest(app)
+          const response = await supertest(app)
             .delete(`/attendance/${created.body.id}`)
             .set(headers);
-          expect(result.status).toBe(200);
-          expect(result.body).toBeDefined();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
 
       describe('POST /attendance/add/students', () => {
         it('should add students to the attendance', async () => {
           const headers = await authHeader();
-
           const created = await supertest(app)
             .post('/attendance')
             .set(headers)
@@ -938,7 +921,7 @@ describe('Evaluation note attendance management module end to end test', () => {
               studentsPresent: [new Id().value],
             });
 
-          const result = await supertest(app)
+          const response = await supertest(app)
             .post('/attendance/add/students')
             .set(headers)
             .send({
@@ -946,15 +929,14 @@ describe('Evaluation note attendance management module end to end test', () => {
               newStudentsList: [new Id().value],
             });
 
-          expect(result.status).toBe(200);
-          expect(result.body).toBeDefined();
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
 
       describe('POST /attendance/remove/students', () => {
         it('should remove students from the attendance', async () => {
           const headers = await authHeader();
-
           const studentA = new Id().value;
           const created = await supertest(app)
             .post('/attendance')
@@ -967,7 +949,7 @@ describe('Evaluation note attendance management module end to end test', () => {
               studentsPresent: [new Id().value, studentA],
             });
 
-          const result = await supertest(app)
+          const response = await supertest(app)
             .post('/attendance/remove/students')
             .set(headers)
             .send({
@@ -975,8 +957,8 @@ describe('Evaluation note attendance management module end to end test', () => {
               studentsListToRemove: [studentA],
             });
 
-          expect(result.status).toBe(200);
-          expect(result.body).toBeDefined();
+          expect(response.status).toBe(200);
+          expect(response.body).toBeDefined();
         });
       });
     });
