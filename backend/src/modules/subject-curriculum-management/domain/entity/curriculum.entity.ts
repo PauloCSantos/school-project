@@ -12,6 +12,8 @@ import {
 import { States } from '@/modules/@shared/type/sharedTypes';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
+import { ConflictError } from '@/modules/@shared/application/errors/conflict.error';
 
 type CurriculumProps = {
   id?: Id;
@@ -30,14 +32,15 @@ export default class Curriculum {
 
   constructor({ id, name, yearsToComplete, subjectsList, state }: CurriculumProps) {
     if (name === undefined || yearsToComplete === undefined || subjectsList === undefined)
-      throw new Error('All curriculum fields are mandatory');
-    if (!this.validateName(name)) throw new Error('Field name is not valid');
-    if (!this.validateYears(yearsToComplete)) throw new Error('Field date is not valid');
+      throw new ValidationError('All curriculum fields are mandatory');
+    if (!this.validateName(name)) throw new ValidationError('Field name is not valid');
+    if (!this.validateYears(yearsToComplete))
+      throw new ValidationError('Field date is not valid');
     if (!this.validateSubjects(subjectsList))
-      throw new Error('Subject IDs do not match pattern');
+      throw new ValidationError('Subject IDs do not match pattern');
 
     if (id) {
-      if (!(id instanceof Id)) throw new Error('Invalid id');
+      if (!(id instanceof Id)) throw new ValidationError('Invalid id');
       this._id = id;
     } else {
       this._id = new Id();
@@ -63,28 +66,32 @@ export default class Curriculum {
   }
 
   set name(input: string) {
-    if (!this.validateName(input)) throw new Error('Field description is not valid');
+    if (!this.validateName(input))
+      throw new ValidationError('Field description is not valid');
     this._name = input;
   }
   set year(input: number) {
-    if (!this.validateYears(input)) throw new Error('Field description is not valid');
+    if (!this.validateYears(input))
+      throw new ValidationError('Field description is not valid');
     this._yearsToComplete = input;
   }
 
   addSubject(input: string): void {
+    if (!validId(input)) throw new ValidationError('This subject id is invalid');
     if (this.findIndex(input) === -1) {
-      if (!validId(input)) throw new Error('This subject id is invalid');
       this._subjectsList.push(input);
     } else {
-      throw new Error('This subject is already on the curriculum');
+      throw new ConflictError('This subject is already on the curriculum');
     }
   }
+
   removeSubject(input: string) {
+    if (!validId(input)) throw new ValidationError('This subject id is invalid');
     const index = this.findIndex(input);
     if (index !== -1) {
       this._subjectsList.splice(index, 1);
     } else {
-      throw new Error('This subject is not included in the curriculum');
+      throw new ConflictError('This subject is not included in the curriculum');
     }
   }
 

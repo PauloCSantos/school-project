@@ -8,6 +8,7 @@ import {
 import { States } from '@/modules/@shared/type/sharedTypes';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 
 type SubjectProps = {
   id?: Id;
@@ -24,13 +25,13 @@ export default class Subject {
 
   constructor({ id, name, description, state }: SubjectProps) {
     if (name === undefined || description === undefined)
-      throw new Error('Name and description are mandatory');
-    if (!this.validateName(name)) throw new Error('Field name is not valid');
+      throw new ValidationError('Name and description are mandatory');
+    if (!this.validateName(name)) throw new ValidationError('Field name is not valid');
     if (!this.validateDescription(description))
-      throw new Error('Field description is not valid');
+      throw new ValidationError('Field description is not valid');
 
     if (id) {
-      if (!(id instanceof Id)) throw new Error('Invalid id');
+      if (!(id instanceof Id)) throw new ValidationError('Invalid id');
       this._id = id;
     } else {
       this._id = new Id();
@@ -54,13 +55,13 @@ export default class Subject {
   }
 
   set name(input: string) {
-    if (!this.validateName(input)) throw new Error('Field name is not valid');
+    if (!this.validateName(input)) throw new ValidationError('Field name is not valid');
     this._name = input;
   }
 
   set description(input: string) {
     if (!this.validateDescription(input))
-      throw new Error('Field description is not valid');
+      throw new ValidationError('Field description is not valid');
     this._description = input;
   }
 
