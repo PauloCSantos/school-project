@@ -14,12 +14,9 @@ import {
 } from '../../application/dto/event-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
-import {
-  FunctionCalledEnum,
-  HttpStatus,
-  StatusMessageEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, HttpStatus } from '@/modules/@shared/enums/enums';
 import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
+import { EventNotFoundError } from '../../application/errors/event-not-found.error';
 
 export default class EventRoute {
   constructor(
@@ -93,10 +90,7 @@ export default class EventRoute {
       const { id } = req.params;
       const response = await this.eventController.find({ id }, req.tokenData!);
       if (!response) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          body: { error: StatusMessageEnum.NOT_FOUND },
-        };
+        throw new EventNotFoundError(id);
       }
       return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {

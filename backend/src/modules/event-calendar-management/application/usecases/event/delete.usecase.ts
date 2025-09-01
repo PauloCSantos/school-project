@@ -4,6 +4,7 @@ import EventGateway from '@/modules/event-calendar-management/application/gatewa
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { EventNotFoundError } from '../../errors/event-not-found.error';
 
 /**
  * Use case responsible for deleting a calendar event.
@@ -46,7 +47,7 @@ export default class DeleteEvent
     );
 
     const event = await this._eventRepository.find(token.masterId, id);
-    if (!event) throw new Error('Event not found');
+    if (!event) throw new EventNotFoundError(id);
     event.deactivate();
 
     const result = await this._eventRepository.delete(token.masterId, event);
