@@ -19,12 +19,9 @@ import {
   RemoveTimeInputDto,
 } from '../../application/dto/lesson-usecase.dto';
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
-import {
-  FunctionCalledEnum,
-  HttpStatus,
-  StatusMessageEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, HttpStatus } from '@/modules/@shared/enums/enums';
 import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
+import { ScheduleNotFoundError } from '../../application/errors/schedule-not-found.error';
 
 /**
  * Route handler for lesson management endpoints.
@@ -125,10 +122,7 @@ export default class LessonRoute {
       const { id } = req.params;
       const lesson = await this.lessonController.find({ id }, req.tokenData!);
       if (!lesson) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          body: { error: StatusMessageEnum.NOT_FOUND },
-        };
+        throw new ScheduleNotFoundError(id);
       }
       return { statusCode: HttpStatus.OK, body: lesson };
     } catch (error) {

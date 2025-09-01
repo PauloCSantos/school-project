@@ -7,7 +7,8 @@ import LessonGateway from '@/modules/schedule-lesson-management/application/gate
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
-import LessonMapper from '../../mapper/lesson-usecase.mapper';
+import { LessonNotFoundError } from '../../errors/lesson-not-found.error';
+import { LessonMapper } from '@/modules/schedule-lesson-management/infrastructure/mapper/lesson-usecase.mapper';
 
 /**
  * Use case responsible for updating an existing lesson.
@@ -38,7 +39,7 @@ export default class UpdateLesson
     );
 
     const lesson = await this._lessonRepository.find(token.masterId, id);
-    if (!lesson) throw new Error('Lesson not found');
+    if (!lesson) throw new LessonNotFoundError(id);
 
     duration !== undefined && (lesson.duration = duration);
     name !== undefined && (lesson.name = name);

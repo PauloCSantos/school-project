@@ -1,15 +1,10 @@
 import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.interface';
-import {
-  AddStudentsInputDto,
-  AddStudentsOutputDto,
-} from '../../dto/lesson-usecase.dto';
+import { AddStudentsInputDto, AddStudentsOutputDto } from '../../dto/lesson-usecase.dto';
 import LessonGateway from '@/modules/schedule-lesson-management/application/gateway/lesson.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { LessonNotFoundError } from '../../errors/lesson-not-found.error';
 
 /**
  * Use case responsible for adding students to a lesson.
@@ -40,16 +35,12 @@ export default class AddStudents
     );
 
     const lesson = await this._lessonRepository.find(token.masterId, id);
-    if (!lesson) throw new Error('Lesson not found');
+    if (!lesson) throw new LessonNotFoundError(id);
 
     newStudentsList.forEach(studentId => {
       lesson.addStudent(studentId);
     });
-    const result = await this._lessonRepository.addStudents(
-      token.masterId,
-      id,
-      lesson
-    );
+    const result = await this._lessonRepository.addStudents(token.masterId, id, lesson);
 
     return { message: result };
   }

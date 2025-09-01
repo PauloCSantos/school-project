@@ -15,12 +15,9 @@ import {
   DeleteScheduleInputDto,
 } from '../../application/dto/schedule-usecase.dto';
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
-import {
-  FunctionCalledEnum,
-  HttpStatus,
-  StatusMessageEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, HttpStatus } from '@/modules/@shared/enums/enums';
 import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
+import { ScheduleNotFoundError } from '../../application/errors/schedule-not-found.error';
 
 /**
  * Route handler for schedule management endpoint.
@@ -106,10 +103,7 @@ export default class ScheduleRoute {
       const { id } = req.params;
       const response = await this.scheduleController.find({ id }, req.tokenData!);
       if (!response) {
-        return {
-          statusCode: HttpStatus.NOT_FOUND,
-          body: { error: StatusMessageEnum.NOT_FOUND },
-        };
+        throw new ScheduleNotFoundError(id);
       }
       return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
