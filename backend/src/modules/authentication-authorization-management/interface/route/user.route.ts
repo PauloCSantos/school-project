@@ -14,7 +14,7 @@ import {
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import { FunctionCalledEnum, HttpStatus } from '@/modules/@shared/enums/enums';
 import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
-import { AuthUserNotFoundError } from '../../application/errors/authUser-not-found.error';
+import { AuthUserNotFoundError } from '../../application/errors/auth-user-not-found.error';
 
 export default class AuthUserRoute {
   constructor(
@@ -73,8 +73,7 @@ export default class AuthUserRoute {
       const { email } = req.params;
       const response = await this.authUserController.find({ email }, req.tokenData!);
       if (!response) {
-        const body = new AuthUserNotFoundError(email);
-        return { statusCode: HttpStatus.NOT_FOUND, body };
+        throw new AuthUserNotFoundError(email);
       }
       return {
         statusCode: HttpStatus.OK,

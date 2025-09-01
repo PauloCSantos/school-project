@@ -7,7 +7,7 @@ import AuthUserGateway from '@/modules/authentication-authorization-management/a
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
-import { AuthUserNotFoundError } from '../../errors/authUser-not-found.error';
+import { AuthUserNotFoundError } from '../../errors/auth-user-not-found.error';
 
 /**
  * Use case responsible for deleting an authenticated user.

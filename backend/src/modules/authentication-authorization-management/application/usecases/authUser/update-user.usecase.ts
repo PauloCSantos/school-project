@@ -12,7 +12,7 @@ import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enu
 import TenantGateway from '../../gateway/tenant.gateway';
 import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
 import { TenantServiceInterface } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
-import { AuthUserNotFoundError } from '../../errors/authUser-not-found.error';
+import { AuthUserNotFoundError } from '../../errors/auth-user-not-found.error';
 
 /**
  * Use case responsible for updating an authenticated user.

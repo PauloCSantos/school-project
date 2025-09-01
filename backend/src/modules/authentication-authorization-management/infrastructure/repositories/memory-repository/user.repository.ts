@@ -1,9 +1,8 @@
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
 import AuthUserGateway from '../../../application/gateway/user.gateway';
 import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
-
 import { AuthUserMapper, AuthUserMapperProps } from '../../mapper/authUser.mapper';
-import { AuthUserNotFoundError } from '@/modules/authentication-authorization-management/application/errors/authUser-not-found.error';
+import { AuthUserNotFoundError } from '@/modules/authentication-authorization-management/application/errors/auth-user-not-found.error';
 
 /**
  * In-memory implementation of AuthUserGateway.
