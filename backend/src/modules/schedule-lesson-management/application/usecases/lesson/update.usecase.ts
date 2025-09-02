@@ -57,6 +57,6 @@ export default class UpdateLesson
       lesson
     );
 
-    return LessonMapper.toObj(result);
+    return LessonMapper.toObjUsecase(result);
   }
 }

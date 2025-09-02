@@ -3,6 +3,7 @@ import Subject from '@/modules/subject-curriculum-management/domain/entity/subje
 import type { IFindSubjectOutput as SubjectMapperProps } from '../dto/base-subject.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
 import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
+import { FindSubjectOutputDto } from '../../application/dto/subject-usecase.dto';
 
 /**
  * Interface that defines the data structure for mapping Subject entities
@@ -14,11 +15,11 @@ export type { SubjectMapperProps };
  */
 export class SubjectMapper {
   /**
-   * Converts a Subject entity into a plain object (DTO)
+   * Converts a Subject entity into a plain object (DTO) to the repository
    * @param input Subject entity to be converted
    * @returns Plain object representing the entity
    */
-  static toObj(input: Subject): SubjectMapperProps {
+  static toObjRepository(input: Subject): SubjectMapperProps {
     if (!input || !(input instanceof Subject)) {
       throw new MapperError('Invalid Subject entity provided to mapper');
     }
@@ -28,6 +29,23 @@ export class SubjectMapper {
       name: input.name,
       description: input.description,
       state: input.state,
+    };
+  }
+
+  /**
+   * Converts a Subject entity into a plain object (DTO)
+   * @param input Subject entity to be converted
+   * @returns Plain object representing the entity
+   */
+  static toObj(input: Subject): FindSubjectOutputDto {
+    if (!input || !(input instanceof Subject)) {
+      throw new MapperError('Invalid Subject entity provided to mapper');
+    }
+
+    return {
+      id: input.id.value,
+      name: input.name,
+      description: input.description,
     };
   }
 
@@ -54,7 +72,7 @@ export class SubjectMapper {
    * @param entities List of Subject entities
    * @returns List of plain objects representing the entities
    */
-  static toObjList(entities: Subject[]): SubjectMapperProps[] {
+  static toObjList(entities: Subject[]): FindSubjectOutputDto[] {
     return entities.map(entity => this.toObj(entity));
   }
 
