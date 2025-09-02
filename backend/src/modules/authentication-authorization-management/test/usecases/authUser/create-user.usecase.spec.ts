@@ -129,7 +129,7 @@ describe('CreateAuthUser Use Case', () => {
       comparePassword: jest.fn().mockReturnValueOnce(false),
     } as any);
 
-    await expect(usecase.execute(input)).rejects.toThrow('E-mail já utilizado');
+    await expect(usecase.execute(input)).rejects.toThrow('E-mail in use');
 
     expect(repository.create).not.toHaveBeenCalled();
     expect(tenantService.manageUserRoleAssignmentInTenant).not.toHaveBeenCalled();

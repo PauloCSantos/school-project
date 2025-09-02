@@ -108,11 +108,8 @@ describe('UpdateAuthUser Use Case', () => {
     authUserRepository.find.mockResolvedValueOnce(null);
 
     await expect(
-      usecase.execute(
-        { email: targetEmail, authUserDataToUpdate: partialUpdate },
-        token
-      )
-    ).rejects.toThrow('AuthUser not found');
+      usecase.execute({ email: targetEmail, authUserDataToUpdate: partialUpdate }, token)
+    ).rejects.toThrow('User not found');
 
     expect(policiesService.verifyPolicies).toHaveBeenCalledWith(
       ModulesNameEnum.AUTHUSER,
@@ -167,10 +164,7 @@ describe('UpdateAuthUser Use Case', () => {
       expect.any(AuthUser),
       targetEmail
     );
-    expect(tenantRepository.update).toHaveBeenCalledWith(
-      token.masterId,
-      tenantStub
-    );
+    expect(tenantRepository.update).toHaveBeenCalledWith(token.masterId, tenantStub);
     expect(result).toEqual({
       email: partialUpdate.email,
       role: partialUpdate.role,
@@ -207,10 +201,7 @@ describe('UpdateAuthUser Use Case', () => {
       expect.any(AuthUser),
       targetEmail
     );
-    expect(tenantRepository.update).toHaveBeenCalledWith(
-      token.masterId,
-      tenantStub
-    );
+    expect(tenantRepository.update).toHaveBeenCalledWith(token.masterId, tenantStub);
     expect(result).toEqual({
       email: existingUser.email,
       role: RoleUsersEnum.MASTER,
@@ -224,9 +215,7 @@ describe('UpdateAuthUser Use Case', () => {
       changeTenantUserRole: jest.fn(),
     };
     tenantService.getTenant.mockResolvedValueOnce(tenantStub as any);
-    authUserRepository.update.mockRejectedValueOnce(
-      new Error('Update failure')
-    );
+    authUserRepository.update.mockRejectedValueOnce(new Error('Update failure'));
 
     await expect(
       usecase.execute(

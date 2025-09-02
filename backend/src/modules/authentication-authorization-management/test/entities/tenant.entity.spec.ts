@@ -22,9 +22,7 @@ describe('Tenant entity', () => {
     });
 
     it('should throw an error when CNPJ is invalid', () => {
-      expect(() => new Tenant({ id: tenantId, cnpj: '123' })).toThrow(
-        'Invalid CNPJ'
-      );
+      expect(() => new Tenant({ id: tenantId, cnpj: '123' })).toThrow('Invalid CNPJ');
     });
 
     it('should throw an error when setting invalid CNPJ', () => {
@@ -38,58 +36,38 @@ describe('Tenant entity', () => {
       const tenant = new Tenant({ id: tenantId, cnpj: validCnpj });
       const email = 'user@example.com';
       tenant.addTenantUserRole(email, RoleUsersEnum.STUDENT);
-      expect(() =>
-        tenant.addTenantUserRole(email, RoleUsersEnum.STUDENT)
-      ).toThrow(`User already has the role 'student' active in this tenant.`);
+      expect(() => tenant.addTenantUserRole(email, RoleUsersEnum.STUDENT)).toThrow(
+        `User already has the role 'student' active in this tenant.`
+      );
     });
 
     it('should throw when changing to or from MASTER role', () => {
       const tenant = new Tenant({ id: tenantId, cnpj: validCnpj });
       const email = 'user@example.com';
       expect(() =>
-        tenant.changeTenantUserRole(
-          email,
-          RoleUsersEnum.MASTER,
-          RoleUsersEnum.STUDENT
-        )
-      ).toThrow('Changing the MASTER role is not allowed.');
+        tenant.changeTenantUserRole(email, RoleUsersEnum.MASTER, RoleUsersEnum.STUDENT)
+      ).toThrow('Changing the MASTER role is not allowed');
       expect(() =>
-        tenant.changeTenantUserRole(
-          email,
-          RoleUsersEnum.STUDENT,
-          RoleUsersEnum.MASTER
-        )
-      ).toThrow('Changing the MASTER role is not allowed.');
+        tenant.changeTenantUserRole(email, RoleUsersEnum.STUDENT, RoleUsersEnum.MASTER)
+      ).toThrow('Changing the MASTER role is not allowed');
     });
 
     it('should throw when old role not found', () => {
       const tenant = new Tenant({ id: tenantId, cnpj: validCnpj });
       const email = 'user2@example.com';
       expect(() =>
-        tenant.changeTenantUserRole(
-          email,
-          RoleUsersEnum.TEACHER,
-          RoleUsersEnum.STUDENT
-        )
-      ).toThrow(`Old role 'teacher' not found for user ${email}.`);
+        tenant.changeTenantUserRole(email, RoleUsersEnum.TEACHER, RoleUsersEnum.STUDENT)
+      ).toThrow(`Old role 'teacher' not found for user ${email}`);
     });
 
     it('should throw when new role is already active', () => {
       const tenant = new Tenant({ id: tenantId, cnpj: validCnpj });
       const email = 'user3@example.com';
       tenant.addTenantUserRole(email, RoleUsersEnum.STUDENT);
-      tenant.changeTenantUserRole(
-        email,
-        RoleUsersEnum.STUDENT,
-        RoleUsersEnum.TEACHER
-      );
+      tenant.changeTenantUserRole(email, RoleUsersEnum.STUDENT, RoleUsersEnum.TEACHER);
       expect(() =>
-        tenant.changeTenantUserRole(
-          email,
-          RoleUsersEnum.STUDENT,
-          RoleUsersEnum.TEACHER
-        )
-      ).toThrow(`User already has the role 'teacher' active in this tenant.`);
+        tenant.changeTenantUserRole(email, RoleUsersEnum.STUDENT, RoleUsersEnum.TEACHER)
+      ).toThrow(`User already has the role 'teacher' active in this tenant`);
     });
 
     it('should throw if oldEmail does not exist', () => {
@@ -106,12 +84,8 @@ describe('Tenant entity', () => {
     });
 
     it('should throw if oldEmail or newEmail is empty or not a string', () => {
-      expect(() => tenant.renameUserEmail('', newEmail)).toThrow(
-        'Invalid email value'
-      );
-      expect(() => tenant.renameUserEmail(oldEmail, '')).toThrow(
-        'Invalid email value'
-      );
+      expect(() => tenant.renameUserEmail('', newEmail)).toThrow('Invalid email value');
+      expect(() => tenant.renameUserEmail(oldEmail, '')).toThrow('Invalid email value');
       expect(() => (tenant.renameUserEmail as any)(123, newEmail)).toThrow(
         'Invalid email value'
       );
@@ -122,9 +96,7 @@ describe('Tenant entity', () => {
 
     it('should throw an error when cnpj is not a string in constructor', () => {
       //@ts-expect-error
-      expect(() => new Tenant({ id: tenantId, cnpj: 123 })).toThrow(
-        'Invalid CNPJ'
-      );
+      expect(() => new Tenant({ id: tenantId, cnpj: 123 })).toThrow('Invalid CNPJ');
     });
 
     it('should throw an error when cnpj is not a string in setter', () => {
@@ -180,11 +152,7 @@ describe('Tenant entity', () => {
       tenant.addTenantUserRole(email, RoleUsersEnum.STUDENT);
       const before = tenant.tenantUserRolesMap.get(email)!;
 
-      tenant.changeTenantUserRole(
-        email,
-        RoleUsersEnum.STUDENT,
-        RoleUsersEnum.STUDENT
-      );
+      tenant.changeTenantUserRole(email, RoleUsersEnum.STUDENT, RoleUsersEnum.STUDENT);
 
       const after = tenant.tenantUserRolesMap.get(email)!;
       expect(after).toEqual(before);
@@ -195,11 +163,7 @@ describe('Tenant entity', () => {
       const email = 'user7@example.com';
       tenant.addTenantUserRole(email, RoleUsersEnum.STUDENT);
 
-      tenant.changeTenantUserRole(
-        email,
-        RoleUsersEnum.STUDENT,
-        RoleUsersEnum.TEACHER
-      );
+      tenant.changeTenantUserRole(email, RoleUsersEnum.STUDENT, RoleUsersEnum.TEACHER);
 
       const roles = tenant.tenantUserRolesMap.get(email)!;
       const oldRole = roles.find(r => r.role === RoleUsersEnum.STUDENT)!;
@@ -220,15 +184,9 @@ describe('Tenant entity', () => {
       teacherRole.deactivate();
       expect(teacherRole.isActive).toBe(false);
 
-      tenant.changeTenantUserRole(
-        email,
-        RoleUsersEnum.STUDENT,
-        RoleUsersEnum.TEACHER
-      );
+      tenant.changeTenantUserRole(email, RoleUsersEnum.STUDENT, RoleUsersEnum.TEACHER);
 
-      expect(roles.find(r => r.role === RoleUsersEnum.STUDENT)!.isActive).toBe(
-        false
-      );
+      expect(roles.find(r => r.role === RoleUsersEnum.STUDENT)!.isActive).toBe(false);
       expect(teacherRole.isActive).toBe(true);
     });
 

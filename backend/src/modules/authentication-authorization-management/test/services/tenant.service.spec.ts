@@ -26,9 +26,9 @@ describe('TenantService', () => {
     it('manageUserRoleAssignmentInTenant should throw if creating new tenant without cnpj', async () => {
       tenantGateway.find.mockResolvedValue(null);
       const dto: CreateTenantInputDto = { email, role: RoleUsersEnum.MASTER };
-      await expect(
-        service.manageUserRoleAssignmentInTenant(dto)
-      ).rejects.toThrow('CNPJ é obrigatório para criar um novo tenant');
+      await expect(service.manageUserRoleAssignmentInTenant(dto)).rejects.toThrow(
+        'CNPJ is mandatory to create a new tenant'
+      );
     });
 
     it('changeUserRoleInTenant should throw if tenant not found', async () => {
@@ -40,27 +40,23 @@ describe('TenantService', () => {
           RoleUsersEnum.ADMINISTRATOR,
           RoleUsersEnum.STUDENT
         )
-      ).rejects.toThrow('Tenant não encontrado');
+      ).rejects.toThrow('Tenant not found');
     });
 
     it('getTenant should throw if no id provided', async () => {
-      await expect(service.getTenant()).rejects.toThrow(
-        'Tenant não encontrado'
-      );
+      await expect(service.getTenant()).rejects.toThrow('Tenant not found');
     });
 
     it('getTenant should throw if tenant not found', async () => {
       tenantGateway.find.mockResolvedValue(null);
-      await expect(service.getTenant(masterId)).rejects.toThrow(
-        'Tenant não encontrado'
-      );
+      await expect(service.getTenant(masterId)).rejects.toThrow('Tenant not found');
     });
 
     it('verifyTenantRole should throw if tenant not found', async () => {
       tenantGateway.find.mockResolvedValue(null);
       await expect(
         service.verifyTenantRole(masterId, email, RoleUsersEnum.MASTER)
-      ).rejects.toThrow('Tenant não encontrado');
+      ).rejects.toThrow('Tenant not found');
     });
 
     it('verifyTenantRole should throw if role not assigned', async () => {
@@ -71,7 +67,7 @@ describe('TenantService', () => {
       await expect(
         service.verifyTenantRole(masterId, email, RoleUsersEnum.ADMINISTRATOR)
       ).rejects.toThrow(
-        `Usuário "${email}" não possui a role "${RoleUsersEnum.ADMINISTRATOR}" cadastrada`
+        `The user "${email}" does not have the role "${RoleUsersEnum.ADMINISTRATOR}" registered`
       );
     });
 
@@ -94,7 +90,7 @@ describe('TenantService', () => {
       await expect(
         service.verifyTenantRole(masterId, email, RoleUsersEnum.ADMINISTRATOR)
       ).rejects.toThrow(
-        `A role "${RoleUsersEnum.ADMINISTRATOR}" do usuário "${email}" está inativa`
+        `The role "${RoleUsersEnum.ADMINISTRATOR}" of the user "${email}" is inactive`
       );
     });
   });

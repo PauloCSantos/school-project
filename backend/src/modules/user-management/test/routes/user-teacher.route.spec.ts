@@ -8,14 +8,14 @@ import { UserTeacherRoute } from '../../interface/route/teacher.route';
 describe('UserTeacherRoute with ExpressAdapter', () => {
   let http: ExpressAdapter;
   let app: any;
-  let userTeacherController: UserTeacherController;
+  let userTeacherController: jest.Mocked<UserTeacherController>;
   let middleware: AuthUserMiddleware;
 
   const mockTeacherData = {
     id: new Id().value,
     name: {
-      firstName: 'John',
-      lastName: 'Doe',
+      fullName: 'John David Doe',
+      shortName: 'John D D',
     },
     address: {
       street: 'Street A',
@@ -25,11 +25,9 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
       avenue: 'Avenue A',
       state: 'State A',
     },
-    salary: {
-      salary: 5000,
-    },
-    birthday: new Date('11-12-1995'),
     email: 'teste1@test.com',
+    birthday: new Date('1995-11-12T00:00:00.000Z'),
+    salary: 'R$:5000',
     graduation: 'Math',
     academicDegrees: 'Msc',
   };
@@ -37,24 +35,22 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
   const mockTeacherData2 = {
     id: new Id().value,
     name: {
-      firstName: 'Marie',
-      lastName: 'Doe',
+      fullName: 'Marie Jane Doe',
+      shortName: 'Marie J D',
     },
     address: {
       street: 'Street B',
       city: 'City B',
       zip: '111111-111',
-      number: 1,
+      number: 2,
       avenue: 'Avenue B',
       state: 'State B',
     },
-    salary: {
-      salary: 5000,
-    },
-    birthday: new Date('11-12-1995'),
     email: 'teste2@test.com',
-    graduation: 'Math',
-    academicDegrees: 'Msc',
+    birthday: new Date('1995-11-12T00:00:00.000Z'),
+    salary: 'R$:6000',
+    graduation: 'Computer Science',
+    academicDegrees: 'PhD',
   };
 
   beforeEach(() => {
@@ -62,31 +58,15 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
     app = http.getNativeServer();
 
     userTeacherController = {
-      create: jest.fn().mockResolvedValue({ id: new Id().value }),
-      find: jest.fn().mockImplementation(({ id }) =>
-        Promise.resolve({
-          ...mockTeacherData,
-          id,
-        })
-      ),
-      findAll: jest.fn().mockResolvedValue([mockTeacherData, mockTeacherData2]),
-      update: jest.fn().mockImplementation(({ id }) =>
-        Promise.resolve({
-          ...mockTeacherData,
-          id,
-          address: {
-            ...mockTeacherData.address,
-            street: 'Updated Street',
-          },
-        })
-      ),
-      delete: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
-      }),
-    } as unknown as UserTeacherController;
+      create: jest.fn(),
+      find: jest.fn(),
+      findAll: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    } as unknown as jest.Mocked<UserTeacherController>;
 
     middleware = {
-      handle: jest.fn((_request, next) => {
+      handle: jest.fn((_request: any, next: any) => {
         _request.tokenData = {
           email: 'user@example.com',
           role: 'administrator',
@@ -99,9 +79,18 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
     new UserTeacherRoute(userTeacherController, http, middleware).routes();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('success', () => {
     it('should find all teachers', async () => {
-      const response = await supertest(app).get('/users-teacher');
+      userTeacherController.findAll.mockResolvedValue([
+        mockTeacherData,
+        mockTeacherData2,
+      ]);
+
+      const response = await supertest(app).get('/users-teacher?quantity=2&offset=0');
 
       expect(response.statusCode).toBe(200);
       expect(userTeacherController.findAll).toHaveBeenCalled();
@@ -132,6 +121,9 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
         graduation: 'Math',
         academicDegrees: 'Msc',
       };
+      const createdId = new Id().value;
+      userTeacherController.create.mockResolvedValue({ id: createdId });
+
       const response = await supertest(app).post('/user-teacher').send(payload);
 
       expect(response.statusCode).toBe(201);
@@ -143,11 +135,16 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ id: expect.any(String) });
+      expect(response.body).toEqual({ id: createdId });
     });
 
     it('should find a teacher by ID', async () => {
       const id = new Id().value;
+      userTeacherController.find.mockResolvedValue({
+        ...mockTeacherData,
+        id,
+      });
+
       const response = await supertest(app).get(`/user-teacher/${id}`);
 
       expect(response.statusCode).toBe(200);
@@ -159,7 +156,11 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual(expect.objectContaining({ id }));
+      expect(response.body).toEqual({
+        ...mockTeacherData,
+        id,
+        birthday: mockTeacherData.birthday.toISOString(),
+      });
     });
 
     it('should update a teacher by ID', async () => {
@@ -175,9 +176,16 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
           state: 'State A',
         },
       };
-      const response = await supertest(app)
-        .patch(`/user-teacher`)
-        .send(payload);
+      userTeacherController.update.mockResolvedValue({
+        ...mockTeacherData,
+        ...payload,
+        address: {
+          ...mockTeacherData.address,
+          ...payload.address,
+        },
+      });
+
+      const response = await supertest(app).patch(`/user-teacher`).send(payload);
 
       expect(response.statusCode).toBe(200);
       expect(userTeacherController.update).toHaveBeenCalledWith(
@@ -188,10 +196,21 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual(expect.objectContaining({ id }));
+      expect(response.body).toEqual({
+        ...mockTeacherData,
+        ...payload,
+        address: {
+          ...mockTeacherData.address,
+          ...payload.address,
+        },
+        birthday: mockTeacherData.birthday.toISOString(),
+      });
     });
 
     it('should delete a teacher by ID', async () => {
+      userTeacherController.delete.mockResolvedValue({
+        message: 'Operação concluída com sucesso',
+      });
       const id = new Id().value;
       const response = await supertest(app).delete(`/user-teacher/${id}`);
 
@@ -211,37 +230,64 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
   });
 
   describe('failure', () => {
-    it('should return 400 for invalid id on find', async () => {
+    it('should return 422 for invalid id on find', async () => {
       const response = await supertest(app).get('/user-teacher/invalid-id');
 
-      expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Bad Request' });
-    });
-
-    it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app)
-        .patch('/user-teacher')
-        .send({ id: new Id().value });
-
-      expect(response.statusCode).toBe(400);
+      expect(response.statusCode).toBe(422);
+      expect(userTeacherController.find).not.toHaveBeenCalled();
       expect(response.body).toEqual({
-        error: 'Bad Request',
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
       });
     });
 
-    it('should return 400 for invalid id on delete', async () => {
-      const response = await supertest(app).delete('/user-teacher/invalid-id');
+    it('should return 404 when teacher is not found', async () => {
+      userTeacherController.find.mockResolvedValue(null);
+      const id = new Id().value;
+
+      const response = await supertest(app).get(`/user-teacher/${id}`);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
+    });
+
+    it('should return 400 for invalid id on update', async () => {
+      const response = await supertest(app).patch('/user-teacher').send({});
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Bad Request' });
+      expect(userTeacherController.update).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+      });
+    });
+
+    it('should return 422 for invalid id on delete', async () => {
+      const response = await supertest(app).delete('/user-teacher/invalid-id');
+
+      expect(response.statusCode).toBe(422);
+      expect(userTeacherController.delete).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
     });
 
     it('should return 400 for invalid payload on create', async () => {
       const response = await supertest(app).post('/user-teacher').send({});
 
       expect(response.statusCode).toBe(400);
+      expect(userTeacherController.create).not.toHaveBeenCalled();
       expect(response.body).toEqual({
-        error: expect.any(String),
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
       });
     });
   });
