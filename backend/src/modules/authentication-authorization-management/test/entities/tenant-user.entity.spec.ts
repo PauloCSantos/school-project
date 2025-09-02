@@ -24,7 +24,7 @@ describe('TenantUserRole entity', () => {
     it('should throw an error when role is not in the enum', () => {
       const badRole = 'INVALID_ROLE' as any;
       expect(() => new TenantUserRole({ email: validEmail, role: badRole })).toThrow(
-        `Invalid role: ${badRole}`
+        `Invalid role`
       );
     });
   });

@@ -1,6 +1,7 @@
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
 import LessonGateway from '../../../application/gateway/lesson.gateway';
-import { LessonMapper, LessonMapperProps } from '../../mapper/lesson.mapper';
+import { LessonMapper, LessonMapperProps } from '../../mapper/lesson-usecase.mapper';
+import { LessonNotFoundError } from '@/modules/schedule-lesson-management/application/errors/lesson-not-found.error';
 
 /**
  * In-memory implementation of LessonGateway.
@@ -75,7 +76,7 @@ export default class MemoryLessonRepository implements LessonGateway {
   async update(masterId: string, id: string, lesson: Lesson): Promise<Lesson> {
     const lessons = this._lessons.get(masterId);
     if (!lessons || !lessons.has(id)) {
-      throw new Error('Lesson not found');
+      throw new LessonNotFoundError(id);
     }
     lessons.set(id, LessonMapper.toObj(lesson));
     return lesson;
@@ -91,7 +92,7 @@ export default class MemoryLessonRepository implements LessonGateway {
   async delete(masterId: string, lesson: Lesson): Promise<string> {
     const lessons = this._lessons.get(masterId);
     if (!lessons || !lessons.has(lesson.id.value)) {
-      throw new Error('Lesson not found');
+      throw new LessonNotFoundError(lesson.id.value);
     }
     lessons.set(lesson.id.value, LessonMapper.toObj(lesson));
     return 'Operação concluída com sucesso';
@@ -109,7 +110,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     const lessons = this._lessons.get(masterId);
     const obj = lessons?.get(id);
     if (!obj) {
-      throw new Error('Lesson not found');
+      throw new LessonNotFoundError(id);
     }
 
     lessons!.set(id, LessonMapper.toObj(lesson));
@@ -132,7 +133,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     const lessons = this._lessons.get(masterId);
     const obj = lessons?.get(id);
     if (!obj) {
-      throw new Error('Lesson not found');
+      throw new LessonNotFoundError(id);
     }
 
     lessons!.set(id, LessonMapper.toObj(lesson));
@@ -155,7 +156,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     const lessons = this._lessons.get(masterId);
     const obj = lessons?.get(id);
     if (!obj) {
-      throw new Error('Lesson not found');
+      throw new LessonNotFoundError(id);
     }
     lessons!.set(id, LessonMapper.toObj(lesson));
 
@@ -177,7 +178,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     const lessons = this._lessons.get(masterId);
     const obj = lessons?.get(id);
     if (!obj) {
-      throw new Error('Lesson not found');
+      throw new LessonNotFoundError(id);
     }
 
     lessons!.set(id, LessonMapper.toObj(lesson));
@@ -200,7 +201,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     const lessons = this._lessons.get(masterId);
     const obj = lessons?.get(id);
     if (!obj) {
-      throw new Error('Lesson not found');
+      throw new LessonNotFoundError(id);
     }
 
     lessons!.set(id, LessonMapper.toObj(lesson));
@@ -223,7 +224,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     const lessons = this._lessons.get(masterId);
     const obj = lessons?.get(id);
     if (!obj) {
-      throw new Error('Lesson not found');
+      throw new LessonNotFoundError(id);
     }
 
     lessons!.set(id, LessonMapper.toObj(lesson));

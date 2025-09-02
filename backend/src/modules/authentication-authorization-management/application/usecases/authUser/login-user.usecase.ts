@@ -8,6 +8,7 @@ import {
   LoginAuthUserOutputDto,
 } from '../../dto/user-usecase.dto';
 import { TenantServiceInterface } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
+import { InvalidCredentialsError } from '../../errors/invalid-credentials.error';
 
 /**
  * Use case responsible for user authentication.
@@ -47,9 +48,7 @@ export default class LoginAuthUser
     const authUserVerification = await this.authUserRepository.find(email);
 
     if (!authUserVerification) {
-      throw new Error(
-        'Invalid credentials. Please check your email and password and try again'
-      );
+      throw new InvalidCredentialsError();
     }
 
     const authUser = new AuthUser(
@@ -62,24 +61,16 @@ export default class LoginAuthUser
     );
 
     if (!(await authUser.comparePassword(password))) {
-      throw new Error(
-        'Invalid credentials. Please check your email and password and try again'
-      );
+      throw new InvalidCredentialsError();
     }
 
     if (masterId && role) {
       await this.tenantService.verifyTenantRole(masterId, authUser.email, role);
-      const token = await this.tokenService.generateToken(
-        authUser,
-        masterId,
-        role
-      );
+      const token = await this.tokenService.generateToken(authUser, masterId, role);
       return { token };
     }
 
-    const data = await this.tenantService.getAvailableTenantsAndRoles(
-      authUser.email
-    );
+    const data = await this.tenantService.getAvailableTenantsAndRoles(authUser.email);
 
     return { data };
   }

@@ -7,6 +7,7 @@ import SubjectGateway from '@/modules/subject-curriculum-management/application/
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { SubjectNotFoundError } from '../../errors/subject-not-found.error';
 
 export default class UpdateSubject
   implements UseCaseInterface<UpdateSubjectInputDto, UpdateSubjectOutputDto>
@@ -30,7 +31,7 @@ export default class UpdateSubject
     );
 
     const subject = await this._subjectRepository.find(token.masterId, id);
-    if (!subject) throw new Error('Subject not found');
+    if (!subject) throw new SubjectNotFoundError(id);
 
     name !== undefined && (subject.name = name);
     description !== undefined && (subject.description = description);

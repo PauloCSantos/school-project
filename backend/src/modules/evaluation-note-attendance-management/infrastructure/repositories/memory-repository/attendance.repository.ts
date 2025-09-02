@@ -1,6 +1,7 @@
 import Attendance from '@/modules/evaluation-note-attendance-management/domain/entity/attendance.entity';
 import AttendanceGateway from '../../../application/gateway/attendance.gateway';
 import { AttendanceMapper, AttendanceMapperProps } from '../../mapper/attendance.mapper';
+import { AttendanceNotFoundError } from '@/modules/evaluation-note-attendance-management/application/errors/attendance-not-found.error';
 
 /**
  * In-memory implementation of AttendanceGateway.
@@ -82,7 +83,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
   async update(masterId: string, attendance: Attendance): Promise<Attendance> {
     const attendances = this._attendances.get(masterId);
     if (!attendances || !attendances.has(attendance.id.value)) {
-      throw new Error('Attendance not found');
+      throw new AttendanceNotFoundError(attendance.id.value);
     }
     attendances.set(attendance.id.value, AttendanceMapper.toObj(attendance));
     return attendance;
@@ -98,7 +99,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
   async delete(masterId: string, attendance: Attendance): Promise<string> {
     const attendances = this._attendances.get(masterId);
     if (!attendances || !attendances.has(attendance.id.value)) {
-      throw new Error('Attendance not found');
+      throw new AttendanceNotFoundError(attendance.id.value);
     }
     attendances.set(attendance.id.value, AttendanceMapper.toObj(attendance));
     return 'Operação concluída com sucesso';
@@ -120,7 +121,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
     const attendances = this._attendances.get(masterId);
     const obj = attendances?.get(id);
     if (!obj) {
-      throw new Error('Attendance not found');
+      throw new AttendanceNotFoundError(id);
     }
     attendances!.set(id, AttendanceMapper.toObj(attendance));
     const totalStudents = attendance.studentsPresent.length - obj.studentsPresent.length;
@@ -145,7 +146,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
     const attendances = this._attendances.get(masterId);
     const obj = attendances?.get(id);
     if (!obj) {
-      throw new Error('Attendance not found');
+      throw new AttendanceNotFoundError(id);
     }
 
     attendances!.set(id, AttendanceMapper.toObj(attendance));

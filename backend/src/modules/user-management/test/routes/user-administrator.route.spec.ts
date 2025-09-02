@@ -8,7 +8,7 @@ import { UserAdministratorRoute } from '../../interface/route/administrator.rout
 describe('UserAdministratorRoute with ExpressAdapter', () => {
   let http: ExpressAdapter;
   let app: any;
-  let userAdministratorController: UserAdministratorController;
+  let userAdministratorController: jest.Mocked<UserAdministratorController>;
   let middleware: AuthUserMiddleware;
 
   const mockAdministratorData = {
@@ -26,7 +26,7 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
       state: 'State A',
     },
     email: 'teste1@test.com',
-    birthday: '1995-11-12T00:00:00.000Z',
+    birthday: new Date('1995-11-12T00:00:00.000Z'),
     salary: 'R$:2500',
     graduation: 'Math',
   };
@@ -46,7 +46,7 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
       state: 'State B',
     },
     email: 'teste2@test.com',
-    birthday: '1995-11-12T00:00:00.000Z',
+    birthday: new Date('1995-11-12T00:00:00.000Z'),
     salary: 'R$:3000',
     graduation: 'Computer Science',
   };
@@ -56,33 +56,15 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
     app = http.getNativeServer();
 
     userAdministratorController = {
-      create: jest.fn().mockResolvedValue({ id: new Id().value }),
-      find: jest.fn().mockImplementation(({ id }) =>
-        Promise.resolve({
-          ...mockAdministratorData,
-          id,
-        })
-      ),
-      findAll: jest
-        .fn()
-        .mockResolvedValue([mockAdministratorData, mockAdministratorData2]),
-      update: jest.fn().mockImplementation(({ id }) =>
-        Promise.resolve({
-          ...mockAdministratorData,
-          id,
-          address: {
-            ...mockAdministratorData.address,
-            street: 'Updated Street',
-          },
-        })
-      ),
-      delete: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
-      }),
-    } as unknown as UserAdministratorController;
+      create: jest.fn(),
+      find: jest.fn(),
+      findAll: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    } as unknown as jest.Mocked<UserAdministratorController>;
 
     middleware = {
-      handle: jest.fn((_request, next) => {
+      handle: jest.fn((_request: any, next: any) => {
         _request.tokenData = {
           email: 'user@example.com',
           role: 'administrator',
@@ -92,15 +74,20 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
       }),
     } as unknown as AuthUserMiddleware;
 
-    new UserAdministratorRoute(
-      userAdministratorController,
-      http,
-      middleware
-    ).routes();
+    new UserAdministratorRoute(userAdministratorController, http, middleware).routes();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('success', () => {
     it('should find all administrators', async () => {
+      userAdministratorController.findAll.mockResolvedValue([
+        mockAdministratorData,
+        mockAdministratorData2,
+      ]);
+
       const response = await supertest(app).get(
         '/users-administrator?quantity=2&offset=0'
       );
@@ -133,9 +120,10 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
         email: 'teste1@test.com',
         graduation: 'Math',
       };
-      const response = await supertest(app)
-        .post('/user-administrator')
-        .send(payload);
+      const createdId = new Id().value;
+      userAdministratorController.create.mockResolvedValue({ id: createdId });
+
+      const response = await supertest(app).post('/user-administrator').send(payload);
 
       expect(response.statusCode).toBe(201);
       expect(userAdministratorController.create).toHaveBeenCalledWith(
@@ -146,11 +134,16 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ id: expect.any(String) });
+      expect(response.body).toEqual({ id: createdId });
     });
 
     it('should find an administrator by ID', async () => {
       const id = new Id().value;
+      userAdministratorController.find.mockResolvedValue({
+        ...mockAdministratorData,
+        id,
+      });
+
       const response = await supertest(app).get(`/user-administrator/${id}`);
 
       expect(response.statusCode).toBe(200);
@@ -162,7 +155,11 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual(expect.objectContaining({ id }));
+      expect(response.body).toEqual({
+        ...mockAdministratorData,
+        id,
+        birthday: mockAdministratorData.birthday.toISOString(),
+      });
     });
 
     it('should update an administrator by ID', async () => {
@@ -178,9 +175,16 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
           state: 'State A',
         },
       };
-      const response = await supertest(app)
-        .patch(`/user-administrator`)
-        .send(payload);
+      userAdministratorController.update.mockResolvedValue({
+        ...mockAdministratorData,
+        ...payload,
+        address: {
+          ...mockAdministratorData.address,
+          ...payload.address,
+        },
+      });
+
+      const response = await supertest(app).patch(`/user-administrator`).send(payload);
 
       expect(response.statusCode).toBe(200);
       expect(userAdministratorController.update).toHaveBeenCalledWith(
@@ -191,10 +195,21 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual(expect.objectContaining({ id }));
+      expect(response.body).toEqual({
+        ...mockAdministratorData,
+        ...payload,
+        address: {
+          ...mockAdministratorData.address,
+          ...payload.address,
+        },
+        birthday: mockAdministratorData.birthday.toISOString(),
+      });
     });
 
     it('should delete an administrator by ID', async () => {
+      userAdministratorController.delete.mockResolvedValue({
+        message: 'Operação concluída com sucesso',
+      });
       const id = new Id().value;
       const response = await supertest(app).delete(`/user-administrator/${id}`);
 
@@ -214,43 +229,64 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
   });
 
   describe('failure', () => {
-    it('should return 400 for invalid id on find', async () => {
-      const response = await supertest(app).get(
-        '/user-administrator/invalid-id'
-      );
+    it('should return 422 for invalid id on find', async () => {
+      const response = await supertest(app).get('/user-administrator/invalid-id');
 
-      expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Bad Request' });
-    });
-
-    it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app)
-        .patch('/user-administrator')
-        .send({});
-
-      expect(response.statusCode).toBe(400);
+      expect(response.statusCode).toBe(422);
+      expect(userAdministratorController.find).not.toHaveBeenCalled();
       expect(response.body).toEqual({
-        error: 'Bad Request',
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
       });
     });
 
-    it('should return 400 for invalid id on delete', async () => {
-      const response = await supertest(app).delete(
-        '/user-administrator/invalid-id'
-      );
+    it('should return 404 when administrator is not found', async () => {
+      userAdministratorController.find.mockResolvedValue(null);
+      const id = new Id().value;
+
+      const response = await supertest(app).get(`/user-administrator/${id}`);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
+    });
+
+    it('should return 400 for invalid id on update', async () => {
+      const response = await supertest(app).patch('/user-administrator').send({});
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Bad Request' });
+      expect(userAdministratorController.update).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+      });
+    });
+
+    it('should return 422 for invalid id on delete', async () => {
+      const response = await supertest(app).delete('/user-administrator/invalid-id');
+
+      expect(response.statusCode).toBe(422);
+      expect(userAdministratorController.delete).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
     });
 
     it('should return 400 for invalid payload on create', async () => {
-      const response = await supertest(app)
-        .post('/user-administrator')
-        .send({});
+      const response = await supertest(app).post('/user-administrator').send({});
 
       expect(response.statusCode).toBe(400);
+      expect(userAdministratorController.create).not.toHaveBeenCalled();
       expect(response.body).toEqual({
-        error: expect.any(String),
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
       });
     });
   });

@@ -1,12 +1,14 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
-import Schedule from '../../domain/entity/schedule.entity';
-import type { IFindScheduleOutput as ScheduleMapperProps } from '../dto/base-schedule.dto';
+import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
+import { IFindScheduleOutput as ScheduleMapperProps } from '../dto/base-schedule.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping Schedule entities
  */
 export type { ScheduleMapperProps };
+
 /**
  * Mapper responsible for converting between Schedule entity and DTOs
  */
@@ -14,14 +16,18 @@ export class ScheduleMapper {
   /**
    * Converts a Schedule entity into a plain object (DTO)
    * @param input Schedule entity to be converted
-   * @returns Object with Schedule properties
+   * @returns Plain object representing the entity
    */
   static toObj(input: Schedule): ScheduleMapperProps {
+    if (!input || !(input instanceof Schedule)) {
+      throw new MapperError('Invalid Schedule entity provided to mapper');
+    }
+
     return {
       id: input.id.value,
-      student: input.student,
       curriculum: input.curriculum,
       lessonsList: input.lessonsList,
+      student: input.student,
       state: input.state,
     };
   }
@@ -30,21 +36,26 @@ export class ScheduleMapper {
    * Converts a plain object (DTO) into a Schedule entity
    * @param input Object with Schedule properties
    * @returns Schedule instance
+   * @throws Error if the input is invalid
    */
   static toInstance(input: ScheduleMapperProps): Schedule {
+    if (!input || !input.id) {
+      throw new MapperError('Invalid schedule data provided to mapper');
+    }
+
     return new Schedule({
       id: new Id(input.id),
-      student: input.student,
       curriculum: input.curriculum,
-      lessonsList: input.lessonsList,
+      lessonsList: input.lessonsList || [], // Prevent null/undefined
+      student: input.student,
       state: toStateType(input.state),
     });
   }
 
   /**
-   * Converts a list of Schedule entities into a list of plain objects (DTOs)
-   * @param entities List of Schedule entities to be converted
-   * @returns List of objects with Schedule properties
+   * Converts a list of Schedule entities into plain objects (DTOs)
+   * @param entities List of Schedule entities
+   * @returns List of plain objects representing the entities
    */
   static toObjList(entities: Schedule[]): ScheduleMapperProps[] {
     return entities.map(entity => this.toObj(entity));

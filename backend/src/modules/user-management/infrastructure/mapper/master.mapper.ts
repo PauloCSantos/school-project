@@ -1,6 +1,7 @@
 import { toStateType } from '@/modules/@shared/utils/formatting';
 import Master from '../../domain/entity/master.entity';
 import type { IFindUserMasterOutput as MasterMapperProps } from '../dto/base-master.dto';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping Master entities
@@ -18,7 +19,7 @@ export class MasterMapper {
    */
   static toObj(input: Master): MasterMapperProps {
     if (!input || !(input instanceof Master)) {
-      throw new Error('Invalid Master entity provided to mapper');
+      throw new MapperError('Invalid Master entity provided to mapper');
     }
 
     return {
@@ -37,7 +38,7 @@ export class MasterMapper {
    */
   static toInstance(input: MasterMapperProps): Master {
     if (!input || !input.id) {
-      throw new Error('Invalid Master data provided to mapper');
+      throw new MapperError('Invalid Master data provided to mapper');
     }
 
     return new Master({

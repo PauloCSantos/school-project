@@ -6,10 +6,8 @@ import {
 import LessonGateway from '@/modules/schedule-lesson-management/application/gateway/lesson.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { LessonNotFoundError } from '../../errors/lesson-not-found.error';
 
 /**
  * Use case responsible for removing students from a lesson.
@@ -40,7 +38,7 @@ export default class RemoveStudents
     );
 
     const lesson = await this._lessonRepository.find(token.masterId, id);
-    if (!lesson) throw new Error('Lesson not found');
+    if (!lesson) throw new LessonNotFoundError(id);
 
     studentsListToRemove.forEach(studentId => {
       lesson.removeStudent(studentId);

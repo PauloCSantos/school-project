@@ -2,6 +2,10 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
 import Tenant from '@/modules/authentication-authorization-management/domain/entity/tenant.entity';
 import TenantGateway from '@/modules/authentication-authorization-management/application/gateway/tenant.gateway';
+import { TenantNotFoundError } from '../../application/errors/tenant-not-found.error';
+import { RoleNotFoundError } from '../../application/errors/role-not-found.error';
+import { InactiveTenantError } from '../../application/errors/inactive.error';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 
 export type CreateTenantInputDto = {
   email: string;
@@ -54,7 +58,7 @@ export class TenantService implements TenantServiceInterface {
   ): Promise<Tenant> {
     const tenant = await this.tenantRepository.find(masterId);
     if (!tenant) {
-      throw new Error('Tenant não encontrado');
+      throw new TenantNotFoundError();
     }
     tenant.changeTenantUserRole(email, oldRole, newRole);
     return tenant;
@@ -62,10 +66,10 @@ export class TenantService implements TenantServiceInterface {
 
   public async getTenant(id?: string): Promise<Tenant> {
     if (!id) {
-      throw new Error('Tenant não encontrado');
+      throw new TenantNotFoundError();
     }
     const tenant = await this.tenantRepository.find(id);
-    if (!tenant) throw new Error('Tenant não encontrado');
+    if (!tenant) throw new TenantNotFoundError();
     return tenant;
   }
 
@@ -75,17 +79,21 @@ export class TenantService implements TenantServiceInterface {
     role: RoleUsers
   ): Promise<void> {
     const tenant = await this.tenantRepository.find(masterId);
-    if (!tenant) throw new Error('Tenant não encontrado');
+    if (!tenant) throw new TenantNotFoundError();
 
     const roles = tenant.tenantUserRolesMap.get(email) ?? [];
     const userRole = roles.find(ur => ur._email === email && ur.role === role);
 
     if (!userRole) {
-      throw new Error(`Usuário "${email}" não possui a role "${role}" cadastrada`);
+      throw new RoleNotFoundError(
+        `The user "${email}" does not have the role "${role}" registered`
+      );
     }
 
     if (userRole.isActive === false) {
-      throw new Error(`A role "${role}" do usuário "${email}" está inativa`);
+      throw new InactiveTenantError(
+        `The role "${role}" of the user "${email}" is inactive`
+      );
     }
   }
 
@@ -115,7 +123,7 @@ export class TenantService implements TenantServiceInterface {
       return { tenant: existing, isNew: false };
     }
     if (!cnpj) {
-      throw new Error('CNPJ é obrigatório para criar um novo tenant');
+      throw new ValidationError('CNPJ is mandatory to create a new tenant');
     }
     return { tenant: new Tenant({ id: new Id().value, cnpj }), isNew: true };
   }

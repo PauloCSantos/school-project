@@ -52,12 +52,12 @@ describe('MemoryAuthUserRepository unit test', () => {
       );
 
       await expect(repository.update(newUser, 'notfound@teste.com')).rejects.toThrow(
-        'AuthUser not found'
+        'User not found'
       );
     });
 
     it('should throw an error when trying to delete a non-existent user', async () => {
-      await expect(repository.delete(authUser3)).rejects.toThrow('AuthUser not found');
+      await expect(repository.delete(authUser3)).rejects.toThrow('User not found');
     });
 
     it('should return false when verifying a non-existent authUser', async () => {

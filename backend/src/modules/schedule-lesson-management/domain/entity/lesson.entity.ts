@@ -1,3 +1,5 @@
+import { ConflictError } from '@/modules/@shared/application/errors/conflict.error';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
@@ -84,48 +86,48 @@ export default class Lesson {
       input.times === undefined ||
       input.semester === undefined
     ) {
-      throw new Error('All lesson fields are mandatory');
+      throw new ValidationError('All lesson fields are mandatory');
     }
 
     // Validate field values
     if (!this.validateName(input.name)) {
-      throw new Error('Field name is not valid');
+      throw new ValidationError('Field name is not valid');
     }
 
     if (!this.validateNumbers(input.duration)) {
-      throw new Error('Field duration is not valid');
+      throw new ValidationError('Field duration is not valid');
     }
 
     if (!validId(input.teacher)) {
-      throw new Error('Teacher id is not valid');
+      throw new ValidationError('Teacher id is not valid');
     }
 
     if (!this.validateStudents(input.studentsList)) {
-      throw new Error('Subject IDs do not match pattern');
+      throw new ValidationError('Subject IDs do not match pattern');
     }
 
     if (!validId(input.subject)) {
-      throw new Error('Subject id is not valid');
+      throw new ValidationError('Subject id is not valid');
     }
 
     if (!input.days.every(day => validDay(day)) || !areAllValuesUnique(input.days)) {
-      throw new Error('Days are not up to standard');
+      throw new ValidationError('Days are not up to standard');
     }
 
     if (
       !input.times.every(time => validHour24h(time)) ||
       !areAllValuesUnique(input.times)
     ) {
-      throw new Error('Times are not up to standard');
+      throw new ValidationError('Times are not up to standard');
     }
 
     if (input.semester !== 1 && input.semester !== 2) {
-      throw new Error('Field semester is not valid');
+      throw new ValidationError('Field semester is not valid');
     }
 
     // Validate id if provided
     if (input.id && !(input.id instanceof Id)) {
-      throw new Error('Invalid id');
+      throw new ValidationError('Invalid id');
     }
   }
 
@@ -148,7 +150,7 @@ export default class Lesson {
    */
   set name(input: string) {
     if (!this.validateName(input)) {
-      throw new Error('Field name is not valid');
+      throw new ValidationError('Field name is not valid');
     }
     this._name = input;
   }
@@ -165,7 +167,7 @@ export default class Lesson {
    */
   set duration(input: number) {
     if (!this.validateNumbers(input)) {
-      throw new Error('Field duration is not valid');
+      throw new ValidationError('Field duration is not valid');
     }
     this._duration = input;
   }
@@ -182,7 +184,7 @@ export default class Lesson {
    */
   set teacher(input: string) {
     if (!validId(input)) {
-      throw new Error('Teacher id is not valid');
+      throw new ValidationError('Teacher id is not valid');
     }
     this._teacher = input;
   }
@@ -206,7 +208,7 @@ export default class Lesson {
    */
   set subject(input: string) {
     if (!validId(input)) {
-      throw new Error('Subject id is not valid');
+      throw new ValidationError('Subject id is not valid');
     }
     this._subject = input;
   }
@@ -237,7 +239,7 @@ export default class Lesson {
    */
   set semester(input: 1 | 2) {
     if (input !== 1 && input !== 2) {
-      throw new Error('Field semester is not valid');
+      throw new ValidationError('Field semester is not valid');
     }
     this._semester = input;
   }
@@ -250,14 +252,14 @@ export default class Lesson {
    */
   addStudent(input: string): void {
     if (!validId(input)) {
-      throw new Error('Student id is not valid');
+      throw new ValidationError('Student id is not valid');
     }
 
     const index = this.findIndex(input);
     if (index === -1) {
       this._studentsList.push(input);
     } else {
-      throw new Error('This student is already on the lesson');
+      throw new ConflictError('This student is already on the lesson');
     }
   }
 
@@ -269,14 +271,14 @@ export default class Lesson {
    */
   removeStudent(input: string): void {
     if (!validId(input)) {
-      throw new Error('Student id is not valid');
+      throw new ValidationError('Student id is not valid');
     }
 
     const index = this.findIndex(input);
     if (index !== -1) {
       this._studentsList.splice(index, 1);
     } else {
-      throw new Error('This student is not included in the lesson');
+      throw new ConflictError('This student is not included in the lesson');
     }
   }
 
@@ -288,13 +290,13 @@ export default class Lesson {
    */
   addDay(day: DayOfWeek): void {
     if (!validDay(day)) {
-      throw new Error(`${day} is not valid`);
+      throw new ValidationError(`${day} is not valid`);
     }
 
     if (!this._days.includes(day)) {
       this._days.push(day);
     } else {
-      throw new Error(`Day ${day} is already added to the lesson`);
+      throw new ConflictError(`Day ${day} is already added to the lesson`);
     }
   }
 
@@ -306,14 +308,14 @@ export default class Lesson {
    */
   removeDay(day: DayOfWeek): void {
     if (!validDay(day)) {
-      throw new Error(`${day} is not valid`);
+      throw new ValidationError(`${day} is not valid`);
     }
 
     const index = this._days.indexOf(day);
     if (index !== -1) {
       this._days.splice(index, 1);
     } else {
-      throw new Error(`Day ${day} is not included in the lesson`);
+      throw new ConflictError(`Day ${day} is not included in the lesson`);
     }
   }
 
@@ -325,13 +327,13 @@ export default class Lesson {
    */
   addTime(time: Hour): void {
     if (!validHour24h(time)) {
-      throw new Error(`${time} is not a valid 24-hour format time`);
+      throw new ValidationError(`${time} is not a valid 24-hour format time`);
     }
 
     if (!this._times.includes(time)) {
       this._times.push(time);
     } else {
-      throw new Error(`Time ${time} is already added to the lesson`);
+      throw new ConflictError(`Time ${time} is already added to the lesson`);
     }
   }
 
@@ -343,14 +345,14 @@ export default class Lesson {
    */
   removeTime(time: Hour): void {
     if (!validHour24h(time)) {
-      throw new Error(`${time} is not a valid 24-hour format time`);
+      throw new ValidationError(`${time} is not a valid 24-hour format time`);
     }
 
     const index = this._times.indexOf(time);
     if (index !== -1) {
       this._times.splice(index, 1);
     } else {
-      throw new Error(`Time ${time} is not included in the lesson`);
+      throw new ConflictError(`Time ${time} is not included in the lesson`);
     }
   }
 

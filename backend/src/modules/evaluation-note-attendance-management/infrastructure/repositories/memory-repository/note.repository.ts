@@ -1,6 +1,7 @@
 import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
 import NoteGateway from '../../../application/gateway/note.gateway';
 import { NoteMapper, NoteMapperProps } from '../../mapper/note.mapper';
+import { NoteNotFoundError } from '@/modules/evaluation-note-attendance-management/application/errors/note-not-found.error';
 
 /**
  * In-memory implementation of NoteGateway.
@@ -82,7 +83,7 @@ export default class MemoryNoteRepository implements NoteGateway {
   async update(masterId: string, note: Note): Promise<Note> {
     const notes = this._notes.get(masterId);
     if (!notes || !notes.has(note.id.value)) {
-      throw new Error('Note not found');
+      throw new NoteNotFoundError(note.id.value);
     }
     notes.set(note.id.value, NoteMapper.toObj(note));
     return note;
@@ -98,7 +99,7 @@ export default class MemoryNoteRepository implements NoteGateway {
   async delete(masterId: string, note: Note): Promise<string> {
     const notes = this._notes.get(masterId);
     if (!notes || !notes.has(note.id.value)) {
-      throw new Error('Note not found');
+      throw new NoteNotFoundError(note.id.value);
     }
     notes.set(note.id.value, NoteMapper.toObj(note));
     return 'Operação concluída com sucesso';

@@ -7,6 +7,7 @@ import CurriculumGateway from '@/modules/subject-curriculum-management/applicati
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { CurriculumNotFoundError } from '../../errors/curriculum-not-found.error';
 
 export default class UpdateCurriculum
   implements UseCaseInterface<UpdateCurriculumInputDto, UpdateCurriculumOutputDto>
@@ -30,7 +31,7 @@ export default class UpdateCurriculum
     );
 
     const curriculum = await this._curriculumRepository.find(token.masterId, id);
-    if (!curriculum) throw new Error('Curriculum not found');
+    if (!curriculum) throw new CurriculumNotFoundError(id);
 
     name !== undefined && (curriculum.name = name);
     yearsToComplete !== undefined && (curriculum.year = yearsToComplete);

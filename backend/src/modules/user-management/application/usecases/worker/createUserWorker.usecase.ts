@@ -13,6 +13,7 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
+import { ConflictError } from '@/modules/@shared/application/errors/conflict.error';
 
 export default class CreateUserWorker
   implements UseCaseInterface<CreateUserWorkerInputDto, CreateUserWorkerOutputDto>
@@ -38,7 +39,7 @@ export default class CreateUserWorker
     );
 
     if (!(await this.emailValidatorService.validate(email))) {
-      throw new Error('You must register this email before creating the user.');
+      throw new ConflictError('You must register this email before creating the user.');
     }
 
     const baseUser = await this.userService.getOrCreateUser(email, {
@@ -57,7 +58,7 @@ export default class CreateUserWorker
       token.masterId,
       baseUser.id.value
     );
-    if (userVerification) throw new Error('User already exists');
+    if (userVerification) throw new ConflictError('User already exists');
 
     const result = await this._userWorkerRepository.create(token.masterId, userWorker);
 

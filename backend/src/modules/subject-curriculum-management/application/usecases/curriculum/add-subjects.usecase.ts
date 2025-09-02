@@ -6,10 +6,8 @@ import {
 import CurriculumGateway from '@/modules/subject-curriculum-management/application/gateway/curriculum.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { CurriculumNotFoundError } from '../../errors/curriculum-not-found.error';
 
 export default class AddSubjects
   implements UseCaseInterface<AddSubjectsInputDto, AddSubjectsOutputDto>
@@ -32,11 +30,8 @@ export default class AddSubjects
       token
     );
 
-    const curriculum = await this._curriculumRepository.find(
-      token.masterId,
-      id
-    );
-    if (!curriculum) throw new Error('Curriculum not found');
+    const curriculum = await this._curriculumRepository.find(token.masterId, id);
+    if (!curriculum) throw new CurriculumNotFoundError(id);
 
     newSubjectsList.forEach(subjectId => {
       curriculum.addSubject(subjectId);

@@ -7,6 +7,10 @@ import {
 import { TenantUserRole } from './tenant-user.entity';
 import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
+import { ConflictError } from '@/modules/@shared/application/errors/conflict.error';
+import { AcessDeniedError } from '@/modules/@shared/application/errors/access-denied.error';
+import { RoleNotFoundError } from '../../application/errors/role-not-found.error';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 
 /**
  * Input properties for constructing a Tenant.
@@ -43,10 +47,10 @@ export default class Tenant {
   constructor(input: TenantProps) {
     const { id, cnpj } = input;
     if (!validId(id)) {
-      throw new Error('Invalid tenant ID');
+      throw new ValidationError('Invalid tenant ID');
     }
     if (!isString(cnpj) || !validCNPJ(cnpj)) {
-      throw new Error('Invalid CNPJ');
+      throw new ValidationError('Invalid CNPJ');
     }
     this.id = id;
     this._cnpj = cnpj;
@@ -65,7 +69,7 @@ export default class Tenant {
    */
   set cnpj(value: string) {
     if (!isString(value) || !validCNPJ(value)) {
-      throw new Error('Invalid CNPJ');
+      throw new ValidationError('Invalid CNPJ');
     }
     this._cnpj = value;
   }
@@ -90,7 +94,9 @@ export default class Tenant {
 
     if (existing) {
       if (existing.isActive) {
-        throw new Error(`User already has the role '${role}' active in this tenant.`);
+        throw new ConflictError(
+          `User already has the role '${role}' active in this tenant.`
+        );
       }
       existing.reactivate(true);
     } else {
@@ -114,7 +120,7 @@ export default class Tenant {
    */
   changeTenantUserRole(email: string, oldRole: RoleUsers, newRole: RoleUsers) {
     if (oldRole === RoleUsersEnum.MASTER || newRole === RoleUsersEnum.MASTER) {
-      throw new Error('Changing the MASTER role is not allowed.');
+      throw new AcessDeniedError('Changing the MASTER role is not allowed');
     }
     if (oldRole === newRole) {
       return;
@@ -123,13 +129,15 @@ export default class Tenant {
     const roles = this._tenantsUserRole.get(email) ?? [];
     const oldTenantRole = roles.find(r => r.role === oldRole);
     if (!oldTenantRole) {
-      throw new Error(`Old role '${oldRole}' not found for user ${email}.`);
+      throw new RoleNotFoundError(`Old role '${oldRole}' not found for user ${email}`);
     }
 
     const targetRole = roles.find(r => r.role === newRole);
 
     if (targetRole && targetRole.isActive) {
-      throw new Error(`User already has the role '${newRole}' active in this tenant.`);
+      throw new ConflictError(
+        `User already has the role '${newRole}' active in this tenant`
+      );
     }
 
     if (targetRole && !targetRole.isActive) {
@@ -158,14 +166,14 @@ export default class Tenant {
    */
   renameUserEmail(oldEmail: string, newEmail: string) {
     if (!validEmail(oldEmail) || !validEmail(newEmail)) {
-      throw new Error('Invalid email value');
+      throw new ValidationError('Invalid email value');
     }
     const roles = this._tenantsUserRole.get(oldEmail);
     if (!roles) {
-      throw new Error(`No roles found for user ${oldEmail}`);
+      throw new RoleNotFoundError(`No roles found for user ${oldEmail}`);
     }
     if (this._tenantsUserRole.has(newEmail)) {
-      throw new Error(`A user already exists with email ${newEmail}`);
+      throw new ConflictError(`A user already exists with email ${newEmail}`);
     }
 
     this._tenantsUserRole.set(newEmail, roles);
@@ -174,7 +182,7 @@ export default class Tenant {
 
   public setRoles(entries: Iterable<[string, TenantUserRole[]]>): void {
     if (this._tenantsUserRole.size > 0) {
-      throw new Error('Tenant roles already initialized');
+      throw new ConflictError('Tenant roles already initialized');
     }
     const next = new Map<string, TenantUserRole[]>();
     for (const [email, roles] of entries) {

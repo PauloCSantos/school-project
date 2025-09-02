@@ -2,6 +2,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Subject from '@/modules/subject-curriculum-management/domain/entity/subject.entity';
 import type { IFindSubjectOutput as SubjectMapperProps } from '../dto/base-subject.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping Subject entities
@@ -19,7 +20,7 @@ export class SubjectMapper {
    */
   static toObj(input: Subject): SubjectMapperProps {
     if (!input || !(input instanceof Subject)) {
-      throw new Error('Invalid Subject entity provided to mapper');
+      throw new MapperError('Invalid Subject entity provided to mapper');
     }
 
     return {
@@ -37,7 +38,7 @@ export class SubjectMapper {
    */
   static toInstance(input: SubjectMapperProps): Subject {
     if (!input || !input.id) {
-      throw new Error('Invalid subject data provided to mapper');
+      throw new MapperError('Invalid subject data provided to mapper');
     }
 
     return new Subject({

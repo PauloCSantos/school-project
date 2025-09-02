@@ -15,9 +15,11 @@ import {
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
 import {
   FunctionCalledEnum,
-  StatusCodeEnum,
-  StatusMessageEnum,
+  HttpStatus,
+  RoleUsersEnum,
 } from '@/modules/@shared/enums/enums';
+import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
+import { UserNotFoundError } from '../../application/errors/user-not-found.error';
 
 export class UserAdministratorRoute {
   constructor(
@@ -96,7 +98,7 @@ export class UserAdministratorRoute {
         },
         req.tokenData!
       );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -112,12 +114,9 @@ export class UserAdministratorRoute {
         req.tokenData!
       );
       if (!response) {
-        return {
-          statusCode: StatusCodeEnum.NOT_FOUND,
-          body: { error: StatusMessageEnum.NOT_FOUND },
-        };
+        throw new UserNotFoundError(RoleUsersEnum.ADMINISTRATOR, id);
       }
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -132,7 +131,7 @@ export class UserAdministratorRoute {
         input,
         req.tokenData!
       );
-      return { statusCode: StatusCodeEnum.CREATED, body: response };
+      return { statusCode: HttpStatus.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -147,7 +146,7 @@ export class UserAdministratorRoute {
         input,
         req.tokenData!
       );
-      return { statusCode: StatusCodeEnum.OK, body: updatedAdministrator };
+      return { statusCode: HttpStatus.OK, body: updatedAdministrator };
     } catch (error) {
       return this.handleError(error);
     }
@@ -162,16 +161,13 @@ export class UserAdministratorRoute {
         { id },
         req.tokenData!
       );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
-  private handleError(error: unknown, statusCode = 400): HttpResponseData {
-    if (error instanceof Error) {
-      return { statusCode, body: { error: error.message } };
-    }
-    return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
+  private handleError(error: unknown): HttpResponseData {
+    return mapErrorToHttp(error);
   }
 }

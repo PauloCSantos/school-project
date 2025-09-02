@@ -2,6 +2,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Event from '../../domain/entity/event.entity';
 import type { IFindEventOutput as EventMapperProps } from '../dto/base-event.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping Event entities
@@ -18,7 +19,7 @@ export class EventMapper {
    */
   static toObj(input: Event): EventMapperProps {
     if (!input || !(input instanceof Event)) {
-      throw new Error('Invalid Event entity provided to mapper');
+      throw new MapperError('Invalid Event entity provided to mapper');
     }
 
     return {
@@ -42,7 +43,7 @@ export class EventMapper {
    */
   static toInstance(input: EventMapperProps): Event {
     if (!input || !input.id) {
-      throw new Error('Invalid Event data provided to mapper');
+      throw new MapperError('Invalid Event data provided to mapper');
     }
 
     return new Event({

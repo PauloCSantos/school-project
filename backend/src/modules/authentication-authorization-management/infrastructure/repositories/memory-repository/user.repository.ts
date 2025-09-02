@@ -1,8 +1,8 @@
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
 import AuthUserGateway from '../../../application/gateway/user.gateway';
 import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
-
 import { AuthUserMapper, AuthUserMapperProps } from '../../mapper/authUser.mapper';
+import { AuthUserNotFoundError } from '@/modules/authentication-authorization-management/application/errors/auth-user-not-found.error';
 
 /**
  * In-memory implementation of AuthUserGateway.
@@ -56,7 +56,7 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
    */
   async update(authUser: AuthUser, email: string): Promise<AuthUser> {
     if (!this._authUsers.has(email)) {
-      throw new Error('AuthUser not found');
+      throw new AuthUserNotFoundError(email);
     }
     this._authUsers.set(email, AuthUserMapper.toObj(authUser));
     return authUser;
@@ -70,7 +70,7 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
    */
   async delete(authUser: AuthUser): Promise<string> {
     if (!this._authUsers.get(authUser.email)) {
-      throw new Error('AuthUser not found');
+      throw new AuthUserNotFoundError(authUser.email);
     }
 
     this._authUsers.set(authUser.email, AuthUserMapper.toObj(authUser));

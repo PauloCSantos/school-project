@@ -5,6 +5,7 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import { EventMapper } from '@/modules/event-calendar-management/infrastructure/mapper/event.mapper';
+import { EventNotFoundError } from '../../errors/event-not-found.error';
 
 /**
  * Use case responsible for updating an event.
@@ -48,7 +49,7 @@ export default class UpdateEvent
     const event = await this._eventRepository.find(token.masterId, id);
 
     if (!event) {
-      throw new Error('Event not found');
+      throw new EventNotFoundError(id);
     }
 
     if (name !== undefined) {

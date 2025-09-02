@@ -28,8 +28,12 @@ describe('RequestMiddleware unit test', () => {
       mockReq.query = { offset: 'abc' };
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
-        statusCode: 400,
-        body: { error: 'Bad Request' },
+        statusCode: 422,
+        body: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid query param',
+          details: { field: 'offset' },
+        },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -38,8 +42,12 @@ describe('RequestMiddleware unit test', () => {
       mockReq.query = { quantity: 'xyz' };
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
-        statusCode: 400,
-        body: { error: 'Bad Request' },
+        statusCode: 422,
+        body: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid query param',
+          details: { field: 'quantity' },
+        },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -63,7 +71,11 @@ describe('RequestMiddleware unit test', () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
         statusCode: 400,
-        body: { error: 'Bad Request' },
+        body: {
+          code: 'BAD_REQUEST',
+          message: 'No parameters were passed to fetch',
+          details: undefined,
+        },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -74,8 +86,12 @@ describe('RequestMiddleware unit test', () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(validations.validEmail).toHaveBeenCalledWith('invalid');
       expect(res).toEqual({
-        statusCode: 400,
-        body: { error: 'Bad Request' },
+        statusCode: 422,
+        body: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid email',
+          details: { field: 'email' },
+        },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -95,8 +111,12 @@ describe('RequestMiddleware unit test', () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(validations.validId).toHaveBeenCalledWith('badId');
       expect(res).toEqual({
-        statusCode: 400,
-        body: { error: 'Bad Request' },
+        statusCode: 422,
+        body: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid id',
+          details: { field: 'id' },
+        },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -119,7 +139,11 @@ describe('RequestMiddleware unit test', () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
         statusCode: 400,
-        body: { error: 'Bad Request' },
+        body: {
+          code: 'BAD_REQUEST',
+          message: 'No parameters were passed to fetch',
+          details: undefined,
+        },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -130,8 +154,12 @@ describe('RequestMiddleware unit test', () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(validations.validId).toHaveBeenCalledWith('bad');
       expect(res).toEqual({
-        statusCode: 400,
-        body: { error: 'Bad Request' },
+        statusCode: 422,
+        body: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid id',
+          details: { field: 'id' },
+        },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -154,7 +182,11 @@ describe('RequestMiddleware unit test', () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
         statusCode: 400,
-        body: { error: 'Bad Request' },
+        body: {
+          code: 'BAD_REQUEST',
+          message: 'Missing required field',
+          details: { field: 'name' },
+        },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -175,7 +207,11 @@ describe('RequestMiddleware unit test', () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
         statusCode: 400,
-        body: { error: 'Bad Request' },
+        body: {
+          code: 'BAD_REQUEST',
+          message: 'No parameters were passed to fetch',
+          details: undefined,
+        },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -186,8 +222,12 @@ describe('RequestMiddleware unit test', () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(validations.validId).toHaveBeenCalledWith('bad');
       expect(res).toEqual({
-        statusCode: 400,
-        body: { error: 'Bad Request' },
+        statusCode: 422,
+        body: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid id',
+          details: { field: 'id' },
+        },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -198,7 +238,11 @@ describe('RequestMiddleware unit test', () => {
       const res = await middleware.handle(mockReq, mockNext);
       expect(res).toEqual({
         statusCode: 400,
-        body: { error: 'Bad Request' },
+        body: {
+          code: 'BAD_REQUEST',
+          message: 'No parameters were passed to fetch',
+          details: undefined,
+        },
       });
       expect(mockNext).not.toHaveBeenCalled();
     });

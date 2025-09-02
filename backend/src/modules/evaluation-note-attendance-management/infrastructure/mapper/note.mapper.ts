@@ -2,6 +2,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Note from '@/modules/evaluation-note-attendance-management/domain/entity/note.entity';
 import type { IFindNoteOutput as NoteMapperProps } from '../dto/base-note.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping Note entities
@@ -16,7 +17,7 @@ export class NoteMapper {
    */
   static toObj(input: Note): NoteMapperProps {
     if (!input || !(input instanceof Note)) {
-      throw new Error('Invalid Note entity provided to mapper');
+      throw new MapperError('Invalid Note entity provided to mapper');
     }
 
     return {
@@ -33,7 +34,7 @@ export class NoteMapper {
    */
   static toInstance(input: NoteMapperProps): Note {
     if (!input || !input.id) {
-      throw new Error('Invalid note data provided to mapper');
+      throw new MapperError('Invalid note data provided to mapper');
     }
 
     return new Note({

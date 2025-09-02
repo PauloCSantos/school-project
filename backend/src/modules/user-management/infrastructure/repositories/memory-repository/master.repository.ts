@@ -1,6 +1,8 @@
 import UserMasterGateway from '../../../application/gateway/master.gateway';
 import UserMaster from '@/modules/user-management/domain/entity/master.entity';
 import { MasterMapper, MasterMapperProps } from '../../mapper/master.mapper';
+import { UserNotFoundError } from '@/modules/user-management/application/errors/user-not-found.error';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * In-memory implementation of MasterGateway.
@@ -102,7 +104,7 @@ export default class MemoryUserMasterRepository implements UserMasterGateway {
   async update(masterId: string, userMaster: UserMaster): Promise<UserMaster> {
     const masterUsers = this._masterUsers.get(masterId);
     if (!masterUsers || !masterUsers.has(userMaster.id.value)) {
-      throw new Error('User not found');
+      throw new UserNotFoundError(RoleUsersEnum.MASTER, userMaster.id.value);
     }
     masterUsers.set(userMaster.id.value, MasterMapper.toObj(userMaster));
     return userMaster;
@@ -118,7 +120,7 @@ export default class MemoryUserMasterRepository implements UserMasterGateway {
   async delete(masterId: string, id: string): Promise<string> {
     const masterUsers = this._masterUsers.get(masterId);
     if (!masterUsers || !masterUsers.has(id)) {
-      throw new Error('User not found');
+      throw new UserNotFoundError(RoleUsersEnum.MASTER, id);
     }
     masterUsers.delete(id);
     return 'Operação concluída com sucesso';

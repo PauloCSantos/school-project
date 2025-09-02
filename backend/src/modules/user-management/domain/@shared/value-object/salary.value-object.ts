@@ -1,3 +1,5 @@
+import { ConflictError } from '@/modules/@shared/application/errors/conflict.error';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 import {
   isNumeric,
   isGreaterZero,
@@ -12,12 +14,15 @@ export default class Salary {
   private _salary: number;
   private _currency: 'R$' | '€' | '$';
   constructor(input: inputProps) {
-    if (input.salary === undefined) throw new Error('Field salary is mandatory');
+    if (input.salary === undefined)
+      throw new ValidationError('Field salary is mandatory');
     if (!this.validateSalary(input.salary))
-      throw new Error('Salary must be greater than zero and be of numeric type');
+      throw new ValidationError(
+        'Salary must be greater than zero and be of numeric type'
+      );
     if (input.currency !== undefined) {
       if (!(typeof input.currency === 'string') || !validCurrency(input.currency))
-        throw new Error('This currency is not accepted');
+        throw new ConflictError('This currency is not accepted');
       this._currency = input.currency;
     } else {
       this._currency = 'R$';
@@ -31,7 +36,9 @@ export default class Salary {
 
   set salary(value: number) {
     if (!this.validateSalary(value))
-      throw new Error('Salary must be greater than zero and be of numeric type');
+      throw new ValidationError(
+        'Salary must be greater than zero and be of numeric type'
+      );
     this._salary = value;
   }
 
@@ -45,13 +52,13 @@ export default class Salary {
 
   set currency(value: 'R$' | '€' | '$') {
     if (!(typeof value === 'string') || !validCurrency(value))
-      throw new Error('This currency is not accepted');
+      throw new ConflictError('This currency is not accepted');
     this._currency = value;
   }
 
   increaseSalary(percentValue: number) {
     if (!this.validateSalary(percentValue))
-      throw new Error(
+      throw new ValidationError(
         'The percentage value must be greater than zero and be of numeric type'
       );
     this._salary = (percentValue / 100) * this._salary + this._salary;
@@ -59,7 +66,7 @@ export default class Salary {
 
   decreaseSalary(percentValue: number) {
     if (!this.validateSalary(percentValue) && percentValue < 100)
-      throw new Error(
+      throw new ValidationError(
         'The percentage value must be between 0 and 100 and be of numeric type'
       );
     this._salary = this._salary - (percentValue / 100) * this._salary;

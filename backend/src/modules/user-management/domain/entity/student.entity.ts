@@ -1,3 +1,4 @@
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
@@ -18,12 +19,14 @@ export default class UserStudent {
   private _lifecycle: Lifecycle;
 
   constructor({ id, userId, paymentYear, state }: StudentUserProps) {
-    if (userId === undefined) throw new Error('Master user needs id');
-    if (!validId(userId)) throw new Error('Invalid id');
-    if (paymentYear === undefined) throw new Error('Payment field is mandatory');
-    if (!this.validatePayment(paymentYear)) throw new Error('Field payment is not valid');
+    if (userId === undefined) throw new ValidationError('Master user needs id');
+    if (!validId(userId)) throw new ValidationError('Invalid id');
+    if (paymentYear === undefined)
+      throw new ValidationError('Payment field is mandatory');
+    if (!this.validatePayment(paymentYear))
+      throw new ValidationError('Field payment is not valid');
     if (id) {
-      if (!validId(id)) throw new Error('Invalid id');
+      if (!validId(id)) throw new ValidationError('Invalid id');
       this._id = new Id(id);
     } else {
       this._id = new Id();
@@ -46,7 +49,8 @@ export default class UserStudent {
   }
 
   set paymentYear(value: number) {
-    if (!this.validatePayment(value)) throw new Error('Field payment is not valid');
+    if (!this.validatePayment(value))
+      throw new ValidationError('Field payment is not valid');
     this._paymentYear = value;
   }
 

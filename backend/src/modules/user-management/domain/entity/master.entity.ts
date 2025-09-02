@@ -1,3 +1,4 @@
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
@@ -18,12 +19,12 @@ export default class UserMaster {
   private _lifecycle: Lifecycle;
 
   constructor({ id, userId, cnpj, state }: MasterUserProps) {
-    if (userId === undefined) throw new Error('Master user needs id');
-    if (cnpj === undefined) throw new Error('Field CNPJ is mandatory');
-    if (this.validateCnpj(cnpj)) throw new Error('Field CNPJ is not valid');
-    if (!validId(userId)) throw new Error('Invalid id');
+    if (userId === undefined) throw new ValidationError('Master user needs id');
+    if (cnpj === undefined) throw new ValidationError('Field CNPJ is mandatory');
+    if (this.validateCnpj(cnpj)) throw new ValidationError('Field CNPJ is not valid');
+    if (!validId(userId)) throw new ValidationError('Invalid id');
     if (id) {
-      if (!validId(id)) throw new Error('Invalid id');
+      if (!validId(id)) throw new ValidationError('Invalid id');
       this._id = new Id(id);
     } else {
       this._id = new Id();
@@ -46,7 +47,7 @@ export default class UserMaster {
   }
 
   set cnpj(input: string) {
-    if (this.validateCnpj(input)) throw new Error('Field CNPJ is not valid');
+    if (this.validateCnpj(input)) throw new ValidationError('Field CNPJ is not valid');
     this._cnpj = input;
   }
 

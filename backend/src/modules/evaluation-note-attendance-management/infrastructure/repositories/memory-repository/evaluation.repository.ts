@@ -1,6 +1,7 @@
 import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
 import EvaluationGateway from '../../../application/gateway/evaluation.gateway';
 import { EvaluationMapper, EvaluationMapperProps } from '../../mapper/evaluation.mapper';
+import { EvaluationNotFoundError } from '@/modules/evaluation-note-attendance-management/application/errors/evaluation-not-found.error';
 
 /**
  * In-memory implementation of EvaluationGateway.
@@ -78,7 +79,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
   async update(masterId: string, evaluation: Evaluation): Promise<Evaluation> {
     const evaluations = this._evaluations.get(masterId);
     if (!evaluations || !evaluations.has(evaluation.id.value)) {
-      throw new Error('Evaluation not found');
+      throw new EvaluationNotFoundError(evaluation.id.value);
     }
     evaluations.set(evaluation.id.value, EvaluationMapper.toObj(evaluation));
     return evaluation;
@@ -94,7 +95,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
   async delete(masterId: string, evaluation: Evaluation): Promise<string> {
     const evaluations = this._evaluations.get(masterId);
     if (!evaluations || !evaluations.has(evaluation.id.value)) {
-      throw new Error('Evaluation not found');
+      throw new EvaluationNotFoundError(evaluation.id.value);
     }
     evaluations.set(evaluation.id.value, EvaluationMapper.toObj(evaluation));
     return 'Operação concluída com sucesso';

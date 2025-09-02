@@ -1,7 +1,7 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { States } from '@/modules/@shared/type/sharedTypes';
 import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.entity';
-import { LessonMapper } from '@/modules/schedule-lesson-management/infrastructure/mapper/lesson.mapper';
+import { LessonMapper } from '@/modules/schedule-lesson-management/infrastructure/mapper/lesson-usecase.mapper';
 import MemoryLessonRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/lesson.repository';
 
 describe('MemoryLessonRepository unit test', () => {

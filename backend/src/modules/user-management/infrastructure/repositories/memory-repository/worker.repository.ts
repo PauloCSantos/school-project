@@ -1,6 +1,8 @@
 import UserWorkerGateway from '../../../application/gateway/worker.gateway';
 import UserWorker from '@/modules/user-management/domain/entity/worker.entity';
 import { WorkerMapper, WorkerMapperProps } from '../../mapper/worker.mapper';
+import { UserNotFoundError } from '@/modules/user-management/application/errors/user-not-found.error';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 /**
  * In-memory implementation of WorkerGateway.
@@ -102,7 +104,7 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
   async update(masterId: string, userWorker: UserWorker): Promise<UserWorker> {
     const workerUsers = this._workerUsers.get(masterId);
     if (!workerUsers || !workerUsers.has(userWorker.id.value)) {
-      throw new Error('User not found');
+      throw new UserNotFoundError(RoleUsersEnum.WORKER, userWorker.id.value);
     }
     workerUsers.set(userWorker.id.value, WorkerMapper.toObj(userWorker));
     return userWorker;
@@ -118,7 +120,7 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
   async delete(masterId: string, userWorker: UserWorker): Promise<string> {
     const workerUsers = this._workerUsers.get(masterId);
     if (!workerUsers || !workerUsers.has(userWorker.id.value)) {
-      throw new Error('User not found');
+      throw new UserNotFoundError(RoleUsersEnum.WORKER, userWorker.id.value);
     }
     workerUsers.set(userWorker.id.value, WorkerMapper.toObj(userWorker));
     return 'Operação concluída com sucesso';

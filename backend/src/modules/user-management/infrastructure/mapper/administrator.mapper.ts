@@ -2,6 +2,7 @@ import Administrator from '../../domain/entity/administrator.entity';
 import Salary from '../../domain/@shared/value-object/salary.value-object';
 import type { IFindUserAdministratorOutput as AdministratorMapperProps } from '../dto/base-administrator.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping Administrator entities
@@ -20,7 +21,7 @@ export class AdministratorMapper {
    */
   static toObj(input: Administrator): AdministratorMapperProps {
     if (!input || !(input instanceof Administrator)) {
-      throw new Error('Invalid Administrator entity provided to mapper');
+      throw new MapperError('Invalid Administrator entity provided to mapper');
     }
 
     return {
@@ -40,7 +41,7 @@ export class AdministratorMapper {
    */
   static toInstance(input: AdministratorMapperProps): Administrator {
     if (!input || !input.id) {
-      throw new Error('Invalid Administrator data provided to mapper');
+      throw new MapperError('Invalid Administrator data provided to mapper');
     }
 
     return new Administrator({

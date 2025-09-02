@@ -3,6 +3,7 @@ import Name from '../../domain/@shared/value-object/name.value-object';
 import Address from '../../domain/@shared/value-object/address.value-object';
 import { UserBase } from '../../domain/entity/user.entity';
 import type { IFindUserOutput as UserMapperProps } from '../dto/base-user.dto';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping User entities
@@ -20,7 +21,7 @@ export class UserMapper {
    */
   static toObj(input: UserBase): UserMapperProps {
     if (!input || !(input instanceof UserBase)) {
-      throw new Error('Invalid User entity provided to mapper');
+      throw new MapperError('Invalid User entity provided to mapper');
     }
 
     return {
@@ -50,7 +51,7 @@ export class UserMapper {
    */
   static toInstance(input: UserMapperProps): UserBase {
     if (!input || !input.id) {
-      throw new Error('Invalid User data provided to mapper');
+      throw new MapperError('Invalid User data provided to mapper');
     }
     const { firstName, middleName, lastName } = this.parseName(input.name.fullName);
 
