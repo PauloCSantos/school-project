@@ -8,14 +8,14 @@ import { UserWorkerRoute } from '../../interface/route/worker.route';
 describe('UserWorkerRoute with ExpressAdapter', () => {
   let http: ExpressAdapter;
   let app: any;
-  let userWorkerController: UserWorkerController;
+  let userWorkerController: jest.Mocked<UserWorkerController>;
   let middleware: AuthUserMiddleware;
 
   const mockWorkerData = {
     id: new Id().value,
     name: {
-      firstName: 'John',
-      lastName: 'Doe',
+      fullName: 'John David Doe',
+      shortName: 'John D D',
     },
     address: {
       street: 'Street A',
@@ -25,18 +25,16 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       avenue: 'Avenue A',
       state: 'State A',
     },
-    salary: {
-      salary: 5000,
-    },
-    birthday: new Date('11-12-1995'),
     email: 'teste1@test.com',
+    birthday: new Date('1995-11-12T00:00:00.000Z'),
+    salary: 'R$:2500',
   };
 
   const mockWorkerData2 = {
     id: new Id().value,
     name: {
-      firstName: 'Marie',
-      lastName: 'Doe',
+      fullName: 'Marie Jane Doe',
+      shortName: 'Marie J D',
     },
     address: {
       street: 'Street B',
@@ -46,11 +44,9 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
       avenue: 'Avenue B',
       state: 'State B',
     },
-    salary: {
-      salary: 5000,
-    },
-    birthday: new Date('11-12-1995'),
     email: 'teste2@test.com',
+    birthday: new Date('1995-11-12T00:00:00.000Z'),
+    salary: 'R$:3000',
   };
 
   beforeEach(() => {
@@ -58,31 +54,15 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
     app = http.getNativeServer();
 
     userWorkerController = {
-      create: jest.fn().mockResolvedValue({ id: new Id().value }),
-      find: jest.fn().mockImplementation(({ id }) =>
-        Promise.resolve({
-          ...mockWorkerData,
-          id,
-        })
-      ),
-      findAll: jest.fn().mockResolvedValue([mockWorkerData, mockWorkerData2]),
-      update: jest.fn().mockImplementation(({ id }) =>
-        Promise.resolve({
-          ...mockWorkerData,
-          id,
-          address: {
-            ...mockWorkerData.address,
-            street: 'Updated Street',
-          },
-        })
-      ),
-      delete: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
-      }),
-    } as unknown as UserWorkerController;
+      create: jest.fn(),
+      find: jest.fn(),
+      findAll: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    } as unknown as jest.Mocked<UserWorkerController>;
 
     middleware = {
-      handle: jest.fn((_request, next) => {
+      handle: jest.fn((_request: any, next: any) => {
         _request.tokenData = {
           email: 'user@example.com',
           role: 'administrator',
@@ -95,9 +75,15 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
     new UserWorkerRoute(userWorkerController, http, middleware).routes();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('success', () => {
     it('should find all workers', async () => {
-      const response = await supertest(app).get('/users-worker');
+      userWorkerController.findAll.mockResolvedValue([mockWorkerData, mockWorkerData2]);
+
+      const response = await supertest(app).get('/users-worker?quantity=2&offset=0');
 
       expect(response.statusCode).toBe(200);
       expect(userWorkerController.findAll).toHaveBeenCalled();
@@ -126,6 +112,9 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
         birthday: date,
         email: 'teste1@test.com',
       };
+      const createdId = new Id().value;
+      userWorkerController.create.mockResolvedValue({ id: createdId });
+
       const response = await supertest(app).post('/user-worker').send(payload);
 
       expect(response.statusCode).toBe(201);
@@ -137,11 +126,16 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ id: expect.any(String) });
+      expect(response.body).toEqual({ id: createdId });
     });
 
     it('should find a worker by ID', async () => {
       const id = new Id().value;
+      userWorkerController.find.mockResolvedValue({
+        ...mockWorkerData,
+        id,
+      });
+
       const response = await supertest(app).get(`/user-worker/${id}`);
 
       expect(response.statusCode).toBe(200);
@@ -153,7 +147,11 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual(expect.objectContaining({ id }));
+      expect(response.body).toEqual({
+        ...mockWorkerData,
+        id,
+        birthday: mockWorkerData.birthday.toISOString(),
+      });
     });
 
     it('should update a worker by ID', async () => {
@@ -169,6 +167,15 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
           state: 'State A',
         },
       };
+      userWorkerController.update.mockResolvedValue({
+        ...mockWorkerData,
+        ...payload,
+        address: {
+          ...mockWorkerData.address,
+          ...payload.address,
+        },
+      });
+
       const response = await supertest(app).patch(`/user-worker`).send(payload);
 
       expect(response.statusCode).toBe(200);
@@ -180,10 +187,21 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual(expect.objectContaining({ id }));
+      expect(response.body).toEqual({
+        ...mockWorkerData,
+        ...payload,
+        address: {
+          ...mockWorkerData.address,
+          ...payload.address,
+        },
+        birthday: mockWorkerData.birthday.toISOString(),
+      });
     });
 
     it('should delete a worker by ID', async () => {
+      userWorkerController.delete.mockResolvedValue({
+        message: 'Operação concluída com sucesso',
+      });
       const id = new Id().value;
       const response = await supertest(app).delete(`/user-worker/${id}`);
 
@@ -203,34 +221,64 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
   });
 
   describe('failure', () => {
-    it('should return 400 for invalid id on find', async () => {
+    it('should return 422 for invalid id on find', async () => {
       const response = await supertest(app).get('/user-worker/invalid-id');
 
-      expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Bad Request' });
+      expect(response.statusCode).toBe(422);
+      expect(userWorkerController.find).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
+    });
+
+    it('should return 404 when worker is not found', async () => {
+      userWorkerController.find.mockResolvedValue(null);
+      const id = new Id().value;
+
+      const response = await supertest(app).get(`/user-worker/${id}`);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
     });
 
     it('should return 400 for invalid id on update', async () => {
       const response = await supertest(app).patch('/user-worker').send({});
+
       expect(response.statusCode).toBe(400);
+      expect(userWorkerController.update).not.toHaveBeenCalled();
       expect(response.body).toEqual({
-        error: 'Bad Request',
+        code: expect.any(String),
+        message: expect.any(String),
       });
     });
 
-    it('should return 400 for invalid id on delete', async () => {
+    it('should return 422 for invalid id on delete', async () => {
       const response = await supertest(app).delete('/user-worker/invalid-id');
 
-      expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Bad Request' });
+      expect(response.statusCode).toBe(422);
+      expect(userWorkerController.delete).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
     });
 
     it('should return 400 for invalid payload on create', async () => {
       const response = await supertest(app).post('/user-worker').send({});
 
       expect(response.statusCode).toBe(400);
+      expect(userWorkerController.create).not.toHaveBeenCalled();
       expect(response.body).toEqual({
-        error: expect.any(String),
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
       });
     });
   });

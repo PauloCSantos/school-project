@@ -33,6 +33,7 @@ export default class FindUserWorker
     );
 
     const response = await this._userWorkerRepository.find(token.masterId, id);
+
     if (response) {
       const baseUser = await this.userService.findBaseUser(response.userId);
       return WorkerAssembler.toObj(baseUser!, response);

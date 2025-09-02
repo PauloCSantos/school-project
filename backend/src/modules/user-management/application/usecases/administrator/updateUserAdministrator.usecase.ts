@@ -6,9 +6,14 @@ import {
 import UserAdministratorGateway from '@/modules/user-management/application/gateway/administrator.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import {
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  RoleUsersEnum,
+} from '@/modules/@shared/enums/enums';
 import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
 import { AdministratorAssembler } from '../../assemblers/administrator.assembler';
+import { UserNotFoundError } from '../../errors/user-not-found.error';
 
 export default class UpdateUserAdministrator
   implements
@@ -42,7 +47,7 @@ export default class UpdateUserAdministrator
     );
 
     const userAdm = await this._userAdministratorRepository.find(token.masterId, id);
-    if (!userAdm) throw new Error('User not found');
+    if (!userAdm) throw new UserNotFoundError(RoleUsersEnum.ADMINISTRATOR, id);
     const baseUser = await this.userService.findBaseUser(userAdm.userId);
 
     name?.firstName !== undefined && (baseUser!.name.firstName = name.firstName);

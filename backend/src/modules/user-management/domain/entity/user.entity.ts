@@ -7,6 +7,7 @@ import {
 import Address from '../@shared/value-object/address.value-object';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Name from '../@shared/value-object/name.value-object';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 
 export type UserBaseProps = {
   id?: Id;
@@ -30,15 +31,16 @@ export class UserBase {
       input.email === undefined ||
       input.birthday === undefined
     )
-      throw new Error('All fields except Id are mandatory');
+      throw new ValidationError('All fields except Id are mandatory');
 
-    if (!(input.name instanceof Name)) throw new Error('Invalid name');
-    if (!(input.address instanceof Address)) throw new Error('Invalid address');
+    if (!(input.name instanceof Name)) throw new ValidationError('Invalid name');
+    if (!(input.address instanceof Address)) throw new ValidationError('Invalid address');
     if (!this.validateBirthday(input.birthday))
-      throw new Error('Field birthday is not valid');
-    if (!this.validateEmail(input.email)) throw new Error('Field email is not valid');
+      throw new ValidationError('Field birthday is not valid');
+    if (!this.validateEmail(input.email))
+      throw new ValidationError('Field email is not valid');
     if (input.id) {
-      if (!(input.id instanceof Id)) throw new Error('Invalid id');
+      if (!(input.id instanceof Id)) throw new ValidationError('Invalid id');
       this._id = input.id;
     } else {
       this._id = new Id();
@@ -71,12 +73,13 @@ export class UserBase {
   }
 
   set birthday(input: Date) {
-    if (!this.validateBirthday(input)) throw new Error('Field birthday is not valid');
+    if (!this.validateBirthday(input))
+      throw new ValidationError('Field birthday is not valid');
     this._birthday = input;
   }
 
   set email(input: string) {
-    if (!this.validateEmail(input)) throw new Error('Field email is not valid');
+    if (!this.validateEmail(input)) throw new ValidationError('Field email is not valid');
     this._email = input;
   }
 

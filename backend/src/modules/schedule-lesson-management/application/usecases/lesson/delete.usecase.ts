@@ -7,6 +7,7 @@ import LessonGateway from '@/modules/schedule-lesson-management/application/gate
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { LessonNotFoundError } from '../../errors/lesson-not-found.error';
 
 /**
  * Use case responsible for deleting a lesson.
@@ -37,7 +38,7 @@ export default class DeleteLesson
     );
 
     const lesson = await this._lessonRepository.find(token.masterId, id);
-    if (!lesson) throw new Error('Lesson not found');
+    if (!lesson) throw new LessonNotFoundError(id);
     lesson.deactivate();
 
     const result = await this._lessonRepository.delete(token.masterId, lesson);

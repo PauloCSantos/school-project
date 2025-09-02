@@ -6,10 +6,8 @@ import {
 import ScheduleGateway from '@/modules/schedule-lesson-management/application/gateway/schedule.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { ScheduleNotFoundError } from '../../errors/schedule-not-found.error';
 
 /**
  * Use case responsible for removing lessons from a schedule.
@@ -39,7 +37,7 @@ export default class RemoveLessons
     );
 
     const schedule = await this._scheduleRepository.find(token.masterId, id);
-    if (!schedule) throw new Error('Schedule not found');
+    if (!schedule) throw new ScheduleNotFoundError(id);
 
     lessonsListToRemove.forEach(lessonId => {
       schedule.removeLesson(lessonId);

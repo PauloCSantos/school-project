@@ -1,3 +1,4 @@
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 import {
   isNotEmpty,
   maxLengthInclusive,
@@ -32,20 +33,20 @@ export default class Address {
       input.state === undefined ||
       input.number === undefined
     ) {
-      throw new Error('All address fields are mandatory');
+      throw new ValidationError('All address fields are mandatory');
     }
     if (!this.validateField(input.street))
-      throw new Error('The street field was not filled in correctly');
+      throw new ValidationError('The street field was not filled in correctly');
     if (!this.validateField(input.city))
-      throw new Error('The city field was not filled in correctly');
+      throw new ValidationError('The city field was not filled in correctly');
     if (!this.validateField(input.avenue))
-      throw new Error('The avenue field was not filled in correctly');
+      throw new ValidationError('The avenue field was not filled in correctly');
     if (!this.validateField(input.zip, 20, 5))
-      throw new Error('The zip field was not filled in correctly');
+      throw new ValidationError('The zip field was not filled in correctly');
     if (!this.validateField(input.state, 255, 1))
-      throw new Error('The state field was not filled in correctly');
+      throw new ValidationError('The state field was not filled in correctly');
     if (!isNumeric(input.number) || input.number < 0)
-      throw new Error('The number field was not filled in correctly');
+      throw new ValidationError('The number field was not filled in correctly');
 
     this._street = input.street;
     this._city = input.city;
@@ -76,32 +77,32 @@ export default class Address {
 
   set street(value: string) {
     if (!this.validateField(value))
-      throw new Error('The street field was not filled in correctly');
+      throw new ValidationError('The street field was not filled in correctly');
     this._street = value;
   }
   set city(value: string) {
     if (!this.validateField(value))
-      throw new Error('The city field was not filled in correctly');
+      throw new ValidationError('The city field was not filled in correctly');
     this._city = value;
   }
   set zip(value: string) {
     if (!this.validateField(value, 20, 5))
-      throw new Error('The zip field was not filled in correctly');
+      throw new ValidationError('The zip field was not filled in correctly');
     this._zip = value;
   }
   set number(value: number) {
     if (!isNumeric(value) || value < 0)
-      throw new Error('The number field was not filled in correctly');
+      throw new ValidationError('The number field was not filled in correctly');
     this._number = value;
   }
   set avenue(value: string) {
     if (!this.validateField(value))
-      throw new Error('The avenue field was not filled in correctly');
+      throw new ValidationError('The avenue field was not filled in correctly');
     this._avenue = value;
   }
   set state(value: string) {
     if (!this.validateField(value, 255, 1))
-      throw new Error('The state field was not filled in correctly');
+      throw new ValidationError('The state field was not filled in correctly');
     this._state = value;
   }
 

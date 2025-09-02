@@ -117,13 +117,15 @@ describe('Authentication authorization management module end to end test', () =>
           const response = await supertest(app).post('/register').send({
             email: 'teste@teste.com.br',
             password: 'XpA2Jjd4',
-            masterId: new Id().value,
+            cnpj: '12345678000113',
             role: 'unknow',
             isHashed: false,
           });
 
-          expect(response.status).toBe(400);
-          expect(response.body.error).toBeDefined();
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
+          expect(response.body.details).toBeDefined();
         });
       });
 
@@ -131,11 +133,14 @@ describe('Authentication authorization management module end to end test', () =>
         it('should throw an error when the email to find an authUser is wrong', async () => {
           const { token } = await registerAndLoginUser(app);
 
-          const result = await supertest(app)
+          const response = await supertest(app)
             .get(`/authUser/123`)
             .set('authorization', `Bearer ${token}`);
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
+          expect(response.body.details).toBeDefined();
         });
       });
 
@@ -143,7 +148,7 @@ describe('Authentication authorization management module end to end test', () =>
         it('should throw an error when the data to update an authUser is wrong', async () => {
           const { token } = await registerAndLoginUser(app);
 
-          const result = await supertest(app)
+          const response = await supertest(app)
             .patch('/authUser')
             .send({
               email: 'teste@teste.com.br',
@@ -151,8 +156,9 @@ describe('Authentication authorization management module end to end test', () =>
             })
             .set('authorization', token);
 
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
@@ -160,12 +166,13 @@ describe('Authentication authorization management module end to end test', () =>
         it('should throw an error when the email to delete an authUser is wrong', async () => {
           const { token } = await registerAndLoginUser(app);
 
-          const result = await supertest(app)
+          const response = await supertest(app)
             .delete(`/authUser/123`)
             .set('authorization', token);
 
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
@@ -179,62 +186,64 @@ describe('Authentication authorization management module end to end test', () =>
               email: 'teste2@teste.com.br',
               password: 'XpA2Jjd4',
               cnpj: '12345678000111',
-              role: 'master' as RoleUsers,
+              role: 'master',
             })
             .set('authorization', token);
 
-          const result = await supertest(app).post('/login').send({
+          const response = await supertest(app).post('/login').send({
             email: 'teste2@teste.com.br',
             password: 'wrongPassword',
             role: 'master',
           });
 
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('MIDDLEWARE /auth', () => {
         it('should return 401 when authorization header is missing', async () => {
-          const result = await supertest(app).get('/authUser/not-exists@example.com');
-          expect(result.status).toBe(401);
-          expect(result.body.message).toBe('Missing Token');
+          const response = await supertest(app).get('/authUser/not-exists@example.com');
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
 
         it('should return 401 when token is invalid or malformed', async () => {
-          const result = await supertest(app)
+          const response = await supertest(app)
             .get('/authUser/not-exists@example.com')
             .set('authorization', 'invalid-token');
-          expect(result.status).toBe(401);
-          expect(result.body.message).toBe('Invalid token');
+
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBe('Invalid token');
         });
       });
 
       describe('POST /register (more errors)', () => {
-        it('should return 400 when email already exists with different password', async () => {
-          await supertest(app)
-            .post('/register')
-            .send({
-              email: 'duplicate@teste.com.br',
-              password: 'FirstPass1',
-              cnpj: '12345678000111',
-              role: 'master' as RoleUsers,
-            });
+        it('should return 409 when email already exists with different password', async () => {
+          await supertest(app).post('/register').send({
+            email: 'duplicate@teste.com.br',
+            password: 'FirstPass1',
+            cnpj: '12345678000111',
+            role: 'master',
+          });
 
-          const response = await supertest(app)
-            .post('/register')
-            .send({
-              email: 'duplicate@teste.com.br',
-              password: 'OtherPass2',
-              cnpj: '12345678000111',
-              role: 'master' as RoleUsers,
-            });
+          const response = await supertest(app).post('/register').send({
+            email: 'duplicate@teste.com.br',
+            password: 'OtherPass2',
+            cnpj: '12345678000111',
+            role: 'master',
+          });
 
-          expect(response.status).toBe(400);
-          expect(response.body.error).toBe('E-mail já utilizado');
+          expect(response.status).toBe(409);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBe('E-mail in use');
         });
 
-        it('should return 400 when neither cnpj is provided nor user is authenticated', async () => {
+        it('should return 400 when neither cnpj is provided or user is authenticated', async () => {
           const response = await supertest(app)
             .post('/register')
             .send({
@@ -244,8 +253,9 @@ describe('Authentication authorization management module end to end test', () =>
             });
 
           expect(response.status).toBe(400);
-          expect(response.body.error).toBe(
-            'É necessário informar CNPJ ou estar autenticado'
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBe(
+            'It is necessary to inform CNPJ or be authenticated'
           );
         });
       });
@@ -253,26 +263,27 @@ describe('Authentication authorization management module end to end test', () =>
       describe('GET /authUser/:email (not found)', () => {
         it('should return 404 when user does not exist', async () => {
           const { token } = await registerAndLoginUser(app);
-          const result = await supertest(app)
+          const response = await supertest(app)
             .get('/authUser/not-found@teste.com.br')
             .set('authorization', token);
-          expect(result.status).toBe(404);
-          expect(result.body.error).toBeDefined();
+
+          expect(response.status).toBe(404);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
 
       describe('POST /login (more errors)', () => {
-        it('should return 400 when email does not exist', async () => {
-          const result = await supertest(app)
-            .post('/login')
-            .send({
-              email: 'unknown@teste.com.br',
-              password: 'SomePass1',
-              role: 'master' as RoleUsers,
-              masterId: new Id().value,
-            });
-          expect(result.status).toBe(400);
-          expect(result.body.error).toBeDefined();
+        it('should return 401 when email does not exist', async () => {
+          const response = await supertest(app).post('/login').send({
+            email: 'unknown@teste.com.br',
+            password: 'SomePass1',
+            role: 'master',
+            masterId: new Id().value,
+          });
+          expect(response.status).toBe(401);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
         });
       });
     });

@@ -8,13 +8,13 @@ import TenantGateway from '@/modules/authentication-authorization-management/app
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
 import { TenantServiceInterface } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
+import { toRoleType } from '@/modules/@shared/utils/formatting';
+import { ConflictError } from '@/modules/@shared/application/errors/conflict.error';
+import { MissingCnpjTokenError } from '../../errors/missing-cnpj-token.error';
 
 export default class CreateAuthUser
   implements UseCaseInterface<CreateAuthUserInputDto, CreateAuthUserOutputDto>
@@ -31,10 +31,13 @@ export default class CreateAuthUser
     { email, password, role, cnpj }: CreateAuthUserInputDto,
     token?: TokenData
   ): Promise<CreateAuthUserOutputDto> {
+    toRoleType(role);
     let masterId = token?.masterId;
 
     if (!cnpj && !masterId) {
-      throw new Error('É necessário informar CNPJ ou estar autenticado');
+      throw new MissingCnpjTokenError(
+        'It is necessary to inform CNPJ or be authenticated'
+      );
     }
 
     await this.policiesService.verifyPolicies(
@@ -52,7 +55,7 @@ export default class CreateAuthUser
     if (existingUser) {
       const passwordMatches = await existingUser.comparePassword(password);
       if (!passwordMatches) {
-        throw new Error('E-mail já utilizado');
+        throw new ConflictError('E-mail in use');
       }
       authUser = existingUser;
     } else {
@@ -61,13 +64,12 @@ export default class CreateAuthUser
       userCreated = true;
     }
 
-    const { tenant, isNew } =
-      await this.tenantService.manageUserRoleAssignmentInTenant({
-        masterId,
-        email,
-        role,
-        cnpj,
-      });
+    const { tenant, isNew } = await this.tenantService.manageUserRoleAssignmentInTenant({
+      masterId,
+      email,
+      role,
+      cnpj,
+    });
 
     if (userCreated) {
       await this.authUserRepository.create(authUser);

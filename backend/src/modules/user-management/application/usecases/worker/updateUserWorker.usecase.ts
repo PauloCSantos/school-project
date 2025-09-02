@@ -6,9 +6,14 @@ import {
 import UserWorkerGateway from '@/modules/user-management/application/gateway/worker.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import {
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  RoleUsersEnum,
+} from '@/modules/@shared/enums/enums';
 import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
 import { WorkerAssembler } from '../../assemblers/worker.assembler';
+import { UserNotFoundError } from '../../errors/user-not-found.error';
 
 export default class UpdateUserWorker
   implements UseCaseInterface<UpdateUserWorkerInputDto, UpdateUserWorkerOutputDto>
@@ -33,7 +38,7 @@ export default class UpdateUserWorker
     );
 
     const userWorker = await this._userWorkerRepository.find(token.masterId, id);
-    if (!userWorker) throw new Error('User not found');
+    if (!userWorker) throw new UserNotFoundError(RoleUsersEnum.WORKER, id);
     const baseUser = await this.userService.findBaseUser(userWorker.userId);
 
     name?.firstName !== undefined && (baseUser!.name.firstName = name.firstName);

@@ -6,18 +6,14 @@ import {
 import ScheduleGateway from '@/modules/schedule-lesson-management/application/gateway/schedule.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
-import ScheduleMapper from '../../mapper/schedule.mapper';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { ScheduleMapper } from '@/modules/schedule-lesson-management/infrastructure/mapper/schedule.mapper';
 
 /**
  * Use case responsible for schedule operation.
  */
 export default class FindSchedule
-  implements
-    UseCaseInterface<FindScheduleInputDto, FindScheduleOutputDto | null>
+  implements UseCaseInterface<FindScheduleInputDto, FindScheduleOutputDto | null>
 {
   private _scheduleRepository: ScheduleGateway;
 

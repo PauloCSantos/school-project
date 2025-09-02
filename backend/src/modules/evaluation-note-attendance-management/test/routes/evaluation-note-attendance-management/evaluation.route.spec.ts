@@ -8,25 +8,30 @@ import EvaluationRoute from '@/modules/evaluation-note-attendance-management/int
 describe('EvaluationRoute with ExpressAdapter', () => {
   let http: ExpressAdapter;
   let app: any;
-  let evaluationController: EvaluationController;
+  let evaluationController: jest.Mocked<EvaluationController>;
   let middleware: AuthUserMiddleware;
+
+  const baseEvaluation = {
+    teacher: new Id().value,
+    lesson: new Id().value,
+    type: 'Exam',
+    value: 10,
+  };
 
   beforeEach(() => {
     http = new ExpressAdapter();
     app = http.getNativeServer();
 
     evaluationController = {
-      findAll: jest.fn().mockResolvedValue([{ id: new Id().value }]),
-      create: jest.fn().mockResolvedValue({ id: new Id().value }),
-      find: jest.fn().mockImplementation(({ id }) => Promise.resolve({ id })),
-      update: jest.fn().mockImplementation(({ id }) => Promise.resolve({ id })),
-      delete: jest
-        .fn()
-        .mockResolvedValue({ message: 'Operação concluída com sucesso' }),
-    } as unknown as EvaluationController;
+      findAll: jest.fn(),
+      create: jest.fn(),
+      find: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    } as unknown as jest.Mocked<EvaluationController>;
 
     middleware = {
-      handle: jest.fn((_request, next) => {
+      handle: jest.fn((_request: any, next: any) => {
         _request.tokenData = {
           email: 'user@example.com',
           role: 'administrator',
@@ -39,49 +44,56 @@ describe('EvaluationRoute with ExpressAdapter', () => {
     new EvaluationRoute(evaluationController, http, middleware).routes();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('success', () => {
-    it('should find all evaluations', async () => {
-      const response = await supertest(app).get(
-        '/evaluations?quantity=2&offset=0'
-      );
+    it('should find all evaluations with pagination', async () => {
+      evaluationController.findAll.mockResolvedValue([
+        { id: new Id().value, ...baseEvaluation },
+        { id: new Id().value, ...baseEvaluation, type: 'Quiz' },
+      ]);
+
+      const response = await supertest(app).get('/evaluations?quantity=2&offset=0');
+
       expect(response.statusCode).toBe(200);
       expect(evaluationController.findAll).toHaveBeenCalledWith(
-        {
-          quantity: '2',
-          offset: '0',
-        },
+        { quantity: '2', offset: '0' },
         expect.objectContaining({
           email: expect.any(String),
           role: expect.any(String),
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual([{ id: expect.any(String) }]);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBe(2);
     });
 
     it('should create a new evaluation', async () => {
-      const payload = {
-        teacher: new Id().value,
-        lesson: new Id().value,
-        type: 'Exam',
-        value: 10,
-      };
-      const response = await supertest(app).post('/evaluation').send(payload);
+      const createdId = new Id().value;
+      evaluationController.create.mockResolvedValue({ id: createdId });
+
+      const response = await supertest(app).post('/evaluation').send(baseEvaluation);
+
       expect(response.statusCode).toBe(201);
       expect(evaluationController.create).toHaveBeenCalledWith(
-        payload,
+        baseEvaluation,
         expect.objectContaining({
           email: expect.any(String),
           role: expect.any(String),
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ id: expect.any(String) });
+      expect(response.body).toEqual({ id: createdId });
     });
 
     it('should find evaluation by id', async () => {
       const id = new Id().value;
+      evaluationController.find.mockResolvedValue({ id, ...baseEvaluation });
+
       const response = await supertest(app).get(`/evaluation/${id}`);
+
       expect(response.statusCode).toBe(200);
       expect(evaluationController.find).toHaveBeenCalledWith(
         { id },
@@ -91,16 +103,19 @@ describe('EvaluationRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ id });
+      expect(response.body).toEqual({ id, ...baseEvaluation });
     });
 
     it('should update an evaluation', async () => {
       const id = new Id().value;
-      const payload = {
+      const payload = { id, value: 9 };
+      evaluationController.update.mockResolvedValue({
+        ...baseEvaluation,
+        ...payload,
         id,
-        value: 10,
-      };
-      const response = await supertest(app).patch(`/evaluation`).send(payload);
+      });
+
+      const response = await supertest(app).patch('/evaluation').send(payload);
 
       expect(response.statusCode).toBe(200);
       expect(evaluationController.update).toHaveBeenCalledWith(
@@ -111,11 +126,15 @@ describe('EvaluationRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ id });
+      expect(response.body).toEqual({ ...baseEvaluation, ...payload, id });
     });
 
     it('should delete an evaluation', async () => {
       const id = new Id().value;
+      evaluationController.delete.mockResolvedValue({
+        message: 'Operação concluída com sucesso',
+      });
+
       const response = await supertest(app).delete(`/evaluation/${id}`);
 
       expect(response.statusCode).toBe(200);
@@ -127,45 +146,99 @@ describe('EvaluationRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({
-        message: 'Operação concluída com sucesso',
-      });
+      expect(response.body).toEqual({ message: 'Operação concluída com sucesso' });
     });
   });
 
   describe('failure', () => {
-    it('should return 400 for invalid quantity or offset', async () => {
+    it('should return 422 for invalid quantity or offset', async () => {
       const response = await supertest(app).get(
         '/evaluations?quantity=2&offset="invalid"'
       );
 
-      expect(response.statusCode).toBe(400);
+      expect(response.statusCode).toBe(422);
+      expect(evaluationController.findAll).not.toHaveBeenCalled();
       expect(response.body).toEqual({
-        error: 'Bad Request',
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
       });
     });
 
-    it('should return 400 for invalid id on find', async () => {
+    it('should return 422 for invalid id on find', async () => {
       const response = await supertest(app).get('/evaluation/invalid-id');
 
-      expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Bad Request' });
-    });
-
-    it('should return 400 for invalid id on update', async () => {
-      const response = await supertest(app).patch('/evaluation').send({});
-
-      expect(response.statusCode).toBe(400);
+      expect(response.statusCode).toBe(422);
+      expect(evaluationController.find).not.toHaveBeenCalled();
       expect(response.body).toEqual({
-        error: 'Bad Request',
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
       });
     });
 
-    it('should return 400 for invalid id on delete', async () => {
-      const response = await supertest(app).delete('/evaluation/invalid-id');
+    it('should return 404 when evaluation is not found', async () => {
+      const id = new Id().value;
+      evaluationController.find.mockResolvedValue(null as any);
+
+      const response = await supertest(app).get(`/evaluation/${id}`);
+
+      expect(response.statusCode).toBe(404);
+      expect(evaluationController.find).toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
+    });
+
+    it('should return 400 for invalid data on create', async () => {
+      const response = await supertest(app).post('/evaluation').send({});
 
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Bad Request' });
+      expect(evaluationController.create).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
+    });
+
+    it('should return 400 for missing id on update', async () => {
+      const response = await supertest(app).patch('/evaluation').send({ value: 9 });
+
+      expect(response.statusCode).toBe(400);
+      expect(evaluationController.update).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+      });
+    });
+
+    it('should return 422 for invalid id on update', async () => {
+      const response = await supertest(app)
+        .patch('/evaluation')
+        .send({ id: 'invalid-id', value: 9 });
+
+      expect(response.statusCode).toBe(422);
+      expect(evaluationController.update).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
+    });
+
+    it('should return 422 for invalid id on delete', async () => {
+      const response = await supertest(app).delete('/evaluation/invalid-id');
+
+      expect(response.statusCode).toBe(422);
+      expect(evaluationController.delete).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
     });
   });
 });

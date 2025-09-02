@@ -2,6 +2,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Evaluation from '@/modules/evaluation-note-attendance-management/domain/entity/evaluation.entity';
 import type { IFindEvaluationOutput as EvaluationMapperProps } from '../dto/base-evaluation.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping Evaluation entities
@@ -17,7 +18,7 @@ export class EvaluationMapper {
    */
   static toObj(input: Evaluation): EvaluationMapperProps {
     if (!input || !(input instanceof Evaluation)) {
-      throw new Error('Invalid Evaluation entity provided to mapper');
+      throw new MapperError('Invalid Evaluation entity provided to mapper');
     }
 
     return {
@@ -35,7 +36,7 @@ export class EvaluationMapper {
    */
   static toInstance(input: EvaluationMapperProps): Evaluation {
     if (!input || !input.id) {
-      throw new Error('Invalid evaluation data provided to mapper');
+      throw new MapperError('Invalid evaluation data provided to mapper');
     }
 
     return new Evaluation({

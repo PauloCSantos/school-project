@@ -7,6 +7,7 @@ import CurriculumGateway from '@/modules/subject-curriculum-management/applicati
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { CurriculumNotFoundError } from '../../errors/curriculum-not-found.error';
 
 export default class DeleteCurriculum
   implements UseCaseInterface<DeleteCurriculumInputDto, DeleteCurriculumOutputDto>
@@ -30,7 +31,7 @@ export default class DeleteCurriculum
     );
 
     const curriculum = await this._curriculumRepository.find(token.masterId, id);
-    if (!curriculum) throw new Error('Curriculum not found');
+    if (!curriculum) throw new CurriculumNotFoundError(id);
     curriculum.deactivate();
 
     const result = await this._curriculumRepository.delete(token.masterId, curriculum);

@@ -1,6 +1,7 @@
 import Subject from '@/modules/subject-curriculum-management/domain/entity/subject.entity';
 import SubjectGateway from '../../../application/gateway/subject.gateway';
 import { SubjectMapper, SubjectMapperProps } from '../../mapper/subject.mapper';
+import { SubjectNotFoundError } from '@/modules/subject-curriculum-management/application/errors/subject-not-found.error';
 
 /**
  * In-memory implementation of SubjectGateway.
@@ -82,7 +83,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
   async update(masterId: string, subject: Subject): Promise<Subject> {
     const subjects = this._subjects.get(masterId);
     if (!subjects || !subjects.has(subject.id.value)) {
-      throw new Error('Subject not found');
+      throw new SubjectNotFoundError(subject.id.value);
     }
     subjects.set(subject.id.value, SubjectMapper.toObj(subject));
     return subject;
@@ -98,7 +99,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
   async delete(masterId: string, subject: Subject): Promise<string> {
     const subjects = this._subjects.get(masterId);
     if (!subjects || !subjects.has(subject.id.value)) {
-      throw new Error('Subject not found');
+      throw new SubjectNotFoundError(subject.id.value);
     }
     subjects.set(subject.id.value, SubjectMapper.toObj(subject));
     return 'Operação concluída com sucesso';

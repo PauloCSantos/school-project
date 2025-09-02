@@ -1,6 +1,7 @@
 import Curriculum from '@/modules/subject-curriculum-management/domain/entity/curriculum.entity';
 import CurriculumGateway from '../../../application/gateway/curriculum.gateway';
 import { CurriculumMapper, CurriculumMapperProps } from '../../mapper/curriculum.mapper';
+import { CurriculumNotFoundError } from '@/modules/subject-curriculum-management/application/errors/curriculum-not-found.error';
 
 /**
  * In-memory implementation of CurriculumGateway.
@@ -82,7 +83,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
   async update(masterId: string, curriculum: Curriculum): Promise<Curriculum> {
     const curriculums = this._curriculums.get(masterId);
     if (!curriculums || !curriculums.has(curriculum.id.value)) {
-      throw new Error('Curriculum not found');
+      throw new CurriculumNotFoundError(curriculum.id.value);
     }
     curriculums.set(curriculum.id.value, CurriculumMapper.toObj(curriculum));
     return curriculum;
@@ -98,7 +99,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
   async delete(masterId: string, curriculum: Curriculum): Promise<string> {
     const curriculums = this._curriculums.get(masterId);
     if (!curriculums || !curriculums.has(curriculum.id.value)) {
-      throw new Error('Curriculum not found');
+      throw new CurriculumNotFoundError(curriculum.id.value);
     }
     curriculums.set(curriculum.id.value, CurriculumMapper.toObj(curriculum));
     return 'Operação concluída com sucesso';
@@ -120,7 +121,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     const curriculums = this._curriculums.get(masterId);
     const obj = curriculums?.get(id);
     if (!obj) {
-      throw new Error('Curriculum not found');
+      throw new CurriculumNotFoundError(id);
     }
 
     curriculums!.set(id, CurriculumMapper.toObj(curriculum));
@@ -148,7 +149,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     const curriculums = this._curriculums.get(masterId);
     const obj = curriculums?.get(id);
     if (!obj) {
-      throw new Error('Curriculum not found');
+      throw new CurriculumNotFoundError(id);
     }
 
     curriculums!.set(id, CurriculumMapper.toObj(curriculum));

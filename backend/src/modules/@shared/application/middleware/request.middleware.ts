@@ -1,22 +1,25 @@
-import { FunctionCalledEnum } from '../../enums/enums';
+import { FunctionCalledEnum, HttpStatus } from '../../enums/enums';
 import { validEmail, validId } from '../../utils/validations';
 import {
   HttpMiddleware,
   HttpRequest,
   HttpResponseData,
 } from '../../infraestructure/http/http.interface';
+import { ErrorBody } from '../../type/sharedTypes';
 
-enum errorStatus {
-  BADREQUEST = 400,
-}
+const buildError = (
+  status: HttpStatus,
+  message: string,
+  details?: ErrorBody['details'],
+  code: ErrorBody['code'] = status === HttpStatus.UNPROCESSABLE_ENTITY
+    ? 'VALIDATION_ERROR'
+    : 'BAD_REQUEST'
+) => ({
+  statusCode: status,
+  body: { code, message, details } as ErrorBody,
+});
 
-enum ErrorMessage {
-  BADREQUEST = 'Bad Request',
-}
-
-export default class RequestMiddleware
-  implements HttpMiddleware<any, any, any, any>
-{
+export default class RequestMiddleware implements HttpMiddleware<any, any, any, any> {
   constructor(
     private readonly fn: FunctionCalledEnum,
     private readonly requiredFields: string[]
@@ -30,23 +33,18 @@ export default class RequestMiddleware
       case FunctionCalledEnum.FIND_ALL: {
         const offset = req.query?.offset;
         const quantity = req.query?.quantity;
-        if (
-          offset !== undefined &&
-          (offset === '' || Number.isNaN(Number(offset)))
-        ) {
-          return {
-            statusCode: errorStatus.BADREQUEST,
-            body: { error: ErrorMessage.BADREQUEST },
-          };
+        if (offset !== undefined && (offset === '' || Number.isNaN(Number(offset)))) {
+          return buildError(HttpStatus.UNPROCESSABLE_ENTITY, 'Invalid query param', {
+            field: 'offset',
+          });
         }
         if (
           quantity !== undefined &&
           (quantity === '' || Number.isNaN(Number(quantity)))
         ) {
-          return {
-            statusCode: errorStatus.BADREQUEST,
-            body: { error: ErrorMessage.BADREQUEST },
-          };
+          return buildError(HttpStatus.UNPROCESSABLE_ENTITY, 'Invalid query param', {
+            field: 'quantity',
+          });
         }
         break;
       }
@@ -55,24 +53,19 @@ export default class RequestMiddleware
         const searchId = req.params?.id as string | undefined;
         const searchEmail = req.params?.email as string | undefined;
         if (!searchId && !searchEmail) {
-          return {
-            statusCode: errorStatus.BADREQUEST,
-            body: { error: ErrorMessage.BADREQUEST },
-          };
+          return buildError(HttpStatus.BAD_REQUEST, 'No parameters were passed to fetch'); // Validar GPT
         }
         if (searchEmail) {
           if (!validEmail(searchEmail)) {
-            return {
-              statusCode: errorStatus.BADREQUEST,
-              body: { error: ErrorMessage.BADREQUEST },
-            };
+            return buildError(HttpStatus.UNPROCESSABLE_ENTITY, 'Invalid email', {
+              field: 'email',
+            });
           }
         } else {
           if (!validId(searchId!)) {
-            return {
-              statusCode: errorStatus.BADREQUEST,
-              body: { error: ErrorMessage.BADREQUEST },
-            };
+            return buildError(HttpStatus.UNPROCESSABLE_ENTITY, 'Invalid id', {
+              field: 'id',
+            });
           }
         }
         break;
@@ -82,24 +75,19 @@ export default class RequestMiddleware
         const idToDelete = req.params?.id as string | undefined;
         const emailToDelete = req.params?.email as string | undefined;
         if (!idToDelete && !emailToDelete) {
-          return {
-            statusCode: errorStatus.BADREQUEST,
-            body: { error: ErrorMessage.BADREQUEST },
-          };
+          return buildError(HttpStatus.BAD_REQUEST, 'No parameters were passed to fetch'); // Validar GPT
         }
         if (emailToDelete) {
           if (!validEmail(emailToDelete)) {
-            return {
-              statusCode: errorStatus.BADREQUEST,
-              body: { error: ErrorMessage.BADREQUEST },
-            };
+            return buildError(HttpStatus.UNPROCESSABLE_ENTITY, 'Invalid email', {
+              field: 'email',
+            });
           }
         } else {
           if (!validId(idToDelete!)) {
-            return {
-              statusCode: errorStatus.BADREQUEST,
-              body: { error: ErrorMessage.BADREQUEST },
-            };
+            return buildError(HttpStatus.UNPROCESSABLE_ENTITY, 'Invalid id', {
+              field: 'id',
+            });
           }
         }
         break;
@@ -107,11 +95,10 @@ export default class RequestMiddleware
 
       case FunctionCalledEnum.CREATE: {
         for (const field of this.requiredFields) {
-          if (req.body[field] === undefined) {
-            return {
-              statusCode: errorStatus.BADREQUEST,
-              body: { error: ErrorMessage.BADREQUEST },
-            };
+          if (req.body?.[field] === undefined) {
+            return buildError(HttpStatus.BAD_REQUEST, 'Missing required field', {
+              field,
+            });
           }
         }
         break;
@@ -121,18 +108,14 @@ export default class RequestMiddleware
         const idToUpdate = req.body?.id as string | undefined;
         const emailToUpdate = req.body?.email as string | undefined;
         if (!idToUpdate && !emailToUpdate) {
-          return {
-            statusCode: errorStatus.BADREQUEST,
-            body: { error: ErrorMessage.BADREQUEST },
-          };
+          return buildError(HttpStatus.BAD_REQUEST, 'No parameters were passed to fetch'); // Validar GPT
         }
         let foundFields = 0;
         if (idToUpdate) {
           if (!validId(idToUpdate!)) {
-            return {
-              statusCode: errorStatus.BADREQUEST,
-              body: { error: ErrorMessage.BADREQUEST },
-            };
+            return buildError(HttpStatus.UNPROCESSABLE_ENTITY, 'Invalid id', {
+              field: 'id',
+            });
           }
           for (const field of this.requiredFields) {
             if (req.body[field] !== undefined) {
@@ -141,10 +124,9 @@ export default class RequestMiddleware
           }
         } else {
           if (!validEmail(emailToUpdate!)) {
-            return {
-              statusCode: errorStatus.BADREQUEST,
-              body: { error: ErrorMessage.BADREQUEST },
-            };
+            return buildError(HttpStatus.UNPROCESSABLE_ENTITY, 'Invalid email', {
+              field: 'email',
+            });
           }
           for (const field of this.requiredFields) {
             if (req.body.authUserDataToUpdate[field] !== undefined) {
@@ -154,10 +136,10 @@ export default class RequestMiddleware
         }
 
         if (foundFields === 0) {
-          return {
-            statusCode: errorStatus.BADREQUEST,
-            body: { error: ErrorMessage.BADREQUEST },
-          };
+          return buildError(
+            HttpStatus.BAD_REQUEST,
+            'At least one updatable field must be provided'
+          );
         }
 
         break;
@@ -167,24 +149,23 @@ export default class RequestMiddleware
       case FunctionCalledEnum.REMOVE: {
         for (const field of this.requiredFields) {
           if (req.body[field] === undefined) {
-            return {
-              statusCode: errorStatus.BADREQUEST,
-              body: { error: ErrorMessage.BADREQUEST },
-            };
+            return buildError(HttpStatus.BAD_REQUEST, 'Missing required field', {
+              field,
+            });
           }
           if (field === 'id') {
             if (!validId(req.body[field])) {
-              return {
-                statusCode: errorStatus.BADREQUEST,
-                body: { error: ErrorMessage.BADREQUEST },
-              };
+              return buildError(HttpStatus.UNPROCESSABLE_ENTITY, 'Invalid id', {
+                field: 'id',
+              });
             }
           } else {
             if (!Array.isArray(req.body[field])) {
-              return {
-                statusCode: errorStatus.BADREQUEST,
-                body: { error: ErrorMessage.BADREQUEST },
-              };
+              return buildError(
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                'Field must be an array',
+                { field }
+              );
             }
           }
         }

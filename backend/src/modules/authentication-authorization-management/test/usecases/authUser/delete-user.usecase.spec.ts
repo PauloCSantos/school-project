@@ -81,9 +81,9 @@ describe('DeleteAuthUser Use Case', () => {
   });
 
   it('should throw an error if the authUser does not exist', async () => {
-    repository.delete.mockRejectedValueOnce(new Error('AuthUser not found'));
+    repository.delete.mockRejectedValueOnce(new Error('User not found'));
 
-    await expect(usecase.execute(input, token)).rejects.toThrow('AuthUser not found');
+    await expect(usecase.execute(input, token)).rejects.toThrow('User not found');
   });
 
   it('should delete an authUser successfully', async () => {

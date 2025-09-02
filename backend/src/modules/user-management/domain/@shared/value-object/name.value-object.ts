@@ -1,3 +1,4 @@
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 import { capitalizeString } from '@/modules/@shared/utils/formatting';
 import {
   isAlpha,
@@ -19,13 +20,13 @@ export default class Name {
 
   constructor(input: NameProps) {
     if (input.firstName === undefined && input.lastName === undefined) {
-      throw new Error('First and last name are mandatory');
+      throw new ValidationError('First and last name are mandatory');
     }
     if (!this.validateMandatoryInput(input.firstName)) {
-      throw new Error('The first name field does not meet all requirements');
+      throw new ValidationError('The first name field does not meet all requirements');
     }
     if (!this.validateMandatoryInput(input.lastName)) {
-      throw new Error('The last name field does not meet all requirements');
+      throw new ValidationError('The last name field does not meet all requirements');
     }
 
     this._firstName = capitalizeString(input.firstName);
@@ -35,7 +36,7 @@ export default class Name {
       this._middleName = '';
     } else {
       if (!this.validateOptionalInput(input.middleName)) {
-        throw new Error('The middle name field does not meet all requirements');
+        throw new ValidationError('The middle name field does not meet all requirements');
       }
       this._middleName = capitalizeString(input.middleName);
     }
@@ -43,21 +44,21 @@ export default class Name {
 
   set firstName(value: string) {
     if (!this.validateMandatoryInput(value)) {
-      throw new Error('The first name field does not meet all requirements');
+      throw new ValidationError('The first name field does not meet all requirements');
     }
     this._firstName = value;
   }
 
   set lastName(value: string) {
     if (!this.validateMandatoryInput(value)) {
-      throw new Error('The last name field does not meet all requirements');
+      throw new ValidationError('The last name field does not meet all requirements');
     }
     this._firstName = value;
   }
 
   set middleName(value: string) {
     if (!this.validateOptionalInput(value) && value !== '') {
-      throw new Error('The middle name field does not meet all requirements');
+      throw new ValidationError('The middle name field does not meet all requirements');
     }
     this._middleName = value;
   }

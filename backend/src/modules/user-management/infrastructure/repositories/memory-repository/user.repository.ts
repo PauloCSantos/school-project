@@ -1,6 +1,7 @@
 import UserGateway from '@/modules/user-management/application/gateway/user.gateway';
 import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 import { UserMapper, UserMapperProps } from '../../mapper/user.mapper';
+import { UserNotFoundError } from '@/modules/user-management/application/errors/user-not-found.error';
 
 /**
  * In-memory implementation of UserGateway.
@@ -82,7 +83,7 @@ export default class MemoryUserRepository implements UserGateway {
   async update(user: UserBase): Promise<UserBase> {
     const users = this._users.get(user.id.value);
     if (!users) {
-      throw new Error('User not found');
+      throw new UserNotFoundError('base', user.id.value);
     }
     this._users.set(user.id.value, UserMapper.toObj(user));
     return user;
@@ -97,7 +98,7 @@ export default class MemoryUserRepository implements UserGateway {
   async delete(id: string): Promise<string> {
     const users = this._users.get(id);
     if (!users) {
-      throw new Error('User not found');
+      throw new UserNotFoundError('base', id);
     }
     this._users.delete(id);
     return 'Operação concluída com sucesso';

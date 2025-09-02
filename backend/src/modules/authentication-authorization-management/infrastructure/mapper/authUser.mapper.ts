@@ -2,6 +2,7 @@ import AuthUser from '../../domain/entity/user.entity';
 import type { IFindAuthUserOutput as AuthUserMapperProps } from '../dto/base-user.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
 import { AuthUserServiceInterface } from '../../domain/service/interface/user-entity-service.interface';
+import { MapperError } from '../../application/errors/mapper.error';
 /**
  * Interface that defines the data structure for mapping User entities
  */
@@ -19,7 +20,7 @@ export class AuthUserMapper {
    */
   static toObj(input: AuthUser): AuthUserMapperProps {
     if (!input || !(input instanceof AuthUser)) {
-      throw new Error('Invalid AuthUser entity provided to mapper');
+      throw new MapperError('Invalid AuthUser entity provided to mapper');
     }
 
     return {
@@ -41,7 +42,7 @@ export class AuthUserMapper {
     authUserService: AuthUserServiceInterface
   ): AuthUser {
     if (!input || !input.email) {
-      throw new Error('Invalid User data provided to mapper');
+      throw new MapperError('Invalid User data provided to mapper');
     }
 
     return new AuthUser(

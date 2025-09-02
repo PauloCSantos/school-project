@@ -1,3 +1,5 @@
+import { ConflictError } from '@/modules/@shared/application/errors/conflict.error';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
@@ -53,25 +55,25 @@ export default class Schedule {
       input.lessonsList === undefined ||
       input.student === undefined
     ) {
-      throw new Error('All schedule fields are mandatory');
+      throw new ValidationError('All schedule fields are mandatory');
     }
 
     // Validate field values
     if (!validId(input.student)) {
-      throw new Error('Student id is not valid');
+      throw new ValidationError('Student id is not valid');
     }
 
     if (!validId(input.curriculum)) {
-      throw new Error('Curriculum id is not valid');
+      throw new ValidationError('Curriculum id is not valid');
     }
 
     if (!this.validateLessonsList(input.lessonsList)) {
-      throw new Error('Lessons list have an invalid id');
+      throw new ValidationError('Lessons list have an invalid id');
     }
 
     // Validate id if provided
     if (input.id && !(input.id instanceof Id)) {
-      throw new Error('Invalid id');
+      throw new ValidationError('Invalid id');
     }
   }
 
@@ -101,7 +103,7 @@ export default class Schedule {
    */
   set curriculum(input: string) {
     if (!validId(input)) {
-      throw new Error('Curriculum id is not valid');
+      throw new ValidationError('Curriculum id is not valid');
     }
     this._curriculum = input;
   }
@@ -121,14 +123,14 @@ export default class Schedule {
    */
   addLesson(input: string): void {
     if (!validId(input)) {
-      throw new Error('Lesson id is not valid');
+      throw new ValidationError('Lesson id is not valid');
     }
 
     const index = this.findIndex(input);
     if (index === -1) {
       this._lessonsList.push(input);
     } else {
-      throw new Error('This lesson is already on the schedule');
+      throw new ConflictError('This lesson is already on the schedule');
     }
   }
 
@@ -140,14 +142,14 @@ export default class Schedule {
    */
   removeLesson(input: string): void {
     if (!validId(input)) {
-      throw new Error('Lesson id is not valid');
+      throw new ValidationError('Lesson id is not valid');
     }
 
     const index = this.findIndex(input);
     if (index !== -1) {
       this._lessonsList.splice(index, 1);
     } else {
-      throw new Error('This lesson is not included in the schedule');
+      throw new ConflictError('This lesson is not included in the schedule');
     }
   }
 

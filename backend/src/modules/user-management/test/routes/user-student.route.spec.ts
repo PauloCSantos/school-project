@@ -8,26 +8,45 @@ import { UserStudentRoute } from '../../interface/route/student.route';
 describe('UserStudentRoute with ExpressAdapter', () => {
   let http: ExpressAdapter;
   let app: any;
-  let userStudentController: UserStudentController;
+  let userStudentController: jest.Mocked<UserStudentController>;
   let middleware: AuthUserMiddleware;
 
   const mockStudentData = {
     id: new Id().value,
     name: {
-      firstName: 'John',
-      lastName: 'Doe',
+      fullName: 'John David Doe',
+      shortName: 'John D D',
     },
-    email: 'john.doe@example.com',
     address: {
-      street: '123 Main St',
-      city: 'Anytown',
-      zip: '12345',
+      street: 'Street A',
+      city: 'City A',
+      zip: '111111-111',
       number: 1,
-      avenue: 'Main Ave',
+      avenue: 'Avenue A',
       state: 'State A',
     },
+    email: 'teste1@test.com',
+    birthday: new Date('1995-11-12T00:00:00.000Z'),
     paymentYear: 50000,
-    birthday: new Date().toISOString(),
+  };
+
+  const mockStudentData2 = {
+    id: new Id().value,
+    name: {
+      fullName: 'Marie Jane Doe',
+      shortName: 'Marie J D',
+    },
+    address: {
+      street: 'Street B',
+      city: 'City B',
+      zip: '111111-111',
+      number: 2,
+      avenue: 'Avenue B',
+      state: 'State B',
+    },
+    email: 'teste2@test.com',
+    birthday: new Date('1995-11-12T00:00:00.000Z'),
+    paymentYear: 60000,
   };
 
   beforeEach(() => {
@@ -35,20 +54,15 @@ describe('UserStudentRoute with ExpressAdapter', () => {
     app = http.getNativeServer();
 
     userStudentController = {
-      findAll: jest.fn().mockResolvedValue([mockStudentData]),
-      find: jest.fn().mockResolvedValue(mockStudentData),
-      create: jest.fn().mockResolvedValue({ id: new Id().value }),
-      update: jest.fn().mockImplementation(data => {
-        const { id, ...updateData } = data;
-        return Promise.resolve({ ...mockStudentData, ...updateData });
-      }),
-      delete: jest
-        .fn()
-        .mockResolvedValue({ message: 'Operação concluída com sucesso' }),
-    } as unknown as UserStudentController;
+      create: jest.fn(),
+      find: jest.fn(),
+      findAll: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    } as unknown as jest.Mocked<UserStudentController>;
 
     middleware = {
-      handle: jest.fn((_request, next) => {
+      handle: jest.fn((_request: any, next: any) => {
         _request.tokenData = {
           email: 'user@example.com',
           role: 'administrator',
@@ -61,23 +75,26 @@ describe('UserStudentRoute with ExpressAdapter', () => {
     new UserStudentRoute(userStudentController, http, middleware).routes();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('success', () => {
-    it('should return a list of students', async () => {
-      const response = await supertest(app).get('/users-student');
+    it('should find all students', async () => {
+      userStudentController.findAll.mockResolvedValue([
+        mockStudentData,
+        mockStudentData2,
+      ]);
+
+      const response = await supertest(app).get('/users-student?quantity=2&offset=0');
 
       expect(response.statusCode).toBe(200);
-      expect(response.body).toEqual([mockStudentData]);
+      expect(userStudentController.findAll).toHaveBeenCalled();
+      expect(response.body).toEqual(expect.any(Array));
+      expect(response.body.length).toBe(2);
     });
 
-    it('should return a student by ID', async () => {
-      const response = await supertest(app).get(
-        `/user-student/${mockStudentData.id}`
-      );
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toEqual(mockStudentData);
-    });
-
-    it('should create a new student', async () => {
+    it('should create a student', async () => {
       const date = new Date().toISOString();
       const payload = {
         name: {
@@ -96,40 +113,102 @@ describe('UserStudentRoute with ExpressAdapter', () => {
         birthday: date,
         email: 'teste1@test.com',
       };
+      const createdId = new Id().value;
+      userStudentController.create.mockResolvedValue({ id: createdId });
+
       const response = await supertest(app).post('/user-student').send(payload);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body).toEqual({ id: expect.any(String) });
-    });
-
-    it('should update an existing student', async () => {
-      const response = await supertest(app)
-        .patch(`/user-student`)
-        .send({ id: mockStudentData.id, paymentYear: 51000 });
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toEqual({ ...mockStudentData, paymentYear: 51000 });
-      expect(userStudentController.update).toHaveBeenCalledWith(
-        {
-          id: mockStudentData.id,
-          paymentYear: 51000,
-        },
+      expect(userStudentController.create).toHaveBeenCalledWith(
+        payload,
         expect.objectContaining({
           email: expect.any(String),
           role: expect.any(String),
           masterId: expect.any(String),
         })
       );
+      expect(response.body).toEqual({ id: createdId });
+    });
+
+    it('should find a student by ID', async () => {
+      const id = new Id().value;
+      userStudentController.find.mockResolvedValue({
+        ...mockStudentData,
+        id,
+      });
+
+      const response = await supertest(app).get(`/user-student/${id}`);
+
+      expect(response.statusCode).toBe(200);
+      expect(userStudentController.find).toHaveBeenCalledWith(
+        { id },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
+      expect(response.body).toEqual({
+        ...mockStudentData,
+        id,
+        birthday: mockStudentData.birthday.toISOString(),
+      });
+    });
+
+    it('should update a student by ID', async () => {
+      const id = new Id().value;
+      const payload = {
+        id,
+        address: {
+          street: 'Updated Street',
+          city: 'City A',
+          zip: '111111-111',
+          number: 1,
+          avenue: 'Avenue A',
+          state: 'State A',
+        },
+      };
+      userStudentController.update.mockResolvedValue({
+        ...mockStudentData,
+        ...payload,
+        address: {
+          ...mockStudentData.address,
+          ...payload.address,
+        },
+      });
+
+      const response = await supertest(app).patch(`/user-student`).send(payload);
+
+      expect(response.statusCode).toBe(200);
+      expect(userStudentController.update).toHaveBeenCalledWith(
+        payload,
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
+      expect(response.body).toEqual({
+        ...mockStudentData,
+        ...payload,
+        address: {
+          ...mockStudentData.address,
+          ...payload.address,
+        },
+        birthday: mockStudentData.birthday.toISOString(),
+      });
     });
 
     it('should delete a student by ID', async () => {
-      const response = await supertest(app).delete(
-        `/user-student/${mockStudentData.id}`
-      );
+      userStudentController.delete.mockResolvedValue({
+        message: 'Operação concluída com sucesso',
+      });
+      const id = new Id().value;
+      const response = await supertest(app).delete(`/user-student/${id}`);
+
       expect(response.statusCode).toBe(200);
       expect(userStudentController.delete).toHaveBeenCalledWith(
-        {
-          id: mockStudentData.id,
-        },
+        { id },
         expect.objectContaining({
           email: expect.any(String),
           role: expect.any(String),
@@ -143,30 +222,65 @@ describe('UserStudentRoute with ExpressAdapter', () => {
   });
 
   describe('failure', () => {
-    it('should return 400 for invalid id on find', async () => {
+    it('should return 422 for invalid id on find', async () => {
       const response = await supertest(app).get('/user-student/invalid-id');
+
+      expect(response.statusCode).toBe(422);
+      expect(userStudentController.find).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
+    });
+
+    it('should return 404 when student is not found', async () => {
+      userStudentController.find.mockResolvedValue(null);
+      const id = new Id().value;
+
+      const response = await supertest(app).get(`/user-student/${id}`);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
+    });
+
+    it('should return 400 for invalid id on update', async () => {
+      const response = await supertest(app).patch('/user-student').send({});
+
       expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Bad Request' });
+      expect(userStudentController.update).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+      });
+    });
+
+    it('should return 422 for invalid id on delete', async () => {
+      const response = await supertest(app).delete('/user-student/invalid-id');
+
+      expect(response.statusCode).toBe(422);
+      expect(userStudentController.delete).not.toHaveBeenCalled();
+      expect(response.body).toEqual({
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
+      });
     });
 
     it('should return 400 for invalid payload on create', async () => {
       const response = await supertest(app).post('/user-student').send({});
-      expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: expect.any(String) });
-    });
 
-    it('should return 400 for invalid id or data on update', async () => {
-      const response = await supertest(app).patch('/user-student').send({});
       expect(response.statusCode).toBe(400);
+      expect(userStudentController.create).not.toHaveBeenCalled();
       expect(response.body).toEqual({
-        error: 'Bad Request',
+        code: expect.any(String),
+        message: expect.any(String),
+        details: expect.any(Object),
       });
-    });
-
-    it('should return 400 for invalid id on delete', async () => {
-      const response = await supertest(app).delete('/user-student/invalid-id');
-      expect(response.statusCode).toBe(400);
-      expect(response.body).toEqual({ error: 'Bad Request' });
     });
   });
 });

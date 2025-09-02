@@ -1,3 +1,4 @@
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Lifecycle from '@/modules/@shared/domain/value-object/state.value-object';
 import { StatesEnum } from '@/modules/@shared/enums/enums';
@@ -79,41 +80,41 @@ export default class Event {
       input.type === undefined ||
       input.place === undefined
     ) {
-      throw new Error('All event fields are mandatory');
+      throw new ValidationError('All event fields are mandatory');
     }
 
     // Validate id if provided
     if (input.id && !(input.id instanceof Id)) {
-      throw new Error('Invalid id');
+      throw new ValidationError('Invalid id');
     }
 
     // Validate field values
     if (!validId(input.creator)) {
-      throw new Error('Creator id is not valid');
+      throw new ValidationError('Creator id is not valid');
     }
 
     if (!this.validateName(input.name)) {
-      throw new Error('Field name is not valid');
+      throw new ValidationError('Field name is not valid');
     }
 
     if (!validDate(input.date)) {
-      throw new Error('Field date is not valid');
+      throw new ValidationError('Field date is not valid');
     }
 
     if (!validHour24h(input.hour)) {
-      throw new Error('Field hour is not valid');
+      throw new ValidationError('Field hour is not valid');
     }
 
     if (!validDay(input.day)) {
-      throw new Error('Field day is not valid');
+      throw new ValidationError('Field day is not valid');
     }
 
     if (!this.validateType(input.type)) {
-      throw new Error('Field type is not valid');
+      throw new ValidationError('Field type is not valid');
     }
 
     if (!this.validatePlace(input.place)) {
-      throw new Error('Field place is not valid');
+      throw new ValidationError('Field place is not valid');
     }
   }
 
@@ -136,7 +137,7 @@ export default class Event {
    */
   set creator(value: string) {
     if (!validId(value)) {
-      throw new Error('Creator id is not valid');
+      throw new ValidationError('Creator id is not valid');
     }
     this._creator = value;
   }
@@ -153,7 +154,7 @@ export default class Event {
    */
   set name(value: string) {
     if (!this.validateName(value)) {
-      throw new Error('Field name is not valid');
+      throw new ValidationError('Field name is not valid');
     }
     this._name = value;
   }
@@ -170,7 +171,7 @@ export default class Event {
    */
   set date(value: Date) {
     if (!validDate(value)) {
-      throw new Error('Field date is not valid');
+      throw new ValidationError('Field date is not valid');
     }
     this._date = value;
   }
@@ -187,7 +188,7 @@ export default class Event {
    */
   set hour(value: string) {
     if (!validHour24h(value)) {
-      throw new Error('Field hour is not valid');
+      throw new ValidationError('Field hour is not valid');
     }
     this._hour = value as Hour;
   }
@@ -204,7 +205,7 @@ export default class Event {
    */
   set day(value: string) {
     if (!validDay(value)) {
-      throw new Error('Field day is not valid');
+      throw new ValidationError('Field day is not valid');
     }
     this._day = value as DayOfWeek;
   }
@@ -221,7 +222,7 @@ export default class Event {
    */
   set type(value: string) {
     if (!this.validateType(value)) {
-      throw new Error('Field type is not valid');
+      throw new ValidationError('Field type is not valid');
     }
     this._type = value;
   }
@@ -238,7 +239,7 @@ export default class Event {
    */
   set place(value: string) {
     if (!this.validatePlace(value)) {
-      throw new Error('Field place is not valid');
+      throw new ValidationError('Field place is not valid');
     }
     this._place = value;
   }

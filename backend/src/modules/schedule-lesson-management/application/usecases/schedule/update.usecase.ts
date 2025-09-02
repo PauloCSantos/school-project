@@ -7,6 +7,7 @@ import ScheduleGateway from '@/modules/schedule-lesson-management/application/ga
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { ScheduleNotFoundError } from '../../errors/schedule-not-found.error';
 
 /**
  * Use case responsible for schedule operation.
@@ -36,7 +37,7 @@ export default class UpdateSchedule
     );
 
     const schedule = await this._scheduleRepository.find(token.masterId, id);
-    if (!schedule) throw new Error('Schedule not found');
+    if (!schedule) throw new ScheduleNotFoundError(id);
     curriculum !== undefined && (schedule.curriculum = curriculum);
 
     if (schedule.isPending) {

@@ -6,10 +6,8 @@ import UseCaseInterface from '@/modules/@shared/application/usecases/use-case.in
 import CurriculumGateway from '@/modules/subject-curriculum-management/application/gateway/curriculum.gateway';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import {
-  FunctionCalledEnum,
-  ModulesNameEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { CurriculumNotFoundError } from '../../errors/curriculum-not-found.error';
 
 export default class RemoveSubjects
   implements UseCaseInterface<RemoveSubjectsInputDto, RemoveSubjectsOutputDto>
@@ -32,11 +30,8 @@ export default class RemoveSubjects
       token
     );
 
-    const curriculum = await this._curriculumRepository.find(
-      token.masterId,
-      id
-    );
-    if (!curriculum) throw new Error('Curriculum not found');
+    const curriculum = await this._curriculumRepository.find(token.masterId, id);
+    if (!curriculum) throw new CurriculumNotFoundError(id);
 
     subjectsListToRemove.forEach(subjectId => {
       curriculum.removeSubject(subjectId);

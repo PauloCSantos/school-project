@@ -15,11 +15,9 @@ import {
   RemoveSubjectsInputDto,
 } from '../../application/dto/curriculum-usecase.dto';
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
-import {
-  FunctionCalledEnum,
-  StatusCodeEnum,
-  StatusMessageEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, HttpStatus } from '@/modules/@shared/enums/enums';
+import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
+import { CurriculumNotFoundError } from '../../application/errors/curriculum-not-found.error';
 
 /**
  * Route handler for curriculum management endpoints.
@@ -55,33 +53,18 @@ export class CurriculumRoute {
       this.authMiddleware,
       createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELD),
     ]);
-    this.httpGateway.delete(
-      '/curriculum/:id',
-      this.deleteCurriculum.bind(this),
-      [
-        this.authMiddleware,
-        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
-      ]
-    );
-    this.httpGateway.post(
-      '/curriculum/subject/add',
-      this.addSubjects.bind(this),
-      [
-        this.authMiddleware,
-        createRequestMiddleware(FunctionCalledEnum.ADD, REQUIRED_FIELDS_ADD),
-      ]
-    );
-    this.httpGateway.post(
-      '/curriculum/subject/remove',
-      this.removeSubjects.bind(this),
-      [
-        this.authMiddleware,
-        createRequestMiddleware(
-          FunctionCalledEnum.REMOVE,
-          REQUIRED_FIELDS_REMOVE
-        ),
-      ]
-    );
+    this.httpGateway.delete('/curriculum/:id', this.deleteCurriculum.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
+    ]);
+    this.httpGateway.post('/curriculum/subject/add', this.addSubjects.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.ADD, REQUIRED_FIELDS_ADD),
+    ]);
+    this.httpGateway.post('/curriculum/subject/remove', this.removeSubjects.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.REMOVE, REQUIRED_FIELDS_REMOVE),
+    ]);
   }
 
   private async findAllCurriculums(
@@ -96,7 +79,7 @@ export class CurriculumRoute {
         },
         req.tokenData!
       );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -107,17 +90,11 @@ export class CurriculumRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.curriculumController.find(
-        { id },
-        req.tokenData!
-      );
+      const response = await this.curriculumController.find({ id }, req.tokenData!);
       if (!response) {
-        return {
-          statusCode: StatusCodeEnum.NOT_FOUND,
-          body: { error: StatusMessageEnum.NOT_FOUND },
-        };
+        throw new CurriculumNotFoundError(id);
       }
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -128,11 +105,8 @@ export class CurriculumRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.curriculumController.create(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.CREATED, body: response };
+      const response = await this.curriculumController.create(input, req.tokenData!);
+      return { statusCode: HttpStatus.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -143,11 +117,8 @@ export class CurriculumRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.curriculumController.update(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.curriculumController.update(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -158,11 +129,8 @@ export class CurriculumRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.curriculumController.delete(
-        { id },
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.curriculumController.delete({ id }, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -173,11 +141,8 @@ export class CurriculumRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.curriculumController.addSubjects(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.curriculumController.addSubjects(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -192,16 +157,13 @@ export class CurriculumRoute {
         input,
         req.tokenData!
       );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
-  private handleError(error: unknown, statusCode = 400): HttpResponseData {
-    if (error instanceof Error) {
-      return { statusCode, body: { error: error.message } };
-    }
-    return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
+  private handleError(error: unknown): HttpResponseData {
+    return mapErrorToHttp(error);
   }
 }

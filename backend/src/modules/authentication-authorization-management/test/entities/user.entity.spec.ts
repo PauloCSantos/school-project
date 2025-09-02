@@ -37,7 +37,7 @@ describe('AuthUser unit test', () => {
     it('should throw an error when trying to compare password before hashing', async () => {
       const password = baseUserData.password;
       await expect(authUser.comparePassword(password)).rejects.toThrow(
-        'Use the method to hash before comparing'
+        'Internal server error'
       );
     });
 

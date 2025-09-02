@@ -1,6 +1,7 @@
 import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedule.entity';
 import ScheduleGateway from '../../../application/gateway/schedule.gateway';
 import { ScheduleMapper, ScheduleMapperProps } from '../../mapper/schedule.mapper';
+import { ScheduleNotFoundError } from '@/modules/schedule-lesson-management/application/errors/schedule-not-found.error';
 
 /**
  * In-memory implementation of ScheduleGateway.
@@ -79,7 +80,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
   async update(masterId: string, schedule: Schedule): Promise<Schedule> {
     const schedules = this._schedules.get(masterId);
     if (!schedules || !schedules.has(schedule.id.value)) {
-      throw new Error('Schedule not found');
+      throw new ScheduleNotFoundError(schedule.id.value);
     }
     schedules.set(schedule.id.value, ScheduleMapper.toObj(schedule));
     return schedule;
@@ -95,7 +96,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
   async delete(masterId: string, schedule: Schedule): Promise<string> {
     const schedules = this._schedules.get(masterId);
     if (!schedules || !schedules.has(schedule.id.value)) {
-      throw new Error('Schedule not found');
+      throw new ScheduleNotFoundError(schedule.id.value);
     }
     schedules.set(schedule.id.value, ScheduleMapper.toObj(schedule));
     return 'Operação concluída com sucesso';
@@ -113,7 +114,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
     const schedules = this._schedules.get(masterId);
     const obj = schedules?.get(id);
     if (!obj) {
-      throw new Error('Schedule not found');
+      throw new ScheduleNotFoundError(id);
     }
     schedules!.set(id, ScheduleMapper.toObj(schedule));
     const totalLessons = schedule.lessonsList.length - obj.lessonsList.length;
@@ -132,7 +133,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
     const schedules = this._schedules.get(masterId);
     const obj = schedules?.get(id);
     if (!obj) {
-      throw new Error('Schedule not found');
+      throw new ScheduleNotFoundError(id);
     }
     schedules!.set(id, ScheduleMapper.toObj(schedule));
     const totalLessons = obj.lessonsList.length - schedule.lessonsList.length;

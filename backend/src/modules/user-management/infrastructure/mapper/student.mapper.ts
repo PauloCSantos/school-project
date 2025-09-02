@@ -1,6 +1,7 @@
 import { toStateType } from '@/modules/@shared/utils/formatting';
 import Student from '../../domain/entity/student.entity';
 import type { IFindUserStudentOutput as StudentMapperProps } from '../dto/base-student.dto';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping Student entities
@@ -18,7 +19,7 @@ export class StudentMapper {
    */
   static toObj(input: Student): StudentMapperProps {
     if (!input || !(input instanceof Student)) {
-      throw new Error('Invalid Student entity provided to mapper');
+      throw new MapperError('Invalid Student entity provided to mapper');
     }
 
     return {
@@ -37,7 +38,7 @@ export class StudentMapper {
    */
   static toInstance(input: StudentMapperProps): Student {
     if (!input || !input.id) {
-      throw new Error('Invalid Student data provided to mapper');
+      throw new MapperError('Invalid Student data provided to mapper');
     }
 
     return new Student({

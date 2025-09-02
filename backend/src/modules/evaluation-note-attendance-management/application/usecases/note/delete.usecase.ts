@@ -4,6 +4,7 @@ import NoteGateway from '@/modules/evaluation-note-attendance-management/applica
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { NoteNotFoundError } from '../../errors/note-not-found.error';
 
 /**
  * Use case responsible for deleting a note.
@@ -46,7 +47,7 @@ export default class DeleteNote
     );
 
     const note = await this._noteRepository.find(token.masterId, id);
-    if (!note) throw new Error('Note not found');
+    if (!note) throw new NoteNotFoundError(id);
     note.deactivate();
 
     const result = await this._noteRepository.delete(token.masterId, note);

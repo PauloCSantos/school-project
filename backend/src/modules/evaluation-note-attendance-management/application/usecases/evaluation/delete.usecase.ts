@@ -7,6 +7,7 @@ import EvaluationGateway from '@/modules/evaluation-note-attendance-management/a
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import { EvaluationNotFoundError } from '../../errors/evaluation-not-found.error';
 
 /**
  * Use case responsible for deleting an evaluation record.
@@ -50,7 +51,7 @@ export default class DeleteEvaluation
     const evaluation = await this._evaluationRepository.find(token.masterId, id);
 
     if (!evaluation) {
-      throw new Error('Evaluation not found');
+      throw new EvaluationNotFoundError(id);
     }
     evaluation.deactivate();
 

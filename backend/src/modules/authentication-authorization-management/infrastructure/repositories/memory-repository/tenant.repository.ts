@@ -1,6 +1,8 @@
 import Tenant from '@/modules/authentication-authorization-management/domain/entity/tenant.entity';
 import TenantGateway from '../../../application/gateway/tenant.gateway';
 import { TenantMapper, TenantMapperProps } from '../../mapper/tenant.mapper';
+import { ConflictError } from '@/modules/@shared/application/errors/conflict.error';
+import { TenantNotFoundError } from '@/modules/authentication-authorization-management/application/errors/tenant-not-found.error';
 
 /**
  * In-memory implementation of TenantGateway.
@@ -36,7 +38,7 @@ export default class MemoryTenantRepository implements TenantGateway {
    */
   async create(tenant: Tenant): Promise<void> {
     if (this._tenants.has(tenant.id)) {
-      throw new Error('Tenant already exists');
+      throw new ConflictError('Tenant already exists');
     }
     const obj = TenantMapper.toObj(tenant);
 
@@ -97,7 +99,7 @@ export default class MemoryTenantRepository implements TenantGateway {
    */
   async update(id: string, tenant: Tenant): Promise<void> {
     if (!this._tenants.has(id)) {
-      throw new Error('Tenant not found');
+      throw new TenantNotFoundError();
     }
 
     const obj = TenantMapper.toObj(tenant);
@@ -118,7 +120,7 @@ export default class MemoryTenantRepository implements TenantGateway {
    */
   async delete(tenant: Tenant): Promise<void> {
     if (!this._tenants.has(tenant.id)) {
-      throw new Error('Tenant not found');
+      throw new TenantNotFoundError();
     }
 
     const obj = TenantMapper.toObj(tenant);

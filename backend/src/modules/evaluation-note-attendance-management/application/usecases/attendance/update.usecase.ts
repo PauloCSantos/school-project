@@ -8,6 +8,7 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import { AttendanceMapper } from '@/modules/evaluation-note-attendance-management/infrastructure/mapper/attendance.mapper';
+import { AttendanceNotFoundError } from '../../errors/attendance-not-found.error';
 
 /**
  * Use case responsible for updating an attendance record.
@@ -53,7 +54,7 @@ export default class UpdateAttendance
     const attendance = await this._attendanceRepository.find(token.masterId, id);
 
     if (!attendance) {
-      throw new Error('Attendance not found');
+      throw new AttendanceNotFoundError(id);
     }
 
     date !== undefined && (attendance.date = date);

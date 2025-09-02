@@ -1,6 +1,7 @@
 import Event from '@/modules/event-calendar-management/domain/entity/event.entity';
 import EventGateway from '../../../application/gateway/event.gateway';
 import { EventMapper, EventMapperProps } from '../../mapper/event.mapper';
+import { EventNotFoundError } from '@/modules/event-calendar-management/application/errors/event-not-found.error';
 
 /**
  * In-memory implementation of EventGateway.
@@ -84,7 +85,7 @@ export default class MemoryEventRepository implements EventGateway {
   async update(masterId: string, event: Event): Promise<Event> {
     const events = this._events.get(masterId);
     if (!events || !events.has(event.id.value)) {
-      throw new Error('Event not found');
+      throw new EventNotFoundError(event.id.value);
     }
     events.set(event.id.value, EventMapper.toObj(event));
     return event;
@@ -100,7 +101,7 @@ export default class MemoryEventRepository implements EventGateway {
   async delete(masterId: string, event: Event): Promise<string> {
     const events = this._events.get(masterId);
     if (!events || !events.has(event.id.value)) {
-      throw new Error('Event not found');
+      throw new EventNotFoundError(event.id.value);
     }
     events.set(event.id.value, EventMapper.toObj(event));
     return 'Operação concluída com sucesso';

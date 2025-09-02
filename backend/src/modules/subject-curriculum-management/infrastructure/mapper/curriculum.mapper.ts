@@ -2,6 +2,7 @@ import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import Curriculum from '../../domain/entity/curriculum.entity';
 import type { IFindCurriculumOutput as CurriculumMapperProps } from '../dto/base-curriculum.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
+import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
 
 /**
  * Interface that defines the data structure for mapping Curriculum entities
@@ -19,7 +20,7 @@ export class CurriculumMapper {
    */
   static toObj(input: Curriculum): CurriculumMapperProps {
     if (!input || !(input instanceof Curriculum)) {
-      throw new Error('Invalid Curriculum entity provided to mapper');
+      throw new MapperError('Invalid Curriculum entity provided to mapper');
     }
 
     return {
@@ -38,7 +39,7 @@ export class CurriculumMapper {
    */
   static toInstance(input: CurriculumMapperProps): Curriculum {
     if (!input || !input.id) {
-      throw new Error('Invalid curriculum data provided to mapper');
+      throw new MapperError('Invalid curriculum data provided to mapper');
     }
 
     return new Curriculum({

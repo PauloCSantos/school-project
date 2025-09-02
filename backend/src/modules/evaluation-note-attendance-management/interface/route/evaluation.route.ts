@@ -14,11 +14,9 @@ import {
 } from '../../application/dto/evaluation-usecase.dto';
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
 import { createRequestMiddleware } from '@/modules/@shared/application/middleware/request.middleware';
-import {
-  FunctionCalledEnum,
-  StatusCodeEnum,
-  StatusMessageEnum,
-} from '@/modules/@shared/enums/enums';
+import { FunctionCalledEnum, HttpStatus } from '@/modules/@shared/enums/enums';
+import { mapErrorToHttp } from '@/modules/@shared/infraestructure/http/error.mapper';
+import { EvaluationNotFoundError } from '../../application/errors/evaluation-not-found.error';
 
 export default class EvaluationRoute {
   constructor(
@@ -51,14 +49,10 @@ export default class EvaluationRoute {
       createRequestMiddleware(FunctionCalledEnum.UPDATE, REQUIRED_FIELDS),
     ]);
 
-    this.httpGateway.delete(
-      '/evaluation/:id',
-      this.deleteEvaluation.bind(this),
-      [
-        this.authMiddleware,
-        createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
-      ]
-    );
+    this.httpGateway.delete('/evaluation/:id', this.deleteEvaluation.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
+    ]);
   }
 
   private async findAllEvaluations(
@@ -73,7 +67,7 @@ export default class EvaluationRoute {
         },
         req.tokenData!
       );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -84,11 +78,8 @@ export default class EvaluationRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.evaluationController.create(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.CREATED, body: response };
+      const response = await this.evaluationController.create(input, req.tokenData!);
+      return { statusCode: HttpStatus.CREATED, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -99,19 +90,13 @@ export default class EvaluationRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.evaluationController.find(
-        { id },
-        req.tokenData!
-      );
+      const response = await this.evaluationController.find({ id }, req.tokenData!);
       if (!response) {
-        return {
-          statusCode: StatusCodeEnum.NOT_FOUND,
-          body: { error: StatusMessageEnum.NOT_FOUND },
-        };
+        throw new EvaluationNotFoundError(id);
       }
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
-      return this.handleError(error, 404);
+      return this.handleError(error);
     }
   }
 
@@ -120,11 +105,8 @@ export default class EvaluationRoute {
   ): Promise<HttpResponseData> {
     try {
       const input = req.body;
-      const response = await this.evaluationController.update(
-        input,
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.evaluationController.update(input, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
@@ -135,20 +117,14 @@ export default class EvaluationRoute {
   ): Promise<HttpResponseData> {
     try {
       const { id } = req.params;
-      const response = await this.evaluationController.delete(
-        { id },
-        req.tokenData!
-      );
-      return { statusCode: StatusCodeEnum.OK, body: response };
+      const response = await this.evaluationController.delete({ id }, req.tokenData!);
+      return { statusCode: HttpStatus.OK, body: response };
     } catch (error) {
       return this.handleError(error);
     }
   }
 
-  private handleError(error: unknown, statusCode = 400): HttpResponseData {
-    if (error instanceof Error) {
-      return { statusCode, body: { error: error.message } };
-    }
-    return { statusCode: 500, body: { error: 'Erro interno do servidor' } };
+  private handleError(error: unknown): HttpResponseData {
+    return mapErrorToHttp(error);
   }
 }
