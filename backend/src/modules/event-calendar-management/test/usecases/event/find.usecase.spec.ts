@@ -82,7 +82,6 @@ describe('FindEvent usecase unit test', () => {
         day: event.day,
         type: event.type,
         place: event.place,
-        state: event.state,
       });
     });
 

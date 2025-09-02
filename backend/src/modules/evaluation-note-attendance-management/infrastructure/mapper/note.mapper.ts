@@ -3,6 +3,7 @@ import Note from '@/modules/evaluation-note-attendance-management/domain/entity/
 import type { IFindNoteOutput as NoteMapperProps } from '../dto/base-note.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
 import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
+import { FindNoteOutputDto } from '../../application/dto/note-usecase.dto';
 
 /**
  * Interface that defines the data structure for mapping Note entities
@@ -13,9 +14,9 @@ export type { NoteMapperProps };
  */
 export class NoteMapper {
   /**
-   * Converts a Note entity into a plain object (DTO)
+   * Converts a Note entity into a plain object (DTO) to the repository
    */
-  static toObj(input: Note): NoteMapperProps {
+  static toObjRepository(input: Note): NoteMapperProps {
     if (!input || !(input instanceof Note)) {
       throw new MapperError('Invalid Note entity provided to mapper');
     }
@@ -26,6 +27,21 @@ export class NoteMapper {
       student: input.student,
       note: input.note,
       state: input.state,
+    };
+  }
+  /**
+   * Converts a Note entity into a plain object (DTO)
+   */
+  static toObj(input: Note): FindNoteOutputDto {
+    if (!input || !(input instanceof Note)) {
+      throw new MapperError('Invalid Note entity provided to mapper');
+    }
+
+    return {
+      id: input.id.value,
+      evaluation: input.evaluation,
+      student: input.student,
+      note: input.note,
     };
   }
 
@@ -49,7 +65,7 @@ export class NoteMapper {
   /**
    * Converts a list of Note entities into plain objects (DTOs)
    */
-  static toObjList(entities: Note[]): NoteMapperProps[] {
+  static toObjList(entities: Note[]): FindNoteOutputDto[] {
     return entities.map(entity => this.toObj(entity));
   }
 

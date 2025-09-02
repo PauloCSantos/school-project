@@ -25,7 +25,7 @@ export default class MemoryEventRepository implements EventGateway {
           this._events.set(masterId, events);
         }
         for (const event of records) {
-          events.set(event.id.value, EventMapper.toObj(event));
+          events.set(event.id.value, EventMapper.toObjRepository(event));
         }
       }
     }
@@ -71,7 +71,7 @@ export default class MemoryEventRepository implements EventGateway {
    */
   async create(masterId: string, event: Event): Promise<string> {
     const events = this.getOrCreateBucket(masterId);
-    events.set(event.id.value, EventMapper.toObj(event));
+    events.set(event.id.value, EventMapper.toObjRepository(event));
     return event.id.value;
   }
 
@@ -87,7 +87,7 @@ export default class MemoryEventRepository implements EventGateway {
     if (!events || !events.has(event.id.value)) {
       throw new EventNotFoundError(event.id.value);
     }
-    events.set(event.id.value, EventMapper.toObj(event));
+    events.set(event.id.value, EventMapper.toObjRepository(event));
     return event;
   }
 
@@ -103,7 +103,7 @@ export default class MemoryEventRepository implements EventGateway {
     if (!events || !events.has(event.id.value)) {
       throw new EventNotFoundError(event.id.value);
     }
-    events.set(event.id.value, EventMapper.toObj(event));
+    events.set(event.id.value, EventMapper.toObjRepository(event));
     return 'Operação concluída com sucesso';
   }
 

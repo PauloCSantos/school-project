@@ -20,7 +20,10 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
       for (const { masterId, records } of evaluationsRecords) {
         const evaluations = this.getOrCreateBucket(masterId);
         for (const evaluation of records) {
-          evaluations.set(evaluation.id.value, EvaluationMapper.toObj(evaluation));
+          evaluations.set(
+            evaluation.id.value,
+            EvaluationMapper.toObjRepository(evaluation)
+          );
         }
       }
     }
@@ -65,7 +68,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
    */
   async create(masterId: string, evaluation: Evaluation): Promise<string> {
     const evaluations = this.getOrCreateBucket(masterId);
-    evaluations.set(evaluation.id.value, EvaluationMapper.toObj(evaluation));
+    evaluations.set(evaluation.id.value, EvaluationMapper.toObjRepository(evaluation));
     return evaluation.id.value;
   }
 
@@ -81,7 +84,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
     if (!evaluations || !evaluations.has(evaluation.id.value)) {
       throw new EvaluationNotFoundError(evaluation.id.value);
     }
-    evaluations.set(evaluation.id.value, EvaluationMapper.toObj(evaluation));
+    evaluations.set(evaluation.id.value, EvaluationMapper.toObjRepository(evaluation));
     return evaluation;
   }
 
@@ -97,7 +100,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
     if (!evaluations || !evaluations.has(evaluation.id.value)) {
       throw new EvaluationNotFoundError(evaluation.id.value);
     }
-    evaluations.set(evaluation.id.value, EvaluationMapper.toObj(evaluation));
+    evaluations.set(evaluation.id.value, EvaluationMapper.toObjRepository(evaluation));
     return 'Operação concluída com sucesso';
   }
 

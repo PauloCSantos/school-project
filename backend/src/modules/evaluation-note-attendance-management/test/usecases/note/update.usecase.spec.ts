@@ -83,7 +83,6 @@ describe('updateNote usecase unit test', () => {
         evaluation: note1.evaluation,
         student: note1.student,
         note: input.note,
-        state: note1.state,
       });
     });
   });

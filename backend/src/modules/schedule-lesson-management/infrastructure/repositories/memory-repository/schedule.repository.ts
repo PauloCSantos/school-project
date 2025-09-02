@@ -21,7 +21,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
       for (const bucket of schedulesRecords) {
         const map = this.getOrCreateBucket(bucket.masterId);
         for (const schedule of bucket.records) {
-          map.set(schedule.id.value, ScheduleMapper.toObj(schedule));
+          map.set(schedule.id.value, ScheduleMapper.toObjRepository(schedule));
         }
       }
     }
@@ -66,7 +66,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
    */
   async create(masterId: string, schedule: Schedule): Promise<string> {
     const schedules = this.getOrCreateBucket(masterId);
-    schedules.set(schedule.id.value, ScheduleMapper.toObj(schedule));
+    schedules.set(schedule.id.value, ScheduleMapper.toObjRepository(schedule));
     return schedule.id.value;
   }
 
@@ -82,7 +82,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
     if (!schedules || !schedules.has(schedule.id.value)) {
       throw new ScheduleNotFoundError(schedule.id.value);
     }
-    schedules.set(schedule.id.value, ScheduleMapper.toObj(schedule));
+    schedules.set(schedule.id.value, ScheduleMapper.toObjRepository(schedule));
     return schedule;
   }
 
@@ -98,7 +98,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
     if (!schedules || !schedules.has(schedule.id.value)) {
       throw new ScheduleNotFoundError(schedule.id.value);
     }
-    schedules.set(schedule.id.value, ScheduleMapper.toObj(schedule));
+    schedules.set(schedule.id.value, ScheduleMapper.toObjRepository(schedule));
     return 'Operação concluída com sucesso';
   }
 
@@ -116,7 +116,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
     if (!obj) {
       throw new ScheduleNotFoundError(id);
     }
-    schedules!.set(id, ScheduleMapper.toObj(schedule));
+    schedules!.set(id, ScheduleMapper.toObjRepository(schedule));
     const totalLessons = schedule.lessonsList.length - obj.lessonsList.length;
     return `${totalLessons} ${totalLessons === 1 ? 'value was' : 'values were'} entered`;
   }
@@ -135,7 +135,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
     if (!obj) {
       throw new ScheduleNotFoundError(id);
     }
-    schedules!.set(id, ScheduleMapper.toObj(schedule));
+    schedules!.set(id, ScheduleMapper.toObjRepository(schedule));
     const totalLessons = obj.lessonsList.length - schedule.lessonsList.length;
     return `${totalLessons} ${totalLessons === 1 ? 'value was' : 'values were'} removed`;
   }

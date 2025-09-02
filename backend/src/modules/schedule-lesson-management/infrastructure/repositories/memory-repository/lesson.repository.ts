@@ -20,7 +20,7 @@ export default class MemoryLessonRepository implements LessonGateway {
       for (const bucket of lessonsRecords) {
         const map = this.getOrCreateBucket(bucket.masterId);
         for (const lesson of bucket.records) {
-          map.set(lesson.id.value, LessonMapper.toObj(lesson));
+          map.set(lesson.id.value, LessonMapper.toObjRepository(lesson));
         }
       }
     }
@@ -61,7 +61,7 @@ export default class MemoryLessonRepository implements LessonGateway {
    */
   async create(masterId: string, lesson: Lesson): Promise<string> {
     const lessons = this.getOrCreateBucket(masterId);
-    lessons.set(lesson.id.value, LessonMapper.toObj(lesson));
+    lessons.set(lesson.id.value, LessonMapper.toObjRepository(lesson));
     return lesson.id.value;
   }
 
@@ -78,7 +78,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     if (!lessons || !lessons.has(id)) {
       throw new LessonNotFoundError(id);
     }
-    lessons.set(id, LessonMapper.toObj(lesson));
+    lessons.set(id, LessonMapper.toObjRepository(lesson));
     return lesson;
   }
 
@@ -94,7 +94,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     if (!lessons || !lessons.has(lesson.id.value)) {
       throw new LessonNotFoundError(lesson.id.value);
     }
-    lessons.set(lesson.id.value, LessonMapper.toObj(lesson));
+    lessons.set(lesson.id.value, LessonMapper.toObjRepository(lesson));
     return 'Operação concluída com sucesso';
   }
 
@@ -113,7 +113,7 @@ export default class MemoryLessonRepository implements LessonGateway {
       throw new LessonNotFoundError(id);
     }
 
-    lessons!.set(id, LessonMapper.toObj(lesson));
+    lessons!.set(id, LessonMapper.toObjRepository(lesson));
 
     const totalStudents = lesson.studentsList.length - obj.studentsList.length;
     return `${totalStudents} ${
@@ -136,7 +136,7 @@ export default class MemoryLessonRepository implements LessonGateway {
       throw new LessonNotFoundError(id);
     }
 
-    lessons!.set(id, LessonMapper.toObj(lesson));
+    lessons!.set(id, LessonMapper.toObjRepository(lesson));
 
     const totalStudents = obj.studentsList.length - lesson.studentsList.length;
     return `${totalStudents} ${
@@ -158,7 +158,7 @@ export default class MemoryLessonRepository implements LessonGateway {
     if (!obj) {
       throw new LessonNotFoundError(id);
     }
-    lessons!.set(id, LessonMapper.toObj(lesson));
+    lessons!.set(id, LessonMapper.toObjRepository(lesson));
 
     const totalStudents = lesson.days.length - obj.days.length;
     return `${totalStudents} ${
@@ -181,7 +181,7 @@ export default class MemoryLessonRepository implements LessonGateway {
       throw new LessonNotFoundError(id);
     }
 
-    lessons!.set(id, LessonMapper.toObj(lesson));
+    lessons!.set(id, LessonMapper.toObjRepository(lesson));
 
     const totalStudents = obj.days.length - lesson.days.length;
     return `${totalStudents} ${
@@ -204,7 +204,7 @@ export default class MemoryLessonRepository implements LessonGateway {
       throw new LessonNotFoundError(id);
     }
 
-    lessons!.set(id, LessonMapper.toObj(lesson));
+    lessons!.set(id, LessonMapper.toObjRepository(lesson));
 
     const totalStudents = lesson.times.length - obj.times.length;
     return `${totalStudents} ${
@@ -227,7 +227,7 @@ export default class MemoryLessonRepository implements LessonGateway {
       throw new LessonNotFoundError(id);
     }
 
-    lessons!.set(id, LessonMapper.toObj(lesson));
+    lessons!.set(id, LessonMapper.toObjRepository(lesson));
 
     const totalStudents = obj.times.length - lesson.times.length;
     return `${totalStudents} ${

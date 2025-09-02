@@ -3,6 +3,7 @@ import Schedule from '@/modules/schedule-lesson-management/domain/entity/schedul
 import { IFindScheduleOutput as ScheduleMapperProps } from '../dto/base-schedule.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
 import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
+import { FindScheduleOutputDto } from '../../application/dto/schedule-usecase.dto';
 
 /**
  * Interface that defines the data structure for mapping Schedule entities
@@ -14,11 +15,11 @@ export type { ScheduleMapperProps };
  */
 export class ScheduleMapper {
   /**
-   * Converts a Schedule entity into a plain object (DTO)
+   * Converts a Schedule entity into a plain object (DTO) to the repository
    * @param input Schedule entity to be converted
    * @returns Plain object representing the entity
    */
-  static toObj(input: Schedule): ScheduleMapperProps {
+  static toObjRepository(input: Schedule): ScheduleMapperProps {
     if (!input || !(input instanceof Schedule)) {
       throw new MapperError('Invalid Schedule entity provided to mapper');
     }
@@ -29,6 +30,23 @@ export class ScheduleMapper {
       lessonsList: input.lessonsList,
       student: input.student,
       state: input.state,
+    };
+  }
+  /**
+   * Converts a Schedule entity into a plain object (DTO)
+   * @param input Schedule entity to be converted
+   * @returns Plain object representing the entity
+   */
+  static toObj(input: Schedule): FindScheduleOutputDto {
+    if (!input || !(input instanceof Schedule)) {
+      throw new MapperError('Invalid Schedule entity provided to mapper');
+    }
+
+    return {
+      id: input.id.value,
+      curriculum: input.curriculum,
+      lessonsList: input.lessonsList,
+      student: input.student,
     };
   }
 
@@ -57,7 +75,7 @@ export class ScheduleMapper {
    * @param entities List of Schedule entities
    * @returns List of plain objects representing the entities
    */
-  static toObjList(entities: Schedule[]): ScheduleMapperProps[] {
+  static toObjList(entities: Schedule[]): FindScheduleOutputDto[] {
     return entities.map(entity => this.toObj(entity));
   }
 

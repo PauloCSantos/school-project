@@ -122,7 +122,6 @@ describe('UpdateEvent usecase unit test', () => {
         day: dataToUpdate.day,
         type: dataToUpdate.type,
         place: dataToUpdate.place,
-        state: 'active',
       });
     });
 
