@@ -106,7 +106,6 @@ describe('updateEvaluation usecase unit test', () => {
         teacher: input.teacher,
         type: input.type,
         value: input.value,
-        state: 'active',
       });
     });
   });
