@@ -42,7 +42,12 @@ export default class AuthUserRoute {
       createRequestMiddleware(FunctionCalledEnum.DELETE, REQUIRED_FIELD),
     ]);
 
+    this.httpGateway.post('/registerTenant', this.createAuthUser.bind(this), [
+      createRequestMiddleware(FunctionCalledEnum.CREATE, [...REQUIRED_FIELDS, 'cnpj']),
+    ]);
+
     this.httpGateway.post('/register', this.createAuthUser.bind(this), [
+      this.authMiddleware,
       createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
     ]);
 

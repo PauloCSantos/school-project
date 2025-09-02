@@ -6,7 +6,7 @@ describe('AuthUser facade integration test', () => {
   const input = {
     email: 'teste@teste.com.br',
     password: 'XpA2Jjd4',
-    role: 'master' as RoleUsers,
+    role: 'worker' as RoleUsers,
     cnpj: '12345678000195',
   };
   const input2 = {
@@ -18,7 +18,7 @@ describe('AuthUser facade integration test', () => {
   const input3 = {
     email: 'teste3@teste.com.br',
     password: 'XpA2Jjd4',
-    role: 'master' as RoleUsers,
+    role: 'student' as RoleUsers,
     cnpj: '12345678000234',
   };
   const token: TokenData = {
@@ -27,9 +27,21 @@ describe('AuthUser facade integration test', () => {
     role: RoleUsersEnum.MASTER,
   };
 
+  it('should create an tenant AuthUser using the facade', async () => {
+    const facade = AuthUserFacadeFactory.create();
+    const result = await facade.createTenant({
+      email: 'teste3@teste.com.br',
+      password: 'XpA2Jjd4',
+      role: 'master' as RoleUsers,
+      cnpj: '12345678000234',
+    });
+
+    expect(result.email).toBeDefined();
+    expect(result.masterId).toBeDefined();
+  });
   it('should create an AuthUser using the facade', async () => {
     const facade = AuthUserFacadeFactory.create();
-    const result = await facade.create(input);
+    const result = await facade.create(input, token);
 
     expect(result.email).toBeDefined();
   });
@@ -37,7 +49,6 @@ describe('AuthUser facade integration test', () => {
     const facade = AuthUserFacadeFactory.create();
     const result = await facade.create(input, token);
     const AuthUser = await facade.find(result, token);
-
     expect(AuthUser).toBeDefined();
   });
   it('should delete an AuthUser using the facade', async () => {
@@ -51,7 +62,7 @@ describe('AuthUser facade integration test', () => {
   });
   it('should update an  AuthUser using the facade', async () => {
     const facade = AuthUserFacadeFactory.create();
-    const response = await facade.create(input);
+    const response = await facade.create(input, token);
 
     token.masterId = response.masterId;
     const result = await facade.update(

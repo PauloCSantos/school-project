@@ -131,15 +131,12 @@ describe('User Worker facade integration test', () => {
   };
 
   async function createAuthUserFor(email: string) {
-    await facadeAuthUser.create(
-      {
-        email,
-        password: 'XpA2Jjd4',
-        role: 'master' as RoleUsers,
-        cnpj: '12345678000195',
-      },
-      token
-    );
+    await facadeAuthUser.createTenant({
+      email,
+      password: 'XpA2Jjd4',
+      role: 'master' as RoleUsers,
+      cnpj: '12345678000195',
+    });
   }
 
   beforeEach(() => {
