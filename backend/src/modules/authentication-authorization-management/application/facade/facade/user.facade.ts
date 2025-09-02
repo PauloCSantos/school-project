@@ -59,9 +59,20 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
    * @param input User creation parameters
    * @returns Information about the created user
    */
+  public async createTenant(
+    input: CreateAuthUserInputDto
+  ): Promise<CreateAuthUserOutputDto> {
+    return await this._createAuthUser.execute(input);
+  }
+
+  /**
+   * Creates a new authentication user
+   * @param input User creation parameters
+   * @returns Information about the created user
+   */
   public async create(
     input: CreateAuthUserInputDto,
-    token?: TokenData
+    token: TokenData
   ): Promise<CreateAuthUserOutputDto> {
     return await this._createAuthUser.execute(input, token);
   }
@@ -109,9 +120,7 @@ export default class AuthUserFacade implements AuthUserFacadeInterface {
    * @param input Login credentials
    * @returns Authentication token
    */
-  public async login(
-    input: LoginAuthUserInputDto
-  ): Promise<LoginAuthUserOutputDto> {
+  public async login(input: LoginAuthUserInputDto): Promise<LoginAuthUserOutputDto> {
     return await this._loginAuthUser.execute(input);
   }
 }
