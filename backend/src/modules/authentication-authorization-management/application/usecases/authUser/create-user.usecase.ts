@@ -8,13 +8,16 @@ import TenantGateway from '@/modules/authentication-authorization-management/app
 import AuthUser from '@/modules/authentication-authorization-management/domain/entity/user.entity';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 
-import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
+import {
+  FunctionCalledEnum,
+  ModulesNameEnum,
+  RoleUsersEnum,
+} from '@/modules/@shared/enums/enums';
 import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import { AuthUserServiceInterface } from '@/modules/authentication-authorization-management/domain/service/interface/user-entity-service.interface';
 import { TenantServiceInterface } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
 import { toRoleType } from '@/modules/@shared/utils/formatting';
 import { ConflictError } from '@/modules/@shared/application/errors/conflict.error';
-import { MissingCnpjTokenError } from '../../errors/missing-cnpj-token.error';
 
 export default class CreateAuthUser
   implements UseCaseInterface<CreateAuthUserInputDto, CreateAuthUserOutputDto>
@@ -34,9 +37,9 @@ export default class CreateAuthUser
     toRoleType(role);
     let masterId = token?.masterId;
 
-    if (!cnpj && !masterId) {
-      throw new MissingCnpjTokenError(
-        'It is necessary to inform CNPJ or be authenticated'
+    if (masterId && role === RoleUsersEnum.MASTER) {
+      throw new ConflictError(
+        'It is not allowed to register a master user on this route'
       );
     }
 

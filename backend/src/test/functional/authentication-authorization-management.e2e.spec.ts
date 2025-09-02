@@ -30,7 +30,7 @@ async function registerAndLoginUser(app: any, userDataOverride = {}) {
 
   const userData = { ...defaultUserData, ...userDataOverride };
 
-  const registerResponse = await supertest(app).post('/register').send(userData);
+  const registerResponse = await supertest(app).post('/registerTenant').send(userData);
 
   const loginResponse = await supertest(app).post('/login').send({
     email: userData.email,
@@ -114,6 +114,25 @@ describe('Authentication authorization management module end to end test', () =>
     describe('On error', () => {
       describe('POST /register', () => {
         it('should throw an error when the data to create an authUser is wrong', async () => {
+          const { token } = await registerAndLoginUser(app);
+          const response = await supertest(app)
+            .post('/register')
+            .send({
+              email: 'teste@teste.com.br',
+              password: 'XpA2Jjd4',
+              cnpj: '12345678000113',
+              role: 'unknow',
+              isHashed: false,
+            })
+            .set('authorization', `Bearer ${token}`);
+
+          expect(response.status).toBe(422);
+          expect(response.body.code).toBeDefined();
+          expect(response.body.message).toBeDefined();
+          expect(response.body.details).toBeDefined();
+        });
+
+        it('should throw an error when the data token is missing', async () => {
           const response = await supertest(app).post('/register').send({
             email: 'teste@teste.com.br',
             password: 'XpA2Jjd4',
@@ -122,10 +141,9 @@ describe('Authentication authorization management module end to end test', () =>
             isHashed: false,
           });
 
-          expect(response.status).toBe(422);
+          expect(response.status).toBe(401);
           expect(response.body.code).toBeDefined();
           expect(response.body.message).toBeDefined();
-          expect(response.body.details).toBeDefined();
         });
       });
 
@@ -224,14 +242,14 @@ describe('Authentication authorization management module end to end test', () =>
 
       describe('POST /register (more errors)', () => {
         it('should return 409 when email already exists with different password', async () => {
-          await supertest(app).post('/register').send({
+          await supertest(app).post('/registerTenant').send({
             email: 'duplicate@teste.com.br',
             password: 'FirstPass1',
             cnpj: '12345678000111',
             role: 'master',
           });
 
-          const response = await supertest(app).post('/register').send({
+          const response = await supertest(app).post('/registerTenant').send({
             email: 'duplicate@teste.com.br',
             password: 'OtherPass2',
             cnpj: '12345678000111',
@@ -245,7 +263,7 @@ describe('Authentication authorization management module end to end test', () =>
 
         it('should return 400 when neither cnpj is provided or user is authenticated', async () => {
           const response = await supertest(app)
-            .post('/register')
+            .post('/registerTenant')
             .send({
               email: 'no-cnpj@teste.com.br',
               password: 'XpA2Jjd4',
@@ -254,9 +272,7 @@ describe('Authentication authorization management module end to end test', () =>
 
           expect(response.status).toBe(400);
           expect(response.body.code).toBeDefined();
-          expect(response.body.message).toBe(
-            'It is necessary to inform CNPJ or be authenticated'
-          );
+          expect(response.body.message).toBe('Missing required field');
         });
       });
 
@@ -289,16 +305,35 @@ describe('Authentication authorization management module end to end test', () =>
     });
 
     describe('On success', () => {
-      describe('POST /register', () => {
+      describe('POST /registerTenant', () => {
         it('should create an authUser', async () => {
           const response = await supertest(app)
-            .post('/register')
+            .post('/registerTenant')
             .send({
               email: 'teste@teste.com.br',
               password: 'XpA2Jjd4',
               cnpj: '12345678000111',
               role: 'master' as RoleUsers,
             });
+
+          expect(response.status).toBe(201);
+          expect(response.body.email).toBeDefined();
+          expect(response.body.masterId).toBeDefined();
+        });
+      });
+
+      describe('POST /register', () => {
+        it('should create an new user', async () => {
+          const { token } = await registerAndLoginUser(app);
+          const response = await supertest(app)
+            .post('/register')
+            .send({
+              email: 'teste2@teste.com.br',
+              password: 'XpA2Jjd5',
+              role: 'administrator' as RoleUsers,
+              cnpj: '12345678000111',
+            })
+            .set('authorization', `Bearer ${token}`);
 
           expect(response.status).toBe(201);
           expect(response.body.email).toBeDefined();

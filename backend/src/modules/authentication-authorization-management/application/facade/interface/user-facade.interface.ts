@@ -24,6 +24,13 @@ export default interface AuthUserFacadeInterface {
    * @param input User creation parameters including email, password and role
    * @returns Information about the created user
    */
+  createTenant(input: CreateAuthUserInputDto): Promise<CreateAuthUserOutputDto>;
+
+  /**
+   * Creates a new authentication user
+   * @param input User creation parameters including email, password and role
+   * @returns Information about the created user
+   */
   create(
     input: CreateAuthUserInputDto,
     token: TokenData
