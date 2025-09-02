@@ -3,6 +3,7 @@ import Attendance from '@/modules/evaluation-note-attendance-management/domain/e
 import type { IFindAttendanceOutput as AttendanceMapperProps } from '../dto/base-attendance.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
 import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
+import { FindAttendanceOutputDto } from '../../application/dto/attendance-usecase.dto';
 
 /**
  * Interface that defines the data structure for mapping Attendance entities
@@ -13,11 +14,11 @@ export type { AttendanceMapperProps };
  */
 export class AttendanceMapper {
   /**
-   * Converts an Attendance entity into a plain object (DTO)
+   * Converts an Attendance entity into a plain object (DTO) to the repository
    * @param input Attendance entity to be converted
    * @returns Plain object representing the entity
    */
-  static toObj(input: Attendance): AttendanceMapperProps {
+  static toObjRepository(input: Attendance): AttendanceMapperProps {
     if (!input || !(input instanceof Attendance)) {
       throw new MapperError('Invalid Attendance entity provided to mapper');
     }
@@ -30,6 +31,25 @@ export class AttendanceMapper {
       lesson: input.lesson,
       studentsPresent: input.studentsPresent,
       state: input.state,
+    };
+  }
+  /**
+   * Converts an Attendance entity into a plain object (DTO)
+   * @param input Attendance entity to be converted
+   * @returns Plain object representing the entity
+   */
+  static toObj(input: Attendance): FindAttendanceOutputDto {
+    if (!input || !(input instanceof Attendance)) {
+      throw new MapperError('Invalid Attendance entity provided to mapper');
+    }
+
+    return {
+      id: input.id.value,
+      date: input.date,
+      day: input.day,
+      hour: input.hour,
+      lesson: input.lesson,
+      studentsPresent: input.studentsPresent,
     };
   }
 
@@ -60,7 +80,7 @@ export class AttendanceMapper {
    * @param entities List of Attendance entities
    * @returns List of plain objects representing the entities
    */
-  static toObjList(entities: Attendance[]): AttendanceMapperProps[] {
+  static toObjList(entities: Attendance[]): FindAttendanceOutputDto[] {
     return entities.map(entity => this.toObj(entity));
   }
 

@@ -24,7 +24,10 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
           this._curriculums.set(masterId, curriculums);
         }
         for (const curriculum of records) {
-          curriculums.set(curriculum.id.value, CurriculumMapper.toObj(curriculum));
+          curriculums.set(
+            curriculum.id.value,
+            CurriculumMapper.toObjRepository(curriculum)
+          );
         }
       }
     }
@@ -69,7 +72,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
    */
   async create(masterId: string, curriculum: Curriculum): Promise<string> {
     const curriculums = this.getOrCreateBucket(masterId);
-    curriculums.set(curriculum.id.value, CurriculumMapper.toObj(curriculum));
+    curriculums.set(curriculum.id.value, CurriculumMapper.toObjRepository(curriculum));
     return curriculum.id.value;
   }
 
@@ -85,7 +88,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     if (!curriculums || !curriculums.has(curriculum.id.value)) {
       throw new CurriculumNotFoundError(curriculum.id.value);
     }
-    curriculums.set(curriculum.id.value, CurriculumMapper.toObj(curriculum));
+    curriculums.set(curriculum.id.value, CurriculumMapper.toObjRepository(curriculum));
     return curriculum;
   }
 
@@ -101,7 +104,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
     if (!curriculums || !curriculums.has(curriculum.id.value)) {
       throw new CurriculumNotFoundError(curriculum.id.value);
     }
-    curriculums.set(curriculum.id.value, CurriculumMapper.toObj(curriculum));
+    curriculums.set(curriculum.id.value, CurriculumMapper.toObjRepository(curriculum));
     return 'Operação concluída com sucesso';
   }
 
@@ -124,7 +127,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
       throw new CurriculumNotFoundError(id);
     }
 
-    curriculums!.set(id, CurriculumMapper.toObj(curriculum));
+    curriculums!.set(id, CurriculumMapper.toObjRepository(curriculum));
 
     const previousCount = obj.subjectsList.length;
     const nextCount = curriculum.subjectList.length;
@@ -152,7 +155,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
       throw new CurriculumNotFoundError(id);
     }
 
-    curriculums!.set(id, CurriculumMapper.toObj(curriculum));
+    curriculums!.set(id, CurriculumMapper.toObjRepository(curriculum));
 
     const previousCount = obj.subjectsList.length;
     const nextCount = curriculum.subjectList.length;

@@ -24,7 +24,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
           this._subjects.set(masterId, subjects);
         }
         for (const subject of records) {
-          subjects.set(subject.id.value, SubjectMapper.toObj(subject));
+          subjects.set(subject.id.value, SubjectMapper.toObjRepository(subject));
         }
       }
     }
@@ -69,7 +69,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
    */
   async create(masterId: string, subject: Subject): Promise<string> {
     const subjects = this.getOrCreateBucket(masterId);
-    subjects.set(subject.id.value, SubjectMapper.toObj(subject));
+    subjects.set(subject.id.value, SubjectMapper.toObjRepository(subject));
     return subject.id.value;
   }
 
@@ -85,7 +85,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
     if (!subjects || !subjects.has(subject.id.value)) {
       throw new SubjectNotFoundError(subject.id.value);
     }
-    subjects.set(subject.id.value, SubjectMapper.toObj(subject));
+    subjects.set(subject.id.value, SubjectMapper.toObjRepository(subject));
     return subject;
   }
 
@@ -101,7 +101,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
     if (!subjects || !subjects.has(subject.id.value)) {
       throw new SubjectNotFoundError(subject.id.value);
     }
-    subjects.set(subject.id.value, SubjectMapper.toObj(subject));
+    subjects.set(subject.id.value, SubjectMapper.toObjRepository(subject));
     return 'Operação concluída com sucesso';
   }
 

@@ -24,7 +24,10 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
           this._attendances.set(masterId, attendances);
         }
         for (const attendance of records) {
-          attendances.set(attendance.id.value, AttendanceMapper.toObj(attendance));
+          attendances.set(
+            attendance.id.value,
+            AttendanceMapper.toObjRepository(attendance)
+          );
         }
       }
     }
@@ -69,7 +72,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
    */
   async create(masterId: string, attendance: Attendance): Promise<string> {
     const attendances = this.getOrCreateBucket(masterId);
-    attendances.set(attendance.id.value, AttendanceMapper.toObj(attendance));
+    attendances.set(attendance.id.value, AttendanceMapper.toObjRepository(attendance));
     return attendance.id.value;
   }
 
@@ -85,7 +88,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
     if (!attendances || !attendances.has(attendance.id.value)) {
       throw new AttendanceNotFoundError(attendance.id.value);
     }
-    attendances.set(attendance.id.value, AttendanceMapper.toObj(attendance));
+    attendances.set(attendance.id.value, AttendanceMapper.toObjRepository(attendance));
     return attendance;
   }
 
@@ -101,7 +104,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
     if (!attendances || !attendances.has(attendance.id.value)) {
       throw new AttendanceNotFoundError(attendance.id.value);
     }
-    attendances.set(attendance.id.value, AttendanceMapper.toObj(attendance));
+    attendances.set(attendance.id.value, AttendanceMapper.toObjRepository(attendance));
     return 'Operação concluída com sucesso';
   }
 
@@ -123,7 +126,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
     if (!obj) {
       throw new AttendanceNotFoundError(id);
     }
-    attendances!.set(id, AttendanceMapper.toObj(attendance));
+    attendances!.set(id, AttendanceMapper.toObjRepository(attendance));
     const totalStudents = attendance.studentsPresent.length - obj.studentsPresent.length;
     return `${totalStudents} ${
       totalStudents === 1 ? 'value was' : 'values were'
@@ -149,7 +152,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
       throw new AttendanceNotFoundError(id);
     }
 
-    attendances!.set(id, AttendanceMapper.toObj(attendance));
+    attendances!.set(id, AttendanceMapper.toObjRepository(attendance));
 
     const totalStudents = obj.studentsPresent.length - attendance.studentsPresent.length;
     return `${totalStudents} ${

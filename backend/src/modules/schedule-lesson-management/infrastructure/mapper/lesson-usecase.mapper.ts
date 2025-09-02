@@ -3,6 +3,8 @@ import Lesson from '@/modules/schedule-lesson-management/domain/entity/lesson.en
 import type { IFindLessonOutput as LessonMapperProps } from '../dto/base-lesson.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
 import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
+import { IFindLessonOutput } from '../../application/dto/base-lesson.dto';
+import { FindLessonOutputDto } from '../../application/dto/lesson-usecase.dto';
 
 /**
  * Interface that defines the data structure for mapping Lesson entities
@@ -14,11 +16,11 @@ export type { LessonMapperProps };
  */
 export class LessonMapper {
   /**
-   * Converts a Lesson entity into a plain object (DTO)
+   * Converts a Lesson entity into a plain object (DTO) to the repository
    * @param input Lesson entity to be converted
    * @returns Plain object representing the entity
    */
-  static toObj(input: Lesson): LessonMapperProps {
+  static toObjRepository(input: Lesson): LessonMapperProps {
     if (!input || !(input instanceof Lesson)) {
       throw new MapperError('Invalid Lesson entity provided to mapper');
     }
@@ -34,6 +36,28 @@ export class LessonMapper {
       teacher: input.teacher,
       times: input.times,
       state: input.state,
+    };
+  }
+  /**
+   * Converts a Lesson entity into a plain object (DTO)
+   * @param input Lesson entity to be converted
+   * @returns Plain object representing the entity
+   */
+  static toObj(input: Lesson): FindLessonOutputDto {
+    if (!input || !(input instanceof Lesson)) {
+      throw new MapperError('Invalid Lesson entity provided to mapper');
+    }
+
+    return {
+      id: input.id.value,
+      days: input.days,
+      duration: input.duration,
+      name: input.name,
+      semester: input.semester,
+      studentsList: input.studentsList,
+      subject: input.subject,
+      teacher: input.teacher,
+      times: input.times,
     };
   }
 
@@ -67,7 +91,7 @@ export class LessonMapper {
    * @param entities List of Lesson entities
    * @returns List of plain objects representing the entities
    */
-  static toObjList(entities: Lesson[]): LessonMapperProps[] {
+  static toObjList(entities: Lesson[]): FindLessonOutputDto[] {
     return entities.map(entity => this.toObj(entity));
   }
 
@@ -78,5 +102,23 @@ export class LessonMapper {
    */
   static toInstanceList(inputs: LessonMapperProps[]): Lesson[] {
     return inputs.map(input => this.toInstance(input));
+  }
+
+  static toObjUsecase(input: Lesson): IFindLessonOutput {
+    if (!input || !(input instanceof Lesson)) {
+      throw new MapperError('Invalid Lesson entity provided to mapper');
+    }
+
+    return {
+      id: input.id.value,
+      days: input.days,
+      duration: input.duration,
+      name: input.name,
+      semester: input.semester,
+      studentsList: input.studentsList,
+      subject: input.subject,
+      teacher: input.teacher,
+      times: input.times,
+    };
   }
 }

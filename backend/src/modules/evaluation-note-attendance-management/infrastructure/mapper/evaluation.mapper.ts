@@ -3,6 +3,7 @@ import Evaluation from '@/modules/evaluation-note-attendance-management/domain/e
 import type { IFindEvaluationOutput as EvaluationMapperProps } from '../dto/base-evaluation.dto';
 import { toStateType } from '@/modules/@shared/utils/formatting';
 import { MapperError } from '@/modules/authentication-authorization-management/application/errors/mapper.error';
+import { FindEvaluationOutputDto } from '../../application/dto/evaluation-usecase.dto';
 
 /**
  * Interface that defines the data structure for mapping Evaluation entities
@@ -14,9 +15,9 @@ export type { EvaluationMapperProps };
  */
 export class EvaluationMapper {
   /**
-   * Converts an Evaluation entity into a plain object (DTO)
+   * Converts an Evaluation entity into a plain object (DTO) to the repository
    */
-  static toObj(input: Evaluation): EvaluationMapperProps {
+  static toObjRepository(input: Evaluation): EvaluationMapperProps {
     if (!input || !(input instanceof Evaluation)) {
       throw new MapperError('Invalid Evaluation entity provided to mapper');
     }
@@ -28,6 +29,22 @@ export class EvaluationMapper {
       type: input.type,
       value: input.value,
       state: input.state,
+    };
+  }
+  /**
+   * Converts an Evaluation entity into a plain object (DTO)
+   */
+  static toObj(input: Evaluation): FindEvaluationOutputDto {
+    if (!input || !(input instanceof Evaluation)) {
+      throw new MapperError('Invalid Evaluation entity provided to mapper');
+    }
+
+    return {
+      id: input.id.value,
+      teacher: input.teacher,
+      lesson: input.lesson,
+      type: input.type,
+      value: input.value,
     };
   }
 
@@ -52,7 +69,7 @@ export class EvaluationMapper {
   /**
    * Converts a list of Evaluation entities into plain objects (DTOs)
    */
-  static toObjList(entities: Evaluation[]): EvaluationMapperProps[] {
+  static toObjList(entities: Evaluation[]): FindEvaluationOutputDto[] {
     return entities.map(entity => this.toObj(entity));
   }
 

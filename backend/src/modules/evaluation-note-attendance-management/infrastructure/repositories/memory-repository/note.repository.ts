@@ -24,7 +24,7 @@ export default class MemoryNoteRepository implements NoteGateway {
           this._notes.set(masterId, notes);
         }
         for (const note of records) {
-          notes.set(note.id.value, NoteMapper.toObj(note));
+          notes.set(note.id.value, NoteMapper.toObjRepository(note));
         }
       }
     }
@@ -69,7 +69,7 @@ export default class MemoryNoteRepository implements NoteGateway {
    */
   async create(masterId: string, note: Note): Promise<string> {
     const notes = this.getOrCreateBucket(masterId);
-    notes.set(note.id.value, NoteMapper.toObj(note));
+    notes.set(note.id.value, NoteMapper.toObjRepository(note));
     return note.id.value;
   }
 
@@ -85,7 +85,7 @@ export default class MemoryNoteRepository implements NoteGateway {
     if (!notes || !notes.has(note.id.value)) {
       throw new NoteNotFoundError(note.id.value);
     }
-    notes.set(note.id.value, NoteMapper.toObj(note));
+    notes.set(note.id.value, NoteMapper.toObjRepository(note));
     return note;
   }
 
@@ -101,7 +101,7 @@ export default class MemoryNoteRepository implements NoteGateway {
     if (!notes || !notes.has(note.id.value)) {
       throw new NoteNotFoundError(note.id.value);
     }
-    notes.set(note.id.value, NoteMapper.toObj(note));
+    notes.set(note.id.value, NoteMapper.toObjRepository(note));
     return 'Operação concluída com sucesso';
   }
 
