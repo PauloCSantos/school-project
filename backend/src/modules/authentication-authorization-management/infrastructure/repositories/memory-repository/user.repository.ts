@@ -74,7 +74,7 @@ export default class MemoryAuthUserRepository implements AuthUserGateway {
     }
 
     this._authUsers.set(authUser.email, AuthUserMapper.toObj(authUser));
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   /**

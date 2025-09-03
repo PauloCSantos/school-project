@@ -380,7 +380,7 @@ describe('Authentication authorization management module end to end test', () =>
             .set('authorization', token);
 
           expect(result.status).toBe(200);
-          expect(result.body.message).toBe('Operação concluída com sucesso');
+          expect(result.body.message).toBe('Operation completed successfully');
         });
       });
 

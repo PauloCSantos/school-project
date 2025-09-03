@@ -101,6 +101,6 @@ export default class MemoryUserRepository implements UserGateway {
       throw new UserNotFoundError('base', id);
     }
     this._users.delete(id);
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 }

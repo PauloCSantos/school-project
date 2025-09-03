@@ -15,7 +15,7 @@ describe('deleteLesson usecase unit test', () => {
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
-      delete: jest.fn(() => Promise.resolve('Operação concluída com sucesso')),
+      delete: jest.fn(() => Promise.resolve('Operation completed successfully')),
       addStudents: jest.fn(),
       removeStudents: jest.fn(),
       addDay: jest.fn(),
@@ -75,7 +75,7 @@ describe('deleteLesson usecase unit test', () => {
 
       expect(lessonRepository.delete).toHaveBeenCalled();
       expect(result).toBeDefined();
-      expect(result.message).toBe('Operação concluída com sucesso');
+      expect(result.message).toBe('Operation completed successfully');
     });
   });
 });

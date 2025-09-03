@@ -163,7 +163,7 @@ describe('MemoryAttendanceRepository unit test', () => {
     it('should delete an existing attendance and update repository state', async () => {
       const response = await repository.delete(masterId, attendance1);
 
-      expect(response).toBe('Operação concluída com sucesso');
+      expect(response).toBe('Operation completed successfully');
     });
 
     it('should add new students to the attendance and persist changes', async () => {

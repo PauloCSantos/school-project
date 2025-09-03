@@ -95,7 +95,7 @@ export default class MemoryLessonRepository implements LessonGateway {
       throw new LessonNotFoundError(lesson.id.value);
     }
     lessons.set(lesson.id.value, LessonMapper.toObjRepository(lesson));
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   /**

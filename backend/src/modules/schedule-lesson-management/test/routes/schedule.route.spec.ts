@@ -129,7 +129,7 @@ describe('ScheduleRoute with ExpressAdapter', () => {
     it('should delete a schedule by ID', async () => {
       const id = new Id().value;
       scheduleController.delete.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
 
       const response = await supertest(app).delete(`/schedule/${id}`);
@@ -143,7 +143,7 @@ describe('ScheduleRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ message: 'Operação concluída com sucesso' });
+      expect(response.body).toEqual({ message: 'Operation completed successfully' });
     });
 
     it('should add lessons to the schedule', async () => {

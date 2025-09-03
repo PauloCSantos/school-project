@@ -88,7 +88,7 @@ describe('DeleteAuthUser Use Case', () => {
 
   it('should delete an authUser successfully', async () => {
     repository.find.mockResolvedValueOnce(existingUser);
-    repository.delete.mockResolvedValueOnce('Operação concluída com sucesso');
+    repository.delete.mockResolvedValueOnce('Operation completed successfully');
 
     const result = await usecase.execute(input, token);
 
@@ -98,6 +98,6 @@ describe('DeleteAuthUser Use Case', () => {
       token
     );
     expect(repository.delete).toHaveBeenCalled();
-    expect(result).toEqual({ message: 'Operação concluída com sucesso' });
+    expect(result).toEqual({ message: 'Operation completed successfully' });
   });
 });

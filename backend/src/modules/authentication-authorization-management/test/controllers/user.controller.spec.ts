@@ -71,7 +71,7 @@ describe('AuthUserController unit test', () => {
 
   const deleteInput: DeleteAuthUserInputDto = { email };
   const deleteOutput: DeleteAuthUserOutputDto = {
-    message: 'Operação concluída com sucesso',
+    message: 'Operation completed successfully',
   };
 
   const loginInput: LoginAuthUserInputDto = {

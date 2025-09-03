@@ -58,7 +58,7 @@ describe('AuthUser facade integration test', () => {
     await facade.create(input3, token);
     const result = await facade.delete({ email: response.email }, token);
 
-    expect(result.message).toBe('Operação concluída com sucesso');
+    expect(result.message).toBe('Operation completed successfully');
   });
   it('should update an  AuthUser using the facade', async () => {
     const facade = AuthUserFacadeFactory.create('secretket');

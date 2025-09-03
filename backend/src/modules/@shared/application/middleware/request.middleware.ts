@@ -53,7 +53,7 @@ export default class RequestMiddleware implements HttpMiddleware<any, any, any, 
         const searchId = req.params?.id as string | undefined;
         const searchEmail = req.params?.email as string | undefined;
         if (!searchId && !searchEmail) {
-          return buildError(HttpStatus.BAD_REQUEST, 'No parameters were passed to fetch'); // Validar GPT
+          return buildError(HttpStatus.BAD_REQUEST, 'No parameters were passed to fetch');
         }
         if (searchEmail) {
           if (!validEmail(searchEmail)) {
@@ -75,7 +75,7 @@ export default class RequestMiddleware implements HttpMiddleware<any, any, any, 
         const idToDelete = req.params?.id as string | undefined;
         const emailToDelete = req.params?.email as string | undefined;
         if (!idToDelete && !emailToDelete) {
-          return buildError(HttpStatus.BAD_REQUEST, 'No parameters were passed to fetch'); // Validar GPT
+          return buildError(HttpStatus.BAD_REQUEST, 'No parameters were passed to fetch');
         }
         if (emailToDelete) {
           if (!validEmail(emailToDelete)) {
@@ -108,7 +108,7 @@ export default class RequestMiddleware implements HttpMiddleware<any, any, any, 
         const idToUpdate = req.body?.id as string | undefined;
         const emailToUpdate = req.body?.email as string | undefined;
         if (!idToUpdate && !emailToUpdate) {
-          return buildError(HttpStatus.BAD_REQUEST, 'No parameters were passed to fetch'); // Validar GPT
+          return buildError(HttpStatus.BAD_REQUEST, 'No parameters were passed to fetch');
         }
         let foundFields = 0;
         if (idToUpdate) {
