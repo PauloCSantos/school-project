@@ -1,5 +1,4 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import MemorySubjectRepository from '@/modules/subject-curriculum-management/infrastructure/repositories/memory-repository/subject.repository';
 import CreateSubject from '@/modules/subject-curriculum-management/application/usecases/subject/create.usecase';
 import FindSubject from '@/modules/subject-curriculum-management/application/usecases/subject/find.usecase';
@@ -9,15 +8,25 @@ import DeleteSubject from '@/modules/subject-curriculum-management/application/u
 import { SubjectController } from '@/modules/subject-curriculum-management/interface/controller/subject.controller';
 import { SubjectRoute } from '@/modules/subject-curriculum-management/interface/route/subject.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
-export default function initializeSubject(express: HttpServer): void {
+export default function initializeSubject(
+  express: HttpServer,
+  tokenService: TokenService,
+  policiesService: PoliciesService,
+  isProd: boolean
+): void {
   const subjectRepository = new MemorySubjectRepository();
-  const createSubjectUsecase = new CreateSubject(subjectRepository);
-  const findSubjectUsecase = new FindSubject(subjectRepository);
-  const findAllSubjectUsecase = new FindAllSubject(subjectRepository);
-  const updateSubjectUsecase = new UpdateSubject(subjectRepository);
-  const deleteSubjectUsecase = new DeleteSubject(subjectRepository);
+
+  const createSubjectUsecase = new CreateSubject(subjectRepository, policiesService);
+  const findSubjectUsecase = new FindSubject(subjectRepository, policiesService);
+  const findAllSubjectUsecase = new FindAllSubject(subjectRepository, policiesService);
+  const updateSubjectUsecase = new UpdateSubject(subjectRepository, policiesService);
+  const deleteSubjectUsecase = new DeleteSubject(subjectRepository, policiesService);
+
   const subjectController = new SubjectController(
     createSubjectUsecase,
     findSubjectUsecase,
@@ -25,7 +34,7 @@ export default function initializeSubject(express: HttpServer): void {
     updateSubjectUsecase,
     deleteSubjectUsecase
   );
-  const tokenService = tokenInstance();
+
   const allowedRoles: RoleUsers[] = [
     RoleUsersEnum.MASTER,
     RoleUsersEnum.ADMINISTRATOR,
@@ -33,10 +42,6 @@ export default function initializeSubject(express: HttpServer): void {
     RoleUsersEnum.STUDENT,
   ];
   const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
-  const subjectRoute = new SubjectRoute(
-    subjectController,
-    express,
-    authUserMiddleware
-  );
+  const subjectRoute = new SubjectRoute(subjectController, express, authUserMiddleware);
   subjectRoute.routes();
 }

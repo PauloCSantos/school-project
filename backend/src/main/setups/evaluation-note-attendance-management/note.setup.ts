@@ -1,5 +1,4 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import MemoryNoteRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/note.repository';
 import CreateNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/create.usecase';
 import FindNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/find.usecase';
@@ -8,16 +7,26 @@ import UpdateNote from '@/modules/evaluation-note-attendance-management/applicat
 import DeleteNote from '@/modules/evaluation-note-attendance-management/application/usecases/note/delete.usecase';
 import NoteController from '@/modules/evaluation-note-attendance-management/interface/controller/note.controller';
 import NoteRoute from '@/modules/evaluation-note-attendance-management/interface/route/note.route';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
-export default function initializeNote(express: HttpServer): void {
+export default function initializeNote(
+  express: HttpServer,
+  tokenService: TokenService,
+  policiesService: PoliciesService,
+  isProd: boolean
+): void {
   const noteRepository = new MemoryNoteRepository();
-  const createNoteUsecase = new CreateNote(noteRepository);
-  const findNoteUsecase = new FindNote(noteRepository);
-  const findAllNoteUsecase = new FindAllNote(noteRepository);
-  const updateNoteUsecase = new UpdateNote(noteRepository);
-  const deleteNoteUsecase = new DeleteNote(noteRepository);
+
+  const createNoteUsecase = new CreateNote(noteRepository, policiesService);
+  const findNoteUsecase = new FindNote(noteRepository, policiesService);
+  const findAllNoteUsecase = new FindAllNote(noteRepository, policiesService);
+  const updateNoteUsecase = new UpdateNote(noteRepository, policiesService);
+  const deleteNoteUsecase = new DeleteNote(noteRepository, policiesService);
+
   const noteController = new NoteController(
     createNoteUsecase,
     findNoteUsecase,
@@ -25,7 +34,7 @@ export default function initializeNote(express: HttpServer): void {
     updateNoteUsecase,
     deleteNoteUsecase
   );
-  const tokenService = tokenInstance();
+
   const allowedRoles: RoleUsers[] = [
     RoleUsersEnum.MASTER,
     RoleUsersEnum.ADMINISTRATOR,

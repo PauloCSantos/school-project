@@ -1,5 +1,4 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import MemoryAttendanceRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/attendance.repository';
 import CreateAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/create.usecase';
 import FindAttendance from '@/modules/evaluation-note-attendance-management/application/usecases/attendance/find.usecase';
@@ -11,17 +10,42 @@ import RemoveStudents from '@/modules/evaluation-note-attendance-management/appl
 import AttendanceController from '@/modules/evaluation-note-attendance-management/interface/controller/attendance.controller';
 import AttendanceRoute from '@/modules/evaluation-note-attendance-management/interface/route/attendance.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
-export default function initializeAttendance(express: HttpServer): void {
+export default function initializeAttendance(
+  express: HttpServer,
+  tokenService: TokenService,
+  policiesService: PoliciesService,
+  isProd: boolean
+): void {
   const attendanceRepository = new MemoryAttendanceRepository();
-  const createAttendanceUsecase = new CreateAttendance(attendanceRepository);
-  const findAttendanceUsecase = new FindAttendance(attendanceRepository);
-  const findAllAttendanceUsecase = new FindAllAttendance(attendanceRepository);
-  const updateAttendanceUsecase = new UpdateAttendance(attendanceRepository);
-  const deleteAttendanceUsecase = new DeleteAttendance(attendanceRepository);
-  const addStudentsAttendance = new AddStudents(attendanceRepository);
-  const removeStudentsAttendance = new RemoveStudents(attendanceRepository);
+
+  const createAttendanceUsecase = new CreateAttendance(
+    attendanceRepository,
+    policiesService
+  );
+  const findAttendanceUsecase = new FindAttendance(attendanceRepository, policiesService);
+  const findAllAttendanceUsecase = new FindAllAttendance(
+    attendanceRepository,
+    policiesService
+  );
+  const updateAttendanceUsecase = new UpdateAttendance(
+    attendanceRepository,
+    policiesService
+  );
+  const deleteAttendanceUsecase = new DeleteAttendance(
+    attendanceRepository,
+    policiesService
+  );
+  const addStudentsAttendance = new AddStudents(attendanceRepository, policiesService);
+  const removeStudentsAttendance = new RemoveStudents(
+    attendanceRepository,
+    policiesService
+  );
+
   const attendanceController = new AttendanceController(
     createAttendanceUsecase,
     findAttendanceUsecase,
@@ -31,7 +55,7 @@ export default function initializeAttendance(express: HttpServer): void {
     addStudentsAttendance,
     removeStudentsAttendance
   );
-  const tokenService = tokenInstance();
+
   const allowedRoles: RoleUsers[] = [
     RoleUsersEnum.MASTER,
     RoleUsersEnum.ADMINISTRATOR,
