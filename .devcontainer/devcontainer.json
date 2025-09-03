@@ -1,7 +1,7 @@
 {
     "name": "Node.js 20 TypeScript Development",
     "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
-    "workspaceMount": "source=${localWorkspaceFolder}/backend,target=/workspace,type=bind,consistency=cached",
+    "workspaceMount": "source=${localWorkspaceFolder}/frontend,target=/workspace,type=bind,consistency=cached",
     "workspaceFolder": "/workspace",
     "customizations": {
         "vscode": {
