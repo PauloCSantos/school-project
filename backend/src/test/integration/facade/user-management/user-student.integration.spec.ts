@@ -142,7 +142,7 @@ describe('User Student facade integration test', () => {
 
     emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
     tenantService = new TenantService(tenantRepository);
-    tokenService = new TokenService('PxHf3H7');
+    tokenService = new TokenService('secretkey');
     userService = new UserService(userRepository);
 
     policiesService = new PoliciesService();
@@ -247,7 +247,7 @@ describe('User Student facade integration test', () => {
     await facadeStudent.create(input3, token);
     const result = await facadeStudent.delete({ id: id2.id }, token);
     //const allUsers = await facadeStudent.findAll({}, token);
-    expect(result.message).toBe('Operação concluída com sucesso');
+    expect(result.message).toBe('Operation completed successfully');
     //expect(allUsers.length).toBe(2);
   });
 

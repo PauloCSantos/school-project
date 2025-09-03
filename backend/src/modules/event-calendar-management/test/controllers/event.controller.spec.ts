@@ -111,7 +111,7 @@ describe('EventController unit test', () => {
 
   const deleteInput: DeleteEventInputDto = { id };
   const deleteOutput: DeleteEventOutputDto = {
-    message: 'Operação concluída com sucesso',
+    message: 'Operation completed successfully',
   };
 
   token = {

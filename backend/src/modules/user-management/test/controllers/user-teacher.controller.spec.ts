@@ -97,7 +97,7 @@ describe('UserTeacherController unit test', () => {
   const mockDeleteUserTeacher = jest.fn(() => {
     return {
       execute: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       }),
     } as unknown as DeleteUserTeacher;
   });

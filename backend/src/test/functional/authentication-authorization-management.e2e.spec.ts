@@ -4,7 +4,7 @@ import DeleteAuthUser from '@/modules/authentication-authorization-management/ap
 import FindAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/find-user.usecase';
 import LoginAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/login-user.usecase';
 import UpdateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/update-user.usecase';
-import tokenInstance from '@/main/config/tokenService/token-service.instance';
+import tokenInstance from '@/main/config/token-service.instance';
 import { ExpressAdapter } from '@/modules/@shared/infraestructure/http/express.adapter';
 import AuthUserController from '@/modules/authentication-authorization-management/interface/controller/user.controller';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
@@ -53,7 +53,7 @@ describe('Authentication authorization management module end to end test', () =>
   let authUserRepository = new MemoryAuthUserRepository(authUserService);
   let tenantRepository = new MemoryTenantRepository();
   let tenantService = new TenantService(tenantRepository);
-  const tokenService = new TokenService('PxHf3H7');
+  const tokenService = new TokenService('secretkey');
 
   let app: any;
 
@@ -93,7 +93,7 @@ describe('Authentication authorization management module end to end test', () =>
     );
 
     const expressHttp = new ExpressAdapter();
-    const tokenServiceInstance = tokenInstance();
+    const tokenServiceInstance = tokenInstance('secretkey');
     const authUserMiddlewareAuthUser = new AuthUserMiddleware(tokenServiceInstance, [
       RoleUsersEnum.MASTER,
       RoleUsersEnum.ADMINISTRATOR,
@@ -380,7 +380,7 @@ describe('Authentication authorization management module end to end test', () =>
             .set('authorization', token);
 
           expect(result.status).toBe(200);
-          expect(result.body.message).toBe('Operação concluída com sucesso');
+          expect(result.body.message).toBe('Operation completed successfully');
         });
       });
 

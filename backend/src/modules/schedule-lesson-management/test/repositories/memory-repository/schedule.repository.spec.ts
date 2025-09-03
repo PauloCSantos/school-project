@@ -110,7 +110,7 @@ describe('MemoryScheduleRepository unit test', () => {
     it('should remove the schedule', async () => {
       const response = await repository.delete(masterId, schedule1);
 
-      expect(response).toBe('Operação concluída com sucesso');
+      expect(response).toBe('Operation completed successfully');
     });
 
     it('should add a new student to the schedule', async () => {

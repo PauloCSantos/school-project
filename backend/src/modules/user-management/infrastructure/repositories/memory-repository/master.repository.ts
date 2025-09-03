@@ -123,7 +123,7 @@ export default class MemoryUserMasterRepository implements UserMasterGateway {
       throw new UserNotFoundError(RoleUsersEnum.MASTER, id);
     }
     masterUsers.delete(id);
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   private getOrCreateBucket(masterId: string): Map<string, MasterMapperProps> {

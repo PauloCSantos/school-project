@@ -101,7 +101,7 @@ export default class MemoryEvaluationRepository implements EvaluationGateway {
       throw new EvaluationNotFoundError(evaluation.id.value);
     }
     evaluations.set(evaluation.id.value, EvaluationMapper.toObjRepository(evaluation));
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   private getOrCreateBucket(masterId: string): Map<string, EvaluationMapperProps> {

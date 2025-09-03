@@ -62,7 +62,7 @@ describe('deleteEvaluation usecase unit test', () => {
     it('should delete an evaluation', async () => {
       const evaluationRepository = MockRepository();
       evaluationRepository.find.mockResolvedValue(evaluation);
-      evaluationRepository.delete.mockResolvedValue('Operação concluída com sucesso');
+      evaluationRepository.delete.mockResolvedValue('Operation completed successfully');
 
       const usecase = new DeleteEvaluation(evaluationRepository, policieService);
       const result = await usecase.execute(
@@ -81,7 +81,7 @@ describe('deleteEvaluation usecase unit test', () => {
         evaluation
       );
       expect(result).toBeDefined();
-      expect(result.message).toBe('Operação concluída com sucesso');
+      expect(result.message).toBe('Operation completed successfully');
     });
   });
 });

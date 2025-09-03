@@ -200,7 +200,7 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
 
     it('should delete a worker by ID', async () => {
       userWorkerController.delete.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
       const id = new Id().value;
       const response = await supertest(app).delete(`/user-worker/${id}`);
@@ -215,7 +215,7 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
         })
       );
       expect(response.body).toEqual({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
     });
   });

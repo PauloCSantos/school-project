@@ -41,7 +41,7 @@ describe('SubjectController unit test', () => {
   const mockDeleteSubject = jest.fn(() => {
     return {
       execute: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       }),
     } as unknown as DeleteSubject;
   });

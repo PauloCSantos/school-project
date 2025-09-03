@@ -208,7 +208,7 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
 
     it('should delete an administrator by ID', async () => {
       userAdministratorController.delete.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
       const id = new Id().value;
       const response = await supertest(app).delete(`/user-administrator/${id}`);
@@ -223,7 +223,7 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
         })
       );
       expect(response.body).toEqual({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
     });
   });

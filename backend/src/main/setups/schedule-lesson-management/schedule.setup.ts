@@ -1,5 +1,4 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import MemoryScheduleRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/schedule.repository';
 import CreateSchedule from '@/modules/schedule-lesson-management/application/usecases/schedule/create.usecase';
 import FindSchedule from '@/modules/schedule-lesson-management/application/usecases/schedule/find.usecase';
@@ -11,17 +10,27 @@ import RemoveLessons from '@/modules/schedule-lesson-management/application/usec
 import { ScheduleController } from '@/modules/schedule-lesson-management/interface/controller/schedule.controller';
 import ScheduleRoute from '@/modules/schedule-lesson-management/interface/route/schedule.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
-export default function initializeSchedule(express: HttpServer): void {
+export default function initializeSchedule(
+  express: HttpServer,
+  tokenService: TokenService,
+  policiesService: PoliciesService,
+  isProd: boolean
+): void {
   const scheduleRepository = new MemoryScheduleRepository();
-  const createScheduleUsecase = new CreateSchedule(scheduleRepository);
-  const findScheduleUsecase = new FindSchedule(scheduleRepository);
-  const findAllScheduleUsecase = new FindAllSchedule(scheduleRepository);
-  const updateScheduleUsecase = new UpdateSchedule(scheduleRepository);
-  const deleteScheduleUsecase = new DeleteSchedule(scheduleRepository);
-  const addLessons = new AddLessons(scheduleRepository);
-  const removeLessons = new RemoveLessons(scheduleRepository);
+
+  const createScheduleUsecase = new CreateSchedule(scheduleRepository, policiesService);
+  const findScheduleUsecase = new FindSchedule(scheduleRepository, policiesService);
+  const findAllScheduleUsecase = new FindAllSchedule(scheduleRepository, policiesService);
+  const updateScheduleUsecase = new UpdateSchedule(scheduleRepository, policiesService);
+  const deleteScheduleUsecase = new DeleteSchedule(scheduleRepository, policiesService);
+  const addLessons = new AddLessons(scheduleRepository, policiesService);
+  const removeLessons = new RemoveLessons(scheduleRepository, policiesService);
+
   const scheduleController = new ScheduleController(
     createScheduleUsecase,
     findScheduleUsecase,
@@ -31,7 +40,7 @@ export default function initializeSchedule(express: HttpServer): void {
     addLessons,
     removeLessons
   );
-  const tokenService = tokenInstance();
+
   const allowedRoles: RoleUsers[] = [
     RoleUsersEnum.MASTER,
     RoleUsersEnum.ADMINISTRATOR,

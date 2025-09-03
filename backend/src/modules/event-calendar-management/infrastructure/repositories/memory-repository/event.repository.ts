@@ -104,7 +104,7 @@ export default class MemoryEventRepository implements EventGateway {
       throw new EventNotFoundError(event.id.value);
     }
     events.set(event.id.value, EventMapper.toObjRepository(event));
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   private getOrCreateBucket(masterId: string): Map<string, EventMapperProps> {

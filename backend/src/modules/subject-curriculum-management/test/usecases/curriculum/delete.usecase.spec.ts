@@ -15,7 +15,7 @@ describe('deleteCurriculum usecase unit test', () => {
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
-      delete: jest.fn(() => Promise.resolve('Operação concluída com sucesso')),
+      delete: jest.fn(() => Promise.resolve('Operation completed successfully')),
       addSubjects: jest.fn(),
       removeSubjects: jest.fn(),
     };
@@ -50,10 +50,7 @@ describe('deleteCurriculum usecase unit test', () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(undefined);
 
-      const usecase = new DeleteCurriculum(
-        curriculumRepository,
-        policieService
-      );
+      const usecase = new DeleteCurriculum(curriculumRepository, policieService);
 
       await expect(
         usecase.execute({ id: '75c791ca-7a40-4217-8b99-2cf22c01d543' }, token)
@@ -64,10 +61,7 @@ describe('deleteCurriculum usecase unit test', () => {
     it('should delete a curriculum', async () => {
       const curriculumRepository = MockRepository();
       curriculumRepository.find.mockResolvedValue(curriculum);
-      const usecase = new DeleteCurriculum(
-        curriculumRepository,
-        policieService
-      );
+      const usecase = new DeleteCurriculum(curriculumRepository, policieService);
       const result = await usecase.execute(
         {
           id: curriculum.id.value,
@@ -77,7 +71,7 @@ describe('deleteCurriculum usecase unit test', () => {
 
       expect(curriculumRepository.delete).toHaveBeenCalled();
       expect(result).toBeDefined();
-      expect(result.message).toBe('Operação concluída com sucesso');
+      expect(result.message).toBe('Operation completed successfully');
     });
   });
 });

@@ -67,7 +67,7 @@ describe('NoteController unit test', () => {
     ]);
     mockUpdateNote.execute.mockResolvedValue(noteData);
     mockDeleteNote.execute.mockResolvedValue({
-      message: 'Operação concluída com sucesso',
+      message: 'Operation completed successfully',
     });
 
     controller = new NoteController(
@@ -130,6 +130,6 @@ describe('NoteController unit test', () => {
 
     expect(mockDeleteNote.execute).toHaveBeenCalledTimes(1);
     expect(mockDeleteNote.execute).toHaveBeenCalledWith(deleteInput, token);
-    expect(result).toEqual({ message: 'Operação concluída com sucesso' });
+    expect(result).toEqual({ message: 'Operation completed successfully' });
   });
 });

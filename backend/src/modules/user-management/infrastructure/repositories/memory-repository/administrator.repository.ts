@@ -154,7 +154,7 @@ export default class MemoryUserAdministratorRepository
       userAdministrator.id.value,
       AdministratorMapper.toObj(userAdministrator)
     );
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   private getOrCreateBucket(masterId: string): Map<string, AdministratorMapperProps> {

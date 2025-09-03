@@ -102,7 +102,7 @@ export default class MemorySubjectRepository implements SubjectGateway {
       throw new SubjectNotFoundError(subject.id.value);
     }
     subjects.set(subject.id.value, SubjectMapper.toObjRepository(subject));
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   private getOrCreateBucket(masterId: string): Map<string, SubjectMapperProps> {

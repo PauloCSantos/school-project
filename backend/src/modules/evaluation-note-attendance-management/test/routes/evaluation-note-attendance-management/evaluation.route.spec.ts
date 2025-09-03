@@ -132,7 +132,7 @@ describe('EvaluationRoute with ExpressAdapter', () => {
     it('should delete an evaluation', async () => {
       const id = new Id().value;
       evaluationController.delete.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
 
       const response = await supertest(app).delete(`/evaluation/${id}`);
@@ -146,7 +146,7 @@ describe('EvaluationRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ message: 'Operação concluída com sucesso' });
+      expect(response.body).toEqual({ message: 'Operation completed successfully' });
     });
   });
 

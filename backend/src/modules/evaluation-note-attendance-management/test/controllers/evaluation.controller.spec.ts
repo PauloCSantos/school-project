@@ -73,7 +73,7 @@ describe('EvaluationController unit test', () => {
       value: 5,
     });
     mockDeleteEvaluation.execute.mockResolvedValue({
-      message: 'Operação concluída com sucesso',
+      message: 'Operation completed successfully',
     });
 
     controller = new EvaluationController(
@@ -96,10 +96,7 @@ describe('EvaluationController unit test', () => {
     const result = await controller.create(createInput, token);
 
     expect(mockCreateEvaluation.execute).toHaveBeenCalledTimes(1);
-    expect(mockCreateEvaluation.execute).toHaveBeenCalledWith(
-      createInput,
-      token
-    );
+    expect(mockCreateEvaluation.execute).toHaveBeenCalledWith(createInput, token);
     expect(result).toEqual(createOutput);
   });
 
@@ -117,10 +114,7 @@ describe('EvaluationController unit test', () => {
     const result = await controller.findAll(findAllInput, token);
 
     expect(mockFindAllEvaluation.execute).toHaveBeenCalledTimes(1);
-    expect(mockFindAllEvaluation.execute).toHaveBeenCalledWith(
-      findAllInput,
-      token
-    );
+    expect(mockFindAllEvaluation.execute).toHaveBeenCalledWith(findAllInput, token);
     expect(result).toBeDefined();
     expect(result.length).toBe(2);
   });
@@ -133,10 +127,7 @@ describe('EvaluationController unit test', () => {
     const result = await controller.update(updateInput, token);
 
     expect(mockUpdateEvaluation.execute).toHaveBeenCalledTimes(1);
-    expect(mockUpdateEvaluation.execute).toHaveBeenCalledWith(
-      updateInput,
-      token
-    );
+    expect(mockUpdateEvaluation.execute).toHaveBeenCalledWith(updateInput, token);
     expect(result).toBeDefined();
   });
 
@@ -145,10 +136,7 @@ describe('EvaluationController unit test', () => {
     const result = await controller.delete(deleteInput, token);
 
     expect(mockDeleteEvaluation.execute).toHaveBeenCalledTimes(1);
-    expect(mockDeleteEvaluation.execute).toHaveBeenCalledWith(
-      deleteInput,
-      token
-    );
-    expect(result).toEqual({ message: 'Operação concluída com sucesso' });
+    expect(mockDeleteEvaluation.execute).toHaveBeenCalledWith(deleteInput, token);
+    expect(result).toEqual({ message: 'Operation completed successfully' });
   });
 });

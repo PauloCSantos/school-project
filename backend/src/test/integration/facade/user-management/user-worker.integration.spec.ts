@@ -148,7 +148,7 @@ describe('User Worker facade integration test', () => {
 
     emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
     tenantService = new TenantService(tenantRepository);
-    tokenService = new TokenService('PxHf3H7');
+    tokenService = new TokenService('secretkey');
     userService = new UserService(userRepository);
 
     policiesService = new PoliciesService();
@@ -252,7 +252,7 @@ describe('User Worker facade integration test', () => {
     const result = await facadeWorker.delete({ id: id2.id }, token);
     //const allUsers = await facadeWorker.findAll({}, token);
 
-    expect(result.message).toBe('Operação concluída com sucesso');
+    expect(result.message).toBe('Operation completed successfully');
     //expect(allUsers.length).toBe(2);
   });
 

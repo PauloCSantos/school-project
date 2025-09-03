@@ -1,5 +1,4 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import MemoryLessonRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/lesson.repository';
 import CreateLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/create.usecase';
 import FindLesson from '@/modules/schedule-lesson-management/application/usecases/lesson/find.usecase';
@@ -15,21 +14,31 @@ import RemoveTime from '@/modules/schedule-lesson-management/application/usecase
 import { LessonController } from '@/modules/schedule-lesson-management/interface/controller/lesson.controller';
 import LessonRoute from '@/modules/schedule-lesson-management/interface/route/lesson.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
-export default function initializeLesson(express: HttpServer): void {
+export default function initializeLesson(
+  express: HttpServer,
+  tokenService: TokenService,
+  policiesService: PoliciesService,
+  isProd: boolean
+): void {
   const lessonRepository = new MemoryLessonRepository();
-  const createLessonUsecase = new CreateLesson(lessonRepository);
-  const findLessonUsecase = new FindLesson(lessonRepository);
-  const findAllLessonUsecase = new FindAllLesson(lessonRepository);
-  const updateLessonUsecase = new UpdateLesson(lessonRepository);
-  const deleteLessonUsecase = new DeleteLesson(lessonRepository);
-  const addStudents = new AddStudents(lessonRepository);
-  const removeStudents = new RemoveStudents(lessonRepository);
-  const addDay = new AddDay(lessonRepository);
-  const removeDay = new RemoveDay(lessonRepository);
-  const addTime = new AddTime(lessonRepository);
-  const removeTime = new RemoveTime(lessonRepository);
+
+  const createLessonUsecase = new CreateLesson(lessonRepository, policiesService);
+  const findLessonUsecase = new FindLesson(lessonRepository, policiesService);
+  const findAllLessonUsecase = new FindAllLesson(lessonRepository, policiesService);
+  const updateLessonUsecase = new UpdateLesson(lessonRepository, policiesService);
+  const deleteLessonUsecase = new DeleteLesson(lessonRepository, policiesService);
+  const addStudents = new AddStudents(lessonRepository, policiesService);
+  const removeStudents = new RemoveStudents(lessonRepository, policiesService);
+  const addDay = new AddDay(lessonRepository, policiesService);
+  const removeDay = new RemoveDay(lessonRepository, policiesService);
+  const addTime = new AddTime(lessonRepository, policiesService);
+  const removeTime = new RemoveTime(lessonRepository, policiesService);
+
   const lessonController = new LessonController(
     createLessonUsecase,
     findLessonUsecase,
@@ -43,7 +52,7 @@ export default function initializeLesson(express: HttpServer): void {
     addTime,
     removeTime
   );
-  const tokenService = tokenInstance();
+
   const allowedRoles: RoleUsers[] = [
     RoleUsersEnum.MASTER,
     RoleUsersEnum.ADMINISTRATOR,
@@ -51,10 +60,6 @@ export default function initializeLesson(express: HttpServer): void {
     RoleUsersEnum.STUDENT,
   ];
   const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
-  const lessonRoute = new LessonRoute(
-    lessonController,
-    express,
-    authUserMiddleware
-  );
+  const lessonRoute = new LessonRoute(lessonController, express, authUserMiddleware);
   lessonRoute.routes();
 }

@@ -28,7 +28,7 @@ describe('AuthUser facade integration test', () => {
   };
 
   it('should create an tenant AuthUser using the facade', async () => {
-    const facade = AuthUserFacadeFactory.create();
+    const facade = AuthUserFacadeFactory.create('secretket');
     const result = await facade.createTenant({
       email: 'teste3@teste.com.br',
       password: 'XpA2Jjd4',
@@ -40,28 +40,28 @@ describe('AuthUser facade integration test', () => {
     expect(result.masterId).toBeDefined();
   });
   it('should create an AuthUser using the facade', async () => {
-    const facade = AuthUserFacadeFactory.create();
+    const facade = AuthUserFacadeFactory.create('secretket');
     const result = await facade.create(input, token);
 
     expect(result.email).toBeDefined();
   });
   it('should find an AuthUser using the facade', async () => {
-    const facade = AuthUserFacadeFactory.create();
+    const facade = AuthUserFacadeFactory.create('secretket');
     const result = await facade.create(input, token);
     const AuthUser = await facade.find(result, token);
     expect(AuthUser).toBeDefined();
   });
   it('should delete an AuthUser using the facade', async () => {
-    const facade = AuthUserFacadeFactory.create();
+    const facade = AuthUserFacadeFactory.create('secretket');
     await facade.create(input, token);
     const response = await facade.create(input2, token);
     await facade.create(input3, token);
     const result = await facade.delete({ email: response.email }, token);
 
-    expect(result.message).toBe('Operação concluída com sucesso');
+    expect(result.message).toBe('Operation completed successfully');
   });
   it('should update an  AuthUser using the facade', async () => {
-    const facade = AuthUserFacadeFactory.create();
+    const facade = AuthUserFacadeFactory.create('secretket');
     const response = await facade.create(input, token);
 
     token.masterId = response.masterId;

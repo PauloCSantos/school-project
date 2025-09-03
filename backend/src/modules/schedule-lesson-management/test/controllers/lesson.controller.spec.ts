@@ -85,7 +85,7 @@ describe('LessonController unit test', () => {
   const mockDeleteLesson = jest.fn(() => {
     return {
       execute: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       }),
     } as unknown as DeleteLesson;
   });
@@ -96,9 +96,7 @@ describe('LessonController unit test', () => {
   });
   const mockRemoveStudents = jest.fn(() => {
     return {
-      execute: jest
-        .fn()
-        .mockResolvedValue({ message: '2 values were removed' }),
+      execute: jest.fn().mockResolvedValue({ message: '2 values were removed' }),
     } as unknown as RemoveStudents;
   });
   const mockAddDay = jest.fn(() => {
@@ -108,9 +106,7 @@ describe('LessonController unit test', () => {
   });
   const mockRemoveDay = jest.fn(() => {
     return {
-      execute: jest
-        .fn()
-        .mockResolvedValue({ message: '2 values were removed' }),
+      execute: jest.fn().mockResolvedValue({ message: '2 values were removed' }),
     } as unknown as RemoveDay;
   });
   const mockAddTime = jest.fn(() => {
@@ -120,9 +116,7 @@ describe('LessonController unit test', () => {
   });
   const mockRemoveTime = jest.fn(() => {
     return {
-      execute: jest
-        .fn()
-        .mockResolvedValue({ message: '2 values were removed' }),
+      execute: jest.fn().mockResolvedValue({ message: '2 values were removed' }),
     } as unknown as RemoveTime;
   });
   token = {

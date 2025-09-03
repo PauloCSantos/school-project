@@ -102,7 +102,7 @@ describe('MemoryAuthUserRepository unit test', () => {
     it('should delete an existing authUser', async () => {
       authUser1.deactivate();
       const response = await repository.delete(authUser1);
-      expect(response).toBe('Operação concluída com sucesso');
+      expect(response).toBe('Operation completed successfully');
       const deletedUser = await repository.find(authUser1.email);
       expect(deletedUser?.isActive).toBeFalsy();
     });

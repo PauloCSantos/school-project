@@ -4,29 +4,57 @@ import DeleteUserWorker from '@/modules/user-management/application/usecases/wor
 import FindAllUserWorker from '@/modules/user-management/application/usecases/worker/findAllUserWorker.usecase';
 import FindUserWorker from '@/modules/user-management/application/usecases/worker/findUserWorker.usecase';
 import UpdateUserWorker from '@/modules/user-management/application/usecases/worker/updateUserWorker.usecase';
-import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import MemoryUserWorkerRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/worker.repository';
 import { UserWorkerController } from '@/modules/user-management/interface/controller/worker.controller';
 import { UserWorkerRoute } from '@/modules/user-management/interface/route/worker.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { UserService } from '@/modules/user-management/domain/services/user.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
-export default function initializeUserWorker(express: HttpServer): void {
+export default function initializeUserWorker(
+  express: HttpServer,
+  tokenService: TokenService,
+  authUserService: AuthUserService,
+  policiesService: PoliciesService,
+  userService: UserService,
+  isProd: boolean
+): void {
   const userWorkerRepository = new MemoryUserWorkerRepository();
-  const authUserRepository = new MemoryAuthUserRepository();
-  const emailValidatorService = new EmailAuthValidatorService(
-    authUserRepository
-  );
+  const authUserRepository = new MemoryAuthUserRepository(authUserService);
+  const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
+
   const createUserWorkerUsecase = new CreateUserWorker(
     userWorkerRepository,
-    emailValidatorService
+    emailValidatorService,
+    policiesService,
+    userService
   );
-  const findUserWorkerUsecase = new FindUserWorker(userWorkerRepository);
-  const findAllUserWorkerUsecase = new FindAllUserWorker(userWorkerRepository);
-  const deleteUserWorkerUsecase = new DeleteUserWorker(userWorkerRepository);
-  const updateUserWorkerUsecase = new UpdateUserWorker(userWorkerRepository);
+  const findUserWorkerUsecase = new FindUserWorker(
+    userWorkerRepository,
+    policiesService,
+    userService
+  );
+  const findAllUserWorkerUsecase = new FindAllUserWorker(
+    userWorkerRepository,
+    policiesService,
+    userService
+  );
+  const deleteUserWorkerUsecase = new DeleteUserWorker(
+    userWorkerRepository,
+    policiesService
+  );
+  const updateUserWorkerUsecase = new UpdateUserWorker(
+    userWorkerRepository,
+    policiesService,
+    userService
+  );
+
   const userWorkerController = new UserWorkerController(
     createUserWorkerUsecase,
     findUserWorkerUsecase,
@@ -34,7 +62,7 @@ export default function initializeUserWorker(express: HttpServer): void {
     updateUserWorkerUsecase,
     deleteUserWorkerUsecase
   );
-  const tokenService = tokenInstance();
+
   const allowedRoles: RoleUsers[] = [
     RoleUsersEnum.MASTER,
     RoleUsersEnum.ADMINISTRATOR,

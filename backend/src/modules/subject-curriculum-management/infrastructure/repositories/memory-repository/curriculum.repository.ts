@@ -105,7 +105,7 @@ export default class MemoryCurriculumRepository implements CurriculumGateway {
       throw new CurriculumNotFoundError(curriculum.id.value);
     }
     curriculums.set(curriculum.id.value, CurriculumMapper.toObjRepository(curriculum));
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   /**

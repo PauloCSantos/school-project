@@ -123,7 +123,7 @@ export default class MemoryUserTeacherRepository implements UserTeacherGateway {
       throw new UserNotFoundError(RoleUsersEnum.TEACHER, userTeacher.id.value);
     }
     teacherUsers.set(userTeacher.id.value, TeacherMapper.toObj(userTeacher));
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   private getOrCreateBucket(masterId: string): Map<string, TeacherMapperProps> {

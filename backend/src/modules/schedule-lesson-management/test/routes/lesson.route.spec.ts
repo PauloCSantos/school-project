@@ -138,7 +138,7 @@ describe('LessonRoute with ExpressAdapter', () => {
     it('should delete a lesson by ID', async () => {
       const id = new Id().value;
       lessonController.delete.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
 
       const response = await supertest(app).delete(`/lesson/${id}`);
@@ -152,7 +152,7 @@ describe('LessonRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ message: 'Operação concluída com sucesso' });
+      expect(response.body).toEqual({ message: 'Operation completed successfully' });
     });
 
     it('should add students to the lesson', async () => {

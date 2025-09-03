@@ -5,7 +5,7 @@ import TokenService from '@/modules/authentication-authorization-management/infr
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
 describe('TokenService unit test', () => {
-  const secretKey = 'PxHf3H7';
+  const secretKey = 'secretkey';
   const tokenService = new TokenService(secretKey);
 
   const authUserService = new AuthUserService();
@@ -82,8 +82,7 @@ describe('TokenService unit test', () => {
         RoleUsersEnum.MASTER,
         60
       );
-      const refreshedToken =
-        await tokenService.refreshExpiresToken(originalToken);
+      const refreshedToken = await tokenService.refreshExpiresToken(originalToken);
 
       expect(refreshedToken).toBeDefined();
       expect(refreshedToken).not.toBe(originalToken);

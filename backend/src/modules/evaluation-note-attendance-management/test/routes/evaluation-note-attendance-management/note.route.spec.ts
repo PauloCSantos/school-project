@@ -127,7 +127,7 @@ describe('NoteRoute with ExpressAdapter', () => {
     it('should delete a note by ID', async () => {
       const id = new Id().value;
       noteController.delete.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
 
       const response = await supertest(app).delete(`/note/${id}`);
@@ -141,7 +141,7 @@ describe('NoteRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ message: 'Operação concluída com sucesso' });
+      expect(response.body).toEqual({ message: 'Operation completed successfully' });
     });
   });
 

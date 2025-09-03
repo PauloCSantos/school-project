@@ -59,7 +59,7 @@ describe('ScheduleController unit test', () => {
   const mockDeleteSchedule = jest.fn(() => {
     return {
       execute: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       }),
     } as unknown as DeleteSchedule;
   });
@@ -70,9 +70,7 @@ describe('ScheduleController unit test', () => {
   });
   const mockRemoveLessons = jest.fn(() => {
     return {
-      execute: jest
-        .fn()
-        .mockResolvedValue({ message: '2 values were removed' }),
+      execute: jest.fn().mockResolvedValue({ message: '2 values were removed' }),
     } as unknown as RemoveLessons;
   });
 
