@@ -4,37 +4,57 @@ import DeleteUserAdministrator from '@/modules/user-management/application/useca
 import FindAllUserAdministrator from '@/modules/user-management/application/usecases/administrator/findAllUserAdministrator.usecase';
 import FindUserAdministrator from '@/modules/user-management/application/usecases/administrator/findUserAdministrator.usecase';
 import UpdateUserAdministrator from '@/modules/user-management/application/usecases/administrator/updateUserAdministrator.usecase';
-import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import MemoryUserAdministratorRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/administrator.repository';
 import { UserAdministratorController } from '@/modules/user-management/interface/controller/administrator.controller';
 import { UserAdministratorRoute } from '@/modules/user-management/interface/route/administrator.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
+import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { UserService } from '@/modules/user-management/domain/services/user.service';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
-export default function initializeUserAdministrator(express: HttpServer): void {
+export default function initializeUserAdministrator(
+  express: HttpServer,
+  tokenService: TokenService,
+  authUserService: AuthUserService,
+  policiesService: PoliciesService,
+  userService: UserService,
+  isProd: boolean
+): void {
   const userAdministratorRepository = new MemoryUserAdministratorRepository();
-  const authUserRepository = new MemoryAuthUserRepository();
-  const emailValidatorService = new EmailAuthValidatorService(
-    authUserRepository
-  );
+  const authUserRepository = new MemoryAuthUserRepository(authUserService);
+  const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
+
   const createUserAdministratorUsecase = new CreateUserAdministrator(
     userAdministratorRepository,
-    emailValidatorService
+    emailValidatorService,
+    policiesService,
+    userService
   );
   const findUserAdministratorUsecase = new FindUserAdministrator(
-    userAdministratorRepository
+    userAdministratorRepository,
+    policiesService,
+    userService
   );
   const findAllUserAdministratorUsecase = new FindAllUserAdministrator(
-    userAdministratorRepository
+    userAdministratorRepository,
+    policiesService,
+    userService
   );
   const deleteUserAdministratorUsecase = new DeleteUserAdministrator(
-    userAdministratorRepository
+    userAdministratorRepository,
+    policiesService
   );
   const updateUserAdministratorUsecase = new UpdateUserAdministrator(
-    userAdministratorRepository
+    userAdministratorRepository,
+    policiesService,
+    userService
   );
+
   const userAdministratorController = new UserAdministratorController(
     createUserAdministratorUsecase,
     findUserAdministratorUsecase,
@@ -42,11 +62,8 @@ export default function initializeUserAdministrator(express: HttpServer): void {
     updateUserAdministratorUsecase,
     deleteUserAdministratorUsecase
   );
-  const tokenService = tokenInstance();
-  const allowedRoles: RoleUsers[] = [
-    RoleUsersEnum.MASTER,
-    RoleUsersEnum.ADMINISTRATOR,
-  ];
+
+  const allowedRoles: RoleUsers[] = [RoleUsersEnum.MASTER, RoleUsersEnum.ADMINISTRATOR];
   const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
   const userAdministratorRoute = new UserAdministratorRoute(
     userAdministratorController,

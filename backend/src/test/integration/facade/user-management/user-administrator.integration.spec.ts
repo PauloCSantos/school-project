@@ -149,7 +149,7 @@ describe('User Administrator facade integration test', () => {
     userRepository = new MemoryUserRepository();
     emailAuthValidator = new EmailAuthValidatorService(authUserRepository);
     tenantService = new TenantService(tenantRepository);
-    tokenService = new TokenService('PxHf3H7');
+    tokenService = new TokenService('secretkey');
     userService = new UserService(userRepository);
 
     policiesService = new PoliciesService();

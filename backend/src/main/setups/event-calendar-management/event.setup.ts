@@ -1,6 +1,4 @@
 import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUser.middleware';
-
-import tokenInstance from '@/main/config/tokenService/token-service.instance';
 import MemoryEventRepository from '@/modules/event-calendar-management/infrastructure/repositories/memory-repository/event.repository';
 import CreateEvent from '@/modules/event-calendar-management/application/usecases/event/create.usecase';
 import FindEvent from '@/modules/event-calendar-management/application/usecases/event/find.usecase';
@@ -9,16 +7,26 @@ import UpdateEvent from '@/modules/event-calendar-management/application/usecase
 import DeleteEvent from '@/modules/event-calendar-management/application/usecases/event/delete.usecase';
 import EventController from '@/modules/event-calendar-management/interface/controller/event.controller';
 import EventRoute from '@/modules/event-calendar-management/interface/route/event.route';
-import { RoleUsers, RoleUsersEnum } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
+import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 
-export default function initializeEvent(express: HttpServer): void {
+export default function initializeEvent(
+  express: HttpServer,
+  tokenService: TokenService,
+  policiesService: PoliciesService,
+  isProd: boolean
+): void {
   const eventRepository = new MemoryEventRepository();
-  const createEventUsecase = new CreateEvent(eventRepository);
-  const findEventUsecase = new FindEvent(eventRepository);
-  const findAllEventUsecase = new FindAllEvent(eventRepository);
-  const updateEventUsecase = new UpdateEvent(eventRepository);
-  const deleteEventUsecase = new DeleteEvent(eventRepository);
+
+  const createEventUsecase = new CreateEvent(eventRepository, policiesService);
+  const findEventUsecase = new FindEvent(eventRepository, policiesService);
+  const findAllEventUsecase = new FindAllEvent(eventRepository, policiesService);
+  const updateEventUsecase = new UpdateEvent(eventRepository, policiesService);
+  const deleteEventUsecase = new DeleteEvent(eventRepository, policiesService);
+
   const eventController = new EventController(
     createEventUsecase,
     findEventUsecase,
@@ -26,7 +34,7 @@ export default function initializeEvent(express: HttpServer): void {
     updateEventUsecase,
     deleteEventUsecase
   );
-  const tokenService = tokenInstance();
+
   const allowedRoles: RoleUsers[] = [
     RoleUsersEnum.MASTER,
     RoleUsersEnum.ADMINISTRATOR,
@@ -35,10 +43,6 @@ export default function initializeEvent(express: HttpServer): void {
     RoleUsersEnum.WORKER,
   ];
   const authUserMiddleware = new AuthUserMiddleware(tokenService, allowedRoles);
-  const eventRoute = new EventRoute(
-    eventController,
-    express,
-    authUserMiddleware
-  );
+  const eventRoute = new EventRoute(eventController, express, authUserMiddleware);
   eventRoute.routes();
 }

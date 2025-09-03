@@ -20,12 +20,12 @@ export default class AuthUserFacadeFactory {
    * Creates an instance of AuthUserFacade with all dependencies properly configured
    * @returns Fully configured AuthUserFacade instance
    */
-  static create(): AuthUserFacade {
+  static create(secret: string): AuthUserFacade {
     const authUserService = new AuthUserService();
     const authUserRepository = new MemoryAuthUserRepository(authUserService);
     const tenantRepository = new MemoryTenantRepository();
     const tenantService = new TenantService(tenantRepository);
-    const tokenService = new TokenService('PxHf3H7');
+    const tokenService = new TokenService(secret);
     const policiesService = new PoliciesService();
 
     const createAuthUser = new CreateAuthUser(

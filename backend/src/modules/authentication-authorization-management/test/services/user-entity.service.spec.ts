@@ -3,7 +3,7 @@ import { AuthUserService } from '@/modules/authentication-authorization-manageme
 describe('AuthUserService unit test', () => {
   describe('On success', () => {
     it('Should create a hash with password', async () => {
-      const password = 'PxHf3H7';
+      const password = 'secretkey';
       const authUserService = new AuthUserService();
       const hashPassword = await authUserService.generateHash(password);
 
@@ -14,21 +14,19 @@ describe('AuthUserService unit test', () => {
     });
 
     it('Should validate a hash', async () => {
-      const password = 'PxHf3H7';
+      const password = 'secretkey';
       const wrongPassword = 'Qx3h4dS';
       const authUserService = new AuthUserService();
       const hashPassword = await authUserService.generateHash(password);
 
-      expect(
-        await authUserService.comparePassword(password, hashPassword)
-      ).toBe(true);
-      expect(
-        await authUserService.comparePassword(wrongPassword, hashPassword)
-      ).toBe(false);
+      expect(await authUserService.comparePassword(password, hashPassword)).toBe(true);
+      expect(await authUserService.comparePassword(wrongPassword, hashPassword)).toBe(
+        false
+      );
     });
 
     it('Should generate different hashes for the same password, but both should validate', async () => {
-      const password = 'PxHf3H7';
+      const password = 'secretkey';
       const authUserService = new AuthUserService();
       const hash1 = await authUserService.generateHash(password);
       const hash2 = await authUserService.generateHash(password);
