@@ -25,7 +25,7 @@ describe('AuthUserMiddleware unit test', () => {
     };
 
     mockNext = jest.fn();
-    tokenService = new TokenService('PxHf3H7');
+    tokenService = new TokenService('secretkey');
 
     jest
       .spyOn(tokenService, 'validateToken')
@@ -110,11 +110,9 @@ describe('AuthUserMiddleware unit test', () => {
   });
 
   test('should set tokenData to undefined and not call next if an unexpected error occurs (e.g., in hasPermission or extractToken, though less likely with current structure)', async () => {
-    jest
-      .spyOn(tokenService, 'validateToken')
-      .mockImplementationOnce(async () => {
-        throw new Error('Another Unexpected Error');
-      });
+    jest.spyOn(tokenService, 'validateToken').mockImplementationOnce(async () => {
+      throw new Error('Another Unexpected Error');
+    });
 
     mockReq.headers.authorization = 'Bearer someTokenCausingUnexpectedError';
     await middleware.handle(mockReq, mockNext);
@@ -127,9 +125,7 @@ describe('AuthUserMiddleware unit test', () => {
 
     await middleware.handle(mockReq, mockNext);
 
-    expect(tokenService.validateToken).toHaveBeenCalledWith(
-      'validTokenWithAdminRole'
-    );
+    expect(tokenService.validateToken).toHaveBeenCalledWith('validTokenWithAdminRole');
     expect(mockNext).toHaveBeenCalledTimes(1);
     expect(mockReq.tokenData).toEqual({
       masterId: 'admin-id',

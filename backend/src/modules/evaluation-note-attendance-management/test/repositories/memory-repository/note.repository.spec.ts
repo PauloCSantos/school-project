@@ -133,7 +133,7 @@ describe('MemoryNoteRepository unit test', () => {
     it('should delete an existing note and update repository state', async () => {
       const response = await repository.delete(masterId, note1);
 
-      expect(response).toBe('Operação concluída com sucesso');
+      expect(response).toBe('Operation completed successfully');
     });
   });
 });

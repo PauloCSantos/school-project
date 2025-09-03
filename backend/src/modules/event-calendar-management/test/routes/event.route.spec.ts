@@ -140,7 +140,7 @@ describe('EventRoute with ExpressAdapter', () => {
     it('should delete an event by ID', async () => {
       const id = new Id().value;
       eventController.delete.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
 
       const response = await supertest(app).delete(`/event/${id}`);
@@ -154,7 +154,7 @@ describe('EventRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ message: 'Operação concluída com sucesso' });
+      expect(response.body).toEqual({ message: 'Operation completed successfully' });
     });
   });
 

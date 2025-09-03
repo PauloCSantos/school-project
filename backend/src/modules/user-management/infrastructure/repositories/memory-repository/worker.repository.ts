@@ -123,7 +123,7 @@ export default class MemoryUserWorkerRepository implements UserWorkerGateway {
       throw new UserNotFoundError(RoleUsersEnum.WORKER, userWorker.id.value);
     }
     workerUsers.set(userWorker.id.value, WorkerMapper.toObj(userWorker));
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   private getOrCreateBucket(masterId: string): Map<string, WorkerMapperProps> {

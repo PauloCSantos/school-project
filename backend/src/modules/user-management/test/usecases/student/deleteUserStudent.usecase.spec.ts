@@ -19,7 +19,7 @@ describe('deleteUserStudent usecase unit test', () => {
       findAll: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
-      delete: jest.fn(() => Promise.resolve('Operação concluída com sucesso')),
+      delete: jest.fn(() => Promise.resolve('Operation completed successfully')),
     };
   };
 
@@ -91,7 +91,7 @@ describe('deleteUserStudent usecase unit test', () => {
 
       expect(userStudentRepository.delete).toHaveBeenCalled();
       expect(result).toBeDefined();
-      expect(result.message).toBe('Operação concluída com sucesso');
+      expect(result.message).toBe('Operation completed successfully');
     });
   });
 });

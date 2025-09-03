@@ -149,7 +149,7 @@ describe('CurriculumRoute with ExpressAdapter', () => {
 
     it('should delete a curriculum by ID', async () => {
       curriculumController.delete.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
       const id = new Id().value;
       const response = await supertest(app).delete(`/curriculum/${id}`);
@@ -164,7 +164,7 @@ describe('CurriculumRoute with ExpressAdapter', () => {
         })
       );
       expect(response.body).toEqual({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
     });
 

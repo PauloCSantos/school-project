@@ -121,7 +121,7 @@ describe('SubjectRoute with ExpressAdapter', () => {
     it('should delete a subject by ID', async () => {
       const id = new Id().value;
       subjectController.delete.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
 
       const response = await supertest(app).delete(`/subject/${id}`);
@@ -135,7 +135,7 @@ describe('SubjectRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ message: 'Operação concluída com sucesso' });
+      expect(response.body).toEqual({ message: 'Operation completed successfully' });
     });
   });
 

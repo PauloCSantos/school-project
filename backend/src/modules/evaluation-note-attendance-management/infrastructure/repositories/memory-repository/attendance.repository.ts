@@ -105,7 +105,7 @@ export default class MemoryAttendanceRepository implements AttendanceGateway {
       throw new AttendanceNotFoundError(attendance.id.value);
     }
     attendances.set(attendance.id.value, AttendanceMapper.toObjRepository(attendance));
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   /**

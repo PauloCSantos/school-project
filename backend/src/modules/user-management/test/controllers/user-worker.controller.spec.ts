@@ -89,7 +89,7 @@ describe('UserWorkerController unit test', () => {
   const mockDeleteUserWorker = jest.fn(() => {
     return {
       execute: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       }),
     } as unknown as DeleteUserWorker;
   });

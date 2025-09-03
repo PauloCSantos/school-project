@@ -176,7 +176,7 @@ describe('MemoryUserAdministratorRepository unit test', () => {
     it('should remove the user', async () => {
       const response = await repository.delete(masterId, userAdministrator1);
 
-      expect(response).toBe('Operação concluída com sucesso');
+      expect(response).toBe('Operation completed successfully');
     });
   });
 });

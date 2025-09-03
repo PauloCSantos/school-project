@@ -109,7 +109,7 @@ describe('MemoryCurriculumRepository unit test', () => {
     it('should remove the curriculum', async () => {
       const response = await repository.delete(masterId, curriculum1);
 
-      expect(response).toBe('Operação concluída com sucesso');
+      expect(response).toBe('Operation completed successfully');
     });
 
     it('should add a new subject to the curriculum', async () => {

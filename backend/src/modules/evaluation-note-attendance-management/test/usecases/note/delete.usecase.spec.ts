@@ -17,7 +17,7 @@ describe('deleteNote usecase unit test', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn((_id: string) =>
-        Promise.resolve('Operação concluída com sucesso')
+        Promise.resolve('Operation completed successfully')
       ),
     };
   };
@@ -72,7 +72,7 @@ describe('deleteNote usecase unit test', () => {
 
       expect(noteRepository.delete).toHaveBeenCalled();
       expect(result).toBeDefined();
-      expect(result.message).toBe('Operação concluída com sucesso');
+      expect(result.message).toBe('Operation completed successfully');
     });
   });
 });

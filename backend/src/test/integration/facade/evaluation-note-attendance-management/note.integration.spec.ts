@@ -55,7 +55,7 @@ describe('Note facade integration test', () => {
     const result = await facade.delete({ id: id2.id }, token);
     //const alls = await facade.findAll({}, token);
 
-    expect(result.message).toBe('Operação concluída com sucesso');
+    expect(result.message).toBe('Operation completed successfully');
     //expect(alls.length).toBe(2);
   });
   it('should update an  Note using the facade', async () => {

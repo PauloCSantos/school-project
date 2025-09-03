@@ -85,13 +85,13 @@ describe('DeleteAttendance usecase unit test', () => {
   describe('On success', () => {
     it('should delete an attendance', async () => {
       repository.find.mockResolvedValue(attendance);
-      repository.delete.mockResolvedValue('Operação concluída com sucesso');
+      repository.delete.mockResolvedValue('Operation completed successfully');
       const result = await usecase.execute({ id: attendance.id.value }, token);
 
       expect(repository.find).toHaveBeenCalledWith(token.masterId, attendance.id.value);
       expect(repository.delete).toHaveBeenCalledWith(token.masterId, attendance);
       expect(result).toBeDefined();
-      expect(result.message).toBe('Operação concluída com sucesso');
+      expect(result.message).toBe('Operation completed successfully');
     });
   });
 });

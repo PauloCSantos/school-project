@@ -201,7 +201,7 @@ describe('UserStudentRoute with ExpressAdapter', () => {
 
     it('should delete a student by ID', async () => {
       userStudentController.delete.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
       const id = new Id().value;
       const response = await supertest(app).delete(`/user-student/${id}`);
@@ -216,7 +216,7 @@ describe('UserStudentRoute with ExpressAdapter', () => {
         })
       );
       expect(response.body).toEqual({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
     });
   });

@@ -99,7 +99,7 @@ export default class MemoryScheduleRepository implements ScheduleGateway {
       throw new ScheduleNotFoundError(schedule.id.value);
     }
     schedules.set(schedule.id.value, ScheduleMapper.toObjRepository(schedule));
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   /**

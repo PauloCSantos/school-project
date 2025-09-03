@@ -144,7 +144,7 @@ describe('AttendanceRoute with ExpressAdapter', () => {
     it('should delete an attendance by ID', async () => {
       const id = new Id().value;
       attendanceController.delete.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
 
       const response = await supertest(app).delete(`/attendance/${id}`);
@@ -158,14 +158,14 @@ describe('AttendanceRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ message: 'Operação concluída com sucesso' });
+      expect(response.body).toEqual({ message: 'Operation completed successfully' });
     });
 
     it('should add students to an attendance record', async () => {
       const id = new Id().value;
       const newStudentsList = [new Id().value, new Id().value];
       attendanceController.addStudents.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
 
       const response = await supertest(app)
@@ -181,14 +181,14 @@ describe('AttendanceRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ message: 'Operação concluída com sucesso' });
+      expect(response.body).toEqual({ message: 'Operation completed successfully' });
     });
 
     it('should remove students from an attendance record', async () => {
       const id = new Id().value;
       const studentsListToRemove = [new Id().value, new Id().value];
       attendanceController.removeStudents.mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       });
 
       const response = await supertest(app)
@@ -204,7 +204,7 @@ describe('AttendanceRoute with ExpressAdapter', () => {
           masterId: expect.any(String),
         })
       );
-      expect(response.body).toEqual({ message: 'Operação concluída com sucesso' });
+      expect(response.body).toEqual({ message: 'Operation completed successfully' });
     });
   });
 

@@ -102,7 +102,7 @@ export default class MemoryNoteRepository implements NoteGateway {
       throw new NoteNotFoundError(note.id.value);
     }
     notes.set(note.id.value, NoteMapper.toObjRepository(note));
-    return 'Operação concluída com sucesso';
+    return 'Operation completed successfully';
   }
 
   private getOrCreateBucket(masterId: string): Map<string, NoteMapperProps> {

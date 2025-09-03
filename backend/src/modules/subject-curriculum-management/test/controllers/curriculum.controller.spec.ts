@@ -57,7 +57,7 @@ describe('CurriculumController unit test', () => {
   const mockDeleteCurriculum = jest.fn(() => {
     return {
       execute: jest.fn().mockResolvedValue({
-        message: 'Operação concluída com sucesso',
+        message: 'Operation completed successfully',
       }),
     } as unknown as DeleteCurriculum;
   });
@@ -68,9 +68,7 @@ describe('CurriculumController unit test', () => {
   });
   const mockRemoveSubjects = jest.fn(() => {
     return {
-      execute: jest
-        .fn()
-        .mockResolvedValue({ message: '2 values were removed' }),
+      execute: jest.fn().mockResolvedValue({ message: '2 values were removed' }),
     } as unknown as RemoveSubjects;
   });
   token = {

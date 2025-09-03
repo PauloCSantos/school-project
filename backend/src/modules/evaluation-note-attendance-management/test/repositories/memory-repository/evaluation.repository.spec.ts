@@ -149,7 +149,7 @@ describe('MemoryEvaluationRepository unit test', () => {
     it('should delete an existing evaluation and update repository state', async () => {
       const response = await repository.delete(masterId, evaluation1);
 
-      expect(response).toBe('Operação concluída com sucesso');
+      expect(response).toBe('Operation completed successfully');
     });
   });
 });

@@ -148,7 +148,7 @@ describe('MemoryLessonRepository unit test', () => {
     it('should remove the lesson', async () => {
       const response = await repository.delete(masterId, lesson1);
 
-      expect(response).toBe('Operação concluída com sucesso');
+      expect(response).toBe('Operation completed successfully');
     });
 
     it('should add a new student to the lesson', async () => {

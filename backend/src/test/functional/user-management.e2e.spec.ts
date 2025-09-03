@@ -826,7 +826,7 @@ describe('User management module end to end test', () => {
             .set(headers);
 
           expect(response.status).toBe(200);
-          expect(response.body.message).toBe('Operação concluída com sucesso');
+          expect(response.body.message).toBe('Operation completed successfully');
         });
       });
     });
@@ -1594,7 +1594,7 @@ describe('User management module end to end test', () => {
             .set(headers);
 
           expect(response.status).toBe(200);
-          expect(response.body.message).toBe('Operação concluída com sucesso');
+          expect(response.body.message).toBe('Operation completed successfully');
         });
       });
     });
@@ -2104,7 +2104,7 @@ describe('User management module end to end test', () => {
             .set(headers);
 
           expect(response.status).toBe(200);
-          expect(response.body.message).toBe('Operação concluída com sucesso');
+          expect(response.body.message).toBe('Operation completed successfully');
         });
       });
     });
@@ -2591,7 +2591,7 @@ describe('User management module end to end test', () => {
           const response = await supertest(app).delete(`/user-worker/${id}`).set(headers);
 
           expect(response.status).toBe(200);
-          expect(response.body.message).toBe('Operação concluída com sucesso');
+          expect(response.body.message).toBe('Operation completed successfully');
         });
       });
     });
