@@ -1,0 +1,64 @@
+<div class="card">
+  <h1>Cadastro de Tenant (Master)</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <label for="email">E-mail</label>
+    <input id="email" type="email" formControlName="email" placeholder="ex: admin@empresa.com" />
+    @if (f.email.touched && f.email.errors?.['required']) {
+    <small class="error">E-mail é obrigatório.</small>
+    } @if (f.email.touched && f.email.errors?.['email']) {
+    <small class="error">Informe um e-mail válido.</small>
+    }
+
+    <label for="cnpj">CNPJ</label>
+    <input
+      id="cnpj"
+      type="text"
+      formControlName="cnpj"
+      placeholder="00.000.000/0000-00"
+      inputmode="numeric"
+      (input)="formatCnpj($event)"
+    />
+    @if (f.cnpj.touched && f.cnpj.errors?.['required']) {
+    <small class="error">CNPJ é obrigatório.</small>
+    } @if (f.cnpj.touched && f.cnpj.errors?.['cnpj']) {
+    <small class="error">Informe um CNPJ válido.</small>
+    }
+
+    <label for="password">Senha</label>
+    <input
+      id="password"
+      type="password"
+      formControlName="password"
+      placeholder="Mín. 8 caracteres"
+    />
+    @if (f.password.touched && f.password.errors?.['required']) {
+    <small class="error">Senha é obrigatória.</small>
+    } @if (f.password.touched && f.password.errors?.['minlength']) {
+    <small class="error">Mínimo de 8 caracteres.</small>
+    }
+
+    <label for="confirmPassword">Confirmar Senha</label>
+    <input
+      id="confirmPassword"
+      type="password"
+      formControlName="confirmPassword"
+      placeholder="Repita a senha"
+    />
+    @if (form.touched && form.errors?.['passwordsDontMatch']) {
+    <small class="error">As senhas não coincidem.</small>
+    }
+
+    <input type="hidden" value="master" />
+
+    <button type="submit" [disabled]="form.invalid || loading()">
+      {{ loading() ? 'Cadastrando...' : 'Cadastrar' }}
+    </button>
+  </form>
+
+  @if (apiSuccess()) {
+  <p class="success">{{ apiSuccess() }}</p>
+  } @if (apiError()) {
+  <p class="error">{{ apiError() }}</p>
+  }
+</div>
