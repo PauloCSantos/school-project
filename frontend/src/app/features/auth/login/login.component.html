@@ -1,0 +1,92 @@
+<div class="card">
+  <h1>Entrar</h1>
+
+  <form [formGroup]="credentialsForm" (ngSubmit)="onSubmit()" novalidate>
+    <label for="email">E-mail</label>
+    <input
+      id="email"
+      type="email"
+      formControlName="email"
+      placeholder="ex: admin@empresa.com"
+      autocomplete="username"
+    />
+    @if (credentialsForm.get('email')?.touched &&
+    credentialsForm.get('email')?.errors?.['required']) {
+    <small class="error">E-mail é obrigatório.</small>
+    } @if (credentialsForm.get('email')?.touched && credentialsForm.get('email')?.errors?.['email'])
+    {
+    <small class="error">Informe um e-mail válido.</small>
+    } @if (credentialsForm.get('email')?.errors?.['api']) {
+    <small class="error">{{ credentialsForm.get('email')?.errors?.['api'] }}</small>
+    }
+
+    <label for="password">Senha</label>
+    <input
+      id="password"
+      type="password"
+      formControlName="password"
+      placeholder="Mín. 8 caracteres"
+      autocomplete="current-password"
+    />
+    @if (credentialsForm.get('password')?.touched &&
+    credentialsForm.get('password')?.errors?.['required']) {
+    <small class="error">Senha é obrigatória.</small>
+    } @if (credentialsForm.get('password')?.touched &&
+    credentialsForm.get('password')?.errors?.['minlength']) {
+    <small class="error">Mínimo de 8 caracteres.</small>
+    } @if (credentialsForm.get('password')?.errors?.['api']) {
+    <small class="error">{{ credentialsForm.get('password')?.errors?.['api'] }}</small>
+    }
+
+    <label for="role">Role</label>
+    <select id="role" formControlName="role" required>
+      <option [ngValue]="null" disabled>Selecione...</option>
+      @for (r of roleOptions(); track r) {
+      <option [value]="r">{{ r }}</option>
+      } @empty {
+      <option [ngValue]="null" disabled>Nenhuma role disponível</option>
+      }
+    </select>
+    @if (credentialsForm.get('role')?.touched && credentialsForm.get('role')?.errors?.['required'])
+    {
+    <small class="error">Role é obrigatório.</small>
+    } @if (credentialsForm.get('role')?.errors?.['api']) {
+    <small class="error">{{ credentialsForm.get('role')?.errors?.['api'] }}</small>
+    } @if (step() === 'tenant') {
+    <label for="tenantMasterId">Tenant</label>
+    <select id="tenantMasterId" formControlName="masterId" required>
+      <option [ngValue]="null" disabled>Selecione...</option>
+      @for (t of tenants(); track t.id) {
+      <option [value]="t.id">{{ t.id }}</option>
+      } @empty {
+      <option [ngValue]="null" disabled>Não há tenants disponíveis</option>
+      }
+    </select>
+    @if (credentialsForm.get('masterId')?.touched &&
+    credentialsForm.get('masterId')?.errors?.['required']) {
+    <small class="error">Tenant é obrigatório.</small>
+    } @if (credentialsForm.get('masterId')?.errors?.['api']) {
+    <small class="error">{{ credentialsForm.get('masterId')?.errors?.['api'] }}</small>
+    } }
+
+    <button type="submit" [disabled]="submitDisabled">
+      {{
+        step() === 'tenant'
+          ? loading()
+            ? 'Entrando...'
+            : 'Entrar'
+          : loading()
+          ? 'Continuando...'
+          : 'Continuar'
+      }}
+    </button>
+
+    @if (step() === 'tenant') {
+    <button type="button" (click)="backToCredentials()" [disabled]="loading()">Voltar</button>
+    }
+  </form>
+
+  @if (formError()) {
+  <p class="error">{{ formError() }}</p>
+  }
+</div>

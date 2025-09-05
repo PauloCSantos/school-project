@@ -1,0 +1,19 @@
+<div class="auth-container">
+  <div class="left-pane">
+    <!-- Aqui fica sua imagem depois -->
+  </div>
+
+  <div class="right-pane">
+    <div class="card">
+      <!-- O conteúdo (login/register) entra aqui como rota filha -->
+      <router-outlet></router-outlet>
+
+      <!-- Links rápidos -->
+      <div class="links">
+        <a routerLink="/login">Login</a>
+        <span>•</span>
+        <a routerLink="/register">Criar conta</a>
+      </div>
+    </div>
+  </div>
+</div>

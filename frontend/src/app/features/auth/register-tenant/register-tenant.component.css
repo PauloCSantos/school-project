@@ -1,0 +1,56 @@
+.card {
+  max-width: 420px;
+  margin: 2rem auto;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+  background: #fff;
+}
+h1 {
+  font-size: 1.25rem;
+  margin: 0 0 1rem;
+}
+label {
+  display: block;
+  font-size: 0.9rem;
+  margin: 0.75rem 0 0.25rem;
+}
+input {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+}
+input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+button {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.7rem;
+  border: 0;
+  border-radius: 8px;
+  background: #111827;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.error {
+  color: #b91c1c;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+.success {
+  color: #065f46;
+  background: #ecfdf5;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}

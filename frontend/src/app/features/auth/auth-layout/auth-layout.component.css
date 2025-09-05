@@ -1,0 +1,38 @@
+.auth-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* metade/metade */
+  min-height: 100dvh;
+}
+
+.left-pane {
+  /* background: url('/assets/sua-imagem.jpg') center/cover no-repeat; */
+  background: #f3f4f6;
+}
+
+.right-pane {
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
+}
+
+.links {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.links a {
+  text-decoration: none;
+}
