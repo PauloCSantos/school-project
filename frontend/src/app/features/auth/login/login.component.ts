@@ -14,6 +14,7 @@ import { LoginService } from './login.service';
 import { Role } from '../../../core/types/role.type';
 import { ApiError } from '../../../core/interceptors/api-error.interceptor';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 type PrefillState = { email?: string; masterId?: string };
 
@@ -26,7 +27,7 @@ type PrefillState = { email?: string; masterId?: string };
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements OnInit {
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   private fb = inject(FormBuilder);
   private loginService = inject(LoginService);
@@ -214,6 +215,8 @@ export class LoginComponent implements OnInit {
         next: (res) => {
           this.loading.set(false);
           this.step.set('done');
+          this.authService.setToken(res.token);
+          this.router.navigate(['/users'], { replaceUrl: true });
         },
         error: (e) => this.handleApiError(e),
       });
