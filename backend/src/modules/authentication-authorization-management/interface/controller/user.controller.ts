@@ -10,6 +10,7 @@ import {
   UpdateAuthUserInputDto,
   UpdateAuthUserOutputDto,
 } from '../../application/dto/user-usecase.dto';
+import CheckRegistration from '../../application/usecases/authUser/check-registration.usecase';
 import CreateAuthUser from '../../application/usecases/authUser/create-user.usecase';
 import DeleteAuthUser from '../../application/usecases/authUser/delete-user.usecase';
 import FindAuthUser from '../../application/usecases/authUser/find-user.usecase';
@@ -35,7 +36,8 @@ export default class AuthUserController {
     private readonly findAuthUser: FindAuthUser,
     private readonly updateAuthUser: UpdateAuthUser,
     private readonly deleteAuthUser: DeleteAuthUser,
-    private readonly loginAuthUser: LoginAuthUser
+    private readonly loginAuthUser: LoginAuthUser,
+    private readonly checkRegistration: CheckRegistration
   ) {}
 
   /**
@@ -97,6 +99,11 @@ export default class AuthUserController {
    */
   async login(input: LoginAuthUserInputDto): Promise<LoginAuthUserOutputDto> {
     const response = await this.loginAuthUser.execute(input);
+    return response;
+  }
+
+  async checkUserRegistration(token: TokenData) {
+    const response = await this.checkRegistration.execute(token);
     return response;
   }
 }
