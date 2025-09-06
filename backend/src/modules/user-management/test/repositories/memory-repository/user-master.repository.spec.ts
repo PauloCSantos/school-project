@@ -109,6 +109,12 @@ describe('MemoryUserMasterRepository unit test', () => {
         'User not found'
       );
     });
+    it('should receive null when searching for a non-existent user id', async () => {
+      const baseUserId = new Id().value;
+      const userMasterFound = await repository.findByBaseUserId(masterId, baseUserId);
+
+      expect(userMasterFound).toBeNull();
+    });
   });
   describe('On success', () => {
     it('should find a user master', async () => {
@@ -142,6 +148,16 @@ describe('MemoryUserMasterRepository unit test', () => {
       const result = await repository.update(masterId, updatedUserMaster);
 
       expect(result).toEqual(updatedUserMaster);
+    });
+    it('should find a user master by the base user id', async () => {
+      const baseUserId = userMaster1.userId;
+      const userMaster = await repository.findByBaseUserId(masterId, baseUserId);
+
+      expect(userMaster).toBeDefined();
+      expect(userMaster!.id).toBeDefined();
+      expect(userMaster!.id).toStrictEqual(userMaster1.id);
+      expect(userMaster!.userId).toStrictEqual(userMaster1.userId);
+      expect(userMaster!.cnpj).toStrictEqual(userMaster1.cnpj);
     });
   });
 });

@@ -178,5 +178,15 @@ describe('MemoryUserAdministratorRepository unit test', () => {
 
       expect(response).toBe('Operation completed successfully');
     });
+    it('should find a user administrator by the base user id', async () => {
+      const baseUserId = userAdministrator1.userId;
+      const userAdministrator = await repository.findByBaseUserId(masterId, baseUserId);
+
+      expect(userAdministrator).toBeDefined();
+      expect(userAdministrator!.id).toBeDefined();
+      expect(userAdministrator!.id).toStrictEqual(userAdministrator1.id);
+      expect(userAdministrator!.userId).toStrictEqual(userAdministrator1.userId);
+      expect(userAdministrator!.graduation).toStrictEqual(userAdministrator1.graduation);
+    });
   });
 });

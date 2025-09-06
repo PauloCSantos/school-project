@@ -113,6 +113,12 @@ describe('MemoryUserStudentRepository unit test', () => {
         'User not found'
       );
     });
+    it('should receive null when searching for a non-existent user id', async () => {
+      const baseUserId = new Id().value;
+      const userStudentFound = await repository.findByBaseUserId(masterId, baseUserId);
+
+      expect(userStudentFound).toBeNull();
+    });
   });
   describe('On success', () => {
     it('should find a user student', async () => {
@@ -160,6 +166,16 @@ describe('MemoryUserStudentRepository unit test', () => {
       const response = await repository.delete(masterId, userStudent1);
 
       expect(response).toBe('Operation completed successfully');
+    });
+    it('should find a user student by the base user id', async () => {
+      const baseUserId = userStudent1.userId;
+      const userStudent = await repository.findByBaseUserId(masterId, baseUserId);
+
+      expect(userStudent).toBeDefined();
+      expect(userStudent!.id).toBeDefined();
+      expect(userStudent!.id).toStrictEqual(userStudent1.id);
+      expect(userStudent!.userId).toStrictEqual(userStudent1.userId);
+      expect(userStudent!.paymentYear).toStrictEqual(userStudent1.paymentYear);
     });
   });
 });

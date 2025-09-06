@@ -129,6 +129,12 @@ describe('MemoryUserTeacherRepository unit test', () => {
         'User not found'
       );
     });
+    it('should receive null when searching for a non-existent user id', async () => {
+      const baseUserId = new Id().value;
+      const userTeacherFound = await repository.findByBaseUserId(masterId, baseUserId);
+
+      expect(userTeacherFound).toBeNull();
+    });
   });
   describe('On success', () => {
     it('should find a user teacher', async () => {
@@ -183,6 +189,16 @@ describe('MemoryUserTeacherRepository unit test', () => {
       const response = await repository.delete(masterId, userTeacher1);
 
       expect(response).toBe('Operation completed successfully');
+    });
+    it('should find a user teacher by the base user id', async () => {
+      const baseUserId = userTeacher1.userId;
+      const userTeacherFound = await repository.findByBaseUserId(masterId, baseUserId);
+
+      expect(userTeacherFound).toBeDefined();
+      expect(userTeacherFound!.id).toBeDefined();
+      expect(userTeacherFound!.id).toStrictEqual(userTeacher1.id);
+      expect(userTeacherFound!.userId).toStrictEqual(userTeacher1.userId);
+      expect(userTeacherFound!.salary).toStrictEqual(userTeacher1.salary);
     });
   });
 });

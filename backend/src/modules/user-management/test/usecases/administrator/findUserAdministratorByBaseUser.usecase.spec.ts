@@ -1,16 +1,14 @@
-import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
-import FindUserAdministrator from '@/modules/user-management/application/usecases/administrator/findUserAdministrator.usecase';
+import FindUserAdministratorByBaseUser from '@/modules/user-management/application/usecases/administrator/findUserAdministratorByBaseUser.usecase';
+
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
 import UserAdministrator from '@/modules/user-management/domain/entity/administrator.entity';
 import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 
-describe('findUserAdministrator usecase unit test', () => {
-  let policieService: jest.Mocked<PoliciesServiceInterface>;
+describe('findUserAdministratorByBaseUser usecase unit test', () => {
   let token: TokenData;
 
   const MockRepository = () => {
@@ -22,28 +20,6 @@ describe('findUserAdministrator usecase unit test', () => {
       update: jest.fn(),
       delete: jest.fn(),
     };
-  };
-
-  const MockUserService = () => {
-    return {
-      getOrCreateUser: jest.fn(),
-      findBaseUsers: jest.fn(),
-      findBaseUser: jest.fn(),
-      update: jest.fn(),
-      findBaseUserByEmail: jest.fn(),
-    };
-  };
-
-  const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
-    ({
-      verifyPolicies: jest.fn(),
-    }) as jest.Mocked<PoliciesServiceInterface>;
-
-  policieService = MockPolicyService();
-  token = {
-    email: 'caller@domain.com',
-    role: RoleUsersEnum.MASTER,
-    masterId: new Id().value,
   };
 
   const userBase1 = new UserBase({
@@ -71,40 +47,33 @@ describe('findUserAdministrator usecase unit test', () => {
 
   describe('On success', () => {
     it('should find an user administrator', async () => {
+      token = {
+        email: 'teste1@test.com',
+        role: RoleUsersEnum.ADMINISTRATOR,
+        masterId: 'valid id',
+      };
       const userAdministratorRepository = MockRepository();
-      const userService = MockUserService();
 
-      userAdministratorRepository.find.mockResolvedValue(userAdministrator1);
-      userService.findBaseUser.mockResolvedValue(userBase1);
+      userAdministratorRepository.findByBaseUserId.mockResolvedValue(userAdministrator1);
 
-      const usecase = new FindUserAdministrator(
-        userAdministratorRepository,
-        policieService,
-        userService
-      );
+      const usecase = new FindUserAdministratorByBaseUser(userAdministratorRepository);
+      const result = await usecase.execute(token);
 
-      const result = await usecase.execute({ id: userAdministrator1.id.value }, token);
-
-      expect(userAdministratorRepository.find).toHaveBeenCalled();
+      expect(userAdministratorRepository.findByBaseUserId).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
     it('should return null when id is not found', async () => {
+      token = {
+        email: 'newUser@test.com',
+        role: RoleUsersEnum.ADMINISTRATOR,
+        masterId: 'valid id',
+      };
       const userAdministratorRepository = MockRepository();
-      const userService = MockUserService();
 
       userAdministratorRepository.find.mockResolvedValue(null);
 
-      const usecase = new FindUserAdministrator(
-        userAdministratorRepository,
-        policieService,
-        userService
-      );
-      const result = await usecase.execute(
-        {
-          id: '75c791ca-7a40-4217-8b99-2cf22c01d543',
-        },
-        token
-      );
+      const usecase = new FindUserAdministratorByBaseUser(userAdministratorRepository);
+      const result = await usecase.execute(token);
 
       expect(result).toBeNull();
     });
