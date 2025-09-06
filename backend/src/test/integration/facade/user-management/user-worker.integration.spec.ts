@@ -40,6 +40,7 @@ import {
   UserServiceInterface,
 } from '@/modules/user-management/domain/services/user.service';
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
+import FindUserWorkerByBaseUser from '@/modules/user-management/application/usecases/worker/findUserTeacherByBaseUser.usecase';
 
 describe('User Worker facade integration test', () => {
   let authUserRepository: AuthUserGateway;
@@ -63,6 +64,7 @@ describe('User Worker facade integration test', () => {
   let findAllUserWorker: FindAllUserWorker;
   let findUserWorker: FindUserWorker;
   let updateUserWorker: UpdateUserWorker;
+  let findUserWorkerByBaseUser: FindUserWorkerByBaseUser;
   let facadeWorker: WorkerFacade;
 
   let policiesService: PoliciesServiceInterface;
@@ -203,6 +205,7 @@ describe('User Worker facade integration test', () => {
       policiesService,
       userService
     );
+    findUserWorkerByBaseUser = new FindUserWorkerByBaseUser(workerRepository);
 
     facadeWorker = new WorkerFacade({
       createUserWorker,
@@ -210,6 +213,7 @@ describe('User Worker facade integration test', () => {
       findAllUserWorker,
       findUserWorker,
       updateUserWorker,
+      findUserWorkerByBaseUser,
     });
   });
 
@@ -276,5 +280,13 @@ describe('User Worker facade integration test', () => {
     );
 
     expect(result).toBeDefined();
+  });
+
+  it('should find a Worker by user id using the facade', async () => {
+    await createAuthUserFor(input.email);
+    await facadeWorker.create(input, token);
+    const userWorker = await facadeWorker.checkUserWorkerFromToken(token);
+
+    expect(userWorker).toBeDefined();
   });
 });

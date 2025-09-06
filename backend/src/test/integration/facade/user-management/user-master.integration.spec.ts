@@ -41,6 +41,7 @@ import {
   UserServiceInterface,
 } from '@/modules/user-management/domain/services/user.service';
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
+import FindUserMasterByBaseUser from '@/modules/user-management/application/usecases/master/findUserMasterByBaseUser.usecase';
 
 describe('User master facade integration test', () => {
   let authUserRepository: AuthUserGateway;
@@ -63,6 +64,7 @@ describe('User master facade integration test', () => {
   let createUserMaster: CreateUserMaster;
   let findUserMaster: FindUserMaster;
   let updateUserMaster: UpdateUserMaster;
+  let findUserMasterByBaseUser: FindUserMasterByBaseUser;
   let facadeMaster: MasterFacade;
 
   const input = {
@@ -155,11 +157,13 @@ describe('User master facade integration test', () => {
       policiesService,
       userService
     );
+    findUserMasterByBaseUser = new FindUserMasterByBaseUser(masterRepository);
 
     facadeMaster = new MasterFacade({
       createUserMaster,
       findUserMaster,
       updateUserMaster,
+      findUserMasterByBaseUser,
     });
   });
 
@@ -198,5 +202,12 @@ describe('User master facade integration test', () => {
     );
 
     expect(result).toBeDefined();
+  });
+  it('should find a Master by user id using the facade', async () => {
+    await createAuthUserFor(input.email);
+    await facadeMaster.create(input, token);
+    const userMaster = await facadeMaster.checkUserMasterFromToken(token);
+
+    expect(userMaster).toBeDefined();
   });
 });

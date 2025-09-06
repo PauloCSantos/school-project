@@ -40,6 +40,7 @@ import {
   UserServiceInterface,
 } from '@/modules/user-management/domain/services/user.service';
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
+import FindUserTeacherByBaseUser from '@/modules/user-management/application/usecases/teacher/findUserTeacherByBaseUser.usecase';
 
 describe('User Teacher facade integration test', () => {
   let authUserRepository: AuthUserGateway;
@@ -63,6 +64,7 @@ describe('User Teacher facade integration test', () => {
   let findAllUserTeacher: FindAllUserTeacher;
   let findUserTeacher: FindUserTeacher;
   let updateUserTeacher: UpdateUserTeacher;
+  let findUserTeacherByBaseUser: FindUserTeacherByBaseUser;
   let facadeTeacher: TeacherFacade;
 
   let policiesService: PoliciesServiceInterface;
@@ -213,6 +215,7 @@ describe('User Teacher facade integration test', () => {
       policiesService,
       userService
     );
+    findUserTeacherByBaseUser = new FindUserTeacherByBaseUser(teacherRepository);
 
     facadeTeacher = new TeacherFacade({
       createUserTeacher,
@@ -220,6 +223,7 @@ describe('User Teacher facade integration test', () => {
       findAllUserTeacher,
       findUserTeacher,
       updateUserTeacher,
+      findUserTeacherByBaseUser,
     });
   });
 
@@ -286,5 +290,13 @@ describe('User Teacher facade integration test', () => {
     );
 
     expect(result).toBeDefined();
+  });
+
+  it('should find a Teacher by user id using the facade', async () => {
+    await createAuthUserFor(input.email);
+    await facadeTeacher.create(input, token);
+    const userTeacher = await facadeTeacher.checkUserTeacherFromToken(token);
+
+    expect(userTeacher).toBeDefined();
   });
 });

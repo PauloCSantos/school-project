@@ -40,6 +40,7 @@ import {
   UserServiceInterface,
 } from '@/modules/user-management/domain/services/user.service';
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
+import FindUserStudentByBaseUser from '@/modules/user-management/application/usecases/student/findUserStudentByBaseUser.usecase';
 
 describe('User Student facade integration test', () => {
   let authUserRepository: AuthUserGateway;
@@ -63,6 +64,7 @@ describe('User Student facade integration test', () => {
   let findAllUserStudent: FindAllUserStudent;
   let findUserStudent: FindUserStudent;
   let updateUserStudent: UpdateUserStudent;
+  let findUserStudentByBaseUser: FindUserStudentByBaseUser;
   let facadeStudent: StudentFacade;
 
   let policiesService: PoliciesServiceInterface;
@@ -201,6 +203,7 @@ describe('User Student facade integration test', () => {
       policiesService,
       userService
     );
+    findUserStudentByBaseUser = new FindUserStudentByBaseUser(studentRepository);
 
     facadeStudent = new StudentFacade({
       createUserStudent,
@@ -208,6 +211,7 @@ describe('User Student facade integration test', () => {
       findAllUserStudent,
       findUserStudent,
       updateUserStudent,
+      findUserStudentByBaseUser,
     });
   });
 
@@ -269,5 +273,13 @@ describe('User Student facade integration test', () => {
       token
     );
     expect(result).toBeDefined();
+  });
+
+  it('should find a Student by user id using the facade', async () => {
+    await createAuthUserFor(input.email);
+    await facadeStudent.create(input, token);
+    const userStudent = await facadeStudent.checkUserStudentFromToken(token);
+
+    expect(userStudent).toBeDefined();
   });
 });
