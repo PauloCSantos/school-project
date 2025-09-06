@@ -11,6 +11,7 @@ import { PoliciesService } from '@/modules/@shared/application/services/policies
 import { UserService } from '../../domain/services/user.service';
 import MemoryUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
 import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
+import FindUserAdministratorByBaseUser from '../usecases/administrator/findUserAdministratorByBaseUser.usecase';
 
 export default class AdministratorFacadeFactory {
   static create(): AdministratorFacade {
@@ -46,12 +47,14 @@ export default class AdministratorFacadeFactory {
       policiesService,
       userService
     );
+    const findUserAdministratorByBaseUser = new FindUserAdministratorByBaseUser(repository)
     const facade = new AdministratorFacade({
       createUserAdministrator,
       deleteUserAdministrator,
       findAllUserAdministrator,
       findUserAdministrator,
       updateUserAdministrator,
+      findUserAdministratorByBaseUser
     });
 
     return facade;

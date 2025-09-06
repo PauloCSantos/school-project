@@ -115,6 +115,12 @@ describe('MemoryUserWorkerRepository unit test', () => {
         'User not found'
       );
     });
+    it('should receive null when searching for a non-existent user id', async () => {
+      const baseUserId = new Id().value;
+      const userWorkerFound = await repository.findByBaseUserId(masterId, baseUserId);
+
+      expect(userWorkerFound).toBeNull();
+    });
   });
   describe('On success', () => {
     it('should find a user worker', async () => {
@@ -162,6 +168,16 @@ describe('MemoryUserWorkerRepository unit test', () => {
       const response = await repository.delete(masterId, userWorker1);
 
       expect(response).toBe('Operation completed successfully');
+    });
+    it('should find a user worker by the base user id', async () => {
+      const baseUserId = userWorker1.userId;
+      const userWorkerFound = await repository.findByBaseUserId(masterId, baseUserId);
+
+      expect(userWorkerFound).toBeDefined();
+      expect(userWorkerFound!.id).toBeDefined();
+      expect(userWorkerFound!.id).toStrictEqual(userWorker1.id);
+      expect(userWorkerFound!.userId).toStrictEqual(userWorker1.userId);
+      expect(userWorkerFound!.salary).toStrictEqual(userWorker1.salary);
     });
   });
 });

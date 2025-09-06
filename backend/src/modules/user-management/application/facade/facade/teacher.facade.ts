@@ -17,6 +17,7 @@ import {
   UpdateUserTeacherOutputDto,
 } from '../../../application/dto/teacher-facade.dto';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import FindUserTeacherByBaseUser from '../../usecases/teacher/findUserTeacherByBaseUser.usecase';
 
 type TeacherFacadeProps = {
   readonly createUserTeacher: CreateUserTeacher;
@@ -24,6 +25,7 @@ type TeacherFacadeProps = {
   readonly findAllUserTeacher: FindAllUserTeacher;
   readonly findUserTeacher: FindUserTeacher;
   readonly updateUserTeacher: UpdateUserTeacher;
+  readonly findUserTeacherByBaseUser: FindUserTeacherByBaseUser;
 };
 export default class TeacherFacade implements TeacherFacadeInterface {
   private readonly _createUserTeacher: CreateUserTeacher;
@@ -31,6 +33,7 @@ export default class TeacherFacade implements TeacherFacadeInterface {
   private readonly _findAllUserTeacher: FindAllUserTeacher;
   private readonly _findUserTeacher: FindUserTeacher;
   private readonly _updateUserTeacher: UpdateUserTeacher;
+  private readonly _findUserTeacherByBaseUser: FindUserTeacherByBaseUser;
 
   constructor(input: TeacherFacadeProps) {
     this._createUserTeacher = input.createUserTeacher;
@@ -38,6 +41,7 @@ export default class TeacherFacade implements TeacherFacadeInterface {
     this._findAllUserTeacher = input.findAllUserTeacher;
     this._findUserTeacher = input.findUserTeacher;
     this._updateUserTeacher = input.updateUserTeacher;
+    this._findUserTeacherByBaseUser = input.findUserTeacherByBaseUser;
   }
 
   async create(
@@ -69,5 +73,9 @@ export default class TeacherFacade implements TeacherFacadeInterface {
     token: TokenData
   ): Promise<UpdateUserTeacherOutputDto> {
     return await this._updateUserTeacher.execute(input, token);
+  }
+  async checkUserTeacherFromToken(token: TokenData): Promise<boolean> {
+    const userTeacher = await this._findUserTeacherByBaseUser.execute(token);
+    return !!userTeacher;
   }
 }

@@ -9,6 +9,7 @@ import { PoliciesService } from '@/modules/@shared/application/services/policies
 import { UserService } from '../../domain/services/user.service';
 import MemoryUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
 import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
+import FindUserMasterByBaseUser from '../usecases/master/findUserMasterByBaseUser.usecase';
 
 export default class MasterFacadeFactory {
   static create(): MasterFacade {
@@ -31,10 +32,12 @@ export default class MasterFacadeFactory {
       policiesService,
       userService
     );
+    const findUserMasterByBaseUser = new FindUserMasterByBaseUser(repository)
     const facade = new MasterFacade({
       createUserMaster,
       findUserMaster,
       updateUserMaster,
+      findUserMasterByBaseUser
     });
 
     return facade;

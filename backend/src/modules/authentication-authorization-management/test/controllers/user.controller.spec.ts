@@ -19,6 +19,7 @@ import UpdateAuthUser from '../../application/usecases/authUser/update-user.usec
 import AuthUserController from '../../interface/controller/user.controller';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
+import CheckRegistration from '../../application/usecases/authUser/check-registration.usecase';
 
 const mockCreateAuthUser: jest.Mocked<CreateAuthUser> = {
   execute: jest.fn(),
@@ -39,6 +40,10 @@ const mockDeleteAuthUser: jest.Mocked<DeleteAuthUser> = {
 const mockLoginAuthUser: jest.Mocked<LoginAuthUser> = {
   execute: jest.fn(),
 } as unknown as jest.Mocked<LoginAuthUser>;
+
+const mockCheckRegistration: jest.Mocked<CheckRegistration> = {
+  execute: jest.fn(),
+} as unknown as jest.Mocked<CheckRegistration>;
 
 describe('AuthUserController unit test', () => {
   let controller: AuthUserController;
@@ -96,13 +101,15 @@ describe('AuthUserController unit test', () => {
     mockUpdateAuthUser.execute.mockResolvedValue(updateOutput);
     mockDeleteAuthUser.execute.mockResolvedValue(deleteOutput);
     mockLoginAuthUser.execute.mockResolvedValue(loginOutput);
+    mockCheckRegistration.execute.mockResolvedValue(true);
 
     controller = new AuthUserController(
       mockCreateAuthUser,
       mockFindAuthUser,
       mockUpdateAuthUser,
       mockDeleteAuthUser,
-      mockLoginAuthUser
+      mockLoginAuthUser,
+      mockCheckRegistration
     );
   });
 
@@ -154,5 +161,13 @@ describe('AuthUserController unit test', () => {
     expect(mockLoginAuthUser.execute).toHaveBeenCalledTimes(1);
     expect(mockLoginAuthUser.execute).toHaveBeenCalledWith(loginInput);
     expect(result).toEqual(loginOutput);
+  });
+
+  it('should call check registration use case with correct input and return its output', async () => {
+    const result = await controller.checkUserRegistration(token);
+
+    expect(mockCheckRegistration.execute).toHaveBeenCalledTimes(1);
+    expect(mockCheckRegistration.execute).toHaveBeenCalledWith(token);
+    expect(result).toEqual(true);
   });
 });

@@ -40,6 +40,7 @@ import {
   UserServiceInterface,
 } from '@/modules/user-management/domain/services/user.service';
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
+import FindUserAdministratorByBaseUser from '@/modules/user-management/application/usecases/administrator/findUserAdministratorByBaseUser.usecase';
 
 describe('User Administrator facade integration test', () => {
   let authUserRepository: AuthUserGateway;
@@ -64,6 +65,7 @@ describe('User Administrator facade integration test', () => {
   let findAllUserAdministrator: FindAllUserAdministrator;
   let findUserAdministrator: FindUserAdministrator;
   let updateUserAdministrator: UpdateUserAdministrator;
+  let findUserAdministratorByBaseUser: FindUserAdministratorByBaseUser;
   let facadeAdministrator: AdministratorFacade;
 
   const input = {
@@ -209,6 +211,9 @@ describe('User Administrator facade integration test', () => {
       policiesService,
       userService
     );
+    findUserAdministratorByBaseUser = new FindUserAdministratorByBaseUser(
+      administratorRepository
+    );
 
     facadeAdministrator = new AdministratorFacade({
       createUserAdministrator,
@@ -216,6 +221,7 @@ describe('User Administrator facade integration test', () => {
       findAllUserAdministrator,
       findUserAdministrator,
       updateUserAdministrator,
+      findUserAdministratorByBaseUser,
     });
   });
 
@@ -282,5 +288,13 @@ describe('User Administrator facade integration test', () => {
     );
 
     expect(result).toBeDefined();
+  });
+  it('should find a Administrator by user id using the facade', async () => {
+    await createAuthUserFor(input.email);
+    await facadeAdministrator.create(input, token);
+    const userAdministrator =
+      await facadeAdministrator.checkUserAdministratorFromToken(token);
+
+    expect(userAdministrator).toBeDefined();
   });
 });

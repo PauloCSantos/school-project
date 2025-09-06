@@ -11,21 +11,25 @@ import {
   UpdateUserMasterOutputDto,
 } from '../../../application/dto/master-facade.dto';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import FindUserMasterByBaseUser from '../../usecases/master/findUserMasterByBaseUser.usecase';
 
 type MasterFacadeProps = {
   readonly createUserMaster: CreateUserMaster;
   readonly findUserMaster: FindUserMaster;
   readonly updateUserMaster: UpdateUserMaster;
+  readonly findUserMasterByBaseUser: FindUserMasterByBaseUser;
 };
 export default class MasterFacade implements MasterFacadeInterface {
   private readonly _createUserMaster: CreateUserMaster;
   private readonly _findUserMaster: FindUserMaster;
   private readonly _updateUserMaster: UpdateUserMaster;
+  private readonly _findUserMasterByBaseUser: FindUserMasterByBaseUser;
 
   constructor(input: MasterFacadeProps) {
     this._createUserMaster = input.createUserMaster;
     this._findUserMaster = input.findUserMaster;
     this._updateUserMaster = input.updateUserMaster;
+    this._findUserMasterByBaseUser = input.findUserMasterByBaseUser;
   }
 
   async create(
@@ -45,5 +49,9 @@ export default class MasterFacade implements MasterFacadeInterface {
     token: TokenData
   ): Promise<UpdateUserMasterOutputDto> {
     return await this._updateUserMaster.execute(input, token);
+  }
+  async checkUserMasterFromToken(token: TokenData): Promise<boolean> {
+    const userMaster = await this._findUserMasterByBaseUser.execute(token);
+    return !!userMaster;
   }
 }

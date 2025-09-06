@@ -30,6 +30,7 @@ describe('findAllUserAdministrator usecase unit test', () => {
       findBaseUsers: jest.fn(),
       findBaseUser: jest.fn(),
       update: jest.fn(),
+      findBaseUserByEmail: jest.fn(),
     };
   };
 

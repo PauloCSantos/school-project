@@ -17,6 +17,7 @@ import FindAllUserAdministrator from '../../usecases/administrator/findAllUserAd
 import FindUserAdministrator from '../../usecases/administrator/findUserAdministrator.usecase';
 import UpdateUserAdministrator from '../../usecases/administrator/updateUserAdministrator.usecase';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import FindUserAdministratorByBaseUser from '../../usecases/administrator/findUserAdministratorByBaseUser.usecase';
 
 type AdministratorFacadeProps = {
   readonly createUserAdministrator: CreateUserAdministrator;
@@ -24,6 +25,7 @@ type AdministratorFacadeProps = {
   readonly findAllUserAdministrator: FindAllUserAdministrator;
   readonly findUserAdministrator: FindUserAdministrator;
   readonly updateUserAdministrator: UpdateUserAdministrator;
+  readonly findUserAdministratorByBaseUser: FindUserAdministratorByBaseUser;
 };
 export default class AdministratorFacade implements AdministratorFacadeInterface {
   private readonly _createUserAdministrator: CreateUserAdministrator;
@@ -31,6 +33,7 @@ export default class AdministratorFacade implements AdministratorFacadeInterface
   private readonly _findAllUserAdministrator: FindAllUserAdministrator;
   private readonly _findUserAdministrator: FindUserAdministrator;
   private readonly _updateUserAdministrator: UpdateUserAdministrator;
+  private readonly _findUserAdministratorByBaseUser: FindUserAdministratorByBaseUser;
 
   constructor(input: AdministratorFacadeProps) {
     this._createUserAdministrator = input.createUserAdministrator;
@@ -38,6 +41,7 @@ export default class AdministratorFacade implements AdministratorFacadeInterface
     this._findAllUserAdministrator = input.findAllUserAdministrator;
     this._findUserAdministrator = input.findUserAdministrator;
     this._updateUserAdministrator = input.updateUserAdministrator;
+    this._findUserAdministratorByBaseUser = input.findUserAdministratorByBaseUser;
   }
 
   async create(
@@ -69,5 +73,9 @@ export default class AdministratorFacade implements AdministratorFacadeInterface
     token: TokenData
   ): Promise<UpdateUserAdministratorOutputDto> {
     return await this._updateUserAdministrator.execute(input, token);
+  }
+  async checkUserAdministratorFromToken(token: TokenData): Promise<boolean> {
+    const userAdministrator = await this._findUserAdministratorByBaseUser.execute(token);
+    return !!userAdministrator;
   }
 }

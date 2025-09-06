@@ -54,6 +54,10 @@ export default class AuthUserRoute {
     this.httpGateway.post('/login', this.loginAuthUser.bind(this), [
       createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
     ]);
+
+    this.httpGateway.post('/checkRegistration', this.checkRegistration.bind(this), [
+      this.authMiddleware,
+    ]);
   }
 
   private async createAuthUser(
@@ -133,6 +137,21 @@ export default class AuthUserRoute {
       return {
         statusCode: HttpStatus.OK,
         body: response,
+      };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async checkRegistration(
+    req: HttpRequest<{}, {}, {}, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const token = req.tokenData!;
+      const response = await this.authUserController.checkUserRegistration(token);
+      return {
+        statusCode: HttpStatus.OK,
+        body: { registered: response },
       };
     } catch (error) {
       return this.handleError(error);

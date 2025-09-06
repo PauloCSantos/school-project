@@ -17,6 +17,7 @@ import {
   UpdateUserWorkerOutputDto,
 } from '../../../application/dto/worker-facade.dto';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import FindUserWorkerByBaseUser from '../../usecases/worker/findUserTeacherByBaseUser.usecase';
 
 type WorkerFacadeProps = {
   readonly createUserWorker: CreateUserWorker;
@@ -24,6 +25,7 @@ type WorkerFacadeProps = {
   readonly findAllUserWorker: FindAllUserWorker;
   readonly findUserWorker: FindUserWorker;
   readonly updateUserWorker: UpdateUserWorker;
+  readonly findUserWorkerByBaseUser: FindUserWorkerByBaseUser;
 };
 export default class WorkerFacade implements WorkerFacadeInterface {
   private readonly _createUserWorker: CreateUserWorker;
@@ -31,6 +33,7 @@ export default class WorkerFacade implements WorkerFacadeInterface {
   private readonly _findAllUserWorker: FindAllUserWorker;
   private readonly _findUserWorker: FindUserWorker;
   private readonly _updateUserWorker: UpdateUserWorker;
+  private readonly _findUserWorkerByBaseUser: FindUserWorkerByBaseUser;
 
   constructor(input: WorkerFacadeProps) {
     this._createUserWorker = input.createUserWorker;
@@ -38,6 +41,7 @@ export default class WorkerFacade implements WorkerFacadeInterface {
     this._findAllUserWorker = input.findAllUserWorker;
     this._findUserWorker = input.findUserWorker;
     this._updateUserWorker = input.updateUserWorker;
+    this._findUserWorkerByBaseUser = input.findUserWorkerByBaseUser;
   }
 
   async create(
@@ -69,5 +73,9 @@ export default class WorkerFacade implements WorkerFacadeInterface {
     token: TokenData
   ): Promise<UpdateUserWorkerOutputDto> {
     return await this._updateUserWorker.execute(input, token);
+  }
+  async checkUserWorkerFromToken(token: TokenData): Promise<boolean> {
+    const userWorker = await this._findUserWorkerByBaseUser.execute(token);
+    return !!userWorker;
   }
 }

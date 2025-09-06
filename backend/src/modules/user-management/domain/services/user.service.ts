@@ -1,3 +1,4 @@
+import { InternalError } from '@/modules/@shared/application/errors/internal.error';
 import UserGateway from '../../application/gateway/user.gateway';
 import { UserBase, UserBaseProps } from '../entity/user.entity';
 
@@ -6,6 +7,7 @@ export interface UserServiceInterface {
     entities: ReadonlyArray<T>
   ): Promise<ReadonlyArray<{ entity: T; user: UserBase }>>;
   findBaseUser(userId: string): Promise<UserBase | null>;
+  findBaseUserByEmail(email: string): Promise<UserBase | null>;
   getOrCreateUser(email: string, user: UserBaseProps): Promise<UserBase>;
   update(user: UserBase): Promise<UserBase>;
 }
@@ -48,6 +50,13 @@ export class UserService implements UserServiceInterface {
 
   async update(user: UserBase): Promise<UserBase> {
     await this.usersGateway.update(user);
+    return user;
+  }
+
+  async findBaseUserByEmail(email: string): Promise<UserBase> {
+    const user = await this.usersGateway.findByEmail(email);
+    if (!user) throw new InternalError('User not found');
+
     return user;
   }
 }
