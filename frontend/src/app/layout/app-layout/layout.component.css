@@ -1,0 +1,27 @@
+/* ocupa a tela toda e empilha header em cima */
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* área abaixo do header: sidebar + conteúdo lado a lado */
+.layout__body {
+  display: flex;
+  flex: 1;
+  min-height: 0; /* evita estouro e permite scroll no main */
+}
+
+/* sidebar fica com largura fixa (bate com o CSS do componente) */
+app-sidebar {
+  flex: 0 0 200px; /* mesma largura definida no .sidebar */
+}
+
+/* conteúdo cresce e rola quando precisar */
+.layout__content {
+  flex: 1;
+  min-width: 0; /* importante p/ o flex não quebrar */
+  overflow: auto; /* permite scroll no conteúdo */
+  padding: 1rem; /* espaço interno opcional */
+  background: #f5f6f8; /* opcional, só p/ destacar */
+}
