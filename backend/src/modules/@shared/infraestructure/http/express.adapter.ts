@@ -1,10 +1,19 @@
 import express, { Application, Request, Response } from 'express';
+import cors, { CorsOptions } from 'cors';
 import {
   HttpServer,
   HttpRequest,
   HttpResponseData,
   HttpMiddleware,
 } from './http.interface';
+
+const corsOptions: CorsOptions = {
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false,
+  optionsSuccessStatus: 204,
+};
 
 /**
  * Adapter that encapsulates Express and implements HttpServer.
@@ -15,13 +24,12 @@ export class ExpressAdapter implements HttpServer {
   constructor() {
     this.app = express();
     this.app.use(express.json());
+    this.app.use(cors(corsOptions));
   }
 
   get(
     path: string,
-    handler: (
-      req: HttpRequest<any, any, any, any>
-    ) => Promise<HttpResponseData>,
+    handler: (req: HttpRequest<any, any, any, any>) => Promise<HttpResponseData>,
     middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
     this.app.get(path, this.handleRequest(handler, middlewares));
@@ -29,9 +37,7 @@ export class ExpressAdapter implements HttpServer {
 
   post(
     path: string,
-    handler: (
-      req: HttpRequest<any, any, any, any>
-    ) => Promise<HttpResponseData>,
+    handler: (req: HttpRequest<any, any, any, any>) => Promise<HttpResponseData>,
     middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
     this.app.post(path, this.handleRequest(handler, middlewares));
@@ -39,9 +45,7 @@ export class ExpressAdapter implements HttpServer {
 
   patch(
     path: string,
-    handler: (
-      req: HttpRequest<any, any, any, any>
-    ) => Promise<HttpResponseData>,
+    handler: (req: HttpRequest<any, any, any, any>) => Promise<HttpResponseData>,
     middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
     this.app.patch(path, this.handleRequest(handler, middlewares));
@@ -49,18 +53,14 @@ export class ExpressAdapter implements HttpServer {
 
   delete(
     path: string,
-    handler: (
-      req: HttpRequest<any, any, any, any>
-    ) => Promise<HttpResponseData>,
+    handler: (req: HttpRequest<any, any, any, any>) => Promise<HttpResponseData>,
     middlewares: HttpMiddleware<any, any, any, any>[]
   ): void {
     this.app.delete(path, this.handleRequest(handler, middlewares));
   }
 
   private handleRequest(
-    handler: (
-      req: HttpRequest<any, any, any, any>
-    ) => Promise<HttpResponseData>,
+    handler: (req: HttpRequest<any, any, any, any>) => Promise<HttpResponseData>,
     middlewares: HttpMiddleware<any, any, any, any>[]
   ) {
     return (req: Request, res: Response): void => {

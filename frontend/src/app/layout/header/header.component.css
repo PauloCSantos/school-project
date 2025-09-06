@@ -1,0 +1,92 @@
+/* (estilos existentes do header, mantenha) */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 1rem;
+  background-color: #2c3e50;
+  color: #fff;
+}
+
+.header__left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.header__left .logo {
+  width: 32px;
+  height: 32px;
+  background-color: #34495e;
+  border-radius: 4px;
+}
+.header__left .app-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ecf0f1;
+  text-decoration: none;
+}
+.header__left .app-name:hover {
+  text-decoration: underline;
+}
+.header__right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ===== User menu / dropdown ===== */
+.user-menu {
+  position: relative;
+}
+
+.user-menu__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: #ecf0f1;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.user-menu__btn:hover {
+  background: rgba(236, 240, 241, 0.12);
+}
+
+.user-menu__dropdown {
+  position: absolute;
+  right: 0;
+  top: 44px;
+  min-width: 160px;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+
+  background: #fff;
+  color: #2c3e50;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  z-index: 1000;
+}
+
+.user-menu__dropdown li {
+  margin: 0;
+}
+
+.user-menu__dropdown button {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  color: inherit;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.user-menu__dropdown button:hover {
+  background: rgba(44, 62, 80, 0.08);
+}
