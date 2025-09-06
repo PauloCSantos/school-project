@@ -21,6 +21,7 @@ describe('AuthUserRoute with ExpressAdapter', () => {
       find: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      checkUserRegistration: jest.fn(),
     } as unknown as jest.Mocked<AuthUserController>;
 
     middleware = {
@@ -161,6 +162,24 @@ describe('AuthUserRoute with ExpressAdapter', () => {
         message: 'Operação realizada com sucesso',
       });
     });
+
+    it('should check registration user using token', async () => {
+      controller.checkUserRegistration.mockResolvedValue(true);
+
+      const response = await supertest(app)
+        .post('/checkRegistration')
+        .set('Authorization', 'Bearer teste-token');
+
+      expect(response.statusCode).toBe(200);
+      expect(controller.checkUserRegistration).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
+      expect(response.body.registered).toEqual(true);
+    });
   });
 
   describe('failure', () => {
@@ -256,6 +275,24 @@ describe('AuthUserRoute with ExpressAdapter', () => {
         message: expect.any(String),
         details: expect.any(Object),
       });
+    });
+
+    it('should check registration user using token', async () => {
+      controller.checkUserRegistration.mockResolvedValue(false);
+
+      const response = await supertest(app)
+        .post('/checkRegistration')
+        .set('Authorization', 'Bearer teste-token');
+
+      expect(response.statusCode).toBe(200);
+      expect(controller.checkUserRegistration).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
+      expect(response.body.registered).toEqual(false);
     });
   });
 });
