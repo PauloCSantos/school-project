@@ -21,4 +21,5 @@ export default interface MasterFacadeInterface {
     input: UpdateUserMasterInputDto,
     token: TokenData
   ): Promise<UpdateUserMasterOutputDto>;
+  checkUserMasterFromToken(token: TokenData): Promise<boolean>;
 }

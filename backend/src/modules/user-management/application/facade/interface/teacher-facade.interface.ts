@@ -33,4 +33,5 @@ export default interface TeacherFacadeInterface {
     input: UpdateUserTeacherInputDto,
     token: TokenData
   ): Promise<UpdateUserTeacherOutputDto>;
+  checkUserTeacherFromToken(token: TokenData): Promise<boolean>;
 }

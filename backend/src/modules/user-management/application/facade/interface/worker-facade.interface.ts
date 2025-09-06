@@ -33,4 +33,5 @@ export default interface WorkerFacadeInterface {
     input: UpdateUserWorkerInputDto,
     token: TokenData
   ): Promise<UpdateUserWorkerOutputDto>;
+  checkUserWorkerFromToken(token: TokenData): Promise<boolean>;
 }

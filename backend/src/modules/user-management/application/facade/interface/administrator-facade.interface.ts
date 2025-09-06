@@ -33,4 +33,5 @@ export default interface AdministratorFacadeInterface {
     input: UpdateUserAdministratorInputDto,
     token: TokenData
   ): Promise<UpdateUserAdministratorOutputDto>;
+  checkUserAdministratorFromToken(token: TokenData): Promise<boolean>;
 }

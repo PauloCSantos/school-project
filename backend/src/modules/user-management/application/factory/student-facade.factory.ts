@@ -11,6 +11,7 @@ import { PoliciesService } from '@/modules/@shared/application/services/policies
 import MemoryUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
 import { UserService } from '../../domain/services/user.service';
 import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
+import FindUserStudentByBaseUser from '../usecases/student/findUserStudentByBaseUser.usecase';
 
 export default class StudentFacadeFactory {
   static create(): StudentFacade {
@@ -40,12 +41,14 @@ export default class StudentFacadeFactory {
       policiesService,
       userService
     );
+    const findUserStudentByBaseUser = new FindUserStudentByBaseUser(repository)
     const facade = new StudentFacade({
       createUserStudent,
       deleteUserStudent,
       findAllUserStudent,
       findUserStudent,
       updateUserStudent,
+      findUserStudentByBaseUser
     });
 
     return facade;

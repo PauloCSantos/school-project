@@ -17,6 +17,7 @@ import {
   UpdateUserStudentOutputDto,
 } from '../../../application/dto/student-facade.dto';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import FindUserStudentByBaseUser from '../../usecases/student/findUserStudentByBaseUser.usecase';
 
 type StudentFacadeProps = {
   readonly createUserStudent: CreateUserStudent;
@@ -24,6 +25,7 @@ type StudentFacadeProps = {
   readonly findAllUserStudent: FindAllUserStudent;
   readonly findUserStudent: FindUserStudent;
   readonly updateUserStudent: UpdateUserStudent;
+  readonly findUserStudentByBaseUser: FindUserStudentByBaseUser;
 };
 export default class StudentFacade implements StudentFacadeInterface {
   private readonly _createUserStudent: CreateUserStudent;
@@ -31,6 +33,7 @@ export default class StudentFacade implements StudentFacadeInterface {
   private readonly _findAllUserStudent: FindAllUserStudent;
   private readonly _findUserStudent: FindUserStudent;
   private readonly _updateUserStudent: UpdateUserStudent;
+  private readonly _findUserStudentByBaseUser: FindUserStudentByBaseUser;
 
   constructor(input: StudentFacadeProps) {
     this._createUserStudent = input.createUserStudent;
@@ -38,6 +41,7 @@ export default class StudentFacade implements StudentFacadeInterface {
     this._findAllUserStudent = input.findAllUserStudent;
     this._findUserStudent = input.findUserStudent;
     this._updateUserStudent = input.updateUserStudent;
+    this._findUserStudentByBaseUser = input.findUserStudentByBaseUser;
   }
 
   async create(
@@ -69,5 +73,9 @@ export default class StudentFacade implements StudentFacadeInterface {
     token: TokenData
   ): Promise<UpdateUserStudentOutputDto> {
     return await this._updateUserStudent.execute(input, token);
+  }
+  async checkUserStudentFromToken(token: TokenData): Promise<boolean> {
+    const userStudent = await this._findUserStudentByBaseUser.execute(token);
+    return !!userStudent;
   }
 }
