@@ -1,0 +1,37 @@
+<header role="banner" aria-label="App Header">
+  <div class="header__left">
+    <div class="logo" aria-hidden="true"></div>
+    <a class="app-name" routerLink="/">MeuApp</a>
+  </div>
+
+  <div class="header__right">
+    <!-- User menu (ícone) -->
+    <div class="user-menu" (click)="$event.stopPropagation()">
+      <button
+        class="user-menu__btn"
+        type="button"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="menuOpen()"
+        aria-label="Abrir menu do usuário"
+        (click)="toggleMenu()"
+      >
+        <!-- Ícone simples com SVG placeholder -->
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="8" r="4"></circle>
+          <path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path>
+        </svg>
+      </button>
+
+      @if (menuOpen()) {
+      <ul class="user-menu__dropdown" role="menu">
+        <li role="none">
+          <button role="menuitem" type="button" (click)="goProfile()">Perfil</button>
+        </li>
+        <li role="none">
+          <button role="menuitem" type="button" (click)="logout()">Sair</button>
+        </li>
+      </ul>
+      }
+    </div>
+  </div>
+</header>
