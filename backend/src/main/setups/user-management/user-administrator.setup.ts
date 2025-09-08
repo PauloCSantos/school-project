@@ -10,8 +10,6 @@ import { UserAdministratorRoute } from '@/modules/user-management/interface/rout
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
-import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
-import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import { UserService } from '@/modules/user-management/domain/services/user.service';
 import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
@@ -20,14 +18,12 @@ import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 export default function initializeUserAdministrator(
   express: HttpServer,
   tokenService: TokenService,
-  authUserService: AuthUserService,
+  emailValidatorService: EmailAuthValidatorService,
   policiesService: PoliciesService,
   userService: UserService,
   isProd: boolean
 ): void {
   const userAdministratorRepository = new MemoryUserAdministratorRepository();
-  const authUserRepository = new MemoryAuthUserRepository(authUserService);
-  const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
 
   const createUserAdministratorUsecase = new CreateUserAdministrator(
     userAdministratorRepository,
