@@ -16,14 +16,40 @@
 @studentPassword = StudentPass123
 @workerPassword = WorkerPass123
 
+@cnpj = 35.741.901/0001-58
+
+
 #################################################
-## 1. User Creation Flow (register)
+## 1) User Creation Flow (register master)
 #################################################
 
 ### createMaster
 # @name createMaster
-# Create the master user
-POST {{baseUrl}}/register
+# Create the master user (optional; if it already exists, skip)
+POST {{baseUrl}}/registerTenant
+Content-Type: application/json
+
+{
+  "email": "{{masterEmail}}",
+  "password": "{{masterPassword}}",
+  "role": "master",
+  "cnpj": "{{cnpj}}"
+}
+###
+@masterId = {{createMaster.response.body.masterId}}
+
+
+#################################################
+## 2) Master Login Flow
+## If you DON'T have masterId yet:
+##   2.1) Run loginMasterInit (without masterId) to get body.data.0.id
+##   2.2) Run loginMaster (with masterId) to get the token
+#################################################
+
+### loginMasterInit
+# @name loginMasterInit
+# LOGIN without masterId to discover the master's id
+POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
@@ -32,12 +58,32 @@ Content-Type: application/json
   "role": "master"
 }
 ###
-@masterId = {{createMaster.response.body.masterId}}
+@masterId = {{loginMasterInit.response.body.data.0.id}}
+
+### loginMaster
+# @name loginMaster
+# LOGIN with masterId to obtain the master token
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{masterEmail}}",
+  "password": "{{masterPassword}}",
+  "role": "master",
+  "masterId": "{{masterId}}"
+}
+###
+@masterToken = Bearer {{loginMaster.response.body.token}}
+
+
+#################################################
+## 3) Register users (with master token)
+#################################################
 
 ### createAdmin
 # @name createAdmin
-# Create the administrator user
 POST {{baseUrl}}/register
+Authorization: {{masterToken}}
 Content-Type: application/json
 
 {
@@ -49,8 +95,8 @@ Content-Type: application/json
 
 ### createTeacher
 # @name createTeacher
-# Create the teacher user
 POST {{baseUrl}}/register
+Authorization: {{masterToken}}
 Content-Type: application/json
 
 {
@@ -62,8 +108,8 @@ Content-Type: application/json
 
 ### createStudent
 # @name createStudent
-# Create the student user
 POST {{baseUrl}}/register
+Authorization: {{masterToken}}
 Content-Type: application/json
 
 {
@@ -75,8 +121,8 @@ Content-Type: application/json
 
 ### createWorker
 # @name createWorker
-# Create the worker user
 POST {{baseUrl}}/register
+Authorization: {{masterToken}}
 Content-Type: application/json
 
 {
@@ -86,27 +132,15 @@ Content-Type: application/json
   "masterId": "{{masterId}}"
 }
 
+
 #################################################
-## 2. Login Flow for All Users
+## 4) Login Flow for other roles (requires masterId)
+## Same pattern as master: *Init -> capture body.data.0.id -> Login
 #################################################
 
-### loginMaster
-# @name loginMaster
-# Authenticate as master
-POST {{baseUrl}}/login
-Content-Type: application/json
-
-{
-  "email": "{{masterEmail}}",
-  "password": "{{masterPassword}}",
-  "role": "master"
-}
-###
-@masterToken = Bearer {{loginMaster.response.body.token}}
-
-### loginAdmin
-# @name loginAdmin
-# Authenticate as administrator
+### loginAdminInit
+# @name loginAdminInit
+# Discover admin's masterId (without sending masterId)
 POST {{baseUrl}}/login
 Content-Type: application/json
 
@@ -116,11 +150,27 @@ Content-Type: application/json
   "role": "administrator"
 }
 ###
+@adminMasterId = {{loginAdminInit.response.body.data.0.id}}
+
+### loginAdmin
+# @name loginAdmin
+# Admin login (with masterId) to get the token
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "role": "administrator",
+  "masterId": "{{adminMasterId}}"
+}
+###
 @adminToken = Bearer {{loginAdmin.response.body.token}}
 
-### loginTeacher
-# @name loginTeacher
-# Authenticate as teacher
+
+### loginTeacherInit
+# @name loginTeacherInit
+# Discover teacher's masterId
 POST {{baseUrl}}/login
 Content-Type: application/json
 
@@ -130,11 +180,27 @@ Content-Type: application/json
   "role": "teacher"
 }
 ###
+@teacherMasterId = {{loginTeacherInit.response.body.data.0.id}}
+
+### loginTeacher
+# @name loginTeacher
+# Teacher login (with masterId)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{teacherEmail}}",
+  "password": "{{teacherPassword}}",
+  "role": "teacher",
+  "masterId": "{{teacherMasterId}}"
+}
+###
 @teacherToken = Bearer {{loginTeacher.response.body.token}}
 
-### loginStudent
-# @name loginStudent
-# Authenticate as student
+
+### loginStudentInit
+# @name loginStudentInit
+# Discover student's masterId
 POST {{baseUrl}}/login
 Content-Type: application/json
 
@@ -144,11 +210,27 @@ Content-Type: application/json
   "role": "student"
 }
 ###
+@studentMasterId = {{loginStudentInit.response.body.data.0.id}}
+
+### loginStudent
+# @name loginStudent
+# Student login (with masterId)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{studentEmail}}",
+  "password": "{{studentPassword}}",
+  "role": "student",
+  "masterId": "{{studentMasterId}}"
+}
+###
 @studentToken = Bearer {{loginStudent.response.body.token}}
 
-### loginWorker
-# @name loginWorker
-# Authenticate as worker
+
+### loginWorkerInit
+# @name loginWorkerInit
+# Discover worker's masterId
 POST {{baseUrl}}/login
 Content-Type: application/json
 
@@ -158,10 +240,26 @@ Content-Type: application/json
   "role": "worker"
 }
 ###
+@workerMasterId = {{loginWorkerInit.response.body.data.0.id}}
+
+### loginWorker
+# @name loginWorker
+# Worker login (with masterId)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{workerEmail}}",
+  "password": "{{workerPassword}}",
+  "role": "worker",
+  "masterId": "{{workerMasterId}}"
+}
+###
 @workerToken = Bearer {{loginWorker.response.body.token}}
 
+
 #################################################
-## 3. Update Flow (PATCH /authUser)
+## 5) Update Flow (PATCH /authUser)
 #################################################
 
 ### updateUserPassword
@@ -194,7 +292,7 @@ Authorization: {{adminToken}}
 
 ### updateUserEmail
 # @name updateUserEmail
-# Student updates worker's email
+# Student updates worker's email (example)
 PATCH {{baseUrl}}/authUser
 Content-Type: application/json
 Authorization: {{studentToken}}
@@ -206,8 +304,9 @@ Authorization: {{studentToken}}
   }
 }
 
+
 #################################################
-## 4. Deletion Flow (DELETE)
+## 6) Deletion Flow (DELETE)
 #################################################
 
 ### deleteUser

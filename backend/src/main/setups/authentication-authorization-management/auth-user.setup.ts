@@ -7,7 +7,6 @@ import UpdateAuthUser from '@/modules/authentication-authorization-management/ap
 import AuthUserController from '@/modules/authentication-authorization-management/interface/controller/user.controller';
 import AuthUserRoute from '@/modules/authentication-authorization-management/interface/route/user.route';
 import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
-import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
@@ -15,15 +14,16 @@ import { AuthUserService } from '@/modules/authentication-authorization-manageme
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.repository';
 import { TenantService } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
+import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
 
 export default function initializeAuthUser(
   express: HttpServer,
   tokenService: TokenService,
   authUserService: AuthUserService,
   policiesService: PoliciesService,
+  authUserRepository: AuthUserGateway,
   isProd: boolean
 ): void {
-  const authUserRepository = new MemoryAuthUserRepository(authUserService);
   const tenantRepository = new MemoryTenantRepository();
   const tenantService = new TenantService(tenantRepository);
 
