@@ -130,12 +130,12 @@ describe('User Worker facade integration test', () => {
     role: RoleUsersEnum.MASTER,
   };
 
-  async function createAuthUserFor(email: string) {
+  async function createAuthUserFor(email: string, n: number = 5) {
     await facadeAuthUser.createTenant({
       email,
       password: 'XpA2Jjd4',
       role: 'master' as RoleUsers,
-      cnpj: '12345678000195',
+      cnpj: `1234567800019${n}`,
     });
   }
 
@@ -229,9 +229,9 @@ describe('User Worker facade integration test', () => {
   });
 
   it('should find all Worker users using the facade', async () => {
-    await createAuthUserFor(input.email);
-    await createAuthUserFor(input2.email);
-    await createAuthUserFor(input3.email);
+    await createAuthUserFor(input.email, 1);
+    await createAuthUserFor(input2.email, 2);
+    await createAuthUserFor(input3.email, 3);
 
     await facadeWorker.create(input, token);
     await facadeWorker.create(input2, token);
@@ -242,9 +242,9 @@ describe('User Worker facade integration test', () => {
   });
 
   it('should delete a Worker user using the facade', async () => {
-    await createAuthUserFor(input.email);
-    await createAuthUserFor(input2.email);
-    await createAuthUserFor(input3.email);
+    await createAuthUserFor(input.email, 1);
+    await createAuthUserFor(input2.email, 2);
+    await createAuthUserFor(input3.email, 3);
 
     await facadeWorker.create(input, token);
     const id2 = await facadeWorker.create(input2, token);
