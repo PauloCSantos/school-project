@@ -19,6 +19,8 @@ import { AuthUserService } from '@/modules/authentication-authorization-manageme
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 import { UserService } from '@/modules/user-management/domain/services/user.service';
+import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
+import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
 
 async function startServer() {
   const appCfg = config;
@@ -30,11 +32,13 @@ async function startServer() {
   const userRepository = new MemoryUserRepository();
 
   const userService = new UserService(userRepository);
+  const authUserRepository = new MemoryAuthUserRepository(authUserService);
+  const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
 
   initializeUserMaster(
     expressHttp,
     tokenService,
-    authUserService,
+    emailValidatorService,
     policiesService,
     userService,
     isProd
@@ -42,7 +46,7 @@ async function startServer() {
   initializeUserAdministrator(
     expressHttp,
     tokenService,
-    authUserService,
+    emailValidatorService,
     policiesService,
     userService,
     isProd
@@ -50,7 +54,7 @@ async function startServer() {
   initializeUserStudent(
     expressHttp,
     tokenService,
-    authUserService,
+    emailValidatorService,
     policiesService,
     userService,
     isProd
@@ -58,7 +62,7 @@ async function startServer() {
   initializeUserTeacher(
     expressHttp,
     tokenService,
-    authUserService,
+    emailValidatorService,
     policiesService,
     userService,
     isProd
@@ -66,7 +70,7 @@ async function startServer() {
   initializeUserWorker(
     expressHttp,
     tokenService,
-    authUserService,
+    emailValidatorService,
     policiesService,
     userService,
     isProd
@@ -79,7 +83,14 @@ async function startServer() {
   initializeEvaluation(expressHttp, tokenService, policiesService, isProd);
   initializeNote(expressHttp, tokenService, policiesService, isProd);
   initializeAttendance(expressHttp, tokenService, policiesService, isProd);
-  initializeAuthUser(expressHttp, tokenService, authUserService, policiesService, isProd);
+  initializeAuthUser(
+    expressHttp,
+    tokenService,
+    authUserService,
+    policiesService,
+    authUserRepository,
+    isProd
+  );
 
   expressHttp.listen(appCfg.port);
 }

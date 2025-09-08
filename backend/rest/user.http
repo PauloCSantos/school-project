@@ -4,25 +4,44 @@
 
 @baseUrl = http://localhost:3003
 
-@masterEmail = master@teste.com.br
-@adminEmail = admin@teste.com.br
+@masterEmail  = master@teste.com.br
+@adminEmail   = admin@teste.com.br
 @teacherEmail = teacher@teste.com.br
 @studentEmail = student@teste.com.br
-@workerEmail = worker@teste.com.br
+@workerEmail  = worker@teste.com.br
 
-@masterPassword = MasterPass123
-@adminPassword = AdminPass123
+@masterPassword  = MasterPass123
+@adminPassword   = AdminPass123
 @teacherPassword = TeacherPass123
 @studentPassword = StudentPass123
-@workerPassword = WorkerPass123
+@workerPassword  = WorkerPass123
+
+@cnpj = 35.741.901/0001-58
+
+# Sample profile data (adjust as needed)
+@firstName = John
+@middleName = 
+@lastName = Doe
+@street = 1st Street
+@avenue = Central Ave
+@number = 123
+@city = Metropolis
+@state = SP
+@zip = 01000-000
+@birthday = 1990-01-15
+@graduation = Business Administration
+@academicDegrees = MSc, PhD
+@salaryValue = 10000
+@salaryCurrency = R$
+
 
 #################################################
-## User Login Flow
+## 1) MASTER login (Init -> get masterId -> Login)
 #################################################
 
-### loginMaster
-# @name loginMaster
-# Authenticate as master
+### loginMasterInit
+# @name loginMasterInit
+# Discover masterId (without sending masterId)
 POST {{baseUrl}}/login
 Content-Type: application/json
 
@@ -32,11 +51,30 @@ Content-Type: application/json
   "role": "master"
 }
 ###
+@masterId = {{loginMasterInit.response.body.data.0.id}}
+
+### loginMaster
+# @name loginMaster
+# Login with masterId to get token
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{masterEmail}}",
+  "password": "{{masterPassword}}",
+  "role": "master",
+  "masterId": "{{masterId}}"
+}
+###
 @masterToken = Bearer {{loginMaster.response.body.token}}
 
-### loginAdmin
-# @name loginAdmin
-# Authenticate as administrator
+
+#################################################
+## 2) ADMINISTRATOR login (Init -> get masterId -> Login)
+#################################################
+
+### loginAdminInit
+# @name loginAdminInit
 POST {{baseUrl}}/login
 Content-Type: application/json
 
@@ -46,11 +84,29 @@ Content-Type: application/json
   "role": "administrator"
 }
 ###
+@adminMasterId = {{loginAdminInit.response.body.data.0.id}}
+
+### loginAdmin
+# @name loginAdmin
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "role": "administrator",
+  "masterId": "{{adminMasterId}}"
+}
+###
 @adminToken = Bearer {{loginAdmin.response.body.token}}
 
-### loginTeacher
-# @name loginTeacher
-# Authenticate as teacher
+
+#################################################
+## 3) TEACHER login (Init -> get masterId -> Login)
+#################################################
+
+### loginTeacherInit
+# @name loginTeacherInit
 POST {{baseUrl}}/login
 Content-Type: application/json
 
@@ -60,11 +116,29 @@ Content-Type: application/json
   "role": "teacher"
 }
 ###
+@teacherMasterId = {{loginTeacherInit.response.body.data.0.id}}
+
+### loginTeacher
+# @name loginTeacher
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{teacherEmail}}",
+  "password": "{{teacherPassword}}",
+  "role": "teacher",
+  "masterId": "{{teacherMasterId}}"
+}
+###
 @teacherToken = Bearer {{loginTeacher.response.body.token}}
 
-### loginStudent
-# @name loginStudent
-# Authenticate as student
+
+#################################################
+## 4) STUDENT login (Init -> get masterId -> Login)
+#################################################
+
+### loginStudentInit
+# @name loginStudentInit
 POST {{baseUrl}}/login
 Content-Type: application/json
 
@@ -74,11 +148,29 @@ Content-Type: application/json
   "role": "student"
 }
 ###
+@studentMasterId = {{loginStudentInit.response.body.data.0.id}}
+
+### loginStudent
+# @name loginStudent
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{studentEmail}}",
+  "password": "{{studentPassword}}",
+  "role": "student",
+  "masterId": "{{studentMasterId}}"
+}
+###
 @studentToken = Bearer {{loginStudent.response.body.token}}
 
-### loginWorker
-# @name loginWorker
-# Authenticate as worker
+
+#################################################
+## 5) WORKER login (Init -> get masterId -> Login)
+#################################################
+
+### loginWorkerInit
+# @name loginWorkerInit
 POST {{baseUrl}}/login
 Content-Type: application/json
 
@@ -88,321 +180,336 @@ Content-Type: application/json
   "role": "worker"
 }
 ###
+@workerMasterId = {{loginWorkerInit.response.body.data.0.id}}
+
+### loginWorker
+# @name loginWorker
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{workerEmail}}",
+  "password": "{{workerPassword}}",
+  "role": "worker",
+  "masterId": "{{workerMasterId}}"
+}
+###
 @workerToken = Bearer {{loginWorker.response.body.token}}
 
+
 #################################################
-## 1. Master User
+## 6) PROFILE CREATION (uses the SAME email as login)
+##    Endpoints:
+##      - /user-master
+##      - /user-administrator
+##      - /user-teacher
+##      - /user-student
+##      - /user-worker
 #################################################
 
-### createMaster
-# @name createMaster
-# Create a new master user
+### createMasterProfile
+# @name createMasterProfile
+# Authorization with master token; email == master login email
 POST {{baseUrl}}/user-master
-Content-Type: application/json
 Authorization: {{masterToken}}
+Content-Type: application/json
 
 {
-  "name": {
-    "firstName": "John",
-    "lastName": "Doe"
-  },
+  "name": { "firstName": "{{firstName}}", "lastName": "{{lastName}}" },
   "address": {
-    "street": "Street A",
-    "city": "City A",
-    "zip": "111111-111",
-    "number": 1,
-    "avenue": "Avenue A",
-    "state": "State A"
+    "street": "{{street}}",
+    "city": "{{city}}",
+    "zip": "{{zip}}",
+    "number": {{number}},
+    "avenue": "{{avenue}}",
+    "state": "{{state}}"
   },
-  "birthday": "11/12/1990",
-  "email": "teste1@test.com",
-  "cnpj": "35.741.901/0001-58"
+  "email": "{{masterEmail}}",
+  "birthday": "{{birthday}}",
+  "cnpj": "{{cnpj}}"
 }
 ###
-@masterId = {{createMaster.response.body.id}}
+# Adjust to your response shape if needed:
+@masterProfileId = {{createMasterProfile.response.body.id}}
 
-### getMasterById
-# Retrieve master user by ID
-GET {{baseUrl}}/user-master/{{masterId}}
-Authorization: {{masterToken}}
-###
-
-### updateMaster
-# Update master user's address
-PATCH {{baseUrl}}/user-master
-Content-Type: application/json
-Authorization: {{masterToken}}
-
-{
-  "id": "{{masterId}}",
-  "address": {
-    "street": "Updated Street",
-    "city": "City A",
-    "zip": "111111-111",
-    "number": 1,
-    "avenue": "Avenue A",
-    "state": "State A"
-  }
-}
-###
-
-#################################################
-## 2. Administrator User
-#################################################
-
-### createAdmin
-# @name createAdmin
-# Create a new administrator user
+### createAdministratorProfile
+# @name createAdministratorProfile
+# Authorization with admin token; email == admin login email
 POST {{baseUrl}}/user-administrator
+Authorization: {{masterToken}}
 Content-Type: application/json
-Authorization: {{adminToken}}
 
 {
-  "name": {
-    "firstName": "John",
-    "lastName": "Doe"
-  },
+  "name": { "firstName": "{{firstName}}", "middleName": "{{middleName}}", "lastName": "{{lastName}}" },
   "address": {
-    "street": "Street A",
-    "city": "City A",
-    "zip": "111111-111",
-    "number": 1,
-    "avenue": "Avenue A",
-    "state": "State A"
+    "street": "{{street}}",
+    "city": "{{city}}",
+    "zip": "{{zip}}",
+    "number": {{number}},
+    "avenue": "{{avenue}}",
+    "state": "{{state}}"
   },
-  "salary": { "salary": 5000 },
-  "birthday": "11/07/1985",
-  "email": "teste1@test.com",
-  "graduation": "Math"
+  "email": "{{adminEmail}}",
+  "birthday": "{{birthday}}",
+  "salary": { "salary": {{salaryValue}}, "currency": "{{salaryCurrency}}" },
+  "graduation": "{{graduation}}"
 }
 ###
-@adminId = {{createAdmin.response.body.id}}
+@administratorProfileId = {{createAdministratorProfile.response.body.id}}
 
-### listAdmins
-# List all administrator users
-GET {{baseUrl}}/users-administrator?quantity=2&offset=0
-Authorization: {{adminToken}}
-###
-
-### getAdminById
-# Retrieve administrator user by ID
-GET {{baseUrl}}/user-administrator/{{adminId}}
-Authorization: {{adminToken}}
-###
-
-### updateAdmin
-# Update administrator user's address
-PATCH {{baseUrl}}/user-administrator
-Content-Type: application/json
-Authorization: {{adminToken}}
-
-{
-  "id": "{{adminId}}",
-  "address": {
-    "street": "Updated Street",
-    "city": "City AB",
-    "zip": "111111-122",
-    "number": 12,
-    "avenue": "Avenue B",
-    "state": "State A"
-  }
-}
-###
-
-### deleteAdmin
-# Delete an administrator user
-DELETE {{baseUrl}}/user-administrator/{{adminId}}
-Authorization: {{adminToken}}
-###
-
-#################################################
-## 3. Teacher User
-#################################################
-
-### createTeacher
-# @name createTeacher
-# Create a new teacher user
+### createTeacherProfile
+# @name createTeacherProfile
+# Authorization with teacher token; email == teacher login email
 POST {{baseUrl}}/user-teacher
-Content-Type: application/json
 Authorization: {{teacherToken}}
+Content-Type: application/json
 
 {
-  "name": {
-    "firstName": "John",
-    "lastName": "Does"
-  },
+  "name": { "firstName": "{{firstName}}", "middleName": "{{middleName}}", "lastName": "{{lastName}}" },
   "address": {
-    "street": "Street A",
-    "city": "City A",
-    "zip": "111111-111",
-    "number": 1,
-    "avenue": "Avenue A",
-    "state": "State A"
+    "street": "{{street}}",
+    "city": "{{city}}",
+    "zip": "{{zip}}",
+    "number": {{number}},
+    "avenue": "{{avenue}}",
+    "state": "{{state}}"
   },
-  "salary": { "salary": 5000 },
-  "birthday": "10/10/1990",
-  "email": "teste1@test.com",
-  "graduation": "Math",
-  "academicDegrees": "Msc"
+  "email": "{{teacherEmail}}",
+  "birthday": "{{birthday}}",
+  "salary": { "salary": {{salaryValue}}, "currency": "{{salaryCurrency}}" },
+  "graduation": "{{graduation}}",
+  "academicDegrees": "{{academicDegrees}}"
 }
 ###
-@teacherId = {{createTeacher.response.body.id}}
+@teacherProfileId = {{createTeacherProfile.response.body.id}}
 
-### listTeachers
-# List all teacher users
-GET {{baseUrl}}/users-teacher
-Authorization: {{teacherToken}}
-###
-
-### getTeacherById
-# Retrieve teacher user by ID
-GET {{baseUrl}}/user-teacher/{{teacherId}}
-Authorization: {{teacherToken}}
-###
-
-### updateTeacher
-# Update teacher user's address
-PATCH {{baseUrl}}/user-teacher
-Content-Type: application/json
-Authorization: {{teacherToken}}
-
-{
-  "id": "{{teacherId}}",
-  "address": {
-    "street": "Updated Street",
-    "city": "City AB",
-    "zip": "111111-122",
-    "number": 12,
-    "avenue": "Avenue B",
-    "state": "State A"
-  }
-}
-###
-
-### deleteTeacher
-# Delete a teacher user
-DELETE {{baseUrl}}/user-teacher/{{teacherId}}
-Authorization: {{teacherToken}}
-###
-
-#################################################
-## 4. Student User
-#################################################
-
-### createStudent
-# @name createStudent
-# Create a new student user
+### createStudentProfile
+# @name createStudentProfile
+# Authorization with student token; email == student login email
 POST {{baseUrl}}/user-student
-Content-Type: application/json
 Authorization: {{studentToken}}
+Content-Type: application/json
 
 {
-  "name": {
-    "firstName": "Lucas",
-    "lastName": "Doe"
-  },
+  "name": { "firstName": "{{firstName}}", "middleName": "{{middleName}}", "lastName": "{{lastName}}" },
   "address": {
-    "street": "Street A",
-    "city": "City A",
-    "zip": "111111-111",
-    "number": 1,
-    "avenue": "Avenue A",
-    "state": "State A"
+    "street": "{{street}}",
+    "city": "{{city}}",
+    "zip": "{{zip}}",
+    "number": {{number}},
+    "avenue": "{{avenue}}",
+    "state": "{{state}}"
   },
-  "paymentYear": 50000,
-  "birthday": "11/06/1966",
-  "email": "teste1@test.com"
+  "email": "{{studentEmail}}",
+  "birthday": "{{birthday}}",
+  "paymentYear": 2025
 }
 ###
-@studentId = {{createStudent.response.body.id}}
+@studentProfileId = {{createStudentProfile.response.body.id}}
 
-### listStudents
-# List all student users
-GET {{baseUrl}}/users-student
-Authorization: {{studentToken}}
-###
-
-### getStudentById
-# Retrieve student user by ID
-GET {{baseUrl}}/user-student/{{studentId}}
-Authorization: {{studentToken}}
-###
-
-### updateStudent
-# Update student user's payment year
-PATCH {{baseUrl}}/user-student
-Content-Type: application/json
-Authorization: {{studentToken}}
-
-{
-  "id": "{{studentId}}",
-  "paymentYear": 51000
-}
-###
-
-### deleteStudent
-# Delete a student user
-DELETE {{baseUrl}}/user-student/{{studentId}}
-Authorization: {{studentToken}}
-###
-
-#################################################
-## 5. Worker User
-#################################################
-
-### createWorker
-# @name createWorker
-# Create a new worker user
+### createWorkerProfile
+# @name createWorkerProfile
+# Authorization with worker token; email == worker login email
 POST {{baseUrl}}/user-worker
-Content-Type: application/json
 Authorization: {{workerToken}}
+Content-Type: application/json
 
 {
-  "name": {
-    "firstName": "John",
-    "lastName": "Doe"
-  },
+  "name": { "firstName": "{{firstName}}", "middleName": "{{middleName}}", "lastName": "{{lastName}}" },
   "address": {
-    "street": "Street A",
-    "city": "City A",
-    "zip": "111111-111",
-    "number": 1,
-    "avenue": "Avenue A",
-    "state": "State A"
+    "street": "{{street}}",
+    "city": "{{city}}",
+    "zip": "{{zip}}",
+    "number": {{number}},
+    "avenue": "{{avenue}}",
+    "state": "{{state}}"
   },
-  "salary": { "salary": 5000 },
-  "birthday": "01/01/1990",
-  "email": "teste1@test.com"
+  "email": "{{workerEmail}}",
+  "birthday": "{{birthday}}",
+  "salary": { "salary": {{salaryValue}}, "currency": "{{salaryCurrency}}" }
 }
 ###
-@workerId = {{createWorker.response.body.id}}
+@workerProfileId = {{createWorkerProfile.response.body.id}}
 
-### listWorkers
-# List all worker users
-GET {{baseUrl}}/users-worker
-Authorization: {{workerToken}}
-###
 
-### getWorkerById
-# Retrieve worker user by ID
-GET {{baseUrl}}/user-worker/{{workerId}}
-Authorization: {{workerToken}}
-###
+#################################################
+## 7) OTHER ENDPOINTS (CRUD per profile)
+## Using master token for admin operations; adjust tokens as needed.
+#################################################
 
-### updateWorker
-# Update worker user's email
-PATCH {{baseUrl}}/user-worker
+############ MASTER ############
+
+### listMasterProfiles
+GET {{baseUrl}}/user-master
+Authorization: {{masterToken}}
+
+### getMasterProfileById
+GET {{baseUrl}}/user-master/{{masterProfileId}}
+Authorization: {{masterToken}}
+
+### updateMasterProfile
+PATCH {{baseUrl}}/user-master/{{masterProfileId}}
+Authorization: {{masterToken}}
 Content-Type: application/json
-Authorization: {{workerToken}}
 
 {
-  "id": "{{workerId}}",
-  "email": "updated.worker@teste.com"
+  "name": { "firstName": "{{firstName}}", "middleName": "{{middleName}}", "lastName": "{{lastName}}" },
+  "address": {
+    "street": "{{street}}",
+    "city": "{{city}}",
+    "zip": "{{zip}}",
+    "number": {{number}},
+    "avenue": "{{avenue}}",
+    "state": "{{state}}"
+  },
+  "email": "{{masterEmail}}",
+  "birthday": "{{birthday}}",
+  "cnpj": "{{cnpj}}"
 }
-###
 
-### deleteWorker
-# Delete a worker user
-DELETE {{baseUrl}}/user-worker/{{workerId}}
-Authorization: {{workerToken}}
-###
+### deleteMasterProfile
+DELETE {{baseUrl}}/user-master/{{masterProfileId}}
+Authorization: {{masterToken}}
+
+
+############ ADMINISTRATOR ############
+
+### listAdministratorProfiles
+GET {{baseUrl}}/user-administrator
+Authorization: {{masterToken}}
+
+### getAdministratorProfileById
+GET {{baseUrl}}/user-administrator/{{administratorProfileId}}
+Authorization: {{masterToken}}
+
+### updateAdministratorProfile
+PATCH {{baseUrl}}/user-administrator/{{administratorProfileId}}
+Authorization: {{masterToken}}
+Content-Type: application/json
+
+{
+  "name": { "firstName": "{{firstName}}", "middleName": "{{middleName}}", "lastName": "{{lastName}}" },
+  "address": {
+    "street": "{{street}}",
+    "city": "{{city}}",
+    "zip": "{{zip}}",
+    "number": {{number}},
+    "avenue": "{{avenue}}",
+    "state": "{{state}}"
+  },
+  "email": "{{adminEmail}}",
+  "birthday": "{{birthday}}",
+  "salary": { "salary": {{salaryValue}}, "currency": "{{salaryCurrency}}" },
+  "graduation": "{{graduation}}"
+}
+
+### deleteAdministratorProfile
+DELETE {{baseUrl}}/user-administrator/{{administratorProfileId}}
+Authorization: {{masterToken}}
+
+
+############ TEACHER ############
+
+### listTeacherProfiles
+GET {{baseUrl}}/user-teacher
+Authorization: {{masterToken}}
+
+### getTeacherProfileById
+GET {{baseUrl}}/user-teacher/{{teacherProfileId}}
+Authorization: {{masterToken}}
+
+### updateTeacherProfile
+PATCH {{baseUrl}}/user-teacher/{{teacherProfileId}}
+Authorization: {{masterToken}}
+Content-Type: application/json
+
+{
+  "name": { "firstName": "{{firstName}}", "middleName": "{{middleName}}", "lastName": "{{lastName}}" },
+  "address": {
+    "street": "{{street}}",
+    "city": "{{city}}",
+    "zip": "{{zip}}",
+    "number": {{number}},
+    "avenue": "{{avenue}}",
+    "state": "{{state}}"
+  },
+  "email": "{{teacherEmail}}",
+  "birthday": "{{birthday}}",
+  "salary": { "salary": {{salaryValue}}, "currency": "{{salaryCurrency}}" },
+  "graduation": "{{graduation}}",
+  "academicDegrees": "{{academicDegrees}}"
+}
+
+### deleteTeacherProfile
+DELETE {{baseUrl}}/user-teacher/{{teacherProfileId}}
+Authorization: {{masterToken}}
+
+
+############ STUDENT ############
+
+### listStudentProfiles
+GET {{baseUrl}}/user-student
+Authorization: {{masterToken}}
+
+### getStudentProfileById
+GET {{baseUrl}}/user-student/{{studentProfileId}}
+Authorization: {{masterToken}}
+
+### updateStudentProfile
+PATCH {{baseUrl}}/user-student/{{studentProfileId}}
+Authorization: {{masterToken}}
+Content-Type: application/json
+
+{
+  "name": { "firstName": "{{firstName}}", "middleName": "{{middleName}}", "lastName": "{{lastName}}" },
+  "address": {
+    "street": "{{street}}",
+    "city": "{{city}}",
+    "zip": "{{zip}}",
+    "number": {{number}},
+    "avenue": "{{avenue}}",
+    "state": "{{state}}"
+  },
+  "email": "{{studentEmail}}",
+  "birthday": "{{birthday}}",
+  "paymentYear": 2025
+}
+
+### deleteStudentProfile
+DELETE {{baseUrl}}/user-student/{{studentProfileId}}
+Authorization: {{masterToken}}
+
+
+############ WORKER ############
+
+### listWorkerProfiles
+GET {{baseUrl}}/user-worker
+Authorization: {{masterToken}}
+
+### getWorkerProfileById
+GET {{baseUrl}}/user-worker/{{workerProfileId}}
+Authorization: {{masterToken}}
+
+### updateWorkerProfile
+PATCH {{baseUrl}}/user-worker/{{workerProfileId}}
+Authorization: {{masterToken}}
+Content-Type: application/json
+
+{
+  "name": { "firstName": "{{firstName}}", "middleName": "{{middleName}}", "lastName": "{{lastName}}" },
+  "address": {
+    "street": "{{street}}",
+    "city": "{{city}}",
+    "zip": "{{zip}}",
+    "number": {{number}},
+    "avenue": "{{avenue}}",
+    "state": "{{state}}"
+  },
+  "email": "{{workerEmail}}",
+  "birthday": "{{birthday}}",
+  "salary": { "salary": {{salaryValue}}, "currency": "{{salaryCurrency}}" }
+}
+
+### deleteWorkerProfile
+DELETE {{baseUrl}}/user-worker/{{workerProfileId}}
+Authorization: {{masterToken}}

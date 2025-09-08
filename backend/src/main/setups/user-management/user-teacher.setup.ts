@@ -9,10 +9,8 @@ import { UserTeacherController } from '@/modules/user-management/interface/contr
 import { UserTeacherRoute } from '@/modules/user-management/interface/route/teacher.route';
 import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
-import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
 import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
-import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import { UserService } from '@/modules/user-management/domain/services/user.service';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
@@ -20,14 +18,12 @@ import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 export default function initializeUserTeacher(
   express: HttpServer,
   tokenService: TokenService,
-  authUserService: AuthUserService,
+  emailValidatorService: EmailAuthValidatorService,
   policiesService: PoliciesService,
   userService: UserService,
   isProd: boolean
 ): void {
   const userTeacherRepository = new MemoryUserTeacherRepository();
-  const authUserRepository = new MemoryAuthUserRepository(authUserService);
-  const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
 
   const createUserTeacherUsecase = new CreateUserTeacher(
     userTeacherRepository,
