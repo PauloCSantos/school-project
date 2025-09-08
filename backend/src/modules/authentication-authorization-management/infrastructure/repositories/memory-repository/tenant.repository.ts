@@ -11,6 +11,7 @@ import { TenantNotFoundError } from '@/modules/authentication-authorization-mana
  */
 export default class MemoryTenantRepository implements TenantGateway {
   private _tenants = new Map<string, Omit<TenantMapperProps, 'tenantUsers'>>();
+  private _cnpj = new Set();
   private _tenantsUsers = new Map<
     string,
     Map<number, TenantMapperProps['tenantUsers'][number]>
@@ -40,9 +41,13 @@ export default class MemoryTenantRepository implements TenantGateway {
     if (this._tenants.has(tenant.id)) {
       throw new ConflictError('Tenant already exists');
     }
+    if (this._cnpj.has(tenant.cnpj)) {
+      throw new ConflictError('CNPJ already in use');
+    }
     const obj = TenantMapper.toObj(tenant);
 
     this._tenants.set(tenant.id, { id: obj.id, cnpj: obj.cnpj });
+    this._cnpj.add(tenant.cnpj);
     const usersTenantsMap = new Map<number, TenantMapperProps['tenantUsers'][number]>();
     obj.tenantUsers.forEach((element, idx) => {
       usersTenantsMap.set(idx, element);
@@ -101,6 +106,7 @@ export default class MemoryTenantRepository implements TenantGateway {
     if (!this._tenants.has(id)) {
       throw new TenantNotFoundError();
     }
+    this.changedCnpj(id, tenant.cnpj);
 
     const obj = TenantMapper.toObj(tenant);
     this._tenants.set(id, { id: obj.id, cnpj: obj.cnpj });
@@ -132,5 +138,14 @@ export default class MemoryTenantRepository implements TenantGateway {
     });
 
     this._tenantsUsers.set(obj.id, usersTenantsMap);
+  }
+
+  private changedCnpj(id: string, cnpj: string): void {
+    const tenant = this._tenants.get(id);
+    if (!tenant) return;
+    if (tenant.cnpj !== cnpj) {
+      tenant.cnpj = cnpj;
+      this._tenants.set(id, tenant);
+    }
   }
 }
