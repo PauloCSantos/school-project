@@ -1,0 +1,22 @@
+<h1>Cadastrar Master</h1>
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate class="form">
+  <app-base-profile-form [form]="form"></app-base-profile-form>
+
+  <fieldset class="grid">
+    <legend>Master</legend>
+    <div class="row">
+      <label>CNPJ</label>
+      <input type="text" formControlName="cnpj" placeholder="Somente números" />
+    </div>
+  </fieldset>
+
+  <div class="footer">
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Salvando...' : 'Salvar' }}
+    </button>
+    @if (error()) {
+    <p class="error">{{ error() }}</p>
+    }
+  </div>
+</form>

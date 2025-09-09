@@ -1,0 +1,29 @@
+<div [formGroup]="form">
+  <fieldset class="grid">
+    <legend>Identificação</legend>
+
+    <div class="row">
+      <label>Nome</label>
+      <div class="row grid-3" formGroupName="name">
+        <input type="text" placeholder="Nome" formControlName="firstName" />
+        <input type="text" placeholder="Nome do meio" formControlName="middleName" />
+        <input type="text" placeholder="Sobrenome" formControlName="lastName" />
+      </div>
+    </div>
+
+    <div class="row">
+      <label>Email</label>
+      <input type="email" placeholder="ex: joao@empresa.com" formControlName="email" />
+    </div>
+
+    <div class="row">
+      <label>Data de nascimento</label>
+      <input type="date" formControlName="birthday" />
+    </div>
+  </fieldset>
+
+  <fieldset class="grid">
+    <legend>Endereço</legend>
+    <app-address-field [group]="addressGroup"></app-address-field>
+  </fieldset>
+</div>

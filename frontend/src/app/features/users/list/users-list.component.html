@@ -1,0 +1,14 @@
+<section class="users-list">
+  <header class="users-list__header">
+    <h1>Listagem</h1>
+    <button type="button" class="primary" (click)="openModal()">Cadastrar</button>
+  </header>
+
+  <div class="users-list__content">
+    <!-- Tabela/grade virá no futuro -->
+    <p class="placeholder">listagem</p>
+  </div>
+
+  <app-users-register-modal [open]="modalOpen()" (openChange)="onOpenChange($event)">
+  </app-users-register-modal>
+</section>

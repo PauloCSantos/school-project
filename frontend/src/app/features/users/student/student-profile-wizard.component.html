@@ -1,0 +1,22 @@
+<h1>Cadastrar Student</h1>
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate class="form">
+  <app-base-profile-form [form]="form"></app-base-profile-form>
+
+  <fieldset class="grid">
+    <legend>Aluno</legend>
+    <div class="row">
+      <label>Ano de pagamento</label>
+      <input type="number" formControlName="paymentYear" />
+    </div>
+  </fieldset>
+
+  <div class="footer">
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Salvando...' : 'Salvar' }}
+    </button>
+    @if (error()) {
+    <p class="error">{{ error() }}</p>
+    }
+  </div>
+</form>

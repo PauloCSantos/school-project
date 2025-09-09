@@ -1,0 +1,6 @@
+.grid { display: grid; gap: 10px; margin-bottom: 10px; }
+.row { display: grid; gap: 6px; }
+.grid-3 { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+fieldset { border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; }
+legend { padding: 0 6px; font-weight: 600; }
+input, select { padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; }

@@ -1,0 +1,32 @@
+<h1>Cadastrar Administrator</h1>
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate class="form">
+  <app-base-profile-form [form]="form"></app-base-profile-form>
+
+  <fieldset class="grid">
+    <legend>Administrador</legend>
+    <app-salary-field [group]="salaryGroup"></app-salary-field>
+    <div class="row">
+      <label>Graduação</label>
+      <input type="text" formControlName="graduation" placeholder="ex: Administração" />
+    </div>
+  </fieldset>
+
+  <div class="footer">
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Salvando...' : 'Salvar' }}
+    </button>
+    @if (error()) {
+    <p class="error">{{ error() }}</p>
+    }
+  </div>
+
+  <div class="footer">
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Salvando...' : 'Salvar' }}
+    </button>
+    @if (error()) {
+    <p class="error">{{ error() }}</p>
+    }
+  </div>
+</form>
