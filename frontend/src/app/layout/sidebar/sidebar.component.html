@@ -2,10 +2,18 @@
   <ul>
     @for (item of nav; track item.path) {
     <li>
-      <a [routerLink]="item.path" routerLinkActive="active" [attr.aria-current]="null">
+      <a
+        [routerLink]="item.path"
+        routerLinkActive="active"
+        [attr.aria-current]="null"
+        (click)="onNavClick(item, $event)"
+      >
         {{ item.label }}
       </a>
     </li>
     }
   </ul>
 </nav>
+
+<app-register-modal [open]="registerModalOpen()" (openChange)="registerModalOpen.set($event)">
+</app-register-modal>

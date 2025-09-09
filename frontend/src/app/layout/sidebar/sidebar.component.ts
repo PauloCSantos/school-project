@@ -1,14 +1,27 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NavItem } from '../../core/types/nav.type';
+import { RegisterModalComponent } from '../../features/auth/register/register-modal.component';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, RegisterModalComponent],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css'],
 })
 export class SidebarComponent {
-  nav: NavItem[] = [{ label: 'Users', path: '/users' }];
+  registerModalOpen = signal(false);
+
+  nav: NavItem[] = [
+    { label: 'Users', path: '/users' },
+    { label: 'Usuários login', path: '#', action: 'openRegisterUser' as const },
+  ];
+
+  onNavClick(item: NavItem, event: Event) {
+    if ((item as any).action === 'openRegisterUser') {
+      event.preventDefault();
+      this.registerModalOpen.set(true);
+    }
+  }
 }
