@@ -1,4 +1,4 @@
-.auth-container {
+.main-container {
   display: grid;
   grid-template-columns: 1fr 1fr; /* metade/metade */
   min-height: 100dvh;

@@ -1,0 +1,60 @@
+@if (open) {
+<div class="backdrop" (click)="close()"></div>
+} @if (open) {
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="registerUserTitle">
+  <header class="modal__header">
+    <h2 id="registerUserTitle">Cadastrar usuário</h2>
+    <button type="button" class="close" (click)="close()" aria-label="Fechar">×</button>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="modal__body" novalidate>
+    <label for="email">E-mail</label>
+    <input
+      id="email"
+      type="email"
+      formControlName="email"
+      placeholder="ex: user@empresa.com"
+      autocomplete="off"
+    />
+
+    @if (form.get('email')?.touched && form.get('email')?.hasError('required')) {
+    <small class="error">E-mail é obrigatório.</small>
+    } @if (form.get('email')?.touched && form.get('email')?.hasError('email')) {
+    <small class="error">E-mail inválido.</small>
+    }
+
+    <label for="password">Senha</label>
+    <input
+      id="password"
+      type="password"
+      formControlName="password"
+      placeholder="mín. 6 caracteres"
+      autocomplete="new-password"
+    />
+
+    @if (form.get('password')?.touched && form.get('password')?.hasError('required')) {
+    <small class="error">Senha é obrigatória.</small>
+    } @if (form.get('password')?.touched && form.get('password')?.hasError('minlength')) {
+    <small class="error">Mínimo de 6 caracteres.</small>
+    }
+
+    <label for="role">Perfil</label>
+    <select id="role" formControlName="role">
+      @for (r of roles; track r) {
+      <option [value]="r">{{ r }}</option>
+      }
+    </select>
+
+    <div class="modal__footer">
+      <button type="button" (click)="close()">Cancelar</button>
+      <button type="submit" [disabled]="loading()">
+        {{ loading() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+
+    @if (apiError()) {
+    <p class="error">{{ apiError() }}</p>
+    }
+  </form>
+</div>
+}
