@@ -12,9 +12,19 @@ import { baseUrlInterceptor } from './core/interceptors/base-url.interceptor';
 import { API_BASE_URL } from './core/tokens/api-base-url.token';
 import { apiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import {
+  provideAdministratorUsers,
+  provideStudentUsers,
+  provideTeacherUsers,
+  provideWorkerUsers,
+} from './features/users/data-access';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    ...provideAdministratorUsers(),
+    ...provideTeacherUsers(),
+    ...provideStudentUsers(),
+    ...provideWorkerUsers(),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
