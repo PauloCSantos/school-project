@@ -2,10 +2,9 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BaseProfileFormComponent } from '../shared/base-profile-form/base-profile-form.component';
-import { StudentProfileService } from './student-profile.service';
-import { StudentProfile } from '../../../core/types/profile.type';
-import { StudentProfileRequest } from './student-profile.request';
+import { BaseProfileFormComponent } from '../ui/profile-form-base/base-profile-form.component';
+import { StudentProfileService } from '../data-access/services/student-profile.service';
+import { StudentProfileRequest } from '../data-access/dto/student/student.request';
 
 @Component({
   selector: 'app-student-profile-wizard',

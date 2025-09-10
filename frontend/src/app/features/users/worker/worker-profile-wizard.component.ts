@@ -2,13 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BaseProfileFormComponent } from '../shared/base-profile-form/base-profile-form.component';
-import { AddressFieldComponent } from '../shared/address-field/address-field.component';
-import { SalaryFieldComponent } from '../shared/salary-field/salary-field.component';
-import { WorkerProfileService } from './worker-profile.service';
+import { BaseProfileFormComponent } from '../ui/profile-form-base/base-profile-form.component';
+import { SalaryFieldComponent } from '../ui/salary-field/salary-field.component';
+import { WorkerProfileService } from '../data-access/services/worker-profile.service';
 import { positiveMoneyValidator } from '../../../core/validators/profile.validator';
-import { WorkerProfile } from '../../../core/types/profile.type';
-import { WorkerProfileRequest } from './worker-profile.request';
+import { WorkerProfileRequest } from '../data-access/dto/worker/worker.request';
 
 @Component({
   selector: 'app-worker-profile-wizard',

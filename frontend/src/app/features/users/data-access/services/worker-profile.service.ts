@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { profileToRequest } from '../../../core/mappers/profile.mapper';
-import { TeacherProfile } from '../../../core/types/profile.type';
-import { TeacherProfileRequest } from './teacher-profile.request';
+import { WorkerProfileRequest } from '../dto';
+import { profileToRequest } from '../../../../core/mappers/profile.mapper';
+import { WorkerProfile } from '../../../../core/types/profile.type';
 
 @Injectable({ providedIn: 'root' })
-export class TeacherProfileService {
-  private readonly endpoint = '/user-teacher';
+export class WorkerProfileService {
+  private readonly endpoint = '/user-worker';
+  private readonly endpointAll = '/users-worker';
   constructor(private http: HttpClient) {}
 
-  create(payload: TeacherProfileRequest): Observable<any> {
+  create(payload: WorkerProfileRequest): Observable<any> {
     const body = profileToRequest(payload as any);
     return this.http.post(this.endpoint, body);
   }
@@ -19,7 +20,7 @@ export class TeacherProfileService {
     return this.http.get(`${this.endpoint}/${id}`);
   }
 
-  update(id: string, payload: Partial<TeacherProfile>): Observable<any> {
+  update(id: string, payload: Partial<WorkerProfile>): Observable<any> {
     const body = profileToRequest(payload as any);
     return this.http.patch(`${this.endpoint}/${id}`, body);
   }
@@ -29,6 +30,6 @@ export class TeacherProfileService {
   }
 
   list(params?: Record<string, any>): Observable<any[]> {
-    return this.http.get<any[]>(this.endpoint, { params });
+    return this.http.get<any[]>(this.endpointAll, { params });
   }
 }

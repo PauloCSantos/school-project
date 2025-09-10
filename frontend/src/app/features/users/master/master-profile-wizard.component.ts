@@ -2,10 +2,10 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BaseProfileFormComponent } from '../shared/base-profile-form/base-profile-form.component';
-import { MasterProfileService } from './master-profile.service';
 import { cnpjValidator } from '../../../core/validators/profile.validator';
 import { MasterProfileRequest } from './master-profile.request';
+import { BaseProfileFormComponent } from '../ui/profile-form-base/base-profile-form.component';
+import { MasterProfileService } from '../data-access/services/master-profile.service';
 
 @Component({
   selector: 'app-master-profile-wizard',

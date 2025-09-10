@@ -1,15 +1,14 @@
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { AdministratorProfileWizardComponent } from '../administrator/administrator-profile-wizard.component';
-import { TeacherProfileWizardComponent } from '../teacher/teacher-profile-wizard.component';
-import { StudentProfileWizardComponent } from '../student/student-profile-wizard.component';
-import { WorkerProfileWizardComponent } from '../worker/worker-profile-wizard.component';
-import { MasterProfileWizardComponent } from '../master/master-profile-wizard.component';
-import { Role } from '../../../core/types/role.type';
+import { AdministratorProfileWizardComponent } from '../../administrator/administrator-profile-wizard.component';
+import { TeacherProfileWizardComponent } from '../../teacher/teacher-profile-wizard.component';
+import { StudentProfileWizardComponent } from '../../student/student-profile-wizard.component';
+import { WorkerProfileWizardComponent } from '../../worker/worker-profile-wizard.component';
+import { MasterProfileWizardComponent } from '../../master/master-profile-wizard.component';
+import { Role } from '../../../../core/types/role.type';
 
 @Component({
-  selector: 'app-users-register-modal',
+  selector: 'app-users-dialog',
   standalone: true,
   imports: [
     CommonModule,
@@ -19,10 +18,10 @@ import { Role } from '../../../core/types/role.type';
     WorkerProfileWizardComponent,
     MasterProfileWizardComponent,
   ],
-  templateUrl: './users-modal.component.html',
-  styleUrls: ['./users-modal.component.css'],
+  templateUrl: './users.dialog.html',
+  styleUrls: ['./users.dialog.css'],
 })
-export class UsersModalComponent {
+export class UsersDialogComponent {
   @Input({ required: true }) open = false;
   @Output() openChange = new EventEmitter<boolean>();
 

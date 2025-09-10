@@ -2,13 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BaseProfileFormComponent } from '../shared/base-profile-form/base-profile-form.component';
-import { AddressFieldComponent } from '../shared/address-field/address-field.component';
-import { SalaryFieldComponent } from '../shared/salary-field/salary-field.component';
-import { TeacherProfileService } from './teacher-profile.service';
+import { BaseProfileFormComponent } from '../ui/profile-form-base/base-profile-form.component';
+import { SalaryFieldComponent } from '../ui/salary-field/salary-field.component';
+import { TeacherProfileService } from '../data-access/services/teacher-profile.service';
 import { positiveMoneyValidator } from '../../../core/validators/profile.validator';
-import { TeacherProfile } from '../../../core/types/profile.type';
-import { TeacherProfileRequest } from './teacher-profile.request';
+import { TeacherProfileRequest } from '../data-access/dto/teacher/teacher.request';
 
 @Component({
   selector: 'app-teacher-profile-wizard',

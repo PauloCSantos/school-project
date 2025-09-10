@@ -2,12 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BaseProfileFormComponent } from '../shared/base-profile-form/base-profile-form.component';
-import { SalaryFieldComponent } from '../shared/salary-field/salary-field.component';
-import { AdministratorProfileService } from './administrator-profile.service';
+import { BaseProfileFormComponent } from '../ui/profile-form-base/base-profile-form.component';
+import { SalaryFieldComponent } from '../ui/salary-field/salary-field.component';
+import { AdministratorProfileService } from '../data-access/services/administrator-profile.service';
 import { positiveMoneyValidator } from '../../../core/validators/profile.validator';
-import { AdministratorProfile } from '../../../core/types/profile.type';
-import { AdministratorProfileRequest } from './administrator-profile.request';
+import { AdministratorProfileRequest } from '../data-access/dto/administrator/administrator.request';
 
 @Component({
   selector: 'app-administrator-profile-wizard',

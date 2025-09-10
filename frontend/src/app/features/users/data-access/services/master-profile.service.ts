@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { profileToRequest } from '../../../core/mappers/profile.mapper';
-import { StudentProfile } from '../../../core/types/profile.type';
-import { StudentProfileRequest } from './student-profile.request';
+import { MasterProfileRequest } from '../../master/master-profile.request';
+import { profileToRequest } from '../../../../core/mappers/profile.mapper';
+import { MasterProfile } from '../../../../core/types/profile.type';
 
 @Injectable({ providedIn: 'root' })
-export class StudentProfileService {
-  private readonly endpoint = '/user-student';
+export class MasterProfileService {
+  private readonly endpoint = '/user-master';
   constructor(private http: HttpClient) {}
 
-  create(payload: StudentProfileRequest): Observable<any> {
+  create(payload: MasterProfileRequest): Observable<any> {
     const body = profileToRequest(payload as any);
     return this.http.post(this.endpoint, body);
   }
@@ -19,7 +19,7 @@ export class StudentProfileService {
     return this.http.get(`${this.endpoint}/${id}`);
   }
 
-  update(id: string, payload: Partial<StudentProfile>): Observable<any> {
+  update(id: string, payload: Partial<MasterProfile>): Observable<any> {
     const body = profileToRequest(payload as any);
     return this.http.patch(`${this.endpoint}/${id}`, body);
   }

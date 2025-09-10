@@ -1,0 +1,77 @@
+<section class="users-list">
+  <header class="users-list__header">
+    <div>
+      <h1>Usuários</h1>
+      <div class="muted">Listando: {{ role() }}</div>
+    </div>
+
+    <div class="actions">
+      <label class="role-picker">
+        Tipo:&nbsp;
+        <select [value]="role()" (change)="onRoleChange($event)">
+          <option value="administrator">Administrator</option>
+          <option value="teacher">Teacher</option>
+          <option value="student">Student</option>
+          <option value="worker">Worker</option>
+          <!-- sem master -->
+        </select>
+      </label>
+
+      <button type="button" class="primary" (click)="openRegister()">Cadastrar</button>
+    </div>
+  </header>
+
+  <div class="users-list__content">
+    @if (loading()) {
+    <div class="state">Carregando…</div>
+    } @if (error()) {
+    <div class="state state--error">{{ error() }}</div>
+    } @if (!loading() && !error()) { @if (items().length === 0) {
+    <div class="state">Nenhum usuário encontrado.</div>
+    } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>{{ specificHeader() }}</th>
+          <th class="col-actions">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of items(); track user.id) {
+        <tr>
+          <td>{{ user.name }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ specificValue(user) }}</td>
+          <td class="col-actions">
+            <button
+              type="button"
+              class="ghost"
+              (click)="onUpdate(user.id)"
+              aria-label="Atualizar {{ user.name }}"
+            >
+              Atualizar
+            </button>
+            <button
+              type="button"
+              class="danger"
+              (click)="onRemove(user.id)"
+              aria-label="Remover {{ user.name }}"
+            >
+              Remover
+            </button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+
+    @if (total()) {
+    <div class="pagination-hint">Exibindo {{ items().length }} itens · Total: {{ total() }}</div>
+    } } }
+  </div>
+
+  <app-users-dialog [open]="registerOpen()" (openChange)="onRegisterOpenChange($event)">
+  </app-users-dialog>
+</section>

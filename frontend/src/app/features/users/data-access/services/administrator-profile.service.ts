@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { profileToRequest } from '../../../core/mappers/profile.mapper';
-import { AdministratorProfile } from '../../../core/types/profile.type';
-import { AdministratorProfileRequest } from './administrator-profile.request';
+import { AdministratorProfileRequest } from '../dto';
+import { profileToRequest } from '../../../../core/mappers/profile.mapper';
+import { AdministratorProfile } from '../../../../core/types/profile.type';
 
 @Injectable({ providedIn: 'root' })
 export class AdministratorProfileService {
   private readonly endpoint = '/user-administrator';
+  private readonly endpointAll = '/users-administrator';
   constructor(private http: HttpClient) {}
 
   create(payload: AdministratorProfileRequest): Observable<any> {
@@ -29,6 +30,6 @@ export class AdministratorProfileService {
   }
 
   list(params?: Record<string, any>): Observable<any[]> {
-    return this.http.get<any[]>(this.endpoint, { params });
+    return this.http.get<any[]>(this.endpointAll, { params });
   }
 }
