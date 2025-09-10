@@ -228,7 +228,7 @@ export class LoginComponent implements OnInit {
           this.loading.set(false);
           this.step.set('done');
           this.authService.setToken(res.token);
-          this.router.navigate(['/master'], { replaceUrl: true });
+          this.router.navigate(['/users'], { replaceUrl: true });
         },
         error: (e) => this.handleApiError(e),
       });
