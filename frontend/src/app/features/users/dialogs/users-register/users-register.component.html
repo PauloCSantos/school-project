@@ -1,0 +1,33 @@
+@if (open) {
+<div class="backdrop" (click)="onBackdropClick($event)"></div>
+
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="usersRegisterTitle">
+  <header class="modal__header">
+    <h2 id="usersRegisterTitle">Novo usuário</h2>
+
+    <label class="role-picker">
+      Tipo
+      <select [value]="selectedRole()" (change)="onRoleChange($event)">
+        <option value="administrator">administrator</option>
+        <option value="teacher">teacher</option>
+        <option value="student">student</option>
+        <option value="worker">worker</option>
+        <option value="master">master</option>
+      </select>
+    </label>
+
+    <button type="button" class="close" (click)="close()" aria-label="Fechar">×</button>
+  </header>
+
+  <section class="modal__body">
+    <app-user-wizard
+      [role]="selectedRole()"
+      [mode]="mode"
+      [initialValue]="initialValue"
+      [id]="id"
+      (closed)="onWizardClosed(false)"
+    >
+    </app-user-wizard>
+  </section>
+</div>
+}

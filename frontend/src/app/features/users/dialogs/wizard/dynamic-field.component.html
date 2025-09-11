@@ -1,0 +1,67 @@
+<div class="df">
+  @if (field(); as f) { @switch (f.type) { @case ('text') {
+  <input
+    type="text"
+    class="input"
+    [placeholder]="f.placeholder || f.label"
+    [formControl]="ctrl()"
+  />
+  } @case ('email') {
+  <input
+    type="email"
+    class="input"
+    [placeholder]="f.placeholder || f.label"
+    [formControl]="ctrl()"
+  />
+  } @case ('number') {
+  <input
+    type="number"
+    class="input"
+    [placeholder]="f.placeholder || f.label"
+    [formControl]="ctrl()"
+  />
+  } @case ('date') {
+  <input
+    type="date"
+    class="input"
+    [placeholder]="f.placeholder || f.label"
+    [formControl]="ctrl()"
+  />
+  } @case ('select') {
+  <select class="select" [formControl]="ctrl()">
+    @if (f.options$ | async; as opts) { @for (o of opts; track o.value) {
+    <option [value]="o.value">{{ o.label }}</option>
+    } }
+  </select>
+  } @case ('address') {
+  <app-address-field [group]="group()"></app-address-field>
+  } @case ('salary') {
+  <app-salary-field [group]="group()"></app-salary-field>
+  } @case ('name') {
+  <app-name-field [group]="group()"></app-name-field>
+  } @case ('currency') {
+  <input type="text" class="input" inputmode="decimal" [formControl]="ctrl()" />
+  } @case ('cnpj') {
+  <input
+    type="text"
+    class="input"
+    appCnpjMask
+    [placeholder]="f.placeholder || f.label"
+    [formControl]="ctrl()"
+  />
+  } @default {
+  <input
+    type="text"
+    class="input"
+    [placeholder]="f.placeholder || f.label"
+    [formControl]="ctrl()"
+  />
+  } } @if (f.hint) {
+  <small class="hint">{{ f.hint }}</small>
+  } @if (f.type === 'address' || f.type === 'salary' || f.type === 'name') { @if (group().invalid &&
+  (group().dirty || group().touched)) {
+  <small class="error">Verifique o preenchimento deste campo.</small>
+  } } @else { @if (ctrl().invalid && (ctrl().dirty || ctrl().touched)) {
+  <small class="error">Verifique o preenchimento deste campo.</small>
+  } } }
+</div>

@@ -1,1 +1,1 @@
-export * from './users.dialog';
+export * from './users-register.component.ts';

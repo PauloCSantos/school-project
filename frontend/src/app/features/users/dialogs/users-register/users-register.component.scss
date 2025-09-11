@@ -1,0 +1,70 @@
+/* === base modal (copiado/adaptado do auth/register) === */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+}
+
+.modal {
+  position: fixed;
+  inset: 8% 0 auto 0;
+  margin: 0 auto;
+  max-width: 920px; /* maior para o wizard */
+  width: calc(100% - 32px);
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  z-index: 1001;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal__body {
+  padding: 16px 20px;
+  overflow: auto;
+  max-height: 70vh; /* evita estourar a tela */
+}
+
+.modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid #eee;
+}
+
+button.close {
+  font-size: 22px;
+  line-height: 1;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* === estilos que você já tinha === */
+.register-modal {
+  width: 100%;
+  display: grid;
+  gap: 1rem;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.role-select {
+  display: grid;
+  gap: 0.25rem;
+}
+.content {
+  padding-top: 0.5rem;
+}

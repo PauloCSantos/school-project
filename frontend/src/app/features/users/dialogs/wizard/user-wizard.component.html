@@ -1,0 +1,43 @@
+@if (form(); as fg) {
+<div class="wizard" [formGroup]="fg">
+  <header class="wizard__header">
+    <div class="steps">
+      @for (s of steps; track s.title; let i = $index) {
+      <div class="step" [class.active]="i === step" [class.done]="i < step">
+        <span class="step__index">{{ i + 1 }}</span>
+        <span class="step__title">{{ s.title }}</span>
+      </div>
+      }
+    </div>
+  </header>
+
+  <section class="wizard__body">
+    @if (steps[step]; as st) {
+    <h3 class="step-title">{{ st.title }}</h3>
+    @if (st.description) {
+    <p class="step-desc">{{ st.description }}</p>
+    }
+
+    <div class="grid">
+      @for (f of visibleFields(step); track f.key) {
+      <app-dynamic-field [form]="fg" [field]="f"></app-dynamic-field>
+      }
+    </div>
+    }
+  </section>
+
+  <footer class="wizard__footer">
+    <button type="button" class="btn ghost" (click)="prev()" [disabled]="step === 0">Voltar</button>
+
+    @if (step < steps.length - 1) {
+    <button type="button" class="btn" (click)="next()" [disabled]="!currentStepValid()">
+      Continuar
+    </button>
+    } @else {
+    <button type="button" class="btn primary" (click)="submit()" [disabled]="!currentStepValid()">
+      {{ mode === 'create' ? 'Salvar' : 'Atualizar' }}
+    </button>
+    }
+  </footer>
+</div>
+}
