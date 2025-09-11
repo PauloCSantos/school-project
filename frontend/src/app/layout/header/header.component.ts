@@ -39,7 +39,7 @@ export class HeaderComponent {
 
   goProfile() {
     this.closeMenu();
-    this.router.navigate(['/users']); // ajuste a rota se necessário
+    this.router.navigate(['/users']);
   }
 
   logout() {

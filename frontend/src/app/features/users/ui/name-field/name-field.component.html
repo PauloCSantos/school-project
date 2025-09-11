@@ -1,0 +1,22 @@
+<div class="name-field" [formGroup]="group">
+  <label class="field">
+    <span>Nome</span>
+    <input type="text" formControlName="firstName" autocomplete="given-name" />
+    @if (group.get('firstName')?.touched && group.get('firstName')?.invalid) {
+    <small class="error">Informe o nome.</small>
+    }
+  </label>
+
+  <label class="field">
+    <span>Nome do meio</span>
+    <input type="text" formControlName="middleName" autocomplete="additional-name" />
+  </label>
+
+  <label class="field">
+    <span>Sobrenome</span>
+    <input type="text" formControlName="lastName" autocomplete="family-name" />
+    @if (group.get('lastName')?.touched && group.get('lastName')?.invalid) {
+    <small class="error">Informe o sobrenome.</small>
+    }
+  </label>
+</div>

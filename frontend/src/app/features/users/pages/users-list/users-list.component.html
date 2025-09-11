@@ -72,6 +72,8 @@
     } } }
   </div>
 
-  <app-users-dialog [open]="registerOpen()" (openChange)="onRegisterOpenChange($event)">
-  </app-users-dialog>
+  @if (registerOpen()) {
+  <app-users-register [open]="registerOpen()" (openChange)="onRegisterOpenChange($event)">
+  </app-users-register>
+  }
 </section>

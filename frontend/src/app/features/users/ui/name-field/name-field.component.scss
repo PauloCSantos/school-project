@@ -1,0 +1,28 @@
+.name-field {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+
+  .field {
+    display: grid;
+    gap: 6px;
+
+    input {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+
+    .error {
+      color: #b00020;
+      font-size: 12px;
+    }
+  }
+}
+
+@media (max-width: 800px) {
+  .name-field {
+    grid-template-columns: 1fr;
+  }
+}
