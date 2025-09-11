@@ -1,15 +1,10 @@
 import { Provider } from '@angular/core';
-import { USER_ROLE_REGISTRY } from '../tokens/users.tokens';
 import { StudentProfileService } from '../services/student-profile.service';
+import { STUDENT_PROFILE_SERVICE_TOKEN } from '../tokens/user-service-token';
 
 export function provideStudentUsers(): Provider[] {
   return [
     StudentProfileService,
-    {
-      provide: USER_ROLE_REGISTRY,
-      multi: true,
-      useFactory: (svc: StudentProfileService) => ({ role: 'student' as const, service: svc }),
-      deps: [StudentProfileService],
-    },
+    { provide: STUDENT_PROFILE_SERVICE_TOKEN, useExisting: StudentProfileService },
   ];
 }

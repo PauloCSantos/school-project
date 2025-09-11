@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { MasterProfileRequest } from '../../master/master-profile.request';
+import { MasterProfileRequest } from '../dto/master/master.request';
 import { profileToRequest } from '../../../../core/mappers/profile.mapper';
 import { MasterProfile } from '../../../../core/types/profile.type';
 
