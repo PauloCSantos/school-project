@@ -1,4 +1,5 @@
 import {
+  AddRoleInputDto,
   CreateAuthUserInputDto,
   CreateAuthUserOutputDto,
   DeleteAuthUserInputDto,
@@ -10,6 +11,7 @@ import {
   UpdateAuthUserInputDto,
   UpdateAuthUserOutputDto,
 } from '../../application/dto/user-usecase.dto';
+import AddRole from '../../application/usecases/authUser/add-role.usecase';
 import CheckRegistration from '../../application/usecases/authUser/check-registration.usecase';
 import CreateAuthUser from '../../application/usecases/authUser/create-user.usecase';
 import DeleteAuthUser from '../../application/usecases/authUser/delete-user.usecase';
@@ -30,6 +32,8 @@ export default class AuthUserController {
    * @param updateAuthUser - Use case for updating an authentication user
    * @param deleteAuthUser - Use case for deleting an authentication user
    * @param loginAuthUser - Use case for logging in an authentication user
+   * @param checkRegistration - Use case for check user registration
+   * @param addRole - Use case for adding a role
    */
   constructor(
     private readonly createAuthUser: CreateAuthUser,
@@ -37,7 +41,8 @@ export default class AuthUserController {
     private readonly updateAuthUser: UpdateAuthUser,
     private readonly deleteAuthUser: DeleteAuthUser,
     private readonly loginAuthUser: LoginAuthUser,
-    private readonly checkRegistration: CheckRegistration
+    private readonly checkRegistration: CheckRegistration,
+    private readonly addRole: AddRole
   ) {}
 
   /**
@@ -102,8 +107,12 @@ export default class AuthUserController {
     return response;
   }
 
-  async checkUserRegistration(token: TokenData) {
+  async checkUserRegistration(token: TokenData): Promise<Boolean> {
     const response = await this.checkRegistration.execute(token);
     return response;
+  }
+
+  async addNewRole(input: AddRoleInputDto, token: TokenData): Promise<void> {
+    await this.addRole.execute(input, token);
   }
 }

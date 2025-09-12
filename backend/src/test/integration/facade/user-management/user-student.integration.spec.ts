@@ -83,7 +83,7 @@ describe('User Student facade integration test', () => {
       state: 'State A',
     },
     birthday: new Date('11-12-1995'),
-    email: 'teste1@test.com',
+    email: 'teste@teste.com',
     paymentYear: 20000,
   };
   const input2 = {
@@ -121,7 +121,7 @@ describe('User Student facade integration test', () => {
     paymentYear: 32000,
   };
   const token: TokenData = {
-    email: 'teste@teste.com.br',
+    email: 'teste@teste.com',
     masterId: 'validID',
     role: RoleUsersEnum.MASTER,
   };
@@ -203,7 +203,10 @@ describe('User Student facade integration test', () => {
       policiesService,
       userService
     );
-    findUserStudentByBaseUser = new FindUserStudentByBaseUser(studentRepository);
+    findUserStudentByBaseUser = new FindUserStudentByBaseUser(
+      studentRepository,
+      userService
+    );
 
     facadeStudent = new StudentFacade({
       createUserStudent,

@@ -1,25 +1,20 @@
-import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
-import MemoryUserMasterRepository from '../../infrastructure/repositories/memory-repository/master.repository';
 import MasterFacade from '../facade/facade/master.facade';
 import CreateUserMaster from '../usecases/master/createUserMaster.usecase';
 import FindUserMaster from '../usecases/master/findUserMaster.usecase';
 import UpdateUserMaster from '../usecases/master/updateUserMaster.usecase';
-import { EmailAuthValidatorService } from '../services/email-auth-validator.service';
-import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
-import { UserService } from '../../domain/services/user.service';
-import MemoryUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
-import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
+import { EmailAuthValidator } from '../services/email-auth-validator.service';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { UserServiceInterface } from '../../domain/services/user.service';
 import FindUserMasterByBaseUser from '../usecases/master/findUserMasterByBaseUser.usecase';
+import UserMasterGateway from '../gateway/master.gateway';
 
 export default class MasterFacadeFactory {
-  static create(): MasterFacade {
-    const repository = new MemoryUserMasterRepository();
-    const authUserService = new AuthUserService();
-    const authUserRepository = new MemoryAuthUserRepository(authUserService);
-    const userRepository = new MemoryUserRepository();
-    const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
-    const policiesService = new PoliciesService();
-    const userService = new UserService(userRepository);
+  static create(
+    repository: UserMasterGateway,
+    emailValidatorService: EmailAuthValidator,
+    policiesService: PoliciesServiceInterface,
+    userService: UserServiceInterface
+  ): MasterFacade {
     const createUserMaster = new CreateUserMaster(
       repository,
       emailValidatorService,
@@ -32,12 +27,15 @@ export default class MasterFacadeFactory {
       policiesService,
       userService
     );
-    const findUserMasterByBaseUser = new FindUserMasterByBaseUser(repository)
+    const findUserMasterByBaseUser = new FindUserMasterByBaseUser(
+      repository,
+      userService
+    );
     const facade = new MasterFacade({
       createUserMaster,
       findUserMaster,
       updateUserMaster,
-      findUserMasterByBaseUser
+      findUserMasterByBaseUser,
     });
 
     return facade;

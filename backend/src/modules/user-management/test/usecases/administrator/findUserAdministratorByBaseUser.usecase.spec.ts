@@ -22,6 +22,16 @@ describe('findUserAdministratorByBaseUser usecase unit test', () => {
     };
   };
 
+  const MockUserService = () => {
+    return {
+      getOrCreateUser: jest.fn(),
+      findBaseUsers: jest.fn(),
+      findBaseUser: jest.fn(),
+      update: jest.fn(),
+      findBaseUserByEmail: jest.fn(),
+    };
+  };
+
   const userBase1 = new UserBase({
     name: new Name({
       firstName: 'John',
@@ -53,10 +63,15 @@ describe('findUserAdministratorByBaseUser usecase unit test', () => {
         masterId: 'valid id',
       };
       const userAdministratorRepository = MockRepository();
+      const userService = MockUserService();
 
       userAdministratorRepository.findByBaseUserId.mockResolvedValue(userAdministrator1);
+      userService.findBaseUserByEmail.mockResolvedValue(userBase1);
 
-      const usecase = new FindUserAdministratorByBaseUser(userAdministratorRepository);
+      const usecase = new FindUserAdministratorByBaseUser(
+        userAdministratorRepository,
+        userService
+      );
       const result = await usecase.execute(token);
 
       expect(userAdministratorRepository.findByBaseUserId).toHaveBeenCalled();
@@ -69,10 +84,15 @@ describe('findUserAdministratorByBaseUser usecase unit test', () => {
         masterId: 'valid id',
       };
       const userAdministratorRepository = MockRepository();
+      const userService = MockUserService();
 
       userAdministratorRepository.find.mockResolvedValue(null);
+      userService.findBaseUserByEmail.mockResolvedValue(userBase1);
 
-      const usecase = new FindUserAdministratorByBaseUser(userAdministratorRepository);
+      const usecase = new FindUserAdministratorByBaseUser(
+        userAdministratorRepository,
+        userService
+      );
       const result = await usecase.execute(token);
 
       expect(result).toBeNull();

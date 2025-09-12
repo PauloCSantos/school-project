@@ -64,9 +64,7 @@ export class PoliciesService implements PoliciesServiceInterface {
       ) {
         return;
       }
-      throw new UnauthorizedException(
-        'Authentication required for this operation'
-      );
+      throw new UnauthorizedException('Authentication required for this operation');
     }
 
     if (userToken.role === RoleUsersEnum.MASTER) {
@@ -150,6 +148,7 @@ export class PoliciesService implements PoliciesServiceInterface {
             find: PermissionType.EXCEPT_MASTER,
             update: PermissionType.EXCEPT_MASTER,
             delete: PermissionType.EXCEPT_MASTER,
+            add: PermissionType.EXCEPT_MASTER,
           },
           administrator: {
             create: PermissionType.ALLOW,

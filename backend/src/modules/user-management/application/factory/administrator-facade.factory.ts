@@ -1,27 +1,22 @@
-import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
-import MemoryUserAdministratorRepository from '../../infrastructure/repositories/memory-repository/administrator.repository';
 import AdministratorFacade from '../facade/facade/administrator.facade';
 import CreateUserAdministrator from '../usecases/administrator/createUserAdministrator.usecase';
 import DeleteUserAdministrator from '../usecases/administrator/deleteUserAdministrator.usecase';
 import FindAllUserAdministrator from '../usecases/administrator/findAllUserAdministrator.usecase';
 import FindUserAdministrator from '../usecases/administrator/findUserAdministrator.usecase';
 import UpdateUserAdministrator from '../usecases/administrator/updateUserAdministrator.usecase';
-import { EmailAuthValidatorService } from '../services/email-auth-validator.service';
-import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
-import { UserService } from '../../domain/services/user.service';
-import MemoryUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
-import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
+import { EmailAuthValidator } from '../services/email-auth-validator.service';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { UserServiceInterface } from '../../domain/services/user.service';
 import FindUserAdministratorByBaseUser from '../usecases/administrator/findUserAdministratorByBaseUser.usecase';
+import UserAdministratorGateway from '../gateway/administrator.gateway';
 
 export default class AdministratorFacadeFactory {
-  static create(): AdministratorFacade {
-    const repository = new MemoryUserAdministratorRepository();
-    const authUserService = new AuthUserService();
-    const authUserRepository = new MemoryAuthUserRepository(authUserService);
-    const userRepository = new MemoryUserRepository();
-    const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
-    const policiesService = new PoliciesService();
-    const userService = new UserService(userRepository);
+  static create(
+    repository: UserAdministratorGateway,
+    emailValidatorService: EmailAuthValidator,
+    policiesService: PoliciesServiceInterface,
+    userService: UserServiceInterface
+  ): AdministratorFacade {
     const createUserAdministrator = new CreateUserAdministrator(
       repository,
       emailValidatorService,
@@ -47,14 +42,17 @@ export default class AdministratorFacadeFactory {
       policiesService,
       userService
     );
-    const findUserAdministratorByBaseUser = new FindUserAdministratorByBaseUser(repository)
+    const findUserAdministratorByBaseUser = new FindUserAdministratorByBaseUser(
+      repository,
+      userService
+    );
     const facade = new AdministratorFacade({
       createUserAdministrator,
       deleteUserAdministrator,
       findAllUserAdministrator,
       findUserAdministrator,
       updateUserAdministrator,
-      findUserAdministratorByBaseUser
+      findUserAdministratorByBaseUser,
     });
 
     return facade;

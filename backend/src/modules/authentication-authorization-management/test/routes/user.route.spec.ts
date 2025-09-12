@@ -22,6 +22,7 @@ describe('AuthUserRoute with ExpressAdapter', () => {
       update: jest.fn(),
       delete: jest.fn(),
       checkUserRegistration: jest.fn(),
+      addNewRole: jest.fn(),
     } as unknown as jest.Mocked<AuthUserController>;
 
     middleware = {
@@ -179,6 +180,29 @@ describe('AuthUserRoute with ExpressAdapter', () => {
         })
       );
       expect(response.body.registered).toEqual(true);
+    });
+
+    it('should add a new role to user', async () => {
+      controller.addNewRole.mockResolvedValue(undefined);
+
+      const response = await supertest(app)
+        .post('/authUser/add')
+        .set('Authorization', 'Bearer teste-token')
+        .send({
+          email: 'user@example.com',
+          role: 'administrator',
+        });
+
+      expect(response.statusCode).toBe(204);
+      expect(controller.addNewRole).toHaveBeenCalledWith(
+        { email: 'user@example.com', role: 'administrator' },
+        expect.objectContaining({
+          email: expect.any(String),
+          role: expect.any(String),
+          masterId: expect.any(String),
+        })
+      );
+      expect(response.statusCode).toEqual(204);
     });
   });
 

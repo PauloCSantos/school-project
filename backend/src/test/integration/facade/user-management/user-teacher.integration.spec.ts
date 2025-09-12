@@ -41,6 +41,7 @@ import {
 } from '@/modules/user-management/domain/services/user.service';
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 import FindUserTeacherByBaseUser from '@/modules/user-management/application/usecases/teacher/findUserTeacherByBaseUser.usecase';
+import Id from '@/modules/@shared/domain/value-object/id.value-object';
 
 describe('User Teacher facade integration test', () => {
   let authUserRepository: AuthUserGateway;
@@ -86,7 +87,7 @@ describe('User Teacher facade integration test', () => {
       salary: 5000,
     },
     birthday: new Date('11-12-1995'),
-    email: 'teste1@test.com',
+    email: 'teste@teste.com',
     graduation: 'Math',
     academicDegrees: 'Msc',
   };
@@ -133,8 +134,8 @@ describe('User Teacher facade integration test', () => {
     academicDegrees: 'Dr.',
   };
   const token: TokenData = {
-    email: 'teste@teste.com.br',
-    masterId: 'validID',
+    email: 'teste@teste.com',
+    masterId: new Id().value,
     role: RoleUsersEnum.MASTER,
   };
 
@@ -215,7 +216,10 @@ describe('User Teacher facade integration test', () => {
       policiesService,
       userService
     );
-    findUserTeacherByBaseUser = new FindUserTeacherByBaseUser(teacherRepository);
+    findUserTeacherByBaseUser = new FindUserTeacherByBaseUser(
+      teacherRepository,
+      userService
+    );
 
     facadeTeacher = new TeacherFacade({
       createUserTeacher,

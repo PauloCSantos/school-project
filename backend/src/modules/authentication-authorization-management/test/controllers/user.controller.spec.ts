@@ -1,5 +1,6 @@
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import {
+  AddRoleInputDto,
   CreateAuthUserInputDto,
   CreateAuthUserOutputDto,
   DeleteAuthUserInputDto,
@@ -20,6 +21,7 @@ import AuthUserController from '../../interface/controller/user.controller';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import CheckRegistration from '../../application/usecases/authUser/check-registration.usecase';
+import AddRole from '../../application/usecases/authUser/add-role.usecase';
 
 const mockCreateAuthUser: jest.Mocked<CreateAuthUser> = {
   execute: jest.fn(),
@@ -44,6 +46,10 @@ const mockLoginAuthUser: jest.Mocked<LoginAuthUser> = {
 const mockCheckRegistration: jest.Mocked<CheckRegistration> = {
   execute: jest.fn(),
 } as unknown as jest.Mocked<CheckRegistration>;
+
+const mockaddNewRole: jest.Mocked<AddRole> = {
+  execute: jest.fn(),
+} as unknown as jest.Mocked<AddRole>;
 
 describe('AuthUserController unit test', () => {
   let controller: AuthUserController;
@@ -87,6 +93,12 @@ describe('AuthUserController unit test', () => {
   const loginOutput: LoginAuthUserOutputDto = {
     token: 'mock_jwt_token_string',
   };
+
+  const addRoleInput: AddRoleInputDto = {
+    email,
+    role: RoleUsersEnum.WORKER,
+  };
+
   token = {
     email: 'caller@domain.com',
     role: RoleUsersEnum.MASTER,
@@ -102,6 +114,7 @@ describe('AuthUserController unit test', () => {
     mockDeleteAuthUser.execute.mockResolvedValue(deleteOutput);
     mockLoginAuthUser.execute.mockResolvedValue(loginOutput);
     mockCheckRegistration.execute.mockResolvedValue(true);
+    mockaddNewRole.execute.mockResolvedValue();
 
     controller = new AuthUserController(
       mockCreateAuthUser,
@@ -109,7 +122,8 @@ describe('AuthUserController unit test', () => {
       mockUpdateAuthUser,
       mockDeleteAuthUser,
       mockLoginAuthUser,
-      mockCheckRegistration
+      mockCheckRegistration,
+      mockaddNewRole
     );
   });
 
@@ -169,5 +183,12 @@ describe('AuthUserController unit test', () => {
     expect(mockCheckRegistration.execute).toHaveBeenCalledTimes(1);
     expect(mockCheckRegistration.execute).toHaveBeenCalledWith(token);
     expect(result).toEqual(true);
+  });
+
+  it('should call add role use case with correct input', async () => {
+    await controller.addNewRole(addRoleInput, token);
+
+    expect(mockaddNewRole.execute).toHaveBeenCalledTimes(1);
+    expect(mockaddNewRole.execute).toHaveBeenCalledWith(addRoleInput, token);
   });
 });

@@ -6,20 +6,17 @@ import RemoveSubjects from '../usecases/curriculum/remove-subjects.usecase';
 import UpdateCurriculum from '../usecases/curriculum/update.usecase';
 import CurriculumFacade from '../facade/facade/curriculum.facade';
 import AddSubjects from '../usecases/curriculum/add-subjects.usecase';
-import MemoryCurriculumRepository from '../../infrastructure/repositories/memory-repository/curriculum.repository';
-import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import CurriculumGateway from '../gateway/curriculum.gateway';
 
 export default class CurriculumFacadeFactory {
-  static create(): CurriculumFacade {
-    const repository = new MemoryCurriculumRepository();
-    const policiesService = new PoliciesService();
-
+  static create(
+    repository: CurriculumGateway,
+    policiesService: PoliciesServiceInterface
+  ): CurriculumFacade {
     const createCurriculum = new CreateCurriculum(repository, policiesService);
     const deleteCurriculum = new DeleteCurriculum(repository, policiesService);
-    const findAllCurriculum = new FindAllCurriculum(
-      repository,
-      policiesService
-    );
+    const findAllCurriculum = new FindAllCurriculum(repository, policiesService);
     const findCurriculum = new FindCurriculum(repository, policiesService);
     const updateCurriculum = new UpdateCurriculum(repository, policiesService);
     const addSubjects = new AddSubjects(repository, policiesService);

@@ -85,7 +85,7 @@ describe('User Administrator facade integration test', () => {
       salary: 5000,
     },
     birthday: new Date('11-12-1995'),
-    email: 'teste1@test.com',
+    email: 'teste@teste.com',
     graduation: 'Math',
   };
   const input2 = {
@@ -129,7 +129,7 @@ describe('User Administrator facade integration test', () => {
     graduation: 'Japanese',
   };
   const token: TokenData = {
-    email: 'teste@teste.com.br',
+    email: 'teste@teste.com',
     masterId: 'validID',
     role: RoleUsersEnum.MASTER,
   };
@@ -212,7 +212,8 @@ describe('User Administrator facade integration test', () => {
       userService
     );
     findUserAdministratorByBaseUser = new FindUserAdministratorByBaseUser(
-      administratorRepository
+      administratorRepository,
+      userService
     );
 
     facadeAdministrator = new AdministratorFacade({

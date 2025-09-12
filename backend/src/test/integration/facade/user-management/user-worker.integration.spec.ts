@@ -86,7 +86,7 @@ describe('User Worker facade integration test', () => {
       salary: 5000,
     },
     birthday: new Date('11-12-1995'),
-    email: 'teste1@test.com',
+    email: 'teste@teste.com',
   };
   const input2 = {
     name: {
@@ -127,7 +127,7 @@ describe('User Worker facade integration test', () => {
     email: 'teste3@test.com',
   };
   const token: TokenData = {
-    email: 'teste@teste.com.br',
+    email: 'teste@teste.com',
     masterId: 'validID',
     role: RoleUsersEnum.MASTER,
   };
@@ -205,7 +205,10 @@ describe('User Worker facade integration test', () => {
       policiesService,
       userService
     );
-    findUserWorkerByBaseUser = new FindUserWorkerByBaseUser(workerRepository);
+    findUserWorkerByBaseUser = new FindUserWorkerByBaseUser(
+      workerRepository,
+      userService
+    );
 
     facadeWorker = new WorkerFacade({
       createUserWorker,

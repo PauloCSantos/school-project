@@ -82,11 +82,11 @@ describe('User master facade integration test', () => {
       state: 'State A',
     },
     birthday: new Date('11-12-1995'),
-    email: 'teste1@test.com',
+    email: 'teste@teste.com',
     cnpj: '35.741.901/0001-58',
   };
   const token: TokenData = {
-    email: 'teste@teste.com.br',
+    email: 'teste@teste.com',
     masterId: 'validID',
     role: RoleUsersEnum.MASTER,
   };
@@ -157,7 +157,10 @@ describe('User master facade integration test', () => {
       policiesService,
       userService
     );
-    findUserMasterByBaseUser = new FindUserMasterByBaseUser(masterRepository);
+    findUserMasterByBaseUser = new FindUserMasterByBaseUser(
+      masterRepository,
+      userService
+    );
 
     facadeMaster = new MasterFacade({
       createUserMaster,

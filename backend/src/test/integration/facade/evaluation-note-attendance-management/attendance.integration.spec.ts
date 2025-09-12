@@ -1,9 +1,14 @@
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import AttendanceFacadeFactory from '@/modules/evaluation-note-attendance-management/application/factory/attendance.factory';
+import MemoryAttendanceRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/attendance.repository';
 
 describe('Attendance facade integration test', () => {
+  let repository = new MemoryAttendanceRepository();
+  let policiesService = new PoliciesService();
+
   const input = {
     date: new Date(),
     day: 'fri' as DayOfWeek,
@@ -31,21 +36,26 @@ describe('Attendance facade integration test', () => {
     role: RoleUsersEnum.MASTER,
   };
 
+  beforeEach(() => {
+    repository = new MemoryAttendanceRepository();
+    policiesService = new PoliciesService();
+  });
+
   it('should create an attendance using the facade', async () => {
-    const facade = AttendanceFacadeFactory.create();
+    const facade = AttendanceFacadeFactory.create(repository, policiesService);
     const result = await facade.create(input, token);
 
     expect(result.id).toBeDefined();
   });
   it('should find an attendance using the facade', async () => {
-    const facade = AttendanceFacadeFactory.create();
+    const facade = AttendanceFacadeFactory.create(repository, policiesService);
     const result = await facade.create(input, token);
     const userAttendance = await facade.find(result, token);
 
     expect(userAttendance).toBeDefined();
   });
   it('should find all attendance using the facade', async () => {
-    const facade = AttendanceFacadeFactory.create();
+    const facade = AttendanceFacadeFactory.create(repository, policiesService);
     await facade.create(input, token);
     await facade.create(input2, token);
     await facade.create(input3, token);
@@ -54,7 +64,7 @@ describe('Attendance facade integration test', () => {
     expect(allUsers.length).toBe(3);
   });
   it('should delete an attendance using the facade', async () => {
-    const facade = AttendanceFacadeFactory.create();
+    const facade = AttendanceFacadeFactory.create(repository, policiesService);
     await facade.create(input, token);
     const id2 = await facade.create(input2, token);
     await facade.create(input3, token);
@@ -65,7 +75,7 @@ describe('Attendance facade integration test', () => {
     //expect(allUsers.length).toBe(2);
   });
   it('should update an attendance using the facade', async () => {
-    const facade = AttendanceFacadeFactory.create();
+    const facade = AttendanceFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.update(
@@ -79,7 +89,7 @@ describe('Attendance facade integration test', () => {
     expect(result).toBeDefined();
   });
   it('should add students to the attendance using the facade', async () => {
-    const facade = AttendanceFacadeFactory.create();
+    const facade = AttendanceFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.addStudents(
@@ -93,7 +103,7 @@ describe('Attendance facade integration test', () => {
     expect(result).toBeDefined();
   });
   it('should remove students to the attendance using the facade', async () => {
-    const facade = AttendanceFacadeFactory.create();
+    const facade = AttendanceFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.removeStudents(

@@ -9,6 +9,7 @@ import {
   IDeleteAuthUserOutput,
   ILoginAuthUserInput,
   ILoginAuthUserOutput,
+  IAddRoleInput,
 } from './base-user.dto';
 
 export type FindAuthUserInputDto = IFindAuthUserInput;
@@ -25,3 +26,5 @@ export type DeleteAuthUserOutputDto = IDeleteAuthUserOutput;
 
 export type LoginAuthUserInputDto = ILoginAuthUserInput;
 export type LoginAuthUserOutputDto = ILoginAuthUserOutput;
+
+export type AddRoleInputDto = IAddRoleInput;
