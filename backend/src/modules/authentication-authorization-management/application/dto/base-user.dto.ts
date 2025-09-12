@@ -56,3 +56,8 @@ export interface ILoginAuthUserOutput {
     roles: RoleUsers[];
   }[];
 }
+
+export interface IAddRoleInput {
+  email: string;
+  role: RoleUsers;
+}

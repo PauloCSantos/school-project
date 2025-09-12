@@ -6,6 +6,7 @@ import {
 } from '@/modules/@shared/infraestructure/http/http.interface';
 import AuthUserController from '../controller/user.controller';
 import {
+  AddRoleInputDto,
   CreateAuthUserInputDto,
   FindAuthUserInputDto,
   LoginAuthUserInputDto,
@@ -57,6 +58,11 @@ export default class AuthUserRoute {
 
     this.httpGateway.post('/checkRegistration', this.checkRegistration.bind(this), [
       this.authMiddleware,
+    ]);
+
+    this.httpGateway.post('/authUser/add', this.addRole.bind(this), [
+      this.authMiddleware,
+      createRequestMiddleware(FunctionCalledEnum.CREATE, [...REQUIRED_FIELD, 'role']),
     ]);
   }
 
@@ -152,6 +158,23 @@ export default class AuthUserRoute {
       return {
         statusCode: HttpStatus.OK,
         body: { registered: response },
+      };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async addRole(
+    req: HttpRequest<{}, {}, AddRoleInputDto, {}>
+  ): Promise<HttpResponseData> {
+    try {
+      const input = req.body;
+      const token = req.tokenData!;
+
+      await this.authUserController.addNewRole(input, token);
+      return {
+        statusCode: HttpStatus.NO_CONTENT,
+        body: undefined,
       };
     } catch (error) {
       return this.handleError(error);
