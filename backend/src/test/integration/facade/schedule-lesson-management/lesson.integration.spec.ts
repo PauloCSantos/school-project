@@ -1,9 +1,14 @@
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import LessonFacadeFactory from '@/modules/schedule-lesson-management/application/factory/lesson.factory';
+import MemoryLessonRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/lesson.repository';
 
 describe('Lesson facade integration test', () => {
+  let repository = new MemoryLessonRepository();
+  let policiesService = new PoliciesService();
+
   const input = {
     name: 'Math advanced I',
     duration: 60,
@@ -40,21 +45,26 @@ describe('Lesson facade integration test', () => {
     role: RoleUsersEnum.MASTER,
   };
 
+  beforeEach(() => {
+    repository = new MemoryLessonRepository();
+    policiesService = new PoliciesService();
+  });
+
   it('should create an Lesson using the facade', async () => {
-    const facade = LessonFacadeFactory.create();
+    const facade = LessonFacadeFactory.create(repository, policiesService);
     const result = await facade.create(input, token);
 
     expect(result.id).toBeDefined();
   });
   it('should find an Lesson using the facade', async () => {
-    const facade = LessonFacadeFactory.create();
+    const facade = LessonFacadeFactory.create(repository, policiesService);
     const result = await facade.create(input, token);
     const userLesson = await facade.find(result, token);
 
     expect(userLesson).toBeDefined();
   });
   it('should find all users Lesson using the facade', async () => {
-    const facade = LessonFacadeFactory.create();
+    const facade = LessonFacadeFactory.create(repository, policiesService);
     await facade.create(input, token);
     await facade.create(input2, token);
     await facade.create(input3, token);
@@ -63,7 +73,7 @@ describe('Lesson facade integration test', () => {
     expect(allUsers.length).toBe(3);
   });
   it('should delete an Lesson using the facade', async () => {
-    const facade = LessonFacadeFactory.create();
+    const facade = LessonFacadeFactory.create(repository, policiesService);
     await facade.create(input, token);
     const id2 = await facade.create(input2, token);
     await facade.create(input3, token);
@@ -74,7 +84,7 @@ describe('Lesson facade integration test', () => {
     //expect(allUsers.length).toBe(2);
   });
   it('should update an Lesson using the facade', async () => {
-    const facade = LessonFacadeFactory.create();
+    const facade = LessonFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.update(
@@ -88,7 +98,7 @@ describe('Lesson facade integration test', () => {
     expect(result).toBeDefined();
   });
   it('should add students to the lesson using the facade', async () => {
-    const facade = LessonFacadeFactory.create();
+    const facade = LessonFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.addStudents(
@@ -102,7 +112,7 @@ describe('Lesson facade integration test', () => {
     expect(result).toBeDefined();
   });
   it('should remove students to the lesson using the facade', async () => {
-    const facade = LessonFacadeFactory.create();
+    const facade = LessonFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.removeStudents(
@@ -116,7 +126,7 @@ describe('Lesson facade integration test', () => {
     expect(result).toBeDefined();
   });
   it('should add day to the lesson using the facade', async () => {
-    const facade = LessonFacadeFactory.create();
+    const facade = LessonFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.addDay(
@@ -130,7 +140,7 @@ describe('Lesson facade integration test', () => {
     expect(result).toBeDefined();
   });
   it('should remove day to the lesson using the facade', async () => {
-    const facade = LessonFacadeFactory.create();
+    const facade = LessonFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.removeDay(
@@ -144,7 +154,7 @@ describe('Lesson facade integration test', () => {
     expect(result).toBeDefined();
   });
   it('should add time to the lesson using the facade', async () => {
-    const facade = LessonFacadeFactory.create();
+    const facade = LessonFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.addTime(
@@ -158,7 +168,7 @@ describe('Lesson facade integration test', () => {
     expect(result).toBeDefined();
   });
   it('should remove time to the lesson using the facade', async () => {
-    const facade = LessonFacadeFactory.create();
+    const facade = LessonFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.removeTime(

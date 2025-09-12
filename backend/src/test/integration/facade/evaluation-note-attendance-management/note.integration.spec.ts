@@ -1,9 +1,14 @@
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import NoteFacadeFactory from '@/modules/evaluation-note-attendance-management/application/factory/note.factory';
+import MemoryNoteRepository from '@/modules/evaluation-note-attendance-management/infrastructure/repositories/memory-repository/note.repository';
 
 describe('Note facade integration test', () => {
+  let repository = new MemoryNoteRepository();
+  let policiesService = new PoliciesService();
+
   const input = {
     evaluation: new Id().value,
     student: new Id().value,
@@ -25,21 +30,26 @@ describe('Note facade integration test', () => {
     role: RoleUsersEnum.MASTER,
   };
 
+  beforeEach(() => {
+    repository = new MemoryNoteRepository();
+    policiesService = new PoliciesService();
+  });
+
   it('should create an Note using the facade', async () => {
-    const facade = NoteFacadeFactory.create();
+    const facade = NoteFacadeFactory.create(repository, policiesService);
     const result = await facade.create(input, token);
 
     expect(result.id).toBeDefined();
   });
   it('should find an Note using the facade', async () => {
-    const facade = NoteFacadeFactory.create();
+    const facade = NoteFacadeFactory.create(repository, policiesService);
     const result = await facade.create(input, token);
     const Note = await facade.find(result, token);
 
     expect(Note).toBeDefined();
   });
   it('should find all Note using the facade', async () => {
-    const facade = NoteFacadeFactory.create();
+    const facade = NoteFacadeFactory.create(repository, policiesService);
     await facade.create(input, token);
     await facade.create(input2, token);
     await facade.create(input3, token);
@@ -48,7 +58,7 @@ describe('Note facade integration test', () => {
     expect(alls.length).toBe(3);
   });
   it('should delete an Note using the facade', async () => {
-    const facade = NoteFacadeFactory.create();
+    const facade = NoteFacadeFactory.create(repository, policiesService);
     await facade.create(input, token);
     const id2 = await facade.create(input2, token);
     await facade.create(input3, token);
@@ -59,7 +69,7 @@ describe('Note facade integration test', () => {
     //expect(alls.length).toBe(2);
   });
   it('should update an  Note using the facade', async () => {
-    const facade = NoteFacadeFactory.create();
+    const facade = NoteFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.update(

@@ -1,9 +1,14 @@
+import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import ScheduleFacadeFactory from '@/modules/schedule-lesson-management/application/factory/schedule.factory';
+import MemoryScheduleRepository from '@/modules/schedule-lesson-management/infrastructure/repositories/memory-repository/schedule.repository';
 
 describe('Schedule facade integration test', () => {
+  let repository = new MemoryScheduleRepository();
+  let policiesService = new PoliciesService();
+
   const input = {
     student: new Id().value,
     curriculum: new Id().value,
@@ -25,21 +30,26 @@ describe('Schedule facade integration test', () => {
     role: RoleUsersEnum.MASTER,
   };
 
+  beforeEach(() => {
+    repository = new MemoryScheduleRepository();
+    policiesService = new PoliciesService();
+  });
+
   it('should create an Schedule using the facade', async () => {
-    const facade = ScheduleFacadeFactory.create();
+    const facade = ScheduleFacadeFactory.create(repository, policiesService);
     const result = await facade.create(input, token);
 
     expect(result.id).toBeDefined();
   });
   it('should find an Schedule using the facade', async () => {
-    const facade = ScheduleFacadeFactory.create();
+    const facade = ScheduleFacadeFactory.create(repository, policiesService);
     const result = await facade.create(input, token);
     const userSchedule = await facade.find(result, token);
 
     expect(userSchedule).toBeDefined();
   });
   it('should find all users Schedule using the facade', async () => {
-    const facade = ScheduleFacadeFactory.create();
+    const facade = ScheduleFacadeFactory.create(repository, policiesService);
     await facade.create(input, token);
     await facade.create(input2, token);
     await facade.create(input3, token);
@@ -48,7 +58,7 @@ describe('Schedule facade integration test', () => {
     expect(allUsers.length).toBe(3);
   });
   it('should delete an Schedule using the facade', async () => {
-    const facade = ScheduleFacadeFactory.create();
+    const facade = ScheduleFacadeFactory.create(repository, policiesService);
     await facade.create(input, token);
     const id2 = await facade.create(input2, token);
     await facade.create(input3, token);
@@ -59,7 +69,7 @@ describe('Schedule facade integration test', () => {
     //expect(allUsers.length).toBe(2);
   });
   it('should update an Schedule using the facade', async () => {
-    const facade = ScheduleFacadeFactory.create();
+    const facade = ScheduleFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.update(
@@ -73,7 +83,7 @@ describe('Schedule facade integration test', () => {
     expect(result).toBeDefined();
   });
   it('should add lessons to the Schedule using the facade', async () => {
-    const facade = ScheduleFacadeFactory.create();
+    const facade = ScheduleFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.addLessons(
@@ -87,7 +97,7 @@ describe('Schedule facade integration test', () => {
     expect(result).toBeDefined();
   });
   it('should remove lessons to the Schedule using the facade', async () => {
-    const facade = ScheduleFacadeFactory.create();
+    const facade = ScheduleFacadeFactory.create(repository, policiesService);
     const id = await facade.create(input, token);
 
     const result = await facade.removeLessons(
