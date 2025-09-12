@@ -1,28 +1,22 @@
-import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
-import MemoryUserStudentRepository from '../../infrastructure/repositories/memory-repository/student.repository';
 import StudentFacade from '../facade/facade/student.facade';
 import CreateUserStudent from '../usecases/student/createUserStudent.usecase';
 import DeleteUserStudent from '../usecases/student/deleteUserStudent.usecase';
 import FindAllUserStudent from '../usecases/student/findAllUserStudent.usecase';
 import FindUserStudent from '../usecases/student/findUserStudent.usecase';
 import UpdateUserStudent from '../usecases/student/updateUserStudent.usecase';
-import { EmailAuthValidatorService } from '../services/email-auth-validator.service';
-import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
-import MemoryUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
-import { UserService } from '../../domain/services/user.service';
-import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
+import { EmailAuthValidator } from '../services/email-auth-validator.service';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { UserServiceInterface } from '../../domain/services/user.service';
 import FindUserStudentByBaseUser from '../usecases/student/findUserStudentByBaseUser.usecase';
+import UserStudentGateway from '../gateway/student.gateway';
 
 export default class StudentFacadeFactory {
-  static create(): StudentFacade {
-    const repository = new MemoryUserStudentRepository();
-    const authUserService = new AuthUserService();
-    const authUserRepository = new MemoryAuthUserRepository(authUserService);
-    const userRepository = new MemoryUserRepository();
-    const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
-    const policiesService = new PoliciesService();
-    const userService = new UserService(userRepository);
-
+  static create(
+    repository: UserStudentGateway,
+    emailValidatorService: EmailAuthValidator,
+    policiesService: PoliciesServiceInterface,
+    userService: UserServiceInterface
+  ): StudentFacade {
     const createUserStudent = new CreateUserStudent(
       repository,
       emailValidatorService,
@@ -41,14 +35,17 @@ export default class StudentFacadeFactory {
       policiesService,
       userService
     );
-    const findUserStudentByBaseUser = new FindUserStudentByBaseUser(repository)
+    const findUserStudentByBaseUser = new FindUserStudentByBaseUser(
+      repository,
+      userService
+    );
     const facade = new StudentFacade({
       createUserStudent,
       deleteUserStudent,
       findAllUserStudent,
       findUserStudent,
       updateUserStudent,
-      findUserStudentByBaseUser
+      findUserStudentByBaseUser,
     });
 
     return facade;

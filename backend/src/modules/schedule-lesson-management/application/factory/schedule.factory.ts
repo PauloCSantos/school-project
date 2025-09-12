@@ -1,5 +1,4 @@
-import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
-import MemoryScheduleRepository from '../../infrastructure/repositories/memory-repository/schedule.repository';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import ScheduleFacade from '../facade/facade/schedule.facade';
 import AddLessons from '../usecases/schedule/add-lessons.usecase';
 import CreateSchedule from '../usecases/schedule/create.usecase';
@@ -8,6 +7,7 @@ import FindAllSchedule from '../usecases/schedule/find-all.usecase';
 import FindSchedule from '../usecases/schedule/find.usecase';
 import RemoveLessons from '../usecases/schedule/remove-lessons.usecase';
 import UpdateSchedule from '../usecases/schedule/update.usecase';
+import ScheduleGateway from '../gateway/schedule.gateway';
 
 /**
  * Factory responsible for creating ScheduleFacade instances
@@ -18,12 +18,10 @@ export default class ScheduleFacadeFactory {
    * Creates an instance of ScheduleFacade with all dependencies properly configured
    * @returns Fully configured ScheduleFacade instance
    */
-  static create(): ScheduleFacade {
-    // Currently using memory repository
-    const repository = new MemoryScheduleRepository();
-    const policiesService = new PoliciesService();
-
-    // Create all required use cases
+  static create(
+    repository: ScheduleGateway,
+    policiesService: PoliciesServiceInterface
+  ): ScheduleFacade {
     const createSchedule = new CreateSchedule(repository, policiesService);
     const deleteSchedule = new DeleteSchedule(repository, policiesService);
     const findAllSchedule = new FindAllSchedule(repository, policiesService);
@@ -32,7 +30,6 @@ export default class ScheduleFacadeFactory {
     const addLessons = new AddLessons(repository, policiesService);
     const removeLessons = new RemoveLessons(repository, policiesService);
 
-    // Instantiate and return the facade with all required use cases
     const facade = new ScheduleFacade({
       createSchedule,
       deleteSchedule,

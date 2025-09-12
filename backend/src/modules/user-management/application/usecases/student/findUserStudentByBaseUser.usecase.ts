@@ -3,6 +3,7 @@ import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FindUserStudentOutputDto } from '../../dto/student-usecase.dto';
 import UserStudentGateway from '../../gateway/student.gateway';
 import { StudentMapper } from '@/modules/user-management/infrastructure/mapper/student.mapper';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
 
 export default class FindUserStudentByBaseUser
   implements
@@ -11,12 +12,19 @@ export default class FindUserStudentByBaseUser
       Pick<FindUserStudentOutputDto, 'id' | 'paymentYear'> | null
     >
 {
-  constructor(private readonly userStudentRepository: UserStudentGateway) {}
+  constructor(
+    private readonly userStudentRepository: UserStudentGateway,
+    private readonly userService: UserServiceInterface
+  ) {}
   async execute({
     email,
     masterId,
   }: TokenData): Promise<Pick<FindUserStudentOutputDto, 'id' | 'paymentYear'> | null> {
-    const response = await this.userStudentRepository.findByBaseUserId(masterId, email);
+    const userBase = await this.userService.findBaseUserByEmail(email);
+    const response = await this.userStudentRepository.findByBaseUserId(
+      masterId,
+      userBase.id.value
+    );
     if (response) {
       const { id, paymentYear } = StudentMapper.toObj(response);
       return { id, paymentYear };

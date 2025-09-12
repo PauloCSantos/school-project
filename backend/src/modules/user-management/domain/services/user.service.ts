@@ -7,7 +7,7 @@ export interface UserServiceInterface {
     entities: ReadonlyArray<T>
   ): Promise<ReadonlyArray<{ entity: T; user: UserBase }>>;
   findBaseUser(userId: string): Promise<UserBase | null>;
-  findBaseUserByEmail(email: string): Promise<UserBase | null>;
+  findBaseUserByEmail(email: string): Promise<UserBase>;
   getOrCreateUser(email: string, user: UserBaseProps): Promise<UserBase>;
   update(user: UserBase): Promise<UserBase>;
 }

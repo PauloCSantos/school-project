@@ -1,28 +1,22 @@
-import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
-import MemoryUserWorkerRepository from '../../infrastructure/repositories/memory-repository/worker.repository';
 import WorkerFacade from '../facade/facade/worker.facade';
 import CreateUserWorker from '../usecases/worker/createUserWorker.usecase';
 import DeleteUserWorker from '../usecases/worker/deleteUserWorker.usecase';
 import FindAllUserWorker from '../usecases/worker/findAllUserWorker.usecase';
 import FindUserWorker from '../usecases/worker/findUserWorker.usecase';
 import UpdateUserWorker from '../usecases/worker/updateUserWorker.usecase';
-import { EmailAuthValidatorService } from '../services/email-auth-validator.service';
-import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
-import MemoryUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
-import { UserService } from '../../domain/services/user.service';
-import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
+import { EmailAuthValidator } from '../services/email-auth-validator.service';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { UserServiceInterface } from '../../domain/services/user.service';
 import FindUserWorkerByBaseUser from '../usecases/worker/findUserTeacherByBaseUser.usecase';
+import UserWorkerGateway from '../gateway/worker.gateway';
 
 export default class WorkerFacadeFactory {
-  static create(): WorkerFacade {
-    const repository = new MemoryUserWorkerRepository();
-    const authUserService = new AuthUserService();
-    const authUserRepository = new MemoryAuthUserRepository(authUserService);
-    const userRepository = new MemoryUserRepository();
-    const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
-    const policiesService = new PoliciesService();
-    const userService = new UserService(userRepository);
-
+  static create(
+    repository: UserWorkerGateway,
+    emailValidatorService: EmailAuthValidator,
+    policiesService: PoliciesServiceInterface,
+    userService: UserServiceInterface
+  ): WorkerFacade {
     const createUserWorker = new CreateUserWorker(
       repository,
       emailValidatorService,
@@ -41,14 +35,17 @@ export default class WorkerFacadeFactory {
       policiesService,
       userService
     );
-    const findUserWorkerByBaseUser = new FindUserWorkerByBaseUser(repository)
+    const findUserWorkerByBaseUser = new FindUserWorkerByBaseUser(
+      repository,
+      userService
+    );
     const facade = new WorkerFacade({
       createUserWorker,
       deleteUserWorker,
       findAllUserWorker,
       findUserWorker,
       updateUserWorker,
-      findUserWorkerByBaseUser
+      findUserWorkerByBaseUser,
     });
 
     return facade;

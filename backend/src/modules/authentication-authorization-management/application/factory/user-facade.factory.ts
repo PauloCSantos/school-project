@@ -1,15 +1,15 @@
-import MemoryAuthUserRepository from '../../infrastructure/repositories/memory-repository/user.repository';
 import AuthUserFacade from '../facade/facade/user.facade';
 import CreateAuthUser from '../usecases/authUser/create-user.usecase';
 import DeleteAuthUser from '../usecases/authUser/delete-user.usecase';
 import FindAuthUser from '../usecases/authUser/find-user.usecase';
 import UpdateAuthUser from '../usecases/authUser/update-user.usecase';
 import LoginAuthUser from '../usecases/authUser/login-user.usecase';
-import { AuthUserService } from '../../infrastructure/services/user-entity.service';
-import TokenService from '../../infrastructure/services/token.service';
-import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
-import MemoryTenantRepository from '../../infrastructure/repositories/memory-repository/tenant.repository';
-import { TenantService } from '../../domain/service/tenant.service';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
+import { TenantServiceInterface } from '../../domain/service/tenant.service';
+import AuthUserGateway from '../gateway/user.gateway';
+import { AuthUserServiceInterface } from '../../domain/service/interface/user-entity-service.interface';
+import TenantGateway from '../gateway/tenant.gateway';
+import TokenServiceInterface from '../../domain/service/interface/token-service.interface';
 
 /**
  * Factory responsible for creating AuthUserFacade instances
@@ -20,14 +20,14 @@ export default class AuthUserFacadeFactory {
    * Creates an instance of AuthUserFacade with all dependencies properly configured
    * @returns Fully configured AuthUserFacade instance
    */
-  static create(secret: string): AuthUserFacade {
-    const authUserService = new AuthUserService();
-    const authUserRepository = new MemoryAuthUserRepository(authUserService);
-    const tenantRepository = new MemoryTenantRepository();
-    const tenantService = new TenantService(tenantRepository);
-    const tokenService = new TokenService(secret);
-    const policiesService = new PoliciesService();
-
+  static create(
+    authUserRepository: AuthUserGateway,
+    authUserService: AuthUserServiceInterface,
+    tenantRepository: TenantGateway,
+    tenantService: TenantServiceInterface,
+    tokenService: TokenServiceInterface,
+    policiesService: PoliciesServiceInterface
+  ): AuthUserFacade {
     const createAuthUser = new CreateAuthUser(
       authUserRepository,
       tenantRepository,

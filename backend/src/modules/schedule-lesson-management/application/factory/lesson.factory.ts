@@ -1,5 +1,4 @@
-import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
-import MemoryLessonRepository from '../../infrastructure/repositories/memory-repository/lesson.repository';
+import { PoliciesServiceInterface } from '@/modules/@shared/application/services/policies.service';
 import LessonFacade from '../facade/facade/lesson.facade';
 import AddDay from '../usecases/lesson/add-day.usecase';
 import AddStudents from '../usecases/lesson/add-students.usecase';
@@ -12,6 +11,7 @@ import RemoveDay from '../usecases/lesson/remove-day.usecase';
 import RemoveStudents from '../usecases/lesson/remove-students.usecase';
 import RemoveTime from '../usecases/lesson/remove-time.usecase';
 import UpdateLesson from '../usecases/lesson/update.usecase';
+import LessonGateway from '../gateway/lesson.gateway';
 
 /**
  * Factory responsible for creating LessonFacade instances
@@ -22,12 +22,10 @@ export default class LessonFacadeFactory {
    * Creates an instance of LessonFacade with all dependencies properly configured
    * @returns Fully configured LessonFacade instance
    */
-  static create(): LessonFacade {
-    // Currently using memory repository
-    const repository = new MemoryLessonRepository();
-    const policiesService = new PoliciesService();
-
-    // Create all required use cases
+  static create(
+    repository: LessonGateway,
+    policiesService: PoliciesServiceInterface
+  ): LessonFacade {
     const createLesson = new CreateLesson(repository, policiesService);
     const deleteLesson = new DeleteLesson(repository, policiesService);
     const findAllLesson = new FindAllLesson(repository, policiesService);
@@ -40,7 +38,6 @@ export default class LessonFacadeFactory {
     const addTime = new AddTime(repository, policiesService);
     const removeTime = new RemoveTime(repository, policiesService);
 
-    // Instantiate and return the facade with all required use cases
     const facade = new LessonFacade({
       createLesson,
       deleteLesson,

@@ -3,6 +3,7 @@ import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FindUserTeacherOutputDto } from '../../dto/teacher-usecase.dto';
 import UserTeacherGateway from '../../gateway/teacher.gateway';
 import { TeacherMapper } from '@/modules/user-management/infrastructure/mapper/teacher.mapper';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
 
 export default class FindUserTeacherByBaseUser
   implements
@@ -14,7 +15,10 @@ export default class FindUserTeacherByBaseUser
       > | null
     >
 {
-  constructor(private readonly userTeacherRepository: UserTeacherGateway) {}
+  constructor(
+    private readonly userTeacherRepository: UserTeacherGateway,
+    private readonly userService: UserServiceInterface
+  ) {}
   async execute({
     email,
     masterId,
@@ -22,7 +26,11 @@ export default class FindUserTeacherByBaseUser
     FindUserTeacherOutputDto,
     'id' | 'academicDegrees' | 'graduation' | 'salary'
   > | null> {
-    const response = await this.userTeacherRepository.findByBaseUserId(masterId, email);
+    const userBase = await this.userService.findBaseUserByEmail(email);
+    const response = await this.userTeacherRepository.findByBaseUserId(
+      masterId,
+      userBase.id.value
+    );
     if (response) {
       const salary = response.salary.calculateTotalIncome();
       const { id, academicDegrees, graduation } = TeacherMapper.toObj(response);

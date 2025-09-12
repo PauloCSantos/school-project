@@ -3,6 +3,7 @@ import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FindUserAdministratorOutputDto } from '../../dto/administrator-usecase.dto';
 import UserAdministratorGateway from '../../gateway/administrator.gateway';
 import { AdministratorMapper } from '@/modules/user-management/infrastructure/mapper/administrator.mapper';
+import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
 
 export default class FindUserAdministratorByBaseUser
   implements
@@ -11,7 +12,10 @@ export default class FindUserAdministratorByBaseUser
       Pick<FindUserAdministratorOutputDto, 'id' | 'graduation' | 'salary'> | null
     >
 {
-  constructor(private readonly userAdministratorRepository: UserAdministratorGateway) {}
+  constructor(
+    private readonly userAdministratorRepository: UserAdministratorGateway,
+    private readonly userService: UserServiceInterface
+  ) {}
   async execute({
     email,
     masterId,
@@ -19,9 +23,10 @@ export default class FindUserAdministratorByBaseUser
     FindUserAdministratorOutputDto,
     'id' | 'graduation' | 'salary'
   > | null> {
+    const userBase = await this.userService.findBaseUserByEmail(email);
     const response = await this.userAdministratorRepository.findByBaseUserId(
       masterId,
-      email
+      userBase.id.value
     );
     if (response) {
       const salary = response.salary.calculateTotalIncome();
