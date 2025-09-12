@@ -13,12 +13,27 @@ import AuthUserRoute from '@/modules/authentication-authorization-management/int
 import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
-import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
+import { RoleUsers, TokenData } from '@/modules/@shared/type/sharedTypes';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 
 import { TenantService } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
 import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.repository';
+import AddRole from '@/modules/authentication-authorization-management/application/usecases/authUser/add-role.usecase';
+import CheckRegistration from '@/modules/authentication-authorization-management/application/usecases/authUser/check-registration.usecase';
+import MasterFacadeFactory from '@/modules/user-management/application/factory/master-facade.factory';
+import AdministratorFacadeFactory from '@/modules/user-management/application/factory/administrator-facade.factory';
+import TeacherFacadeFactory from '@/modules/user-management/application/factory/teacher-facade.factory';
+import StudentFacadeFactory from '@/modules/user-management/application/factory/student-facade.factory';
+import WorkerFacadeFactory from '@/modules/user-management/application/factory/worker-facade.factory';
+import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
+import { UserService } from '@/modules/user-management/domain/services/user.service';
+import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
+import MemoryUserMasterRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/master.repository';
+import MemoryUserAdministratorRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/administrator.repository';
+import MemoryUserTeacherRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/teacher.repository';
+import MemoryUserStudentRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/student.repository';
+import MemoryUserWorkerRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/worker.repository';
 
 async function registerAndLoginUser(app: any, userDataOverride = {}) {
   const defaultUserData = {
@@ -41,19 +56,101 @@ async function registerAndLoginUser(app: any, userDataOverride = {}) {
 
   return {
     token: loginResponse.body.token,
-    email: userData.email,
+    email: registerResponse.body.email,
     masterId: registerResponse.body.masterId,
-    registerResponse,
-    loginResponse,
   };
 }
 
+async function registerNewUser(role: string, facade: any, masterId: any, email: string) {
+  const newUser: any = {
+    name: { firstName: 'John', middleName: 'Marcos', lastName: 'Doe' },
+    address: {
+      street: 'Street A',
+      city: 'City A',
+      zip: '12345',
+      number: 1,
+      avenue: 'Avenue A',
+      state: 'SS',
+    },
+    email,
+    birthday: new Date('11-12-1995'),
+  };
+  switch (role) {
+    case 'master':
+      newUser.cnpj = '12345678000113';
+      break;
+    case 'administrator':
+      newUser.graduation = 'Administrator';
+      newUser.salary = { salary: 5000, currency: 'R$' };
+      break;
+    case 'teacher':
+      newUser.graduation = 'Biologic';
+      newUser.academicDegrees = 'Msc';
+      newUser.salary = { salary: 6000, currency: 'R$' };
+      break;
+    case 'student':
+      newUser.paymentYear = 15000;
+      break;
+    case 'worker':
+      newUser.salary = { salary: 1000, currency: 'R$' };
+      break;
+  }
+  const tokenData: TokenData = {
+    email,
+    masterId: masterId,
+    role: RoleUsersEnum.MASTER,
+  };
+  await facade.create(newUser, tokenData);
+}
+
 describe('Authentication authorization management module end to end test', () => {
+  const tokenService = new TokenService('secretkey');
+
   let authUserService = new AuthUserService();
   let authUserRepository = new MemoryAuthUserRepository(authUserService);
   let tenantRepository = new MemoryTenantRepository();
   let tenantService = new TenantService(tenantRepository);
-  const tokenService = new TokenService('secretkey');
+  let emailAuthValidatorService = new EmailAuthValidatorService(authUserRepository);
+  let userRepository = new MemoryUserRepository();
+  let userService = new UserService(userRepository);
+  let policiesService = new PoliciesService();
+
+  let masterRepository = new MemoryUserMasterRepository();
+  let administratorRepository = new MemoryUserAdministratorRepository();
+  let teacherRepository = new MemoryUserTeacherRepository();
+  let studentRepository = new MemoryUserStudentRepository();
+  let workerRepository = new MemoryUserWorkerRepository();
+
+  let masterFacade = MasterFacadeFactory.create(
+    masterRepository,
+    emailAuthValidatorService,
+    policiesService,
+    userService
+  );
+  let administratorFacade = AdministratorFacadeFactory.create(
+    administratorRepository,
+    emailAuthValidatorService,
+    policiesService,
+    userService
+  );
+  let teacherFacade = TeacherFacadeFactory.create(
+    teacherRepository,
+    emailAuthValidatorService,
+    policiesService,
+    userService
+  );
+  let studentFacade = StudentFacadeFactory.create(
+    studentRepository,
+    emailAuthValidatorService,
+    policiesService,
+    userService
+  );
+  let workerFacade = WorkerFacadeFactory.create(
+    workerRepository,
+    emailAuthValidatorService,
+    policiesService,
+    userService
+  );
 
   let app: any;
 
@@ -61,7 +158,80 @@ describe('Authentication authorization management module end to end test', () =>
     authUserRepository = new MemoryAuthUserRepository(authUserService);
     tenantRepository = new MemoryTenantRepository();
     tenantService = new TenantService(tenantRepository);
-    const policiesService = new PoliciesService();
+    policiesService = new PoliciesService();
+
+    authUserService = new AuthUserService();
+    emailAuthValidatorService = new EmailAuthValidatorService(authUserRepository);
+    userRepository = new MemoryUserRepository();
+    userService = new UserService(userRepository);
+
+    masterRepository = new MemoryUserMasterRepository();
+    administratorRepository = new MemoryUserAdministratorRepository();
+    teacherRepository = new MemoryUserTeacherRepository();
+    studentRepository = new MemoryUserStudentRepository();
+    workerRepository = new MemoryUserWorkerRepository();
+
+    masterFacade = MasterFacadeFactory.create(
+      masterRepository,
+      emailAuthValidatorService,
+      policiesService,
+      userService
+    );
+    administratorFacade = AdministratorFacadeFactory.create(
+      administratorRepository,
+      emailAuthValidatorService,
+      policiesService,
+      userService
+    );
+    teacherFacade = TeacherFacadeFactory.create(
+      teacherRepository,
+      emailAuthValidatorService,
+      policiesService,
+      userService
+    );
+    studentFacade = StudentFacadeFactory.create(
+      studentRepository,
+      emailAuthValidatorService,
+      policiesService,
+      userService
+    );
+    workerFacade = WorkerFacadeFactory.create(
+      workerRepository,
+      emailAuthValidatorService,
+      policiesService,
+      userService
+    );
+
+    masterFacade = MasterFacadeFactory.create(
+      masterRepository,
+      emailAuthValidatorService,
+      policiesService,
+      userService
+    );
+    administratorFacade = AdministratorFacadeFactory.create(
+      administratorRepository,
+      emailAuthValidatorService,
+      policiesService,
+      userService
+    );
+    teacherFacade = TeacherFacadeFactory.create(
+      teacherRepository,
+      emailAuthValidatorService,
+      policiesService,
+      userService
+    );
+    studentFacade = StudentFacadeFactory.create(
+      studentRepository,
+      emailAuthValidatorService,
+      policiesService,
+      userService
+    );
+    workerFacade = WorkerFacadeFactory.create(
+      workerRepository,
+      emailAuthValidatorService,
+      policiesService,
+      userService
+    );
 
     const createAuthUserUsecase = new CreateAuthUser(
       authUserRepository,
@@ -77,6 +247,19 @@ describe('Authentication authorization management module end to end test', () =>
       tokenService,
       tenantService
     );
+    const checkRegistration = new CheckRegistration(
+      masterFacade,
+      administratorFacade,
+      teacherFacade,
+      studentFacade,
+      workerFacade
+    );
+    const addRoleUsecase = new AddRole(
+      authUserRepository,
+      tenantRepository,
+      tenantService,
+      policiesService
+    );
 
     const authUserController = new AuthUserController(
       createAuthUserUsecase,
@@ -89,7 +272,9 @@ describe('Authentication authorization management module end to end test', () =>
         policiesService
       ),
       deleteAuthUserUsecase,
-      loginAuthUserUsecase
+      loginAuthUserUsecase,
+      checkRegistration,
+      addRoleUsecase
     );
 
     const expressHttp = new ExpressAdapter();
@@ -345,12 +530,12 @@ describe('Authentication authorization management module end to end test', () =>
         it('should find a authUser', async () => {
           const { token, email } = await registerAndLoginUser(app);
 
-          const result = await supertest(app)
+          const response = await supertest(app)
             .get(`/authUser/${email}`)
             .set('authorization', `Bearer ${token}`);
 
-          expect(result.status).toBe(200);
-          expect(result.body.email).toBeDefined();
+          expect(response.status).toBe(200);
+          expect(response.body.email).toBeDefined();
         });
       });
 
@@ -358,7 +543,7 @@ describe('Authentication authorization management module end to end test', () =>
         it('should update a authUser', async () => {
           const { token } = await registerAndLoginUser(app);
 
-          const result = await supertest(app)
+          const response = await supertest(app)
             .patch('/authUser')
             .send({
               email: 'teste@teste.com.br',
@@ -366,8 +551,8 @@ describe('Authentication authorization management module end to end test', () =>
             })
             .set('authorization', token);
 
-          expect(result.status).toBe(200);
-          expect(result.body.email).toBeDefined();
+          expect(response.status).toBe(200);
+          expect(response.body.email).toBeDefined();
         });
       });
 
@@ -375,12 +560,12 @@ describe('Authentication authorization management module end to end test', () =>
         it('should delete a authUser', async () => {
           const { token, email } = await registerAndLoginUser(app);
 
-          const result = await supertest(app)
+          const response = await supertest(app)
             .delete(`/authUser/${email}`)
             .set('authorization', token);
 
-          expect(result.status).toBe(200);
-          expect(result.body.message).toBe('Operation completed successfully');
+          expect(response.status).toBe(200);
+          expect(response.body.message).toBe('Operation completed successfully');
         });
       });
 
@@ -389,6 +574,52 @@ describe('Authentication authorization management module end to end test', () =>
           const { token } = await registerAndLoginUser(app);
 
           expect(token).toBeDefined();
+        });
+      });
+
+      describe('POST /checkRegistration', () => {
+        it('should return true when exist the user', async () => {
+          const { token, masterId, email } = await registerAndLoginUser(app);
+          await registerNewUser('master', masterFacade, masterId, email);
+
+          const response = await supertest(app)
+            .post('/checkRegistration')
+            .set('authorization', `Bearer ${token}`);
+
+          expect(response.status).toBe(200);
+          expect(response.body.registered).toBeTruthy();
+        });
+        it('should return false when the user does not exist', async () => {
+          const { masterId, email, token } = await registerAndLoginUser(app);
+          await supertest(app)
+            .post('/register')
+            .set('authorization', `Bearer ${token}`)
+            .send({
+              email,
+              password: 'XpA2Jjd4',
+              role: 'administrator',
+            });
+          await registerNewUser('administrator', administratorFacade, masterId, email);
+
+          const response = await supertest(app)
+            .post('/checkRegistration')
+            .set('authorization', `Bearer ${token}`);
+
+          expect(response.status).toBe(200);
+          expect(response.body.registered).toBeFalsy();
+        });
+      });
+
+      describe('POST /authUser/add', () => {
+        it('should add role to tenant', async () => {
+          const { token, email } = await registerAndLoginUser(app);
+
+          const response = await supertest(app)
+            .post('/authUser/add')
+            .set('authorization', `Bearer ${token}`)
+            .send({ email, role: 'administrator' });
+
+          expect(response.status).toBe(204);
         });
       });
     });
