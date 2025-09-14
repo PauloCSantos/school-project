@@ -1,6 +1,8 @@
 import { InternalError } from '@/modules/@shared/application/errors/internal.error';
 import UserGateway from '../../application/gateway/user.gateway';
 import { UserBase, UserBaseProps } from '../entity/user.entity';
+import { CreationModeOptions } from '../@shared/enums/creation-mode.type';
+import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 
 export interface UserServiceInterface {
   findBaseUsers<T extends { userId: string }>(
@@ -8,8 +10,13 @@ export interface UserServiceInterface {
   ): Promise<ReadonlyArray<{ entity: T; user: UserBase }>>;
   findBaseUser(userId: string): Promise<UserBase | null>;
   findBaseUserByEmail(email: string): Promise<UserBase>;
-  getOrCreateUser(email: string, user: UserBaseProps): Promise<UserBase>;
   update(user: UserBase): Promise<UserBase>;
+  getOrCreateUser(email: string, creationMode: 'partial'): Promise<UserBase>;
+  getOrCreateUser(
+    email: string,
+    creationMode: 'full',
+    user: UserBaseProps
+  ): Promise<UserBase>;
 }
 
 export class UserService implements UserServiceInterface {
@@ -40,9 +47,30 @@ export class UserService implements UserServiceInterface {
     return user;
   }
 
-  async getOrCreateUser(email: string, userProps: UserBaseProps): Promise<UserBase> {
+  async getOrCreateUser(
+    email: string,
+    creationMode: CreationModeOptions,
+    userProps?: UserBaseProps
+  ): Promise<UserBase> {
     const user = await this.usersGateway.findByEmail(email);
+
+    if (creationMode === 'partial') {
+      if (!user) {
+        throw new ValidationError(
+          'A user must already be created for partial creation mode'
+        );
+      }
+      return user;
+    }
+
     if (user) return user;
+
+    if (!userProps) {
+      throw new ValidationError(
+        'UserBaseProps is required when creating a new user in full mode'
+      );
+    }
+
     const newUser = new UserBase(userProps);
     await this.usersGateway.create(newUser);
     return newUser;
