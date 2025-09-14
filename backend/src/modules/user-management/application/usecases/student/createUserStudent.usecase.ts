@@ -17,18 +17,14 @@ import { ConflictError } from '@/modules/@shared/application/errors/conflict.err
 export default class CreateUserStudent
   implements UseCaseInterface<CreateUserStudentInputDto, CreateUserStudentOutputDto>
 {
-  private _userStudentRepository: UserStudentGateway;
-
   constructor(
-    userStudentRepository: UserStudentGateway,
-    readonly emailValidatorService: EmailAuthValidator,
+    private readonly userStudentRepository: UserStudentGateway,
+    private readonly emailValidatorService: EmailAuthValidator,
     private readonly policiesService: PoliciesServiceInterface,
     private readonly userService: UserServiceInterface
-  ) {
-    this._userStudentRepository = userStudentRepository;
-  }
+  ) {}
   async execute(
-    { name, address, email, birthday, paymentYear }: CreateUserStudentInputDto,
+    input: CreateUserStudentInputDto,
     token: TokenData
   ): Promise<CreateUserStudentOutputDto> {
     await this.policiesService.verifyPolicies(
@@ -37,29 +33,37 @@ export default class CreateUserStudent
       token
     );
 
+    const { email, paymentYear, creationMode } = input;
+    let baseUser;
+
     if (!(await this.emailValidatorService.validate(email))) {
       throw new ConflictError('You must register this email before creating the user.');
     }
 
-    const baseUser = await this.userService.getOrCreateUser(email, {
-      email: email,
-      name: new Name(name),
-      address: new Address(address),
-      birthday: new Date(birthday),
-    });
+    if (creationMode === 'partial') {
+      baseUser = await this.userService.getOrCreateUser(email, 'partial');
+    } else {
+      const { name, address, birthday } = input;
+      baseUser = await this.userService.getOrCreateUser(email, 'full', {
+        email,
+        name: new Name(name),
+        address: new Address(address),
+        birthday: new Date(birthday),
+      });
+    }
 
     const userStudent = new UserStudent({
       userId: baseUser.id.value,
       paymentYear,
     });
 
-    const userVerification = await this._userStudentRepository.findByBaseUserId(
+    const userVerification = await this.userStudentRepository.findByBaseUserId(
       token.masterId,
       baseUser.id.value
     );
     if (userVerification) throw new ConflictError('User already exists');
 
-    const result = await this._userStudentRepository.create(token.masterId, userStudent);
+    const result = await this.userStudentRepository.create(token.masterId, userStudent);
 
     return { id: result };
   }

@@ -18,26 +18,14 @@ import { ConflictError } from '@/modules/@shared/application/errors/conflict.err
 export default class CreateUserTeacher
   implements UseCaseInterface<CreateUserTeacherInputDto, CreateUserTeacherOutputDto>
 {
-  private _userTeacherRepository: UserTeacherGateway;
-
   constructor(
-    userTeacherRepository: UserTeacherGateway,
-    readonly emailValidatorService: EmailAuthValidator,
+    private readonly userTeacherRepository: UserTeacherGateway,
+    private readonly emailValidatorService: EmailAuthValidator,
     private readonly policiesService: PoliciesServiceInterface,
     private readonly userService: UserServiceInterface
-  ) {
-    this._userTeacherRepository = userTeacherRepository;
-  }
+  ) {}
   async execute(
-    {
-      name,
-      address,
-      email,
-      birthday,
-      graduation,
-      salary,
-      academicDegrees,
-    }: CreateUserTeacherInputDto,
+    input: CreateUserTeacherInputDto,
     token: TokenData
   ): Promise<CreateUserTeacherOutputDto> {
     await this.policiesService.verifyPolicies(
@@ -46,16 +34,24 @@ export default class CreateUserTeacher
       token
     );
 
+    const { email, graduation, salary, academicDegrees, creationMode } = input;
+    let baseUser;
+
     if (!(await this.emailValidatorService.validate(email))) {
       throw new ConflictError('You must register this email before creating the user.');
     }
 
-    const baseUser = await this.userService.getOrCreateUser(email, {
-      email: email,
-      name: new Name(name),
-      address: new Address(address),
-      birthday: new Date(birthday),
-    });
+    if (creationMode === 'partial') {
+      baseUser = await this.userService.getOrCreateUser(email, 'partial');
+    } else {
+      const { name, address, birthday } = input;
+      baseUser = await this.userService.getOrCreateUser(email, 'full', {
+        email,
+        name: new Name(name),
+        address: new Address(address),
+        birthday: new Date(birthday),
+      });
+    }
 
     const userTeacher = new UserTeacher({
       userId: baseUser.id.value,
@@ -64,13 +60,13 @@ export default class CreateUserTeacher
       academicDegrees,
     });
 
-    const userVerification = await this._userTeacherRepository.findByBaseUserId(
+    const userVerification = await this.userTeacherRepository.findByBaseUserId(
       token.masterId,
       baseUser.id.value
     );
     if (userVerification) throw new ConflictError('User already exists');
 
-    const result = await this._userTeacherRepository.create(token.masterId, userTeacher);
+    const result = await this.userTeacherRepository.create(token.masterId, userTeacher);
 
     return { id: result };
   }
