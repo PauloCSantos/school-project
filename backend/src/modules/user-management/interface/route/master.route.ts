@@ -27,12 +27,24 @@ export class UserMasterRoute {
   ) {}
 
   public routes(): void {
-    const REQUIRED_FIELDS = ['name', 'address', 'email', 'birthday', 'cnpj'];
+    const REQUIRED_FIELDS = [
+      'name',
+      'address',
+      'email',
+      'birthday',
+      'cnpj',
+      'creationMode',
+    ];
     const REQUIRED_FIELD = ['id'];
+    const REQUIRED_FIELDS_PARTIAL = ['email', 'cnpj'];
 
     this.httpGateway.post('/user-master', this.createUserMaster.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(
+        FunctionCalledEnum.CREATE,
+        REQUIRED_FIELDS,
+        REQUIRED_FIELDS_PARTIAL
+      ),
     ]);
 
     this.httpGateway.get('/user-master/:id', this.findUserMaster.bind(this), [

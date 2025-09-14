@@ -37,8 +37,10 @@ export class UserAdministratorRoute {
       'birthday',
       'salary',
       'graduation',
+      'creationMode',
     ];
     const REQUIRED_FIELD = ['id'];
+    const REQUIRED_FIELDS_PARTIAL = ['email', 'salary', 'graduation'];
 
     this.httpGateway.get(
       '/users-administrator',
@@ -54,7 +56,11 @@ export class UserAdministratorRoute {
       this.createUserAdministrator.bind(this),
       [
         this.authMiddleware,
-        createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
+        createRequestMiddleware(
+          FunctionCalledEnum.CREATE,
+          REQUIRED_FIELDS,
+          REQUIRED_FIELDS_PARTIAL
+        ),
       ]
     );
 

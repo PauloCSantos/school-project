@@ -30,8 +30,16 @@ export class UserStudentRoute {
 
   public routes(): void {
     const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
-    const REQUIRED_FIELDS = ['name', 'address', 'email', 'birthday', 'paymentYear'];
+    const REQUIRED_FIELDS = [
+      'name',
+      'address',
+      'email',
+      'birthday',
+      'paymentYear',
+      'creationMode',
+    ];
     const REQUIRED_FIELD = ['id'];
+    const REQUIRED_FIELDS_PARTIAL = ['paymentYear'];
 
     this.httpGateway.get('/users-student', this.findAllUserStudents.bind(this), [
       this.authMiddleware,
@@ -40,7 +48,11 @@ export class UserStudentRoute {
 
     this.httpGateway.post('/user-student', this.createUserStudent.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(
+        FunctionCalledEnum.CREATE,
+        REQUIRED_FIELDS,
+        REQUIRED_FIELDS_PARTIAL
+      ),
     ]);
 
     this.httpGateway.get('/user-student/:id', this.findUserStudent.bind(this), [
