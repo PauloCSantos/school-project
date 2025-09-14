@@ -30,8 +30,16 @@ export class UserWorkerRoute {
 
   public routes(): void {
     const REQUIRED_FIELDS_ALL = ['quantity', 'offset'];
-    const REQUIRED_FIELDS = ['name', 'address', 'email', 'birthday', 'salary'];
+    const REQUIRED_FIELDS = [
+      'name',
+      'address',
+      'email',
+      'birthday',
+      'salary',
+      'creationMode',
+    ];
     const REQUIRED_FIELD = ['id'];
+    const REQUIRED_FIELDS_PARTIAL = ['salary'];
 
     this.httpGateway.get('/users-worker', this.findAllUserWorkers.bind(this), [
       this.authMiddleware,
@@ -40,7 +48,11 @@ export class UserWorkerRoute {
 
     this.httpGateway.post('/user-worker', this.createUserWorker.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(
+        FunctionCalledEnum.CREATE,
+        REQUIRED_FIELDS,
+        REQUIRED_FIELDS_PARTIAL
+      ),
     ]);
 
     this.httpGateway.get('/user-worker/:id', this.findUserWorker.bind(this), [

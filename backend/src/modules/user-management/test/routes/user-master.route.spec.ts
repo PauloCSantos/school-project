@@ -28,6 +28,7 @@ describe('UserMasterRoute with ExpressAdapter', () => {
     birthday: new Date('11-12-1995'),
     email: 'teste1@test.com',
     cnpj: '35.741.901/0001-58',
+    creationMode: 'full',
   };
 
   beforeEach(() => {
@@ -77,6 +78,7 @@ describe('UserMasterRoute with ExpressAdapter', () => {
         birthday: date,
         email: 'teste1@test.com',
         cnpj: '35.741.901/0001-58',
+        creationMode: 'full',
       };
 
       const createdId = new Id().value;

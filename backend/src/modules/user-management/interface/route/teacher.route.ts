@@ -38,8 +38,10 @@ export class UserTeacherRoute {
       'salary',
       'graduation',
       'academicDegrees',
+      'creationMode',
     ];
     const REQUIRED_FIELD = ['id'];
+    const REQUIRED_FIELDS_PARTIAL = ['graduation', 'salary', 'academicDegrees'];
 
     this.httpGateway.get('/users-teacher', this.findAllUserTeachers.bind(this), [
       this.authMiddleware,
@@ -48,7 +50,11 @@ export class UserTeacherRoute {
 
     this.httpGateway.post('/user-teacher', this.createUserTeacher.bind(this), [
       this.authMiddleware,
-      createRequestMiddleware(FunctionCalledEnum.CREATE, REQUIRED_FIELDS),
+      createRequestMiddleware(
+        FunctionCalledEnum.CREATE,
+        REQUIRED_FIELDS,
+        REQUIRED_FIELDS_PARTIAL
+      ),
     ]);
 
     this.httpGateway.get('/user-teacher/:id', this.findUserTeacher.bind(this), [

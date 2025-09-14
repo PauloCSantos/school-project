@@ -42,6 +42,8 @@ import {
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 import FindUserTeacherByBaseUser from '@/modules/user-management/application/usecases/teacher/findUserTeacherByBaseUser.usecase';
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
+import { UserCreationModeEnum } from '@/modules/user-management/domain/@shared/enums/creation-mode.enum';
+import { CreateUserTeacherInputDto } from '@/modules/user-management/application/dto/teacher-usecase.dto';
 
 describe('User Teacher facade integration test', () => {
   let authUserRepository: AuthUserGateway;
@@ -70,7 +72,7 @@ describe('User Teacher facade integration test', () => {
 
   let policiesService: PoliciesServiceInterface;
 
-  const input = {
+  const input: CreateUserTeacherInputDto = {
     name: {
       firstName: 'John',
       lastName: 'Doe',
@@ -90,8 +92,9 @@ describe('User Teacher facade integration test', () => {
     email: 'teste@teste.com',
     graduation: 'Math',
     academicDegrees: 'Msc',
+    creationMode: UserCreationModeEnum.FULL,
   };
-  const input2 = {
+  const input2: CreateUserTeacherInputDto = {
     name: {
       firstName: 'Marie',
       lastName: 'Doe',
@@ -111,8 +114,9 @@ describe('User Teacher facade integration test', () => {
     email: 'teste2@test.com',
     graduation: 'Spanish',
     academicDegrees: 'Msc',
+    creationMode: UserCreationModeEnum.FULL,
   };
-  const input3 = {
+  const input3: CreateUserTeacherInputDto = {
     name: {
       firstName: 'Paul',
       lastName: 'MCourtney',
@@ -132,6 +136,7 @@ describe('User Teacher facade integration test', () => {
     email: 'teste3@test.com',
     graduation: 'Japanese',
     academicDegrees: 'Dr.',
+    creationMode: UserCreationModeEnum.FULL,
   };
   const token: TokenData = {
     email: 'teste@teste.com',

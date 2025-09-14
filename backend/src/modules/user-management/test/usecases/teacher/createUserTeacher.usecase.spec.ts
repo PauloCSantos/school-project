@@ -2,7 +2,9 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { CreateUserTeacherInputDto } from '@/modules/user-management/application/dto/teacher-usecase.dto';
 import CreateUserTeacher from '@/modules/user-management/application/usecases/teacher/createUserTeacher.usecase';
+import { UserCreationModeEnum } from '@/modules/user-management/domain/@shared/enums/creation-mode.enum';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
@@ -50,7 +52,7 @@ describe('createUserTeacher usecase unit test', () => {
     masterId: new Id().value,
   };
 
-  const input = {
+  const input: CreateUserTeacherInputDto = {
     name: {
       firstName: 'John',
       lastName: 'Doe',
@@ -70,6 +72,7 @@ describe('createUserTeacher usecase unit test', () => {
     email: 'teste1@test.com',
     graduation: 'Math',
     academicDegrees: 'Msc',
+    creationMode: UserCreationModeEnum.FULL,
   };
 
   const userBase = new UserBase({
@@ -114,6 +117,43 @@ describe('createUserTeacher usecase unit test', () => {
 
   describe('On success', () => {
     it('should create a user teacher', async () => {
+      const userTeacherRepository = MockRepository();
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const userService = MockUserService();
+
+      userTeacherRepository.findByBaseUserId.mockResolvedValue(null);
+      userService.getOrCreateUser.mockResolvedValue(userBase);
+      userTeacherRepository.create.mockResolvedValue({
+        id: userTeacher.id.value,
+      });
+
+      const usecase = new CreateUserTeacher(
+        userTeacherRepository,
+        emailAuthValidatorService,
+        policieService,
+        userService
+      );
+      const result = await usecase.execute(input, token);
+
+      expect(userTeacherRepository.findByBaseUserId).toHaveBeenCalledWith(
+        token.masterId,
+        expect.any(String)
+      );
+      expect(userTeacherRepository.create).toHaveBeenCalled();
+      expect(result).toBeDefined();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(input.email);
+    });
+
+    it('should create a user teacher with creationMode equals partial', async () => {
+      const input: CreateUserTeacherInputDto = {
+        email: userBase.email,
+        salary: {
+          salary: 5000,
+        },
+        graduation: 'Math',
+        academicDegrees: 'Msc',
+        creationMode: UserCreationModeEnum.PARTIAL,
+      };
       const userTeacherRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
       const userService = MockUserService();

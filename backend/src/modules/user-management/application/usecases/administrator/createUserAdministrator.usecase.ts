@@ -19,25 +19,14 @@ export default class CreateUserAdministrator
   implements
     UseCaseInterface<CreateUserAdministratorInputDto, CreateUserAdministratorOutputDto>
 {
-  private _userAdministratorRepository: UserAdministratorGateway;
-
   constructor(
-    userAdministratorRepository: UserAdministratorGateway,
+    private readonly userAdministratorRepository: UserAdministratorGateway,
     private readonly emailValidatorService: EmailAuthValidator,
     private readonly policiesService: PoliciesServiceInterface,
     private readonly userService: UserServiceInterface
-  ) {
-    this._userAdministratorRepository = userAdministratorRepository;
-  }
+  ) {}
   async execute(
-    {
-      name,
-      email,
-      address,
-      birthday,
-      graduation,
-      salary,
-    }: CreateUserAdministratorInputDto,
+    input: CreateUserAdministratorInputDto,
     token: TokenData
   ): Promise<CreateUserAdministratorOutputDto> {
     await this.policiesService.verifyPolicies(
@@ -46,16 +35,24 @@ export default class CreateUserAdministrator
       token
     );
 
+    const { email, graduation, salary, creationMode } = input;
+    let baseUser;
+
     if (!(await this.emailValidatorService.validate(email))) {
       throw new ConflictError('You must register this email before creating the user.');
     }
 
-    const baseUser = await this.userService.getOrCreateUser(email, {
-      email: email,
-      name: new Name(name),
-      address: new Address(address),
-      birthday: new Date(birthday),
-    });
+    if (creationMode === 'partial') {
+      baseUser = await this.userService.getOrCreateUser(email, 'partial');
+    } else {
+      const { name, address, birthday } = input;
+      baseUser = await this.userService.getOrCreateUser(email, 'full', {
+        email,
+        name: new Name(name),
+        address: new Address(address),
+        birthday: new Date(birthday),
+      });
+    }
 
     const userAdministrator = new UserAdministrator({
       userId: baseUser.id.value,
@@ -63,13 +60,13 @@ export default class CreateUserAdministrator
       salary: new Salary(salary),
     });
 
-    const userVerification = await this._userAdministratorRepository.findByBaseUserId(
+    const existing = await this.userAdministratorRepository.findByBaseUserId(
       token.masterId,
       baseUser.id.value
     );
-    if (userVerification) throw new ConflictError('User already exists');
+    if (existing) throw new ConflictError('User already exists');
 
-    const result = await this._userAdministratorRepository.create(
+    const result = await this.userAdministratorRepository.create(
       token.masterId,
       userAdministrator
     );

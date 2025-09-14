@@ -2,7 +2,9 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { CreateUserStudentInputDto } from '@/modules/user-management/application/dto/student-usecase.dto';
 import CreateUserStudent from '@/modules/user-management/application/usecases/student/createUserStudent.usecase';
+import { UserCreationModeEnum } from '@/modules/user-management/domain/@shared/enums/creation-mode.enum';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import UserStudent from '@/modules/user-management/domain/entity/student.entity';
@@ -49,7 +51,7 @@ describe('createUserStudent usecase unit test', () => {
     masterId: new Id().value,
   };
 
-  const input = {
+  const input: CreateUserStudentInputDto = {
     name: {
       firstName: 'John',
       lastName: 'Doe',
@@ -65,6 +67,7 @@ describe('createUserStudent usecase unit test', () => {
     birthday: new Date('11-12-1995'),
     email: 'teste1@test.com',
     paymentYear: 20000,
+    creationMode: UserCreationModeEnum.FULL,
   };
 
   const userBase = new UserBase({
@@ -107,6 +110,37 @@ describe('createUserStudent usecase unit test', () => {
 
   describe('On success', () => {
     it('should create a user student', async () => {
+      const userStudentRepository = MockRepository();
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const userService = MockUserService();
+
+      userStudentRepository.create.mockResolvedValue(userStudent);
+      userStudentRepository.findByBaseUserId.mockResolvedValue(null);
+      userService.getOrCreateUser.mockResolvedValue(userBase);
+
+      const usecase = new CreateUserStudent(
+        userStudentRepository,
+        emailAuthValidatorService,
+        policieService,
+        userService
+      );
+      const result = await usecase.execute(input, token);
+
+      expect(userStudentRepository.findByBaseUserId).toHaveBeenCalledWith(
+        token.masterId,
+        expect.any(String)
+      );
+      expect(userStudentRepository.create).toHaveBeenCalled();
+      expect(result).toBeDefined();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(input.email);
+    });
+
+    it('should create a user student with creationMode equals partial', async () => {
+      const input: CreateUserStudentInputDto = {
+        email: userBase.email,
+        paymentYear: 4000,
+        creationMode: UserCreationModeEnum.PARTIAL,
+      };
       const userStudentRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
       const userService = MockUserService();

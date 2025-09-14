@@ -2,7 +2,9 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { CreateUserAdministratorInputDto } from '@/modules/user-management/application/dto/administrator-usecase.dto';
 import CreateUserAdministrator from '@/modules/user-management/application/usecases/administrator/createUserAdministrator.usecase';
+import { UserCreationModeEnum } from '@/modules/user-management/domain/@shared/enums/creation-mode.enum';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
@@ -50,7 +52,7 @@ describe('createUserAdministrator usecase unit test', () => {
     masterId: new Id().value,
   };
 
-  const input = {
+  const input: CreateUserAdministratorInputDto = {
     name: {
       firstName: 'John',
       lastName: 'Doe',
@@ -69,7 +71,9 @@ describe('createUserAdministrator usecase unit test', () => {
     birthday: new Date('11-12-1995'),
     email: 'teste1@test.com',
     graduation: 'Math',
+    creationMode: UserCreationModeEnum.FULL,
   };
+
   const baseUser = new UserBase({
     name: new Name(input.name),
     address: new Address(input.address),
@@ -110,7 +114,42 @@ describe('createUserAdministrator usecase unit test', () => {
   });
 
   describe('On success', () => {
-    it('should create a user administrator', async () => {
+    it('should create a user administrator with creationMode equals full', async () => {
+      const userAdministratorRepository = MockRepository();
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const userService = MockUserService();
+
+      userAdministratorRepository.findByBaseUserId.mockResolvedValue(null);
+      userAdministratorRepository.create.mockResolvedValue({ id: new Id().value });
+      userService.getOrCreateUser.mockResolvedValue(baseUser);
+
+      const usecase = new CreateUserAdministrator(
+        userAdministratorRepository,
+        emailAuthValidatorService,
+        policieService,
+        userService
+      );
+
+      const result = await usecase.execute(input, token);
+
+      expect(userAdministratorRepository.findByBaseUserId).toHaveBeenCalledWith(
+        token.masterId,
+        baseUser.id.value
+      );
+      expect(userAdministratorRepository.create).toHaveBeenCalled();
+      expect(result).toBeDefined();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(baseUser.email);
+    });
+
+    it('should create a user administrator with creationMode equals partial', async () => {
+      const input: CreateUserAdministratorInputDto = {
+        email: baseUser.email,
+        salary: {
+          salary: 5000,
+        },
+        graduation: 'Math',
+        creationMode: UserCreationModeEnum.PARTIAL,
+      };
       const userAdministratorRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
       const userService = MockUserService();

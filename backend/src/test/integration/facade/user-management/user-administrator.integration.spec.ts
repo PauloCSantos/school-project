@@ -41,6 +41,8 @@ import {
 } from '@/modules/user-management/domain/services/user.service';
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 import FindUserAdministratorByBaseUser from '@/modules/user-management/application/usecases/administrator/findUserAdministratorByBaseUser.usecase';
+import { UserCreationModeEnum } from '@/modules/user-management/domain/@shared/enums/creation-mode.enum';
+import { CreateUserAdministratorInputDto } from '@/modules/user-management/application/dto/administrator-usecase.dto';
 
 describe('User Administrator facade integration test', () => {
   let authUserRepository: AuthUserGateway;
@@ -68,7 +70,7 @@ describe('User Administrator facade integration test', () => {
   let findUserAdministratorByBaseUser: FindUserAdministratorByBaseUser;
   let facadeAdministrator: AdministratorFacade;
 
-  const input = {
+  const input: CreateUserAdministratorInputDto = {
     name: {
       firstName: 'John',
       lastName: 'Doe',
@@ -87,8 +89,9 @@ describe('User Administrator facade integration test', () => {
     birthday: new Date('11-12-1995'),
     email: 'teste@teste.com',
     graduation: 'Math',
+    creationMode: UserCreationModeEnum.FULL,
   };
-  const input2 = {
+  const input2: CreateUserAdministratorInputDto = {
     name: {
       firstName: 'Marie',
       lastName: 'Doe',
@@ -107,8 +110,9 @@ describe('User Administrator facade integration test', () => {
     birthday: new Date('11-12-1995'),
     email: 'teste2@test.com',
     graduation: 'Spanish',
+    creationMode: UserCreationModeEnum.FULL,
   };
-  const input3 = {
+  const input3: CreateUserAdministratorInputDto = {
     name: {
       firstName: 'Paul',
       lastName: 'MCourtney',
@@ -127,6 +131,7 @@ describe('User Administrator facade integration test', () => {
     birthday: new Date('11-12-1995'),
     email: 'teste3@test.com',
     graduation: 'Japanese',
+    creationMode: UserCreationModeEnum.FULL,
   };
   const token: TokenData = {
     email: 'teste@teste.com',

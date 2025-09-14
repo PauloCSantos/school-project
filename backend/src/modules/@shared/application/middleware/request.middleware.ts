@@ -6,6 +6,7 @@ import {
   HttpResponseData,
 } from '../../infraestructure/http/http.interface';
 import { ErrorBody } from '../../type/sharedTypes';
+import { InternalError } from '../errors/internal.error';
 
 const buildError = (
   status: HttpStatus,
@@ -22,7 +23,8 @@ const buildError = (
 export default class RequestMiddleware implements HttpMiddleware<any, any, any, any> {
   constructor(
     private readonly fn: FunctionCalledEnum,
-    private readonly requiredFields: string[]
+    private readonly requiredFields: string[],
+    private readonly requiredFieldsPartial?: string[]
   ) {}
 
   async handle(
@@ -94,6 +96,19 @@ export default class RequestMiddleware implements HttpMiddleware<any, any, any, 
       }
 
       case FunctionCalledEnum.CREATE: {
+        if (req.body?.creationMode === 'partial') {
+          if (!this.requiredFieldsPartial) {
+            throw new InternalError('Missing partial fields');
+          }
+          for (const field of this.requiredFieldsPartial) {
+            if (req.body?.[field] === undefined) {
+              return buildError(HttpStatus.BAD_REQUEST, 'Missing required field', {
+                field,
+              });
+            }
+          }
+          break;
+        }
         for (const field of this.requiredFields) {
           if (req.body?.[field] === undefined) {
             return buildError(HttpStatus.BAD_REQUEST, 'Missing required field', {
@@ -180,7 +195,8 @@ export default class RequestMiddleware implements HttpMiddleware<any, any, any, 
 
 export function createRequestMiddleware(
   fn: FunctionCalledEnum,
-  requiredFields: string[]
+  requiredFields: string[],
+  requiredFieldsPartial?: string[]
 ): HttpMiddleware<any, any, any, any> {
-  return new RequestMiddleware(fn, requiredFields);
+  return new RequestMiddleware(fn, requiredFields, requiredFieldsPartial);
 }

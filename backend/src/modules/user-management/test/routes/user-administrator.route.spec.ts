@@ -119,6 +119,7 @@ describe('UserAdministratorRoute with ExpressAdapter', () => {
         birthday: date,
         email: 'teste1@test.com',
         graduation: 'Math',
+        creationMode: 'full',
       };
       const createdId = new Id().value;
       userAdministratorController.create.mockResolvedValue({ id: createdId });

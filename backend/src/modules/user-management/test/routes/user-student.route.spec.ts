@@ -112,6 +112,7 @@ describe('UserStudentRoute with ExpressAdapter', () => {
         paymentYear: 50000,
         birthday: date,
         email: 'teste1@test.com',
+        creationMode: 'full',
       };
       const createdId = new Id().value;
       userStudentController.create.mockResolvedValue({ id: createdId });

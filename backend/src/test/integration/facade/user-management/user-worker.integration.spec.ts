@@ -41,6 +41,8 @@ import {
 } from '@/modules/user-management/domain/services/user.service';
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 import FindUserWorkerByBaseUser from '@/modules/user-management/application/usecases/worker/findUserTeacherByBaseUser.usecase';
+import { UserCreationModeEnum } from '@/modules/user-management/domain/@shared/enums/creation-mode.enum';
+import { CreateUserWorkerInputDto } from '@/modules/user-management/application/dto/worker-usecase.dto';
 
 describe('User Worker facade integration test', () => {
   let authUserRepository: AuthUserGateway;
@@ -69,7 +71,7 @@ describe('User Worker facade integration test', () => {
 
   let policiesService: PoliciesServiceInterface;
 
-  const input = {
+  const input: CreateUserWorkerInputDto = {
     name: {
       firstName: 'John',
       lastName: 'Doe',
@@ -87,8 +89,9 @@ describe('User Worker facade integration test', () => {
     },
     birthday: new Date('11-12-1995'),
     email: 'teste@teste.com',
+    creationMode: UserCreationModeEnum.FULL,
   };
-  const input2 = {
+  const input2: CreateUserWorkerInputDto = {
     name: {
       firstName: 'Marie',
       lastName: 'Doe',
@@ -106,8 +109,9 @@ describe('User Worker facade integration test', () => {
     },
     birthday: new Date('11-12-1995'),
     email: 'teste2@test.com',
+    creationMode: UserCreationModeEnum.FULL,
   };
-  const input3 = {
+  const input3: CreateUserWorkerInputDto = {
     name: {
       firstName: 'Paul',
       lastName: 'MCourtney',
@@ -125,6 +129,7 @@ describe('User Worker facade integration test', () => {
     },
     birthday: new Date('11-12-1995'),
     email: 'teste3@test.com',
+    creationMode: UserCreationModeEnum.FULL,
   };
   const token: TokenData = {
     email: 'teste@teste.com',

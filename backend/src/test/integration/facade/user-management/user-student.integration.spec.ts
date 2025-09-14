@@ -41,6 +41,8 @@ import {
 } from '@/modules/user-management/domain/services/user.service';
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 import FindUserStudentByBaseUser from '@/modules/user-management/application/usecases/student/findUserStudentByBaseUser.usecase';
+import { UserCreationModeEnum } from '@/modules/user-management/domain/@shared/enums/creation-mode.enum';
+import { CreateUserStudentInputDto } from '@/modules/user-management/application/dto/student-usecase.dto';
 
 describe('User Student facade integration test', () => {
   let authUserRepository: AuthUserGateway;
@@ -69,7 +71,7 @@ describe('User Student facade integration test', () => {
 
   let policiesService: PoliciesServiceInterface;
 
-  const input = {
+  const input: CreateUserStudentInputDto = {
     name: {
       firstName: 'John',
       lastName: 'Doe',
@@ -85,8 +87,9 @@ describe('User Student facade integration test', () => {
     birthday: new Date('11-12-1995'),
     email: 'teste@teste.com',
     paymentYear: 20000,
+    creationMode: UserCreationModeEnum.FULL,
   };
-  const input2 = {
+  const input2: CreateUserStudentInputDto = {
     name: {
       firstName: 'Marie',
       lastName: 'Doe',
@@ -102,8 +105,9 @@ describe('User Student facade integration test', () => {
     birthday: new Date('11-12-1995'),
     email: 'teste2@test.com',
     paymentYear: 28000,
+    creationMode: UserCreationModeEnum.FULL,
   };
-  const input3 = {
+  const input3: CreateUserStudentInputDto = {
     name: {
       firstName: 'Paul',
       lastName: 'MCourtney',
@@ -119,6 +123,7 @@ describe('User Student facade integration test', () => {
     birthday: new Date('11-12-1995'),
     email: 'teste3@test.com',
     paymentYear: 32000,
+    creationMode: UserCreationModeEnum.FULL,
   };
   const token: TokenData = {
     email: 'teste@teste.com',
