@@ -33,7 +33,7 @@ export interface ICreateUserOutput {
   id: string;
 }
 
-export interface IUserInput {
+export interface IUpdateUserInput {
   id: string;
   name?: { firstName?: string; middleName?: string; lastName?: string };
   address?: {
