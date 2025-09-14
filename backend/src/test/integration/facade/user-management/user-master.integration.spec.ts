@@ -1,20 +1,14 @@
-import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsers, TokenData } from '@/modules/@shared/type/sharedTypes';
-
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import MemoryMasterRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/master.repository';
-
 import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
-
 import CreateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/create-user.usecase';
 import DeleteAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/delete-user.usecase';
 import FindAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/find-user.usecase';
 import UpdateAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/update-user.usecase';
 import LoginAuthUser from '@/modules/authentication-authorization-management/application/usecases/authUser/login-user.usecase';
 import AuthUserFacade from '@/modules/authentication-authorization-management/application/facade/facade/user.facade';
-
 import CreateUserMaster from '@/modules/user-management/application/usecases/master/createUserMaster.usecase';
-
 import FindUserMaster from '@/modules/user-management/application/usecases/master/findUserMaster.usecase';
 import UpdateUserMaster from '@/modules/user-management/application/usecases/master/updateUserMaster.usecase';
 import MasterFacade from '@/modules/user-management/application/facade/facade/master.facade';
@@ -42,6 +36,8 @@ import {
 } from '@/modules/user-management/domain/services/user.service';
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 import FindUserMasterByBaseUser from '@/modules/user-management/application/usecases/master/findUserMasterByBaseUser.usecase';
+import { UserCreationModeEnum } from '@/modules/user-management/domain/@shared/enums/creation-mode.enum';
+import { CreateUserMasterInputDto } from '@/modules/user-management/application/dto/master-usecase.dto';
 
 describe('User master facade integration test', () => {
   let authUserRepository: AuthUserGateway;
@@ -67,8 +63,7 @@ describe('User master facade integration test', () => {
   let findUserMasterByBaseUser: FindUserMasterByBaseUser;
   let facadeMaster: MasterFacade;
 
-  const input = {
-    id: new Id().value,
+  const input: CreateUserMasterInputDto = {
     name: {
       firstName: 'John',
       lastName: 'Doe',
@@ -84,6 +79,7 @@ describe('User master facade integration test', () => {
     birthday: new Date('11-12-1995'),
     email: 'teste@teste.com',
     cnpj: '35.741.901/0001-58',
+    creationMode: UserCreationModeEnum.FULL,
   };
   const token: TokenData = {
     email: 'teste@teste.com',

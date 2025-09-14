@@ -355,6 +355,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               graduation: 'Math',
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(422);
@@ -417,6 +418,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               graduation: 'Math',
+              creationMode: 'full',
             });
 
           const response = await supertest(app)
@@ -484,6 +486,7 @@ describe('User management module end to end test', () => {
               },
               birthday: '11-12-1995',
               graduation: 'Math',
+              creationMode: 'full',
             });
 
           const response = await supertest(app)
@@ -539,6 +542,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               graduation: 'Math',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -595,6 +599,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               graduation: 'Math',
+              creationMode: 'full',
             });
 
           const response = await supertest(app)
@@ -633,6 +638,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               graduation: 'Math',
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(201);
@@ -665,6 +671,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste2@test.com',
               graduation: 'Math',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -712,6 +719,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               graduation: 'Math',
+              creationMode: 'full',
             });
           await supertest(app)
             .post('/user-administrator')
@@ -735,6 +743,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste2@test.com',
               graduation: 'Spanish',
+              creationMode: 'full',
             });
 
           const response = await supertest(app).get('/users-administrator').set(headers);
@@ -770,6 +779,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               graduation: 'Math',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -818,6 +828,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               graduation: 'Math',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -855,6 +866,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(422);
@@ -913,6 +925,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
+              creationMode: 'full',
             });
 
           const response = await supertest(app).get(`/user-master/123`).set(headers);
@@ -987,6 +1000,7 @@ describe('User management module end to end test', () => {
               },
               birthday: '11-12-1995',
               cnpj: '35.741.901/0001-58',
+              creationMode: 'full',
             });
           const response = await supertest(app)
             .patch('/user-master')
@@ -1023,6 +1037,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -1061,6 +1076,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(201);
@@ -1091,6 +1107,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste1@test.com',
               cnpj: '35.741.901/0001-58',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -1124,6 +1141,7 @@ describe('User management module end to end test', () => {
               birthday: '11-12-1995',
               email: 'teste2@test.com',
               cnpj: '35.741.901/0001-58',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -1163,6 +1181,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
               paymentYear: '0',
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(422);
@@ -1211,6 +1230,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
               paymentYear: 20000,
+              creationMode: 'full',
             });
 
           const response = await supertest(app).get(`/user-student/123`).set(headers);
@@ -1307,6 +1327,7 @@ describe('User management module end to end test', () => {
               },
               birthday: new Date('11-12-1995'),
               paymentYear: 20000,
+              creationMode: 'full',
             });
 
           const response = await supertest(app)
@@ -1344,6 +1365,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
               paymentYear: 20000,
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -1380,6 +1402,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
               paymentYear: 20000,
+              creationMode: 'full',
             });
 
           const response = await supertest(app).delete(`/user-student/123`).set(headers);
@@ -1413,6 +1436,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
               paymentYear: 20000,
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(201);
@@ -1442,6 +1466,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
               paymentYear: 20000,
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -1483,6 +1508,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
               paymentYear: 20000,
+              creationMode: 'full',
             });
           await supertest(app)
             .post('/user-student')
@@ -1503,6 +1529,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste2@test.com',
               paymentYear: 20000,
+              creationMode: 'full',
             });
 
           const response = await supertest(app).get('/users-student').set(headers);
@@ -1535,6 +1562,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
               paymentYear: 20000,
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -1557,6 +1585,7 @@ describe('User management module end to end test', () => {
               },
               email: 'teste1@test.com',
               paymentYear: 20000,
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(200);
@@ -1586,6 +1615,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
               paymentYear: 20000,
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -1627,6 +1657,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Mh',
               academicDegrees: 'Mc',
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(422);
@@ -1690,6 +1721,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
               academicDegrees: 'Msc',
+              creationMode: 'full',
             });
 
           const response = await supertest(app).get(`/user-teacher/123`).set(headers);
@@ -1779,6 +1811,7 @@ describe('User management module end to end test', () => {
               birthday: new Date('11-12-1995'),
               graduation: 'Math',
               academicDegrees: 'Msc',
+              creationMode: 'full',
             });
 
           const response = await supertest(app)
@@ -1820,6 +1853,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
               academicDegrees: 'Msc',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -1861,6 +1895,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
               academicDegrees: 'Msc',
+              creationMode: 'full',
             });
           const response = await supertest(app).delete(`/user-teacher/123`).set(headers);
 
@@ -1897,6 +1932,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
               academicDegrees: 'Msc',
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(201);
@@ -1930,6 +1966,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
               academicDegrees: 'Msc',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -1976,6 +2013,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
               academicDegrees: 'Msc',
+              creationMode: 'full',
             });
           await supertest(app)
             .post('/user-teacher')
@@ -2000,6 +2038,7 @@ describe('User management module end to end test', () => {
               email: 'teste2@test.com',
               graduation: 'Math',
               academicDegrees: 'Msc',
+              creationMode: 'full',
             });
 
           const response = await supertest(app).get('/users-teacher').set(headers);
@@ -2036,6 +2075,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
               academicDegrees: 'Msc',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -2063,6 +2103,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
               academicDegrees: 'Msc',
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(200);
@@ -2096,6 +2137,7 @@ describe('User management module end to end test', () => {
               email: 'teste1@test.com',
               graduation: 'Math',
               academicDegrees: 'Msc',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -2135,6 +2177,7 @@ describe('User management module end to end test', () => {
               },
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(422);
@@ -2185,6 +2228,7 @@ describe('User management module end to end test', () => {
               },
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
+              creationMode: 'full',
             });
 
           const response = await supertest(app).get(`/user-worker/123`).set(headers);
@@ -2283,6 +2327,7 @@ describe('User management module end to end test', () => {
                 salary: 5000,
               },
               birthday: new Date('11-12-1995'),
+              creationMode: 'full',
             });
 
           const response = await supertest(app)
@@ -2322,6 +2367,7 @@ describe('User management module end to end test', () => {
               },
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -2363,6 +2409,7 @@ describe('User management module end to end test', () => {
               },
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
+              creationMode: 'full',
             });
 
           const response = await supertest(app).delete(`/user-worker/123`).set(headers);
@@ -2398,6 +2445,7 @@ describe('User management module end to end test', () => {
               },
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(201);
@@ -2429,6 +2477,7 @@ describe('User management module end to end test', () => {
               },
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -2473,6 +2522,7 @@ describe('User management module end to end test', () => {
               },
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
+              creationMode: 'full',
             });
           await supertest(app)
             .post('/user-worker')
@@ -2495,6 +2545,7 @@ describe('User management module end to end test', () => {
               },
               birthday: new Date('11-12-1995'),
               email: 'teste2@test.com',
+              creationMode: 'full',
             });
 
           const response = await supertest(app).get('/users-worker').set(headers);
@@ -2529,6 +2580,7 @@ describe('User management module end to end test', () => {
               },
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
@@ -2554,6 +2606,7 @@ describe('User management module end to end test', () => {
               },
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
+              creationMode: 'full',
             });
 
           expect(response.status).toBe(200);
@@ -2585,6 +2638,7 @@ describe('User management module end to end test', () => {
               },
               birthday: new Date('11-12-1995'),
               email: 'teste1@test.com',
+              creationMode: 'full',
             });
           const id = created.body.id;
 
