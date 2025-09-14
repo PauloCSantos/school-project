@@ -7,6 +7,8 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
+import { CreateUserMasterInputDto } from '@/modules/user-management/application/dto/master-usecase.dto';
+import { UserCreationModeEnum } from '@/modules/user-management/domain/@shared/enums/creation-mode.enum';
 
 describe('createUserMaster usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -47,8 +49,7 @@ describe('createUserMaster usecase unit test', () => {
     masterId: new Id().value,
   };
 
-  const input = {
-    id: new Id().value,
+  const input: CreateUserMasterInputDto = {
     name: {
       firstName: 'John',
       lastName: 'Doe',
@@ -64,6 +65,7 @@ describe('createUserMaster usecase unit test', () => {
     birthday: new Date('11-12-1995'),
     email: 'teste1@test.com',
     cnpj: '35.741.901/0001-58',
+    creationMode: UserCreationModeEnum.FULL,
   };
 
   const userBase = new UserBase({
@@ -85,7 +87,6 @@ describe('createUserMaster usecase unit test', () => {
   });
 
   const userMaster = new UserMaster({
-    id: new Id(input.id).value,
     userId: userBase.id.value,
     cnpj: input.cnpj,
   });
@@ -125,6 +126,40 @@ describe('createUserMaster usecase unit test', () => {
 
   describe('On success', () => {
     it('should create a user master', async () => {
+      const userMasterRepository = MockRepository();
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const userService = MockUserService();
+
+      userService.getOrCreateUser.mockResolvedValue(userBase);
+      userMasterRepository.findByBaseUserId.mockResolvedValue(null);
+      userMasterRepository.create.mockResolvedValue({
+        id: userMaster.id.value,
+      });
+
+      const usecase = new CreateUserMaster(
+        userMasterRepository,
+        emailAuthValidatorService,
+        policieService,
+        userService
+      );
+      const result = await usecase.execute({ ...input }, token);
+
+      expect(userMasterRepository.findByBaseUserId).toHaveBeenCalledWith(
+        token.masterId,
+        expect.any(String)
+      );
+      expect(userMasterRepository.create).toHaveBeenCalled();
+      expect(result).toBeDefined();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(input.email);
+    });
+
+    it('should create a user master with creationMode equals partial', async () => {
+      const input: CreateUserMasterInputDto = {
+        email: userBase.email,
+        cnpj: '35.741.901/0001-58',
+        creationMode: UserCreationModeEnum.PARTIAL,
+      };
+
       const userMasterRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
       const userService = MockUserService();

@@ -120,6 +120,7 @@ describe('UserTeacherRoute with ExpressAdapter', () => {
         email: 'teste1@test.com',
         graduation: 'Math',
         academicDegrees: 'Msc',
+        creationMode: 'full',
       };
       const createdId = new Id().value;
       userTeacherController.create.mockResolvedValue({ id: createdId });

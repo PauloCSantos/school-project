@@ -2,7 +2,9 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import Id from '@/modules/@shared/domain/value-object/id.value-object';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { TokenData } from '@/modules/@shared/type/sharedTypes';
+import { CreateUserWorkerInputDto } from '@/modules/user-management/application/dto/worker-usecase.dto';
 import CreateUserWorker from '@/modules/user-management/application/usecases/worker/createUserWorker.usecase';
+import { UserCreationModeEnum } from '@/modules/user-management/domain/@shared/enums/creation-mode.enum';
 import Address from '@/modules/user-management/domain/@shared/value-object/address.value-object';
 import Name from '@/modules/user-management/domain/@shared/value-object/name.value-object';
 import Salary from '@/modules/user-management/domain/@shared/value-object/salary.value-object';
@@ -50,7 +52,7 @@ describe('createUserWorker usecase unit test', () => {
     masterId: new Id().value,
   };
 
-  const input = {
+  const input: CreateUserWorkerInputDto = {
     name: {
       firstName: 'John',
       lastName: 'Doe',
@@ -68,6 +70,7 @@ describe('createUserWorker usecase unit test', () => {
     },
     birthday: new Date('11-12-1995'),
     email: 'teste1@test.com',
+    creationMode: UserCreationModeEnum.FULL,
   };
 
   const userBase = new UserBase({
@@ -110,6 +113,41 @@ describe('createUserWorker usecase unit test', () => {
 
   describe('On success', () => {
     it('should create a user worker', async () => {
+      const userWorkerRepository = MockRepository();
+      const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const userService = MockUserService();
+
+      userService.getOrCreateUser.mockResolvedValue(userBase);
+      userWorkerRepository.findByBaseUserId.mockResolvedValue(null);
+      userWorkerRepository.create.mockResolvedValue({
+        id: userWorker.id.value,
+      });
+
+      const usecase = new CreateUserWorker(
+        userWorkerRepository,
+        emailAuthValidatorService,
+        policieService,
+        userService
+      );
+      const result = await usecase.execute(input, token);
+
+      expect(userWorkerRepository.findByBaseUserId).toHaveBeenCalledWith(
+        token.masterId,
+        expect.any(String)
+      );
+      expect(userWorkerRepository.create).toHaveBeenCalled();
+      expect(result).toBeDefined();
+      expect(emailAuthValidatorService.validate).toHaveBeenCalledWith(input.email);
+    });
+
+    it('should create a user worker with creationMode equals partial', async () => {
+      const input: CreateUserWorkerInputDto = {
+        email: userBase.email,
+        salary: {
+          salary: 5000,
+        },
+        creationMode: UserCreationModeEnum.PARTIAL,
+      };
       const userWorkerRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
       const userService = MockUserService();

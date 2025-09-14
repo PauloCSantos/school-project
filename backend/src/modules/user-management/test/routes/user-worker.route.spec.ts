@@ -111,6 +111,7 @@ describe('UserWorkerRoute with ExpressAdapter', () => {
         },
         birthday: date,
         email: 'teste1@test.com',
+        creationMode: 'full',
       };
       const createdId = new Id().value;
       userWorkerController.create.mockResolvedValue({ id: createdId });
