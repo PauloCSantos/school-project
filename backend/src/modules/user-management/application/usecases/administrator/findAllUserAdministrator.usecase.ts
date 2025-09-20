@@ -35,8 +35,8 @@ export default class FindAllUserAdministrator
 
     const administrators = await this._userAdministratorRepository.findAll(
       token.masterId,
-      offset,
-      quantity
+      quantity,
+      offset
     );
 
     const results = await this.userService.findBaseUsers(administrators);
