@@ -3,6 +3,8 @@ import { Observable } from 'rxjs';
 
 export type RoleKey = 'administrator' | 'teacher' | 'student' | 'worker' | 'master';
 
+export type CreationMode = 'full' | 'partial';
+
 export type ControlType =
   | 'text'
   | 'email'

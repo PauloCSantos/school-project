@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FieldConfig } from '../../config/roles';
 import { getControlByPath } from './utils/form-utils';
-
-// Ajuste os paths conforme o seu projeto
 import { AddressFieldComponent } from '../../ui/address-field/address-field.component';
 import { SalaryFieldComponent } from '../../ui/salary-field/salary-field.component';
 import { NameFieldComponent } from '../../ui';
+import { DateYmdMaskDirective } from '../../../../shared/directives/date-ymd-mask.directive';
 
 @Component({
   selector: 'app-dynamic-field',
@@ -18,6 +17,7 @@ import { NameFieldComponent } from '../../ui';
     AddressFieldComponent,
     SalaryFieldComponent,
     NameFieldComponent,
+    DateYmdMaskDirective,
   ],
   templateUrl: './dynamic-field.component.html',
   styleUrls: ['./dynamic-field.component.scss'],
@@ -28,7 +28,7 @@ export class DynamicFieldComponent {
   field = input.required<FieldConfig>();
 
   ctrl = computed<FormControl>(() => {
-    const form = this.form(); // agora é signal -> reativa
+    const form = this.form();
     const field = this.field();
     const c = getControlByPath(form, field.key);
     if (!c) throw new Error(`Form control "${field.key}" não encontrado.`);

@@ -22,10 +22,11 @@
   />
   } @case ('date') {
   <input
-    type="date"
+    type="text"
     class="input"
-    [placeholder]="f.placeholder || f.label"
     [formControl]="ctrl()"
+    appDateYmdMask
+    [placeholder]="f.placeholder || f.label"
   />
   } @case ('select') {
   <select class="select" [formControl]="ctrl()">

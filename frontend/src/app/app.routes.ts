@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './features/auth/main-layout/main-layout.component';
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterTenantComponent } from './features/auth/register-tenant/register-tenant.component';
-import { AppLayoutComponent } from './layout/app-layout/layout.component';
+import { AppLayoutComponent } from './core/layout/app-layout/layout.component';
 import { loginRedirectGuard } from './core/guards/login-redirect.guard';
 
 export const routes: Routes = [

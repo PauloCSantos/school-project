@@ -39,7 +39,13 @@ const COMMON_FIELDS: FieldConfig[] = [
     validators: [{ name: 'required' }, { name: 'email' }],
     preserveOnRoleChange: true,
   },
-  { key: 'birthday', label: 'Nascimento', type: 'date', preserveOnRoleChange: true },
+  {
+    key: 'birthday',
+    label: 'Nascimento (YYYY-MM-DD)',
+    type: 'date',
+    validators: [{ name: 'required' }],
+    preserveOnRoleChange: true,
+  },
   { key: 'address', label: 'Endereço', type: 'address', preserveOnRoleChange: true },
 ];
 
