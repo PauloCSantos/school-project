@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { NavItem } from '../../core/types/nav.type';
-import { RegisterModalComponent } from '../../features/auth/register/register-modal.component';
+import { NavItem } from '../../types/nav.type';
+import { RegisterModalComponent } from '../../../features/auth/register/register-modal.component';
 
 @Component({
   selector: 'app-sidebar',
