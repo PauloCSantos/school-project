@@ -1,6 +1,5 @@
 import { UserCreationModeEnum } from '../../domain/@shared/enums/creation-mode.enum';
 import {
-  ICreateUserMasterInput,
   ICreateUserMasterOutput,
   IDeleteUserMasterInput,
   IDeleteUserMasterOutput,
@@ -21,13 +20,11 @@ import {
 
 type CreateUserMasterFull = {
   creationMode: UserCreationModeEnum.FULL;
-} & ICreateUserInput &
-  ICreateUserMasterInput;
+} & ICreateUserInput;
 
 type CreateUserMasterPartial = {
   creationMode: UserCreationModeEnum.PARTIAL;
-} & Pick<ICreateUserInput, 'email'> &
-  ICreateUserMasterInput;
+} & Pick<ICreateUserInput, 'email'>;
 
 export type CreateUserMasterInputDto = CreateUserMasterFull | CreateUserMasterPartial;
 export type CreateUserMasterOutputDto = ICreateUserOutput & ICreateUserMasterOutput;

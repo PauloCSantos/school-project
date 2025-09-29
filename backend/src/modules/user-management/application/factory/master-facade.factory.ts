@@ -7,19 +7,22 @@ import { PoliciesServiceInterface } from '@/modules/@shared/application/services
 import { UserServiceInterface } from '../../domain/services/user.service';
 import FindUserMasterByBaseUser from '../usecases/master/findUserMasterByBaseUser.usecase';
 import UserMasterGateway from '../gateway/master.gateway';
+import { TenantServiceInterface } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
 
 export default class MasterFacadeFactory {
   static create(
     repository: UserMasterGateway,
     emailValidatorService: EmailAuthValidator,
     policiesService: PoliciesServiceInterface,
-    userService: UserServiceInterface
+    userService: UserServiceInterface,
+    tenantService: TenantServiceInterface
   ): MasterFacade {
     const createUserMaster = new CreateUserMaster(
       repository,
       emailValidatorService,
       policiesService,
-      userService
+      userService,
+      tenantService
     );
     const findUserMaster = new FindUserMaster(repository, policiesService, userService);
     const updateUserMaster = new UpdateUserMaster(

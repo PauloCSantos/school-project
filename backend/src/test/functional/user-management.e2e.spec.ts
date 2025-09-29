@@ -50,8 +50,12 @@ import AuthUser from '@/modules/authentication-authorization-management/domain/e
 import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
 import MemoryUserRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/user.repository';
 import { UserService } from '@/modules/user-management/domain/services/user.service';
+import { TenantService } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
+import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.repository';
+import Tenant from '@/modules/authentication-authorization-management/domain/entity/tenant.entity';
 
 let tokenService: TokenService;
+const masterId = new Id().value;
 
 async function makeToken(): Promise<string> {
   const authService = new AuthUserService();
@@ -63,7 +67,6 @@ async function makeToken(): Promise<string> {
     },
     authService
   );
-  const masterId = new Id().value;
   return tokenService.generateToken(
     authUser as any,
     masterId,
@@ -90,6 +93,10 @@ async function createAuthUserInMemory(email: string, repository: any) {
   );
 }
 
+async function createTenantInMemory(cnpj: string, repository: any) {
+  await repository.create(new Tenant({ id: masterId, cnpj }));
+}
+
 describe('User management module end to end test', () => {
   let userAdministratorRepository = new MemoryUserAdministratorRepository();
   let userMasterRepository = new MemoryUserMasterRepository();
@@ -101,6 +108,8 @@ describe('User management module end to end test', () => {
   let authUserRepository = new MemoryAuthUserRepository(authUserService);
   let emailValidatorService = new EmailAuthValidatorService(authUserRepository);
   let userService = new UserService(userRepository);
+  let tenantRepository = new MemoryTenantRepository();
+  let tenantService = new TenantService(tenantRepository);
   let app: any;
   beforeEach(() => {
     userAdministratorRepository = new MemoryUserAdministratorRepository();
@@ -112,6 +121,8 @@ describe('User management module end to end test', () => {
     authUserRepository = new MemoryAuthUserRepository(authUserService);
     emailValidatorService = new EmailAuthValidatorService(authUserRepository);
     userService = new UserService(userRepository);
+    tenantRepository = new MemoryTenantRepository();
+    tenantService = new TenantService(tenantRepository);
 
     const policiesService = new PoliciesService();
     const createUserAdministratorUsecase = new CreateUserAdministrator(
@@ -143,7 +154,8 @@ describe('User management module end to end test', () => {
       userMasterRepository,
       emailValidatorService,
       policiesService,
-      userService
+      userService,
+      tenantService
     );
     const findUserMasterUsecase = new FindUserMaster(
       userMasterRepository,
@@ -983,6 +995,7 @@ describe('User management module end to end test', () => {
         it('should return 422 when PATCH /user-master has invalid payload', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('valid_master@example.com', authUserRepository);
+          await createTenantInMemory('35.741.901/0001-58', tenantRepository);
           const created = await supertest(app)
             .post('/user-master')
             .set(headers)
@@ -999,9 +1012,9 @@ describe('User management module end to end test', () => {
                 state: 'State A',
               },
               birthday: '11-12-1995',
-              cnpj: '35.741.901/0001-58',
               creationMode: 'full',
             });
+
           const response = await supertest(app)
             .patch('/user-master')
             .set(headers)
@@ -1018,6 +1031,7 @@ describe('User management module end to end test', () => {
         it('should throw an error when the data to update a user is wrong', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
+          await createTenantInMemory('35.741.901/0001-58', tenantRepository);
           const created = await supertest(app)
             .post('/user-master')
             .set(headers)
@@ -1036,14 +1050,13 @@ describe('User management module end to end test', () => {
               },
               birthday: '11-12-1995',
               email: 'teste1@test.com',
-              cnpj: '35.741.901/0001-58',
               creationMode: 'full',
             });
           const id = created.body.id;
 
           const response = await supertest(app).patch(`/user-master`).set(headers).send({
             id,
-            cnpj: '142154654',
+           cnpj: '142154654',
           });
 
           expect(response.status).toBe(422);
@@ -1056,6 +1069,7 @@ describe('User management module end to end test', () => {
       describe('POST /user-master', () => {
         it('should create a user', async () => {
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
+          await createTenantInMemory('35.741.901/0001-58', tenantRepository);
           const response = await supertest(app)
             .post('/user-master')
             .set(await authHeader())
@@ -1075,7 +1089,6 @@ describe('User management module end to end test', () => {
               },
               birthday: '11-12-1995',
               email: 'teste1@test.com',
-              cnpj: '35.741.901/0001-58',
               creationMode: 'full',
             });
 
@@ -1087,6 +1100,7 @@ describe('User management module end to end test', () => {
         it('should find a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste1@test.com', authUserRepository);
+          await createTenantInMemory('35.741.901/0001-58', tenantRepository);
           const created = await supertest(app)
             .post('/user-master')
             .set(headers)
@@ -1106,7 +1120,6 @@ describe('User management module end to end test', () => {
               },
               birthday: '11-12-1995',
               email: 'teste1@test.com',
-              cnpj: '35.741.901/0001-58',
               creationMode: 'full',
             });
           const id = created.body.id;
@@ -1121,6 +1134,7 @@ describe('User management module end to end test', () => {
         it('should update a user by ID', async () => {
           const headers = await authHeader();
           await createAuthUserInMemory('teste2@test.com', authUserRepository);
+          await createTenantInMemory('35.741.901/0001-58', tenantRepository);
           const created = await supertest(app)
             .post('/user-master')
             .set(headers)
@@ -1140,14 +1154,13 @@ describe('User management module end to end test', () => {
               },
               birthday: '11-12-1995',
               email: 'teste2@test.com',
-              cnpj: '35.741.901/0001-58',
               creationMode: 'full',
             });
           const id = created.body.id;
 
           const response = await supertest(app).patch(`/user-master`).set(headers).send({
             id,
-            cnpj: '35.845.901/0001-58',
+            cnpj: '30.845.901/0001-58',
             email: 'teste123@test.com',
           });
 

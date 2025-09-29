@@ -11,9 +11,6 @@ export interface IFindAllUserMasterInput {
   offset?: number;
 }
 
-export interface ICreateUserMasterInput {
-  cnpj: string;
-}
 export interface ICreateUserMasterOutput {
   id: string;
 }

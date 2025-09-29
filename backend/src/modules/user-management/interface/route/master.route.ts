@@ -36,13 +36,13 @@ export class UserMasterRoute {
       'creationMode',
     ];
     const REQUIRED_FIELD = ['id'];
-    const REQUIRED_FIELDS_PARTIAL = ['email', 'cnpj'];
+    const REQUIRED_FIELDS_PARTIAL = ['email'];
 
     this.httpGateway.post('/user-master', this.createUserMaster.bind(this), [
       this.authMiddleware,
       createRequestMiddleware(
         FunctionCalledEnum.CREATE,
-        REQUIRED_FIELDS,
+        REQUIRED_FIELDS.filter(field => field !== 'cnpj'),
         REQUIRED_FIELDS_PARTIAL
       ),
     ]);
