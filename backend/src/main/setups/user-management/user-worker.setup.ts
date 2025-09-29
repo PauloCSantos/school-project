@@ -4,7 +4,6 @@ import DeleteUserWorker from '@/modules/user-management/application/usecases/wor
 import FindAllUserWorker from '@/modules/user-management/application/usecases/worker/findAllUserWorker.usecase';
 import FindUserWorker from '@/modules/user-management/application/usecases/worker/findUserWorker.usecase';
 import UpdateUserWorker from '@/modules/user-management/application/usecases/worker/updateUserWorker.usecase';
-import MemoryUserWorkerRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/worker.repository';
 import { UserWorkerController } from '@/modules/user-management/interface/controller/worker.controller';
 import { UserWorkerRoute } from '@/modules/user-management/interface/route/worker.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
@@ -14,17 +13,17 @@ import TokenService from '@/modules/authentication-authorization-management/infr
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import { UserService } from '@/modules/user-management/domain/services/user.service';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
+import UserWorkerGateway from '@/modules/user-management/application/gateway/worker.gateway';
 
 export default function initializeUserWorker(
   express: HttpServer,
   tokenService: TokenService,
+  userWorkerRepository: UserWorkerGateway,
   emailValidatorService: EmailAuthValidatorService,
   policiesService: PoliciesService,
   userService: UserService,
   isProd: boolean
 ): void {
-  const userWorkerRepository = new MemoryUserWorkerRepository();
-
   const createUserWorkerUsecase = new CreateUserWorker(
     userWorkerRepository,
     emailValidatorService,

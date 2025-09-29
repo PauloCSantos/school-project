@@ -9,6 +9,8 @@ import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
 import { UserBase } from '@/modules/user-management/domain/entity/user.entity';
 import { CreateUserMasterInputDto } from '@/modules/user-management/application/dto/master-usecase.dto';
 import { UserCreationModeEnum } from '@/modules/user-management/domain/@shared/enums/creation-mode.enum';
+import { TenantServiceInterface } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
+import Tenant from '@/modules/authentication-authorization-management/domain/entity/tenant.entity';
 
 describe('createUserMaster usecase unit test', () => {
   let policieService: jest.Mocked<PoliciesServiceInterface>;
@@ -35,6 +37,14 @@ describe('createUserMaster usecase unit test', () => {
 
   const MockEmailAuthValidatorService = () => ({
     validate: jest.fn().mockResolvedValue(true),
+  });
+
+  const MockTenantService = (): jest.Mocked<TenantServiceInterface> => ({
+    getTenant: jest.fn(),
+    changeUserRoleInTenant: jest.fn(),
+    getAvailableTenantsAndRoles: jest.fn(),
+    manageUserRoleAssignmentInTenant: jest.fn(),
+    verifyTenantRole: jest.fn(),
   });
 
   const MockPolicyService = (): jest.Mocked<PoliciesServiceInterface> =>
@@ -64,7 +74,6 @@ describe('createUserMaster usecase unit test', () => {
     },
     birthday: new Date('11-12-1995'),
     email: 'teste1@test.com',
-    cnpj: '35.741.901/0001-58',
     creationMode: UserCreationModeEnum.FULL,
   };
 
@@ -86,25 +95,29 @@ describe('createUserMaster usecase unit test', () => {
     email: 'teste1@test.com',
   });
 
-  const userMaster = new UserMaster({
-    userId: userBase.id.value,
-    cnpj: input.cnpj,
-  });
+  const tenant = new Tenant({ id: new Id().value, cnpj: '35.741.901/0001-58S' });
 
   describe('On fail', () => {
     it('should throw an error if the user already exists', async () => {
       const userMasterRepository = MockRepository();
       const userService = MockUserService();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
+      const tenantService = MockTenantService();
 
       userService.getOrCreateUser.mockResolvedValue(userBase);
+      tenantService.getTenant.mockResolvedValue(tenant);
+      const userMaster = new UserMaster({
+        userId: userBase.id.value,
+        cnpj: (await tenantService.getTenant()).cnpj,
+      });
       userMasterRepository.findByBaseUserId.mockResolvedValue(userMaster);
 
       const usecase = new CreateUserMaster(
         userMasterRepository,
         emailAuthValidatorService,
         policieService,
-        userService
+        userService,
+        tenantService
       );
 
       await expect(
@@ -129,6 +142,12 @@ describe('createUserMaster usecase unit test', () => {
       const userMasterRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
       const userService = MockUserService();
+      const tenantService = MockTenantService();
+      tenantService.getTenant.mockResolvedValue(tenant);
+      const userMaster = new UserMaster({
+        userId: userBase.id.value,
+        cnpj: (await tenantService.getTenant()).cnpj,
+      });
 
       userService.getOrCreateUser.mockResolvedValue(userBase);
       userMasterRepository.findByBaseUserId.mockResolvedValue(null);
@@ -140,7 +159,8 @@ describe('createUserMaster usecase unit test', () => {
         userMasterRepository,
         emailAuthValidatorService,
         policieService,
-        userService
+        userService,
+        tenantService
       );
       const result = await usecase.execute({ ...input }, token);
 
@@ -156,13 +176,18 @@ describe('createUserMaster usecase unit test', () => {
     it('should create a user master with creationMode equals partial', async () => {
       const input: CreateUserMasterInputDto = {
         email: userBase.email,
-        cnpj: '35.741.901/0001-58',
         creationMode: UserCreationModeEnum.PARTIAL,
       };
 
       const userMasterRepository = MockRepository();
       const emailAuthValidatorService = MockEmailAuthValidatorService();
       const userService = MockUserService();
+      const tenantService = MockTenantService();
+      tenantService.getTenant.mockResolvedValue(tenant);
+      const userMaster = new UserMaster({
+        userId: userBase.id.value,
+        cnpj: (await tenantService.getTenant()).cnpj,
+      });
 
       userService.getOrCreateUser.mockResolvedValue(userBase);
       userMasterRepository.findByBaseUserId.mockResolvedValue(null);
@@ -174,7 +199,8 @@ describe('createUserMaster usecase unit test', () => {
         userMasterRepository,
         emailAuthValidatorService,
         policieService,
-        userService
+        userService,
+        tenantService
       );
       const result = await usecase.execute({ ...input }, token);
 

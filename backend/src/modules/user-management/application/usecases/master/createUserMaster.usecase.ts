@@ -13,6 +13,7 @@ import { TokenData } from '@/modules/@shared/type/sharedTypes';
 import { FunctionCalledEnum, ModulesNameEnum } from '@/modules/@shared/enums/enums';
 import { UserServiceInterface } from '@/modules/user-management/domain/services/user.service';
 import { ConflictError } from '@/modules/@shared/application/errors/conflict.error';
+import { TenantServiceInterface } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
 
 export default class CreateUserMaster
   implements UseCaseInterface<CreateUserMasterInputDto, CreateUserMasterOutputDto>
@@ -21,7 +22,8 @@ export default class CreateUserMaster
     private readonly userMasterRepository: UserMasterGateway,
     private readonly emailValidatorService: EmailAuthValidator,
     private readonly policiesService: PoliciesServiceInterface,
-    private readonly userService: UserServiceInterface
+    private readonly userService: UserServiceInterface,
+    private readonly tenantService: TenantServiceInterface
   ) {}
   async execute(
     input: CreateUserMasterInputDto,
@@ -33,7 +35,7 @@ export default class CreateUserMaster
       token
     );
 
-    const { email, cnpj, creationMode } = input;
+    const { email, creationMode } = input;
     let baseUser;
 
     if (!(await this.emailValidatorService.validate(email))) {
@@ -52,9 +54,11 @@ export default class CreateUserMaster
       });
     }
 
+    const tenant = await this.tenantService.getTenant(token.masterId);
+
     const userMaster = new UserMaster({
       userId: baseUser.id.value,
-      cnpj,
+      cnpj: tenant.cnpj,
     });
 
     const userVerification = await this.userMasterRepository.findByBaseUserId(

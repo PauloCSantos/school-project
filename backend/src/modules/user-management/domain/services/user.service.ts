@@ -1,7 +1,6 @@
 import { InternalError } from '@/modules/@shared/application/errors/internal.error';
 import UserGateway from '../../application/gateway/user.gateway';
 import { UserBase, UserBaseProps } from '../entity/user.entity';
-import { CreationModeOptions } from '../@shared/enums/creation-mode.type';
 import { ValidationError } from '@/modules/@shared/application/errors/validation.error';
 
 export interface UserServiceInterface {
@@ -49,7 +48,7 @@ export class UserService implements UserServiceInterface {
 
   async getOrCreateUser(
     email: string,
-    creationMode: CreationModeOptions,
+    creationMode: 'full' | 'partial',
     userProps?: UserBaseProps
   ): Promise<UserBase> {
     const user = await this.usersGateway.findByEmail(email);

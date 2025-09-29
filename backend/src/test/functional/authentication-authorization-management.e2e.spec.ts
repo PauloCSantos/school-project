@@ -125,7 +125,8 @@ describe('Authentication authorization management module end to end test', () =>
     masterRepository,
     emailAuthValidatorService,
     policiesService,
-    userService
+    userService,
+    tenantService
   );
   let administratorFacade = AdministratorFacadeFactory.create(
     administratorRepository,
@@ -175,7 +176,8 @@ describe('Authentication authorization management module end to end test', () =>
       masterRepository,
       emailAuthValidatorService,
       policiesService,
-      userService
+      userService,
+      tenantService
     );
     administratorFacade = AdministratorFacadeFactory.create(
       administratorRepository,
@@ -206,7 +208,8 @@ describe('Authentication authorization management module end to end test', () =>
       masterRepository,
       emailAuthValidatorService,
       policiesService,
-      userService
+      userService,
+      tenantService
     );
     administratorFacade = AdministratorFacadeFactory.create(
       administratorRepository,

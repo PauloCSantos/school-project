@@ -78,22 +78,22 @@ describe('User master facade integration test', () => {
     },
     birthday: new Date('11-12-1995'),
     email: 'teste@teste.com',
-    cnpj: '35.741.901/0001-58',
     creationMode: UserCreationModeEnum.FULL,
   };
-  const token: TokenData = {
+  let token: TokenData = {
     email: 'teste@teste.com',
     masterId: 'validID',
     role: RoleUsersEnum.MASTER,
   };
 
   async function createAuthUserFor(email: string) {
-    await facadeAuthUser.createTenant({
+    const tenant = await facadeAuthUser.createTenant({
       email,
       password: 'XpA2Jjd4',
       role: 'master' as RoleUsers,
       cnpj: '12345678000195',
     });
+    token.masterId = tenant.masterId;
   }
 
   beforeEach(() => {
@@ -145,7 +145,8 @@ describe('User master facade integration test', () => {
       masterRepository,
       emailAuthValidator,
       policiesService,
-      userService
+      userService,
+      tenantService
     );
     findUserMaster = new FindUserMaster(masterRepository, policiesService, userService);
     updateUserMaster = new UpdateUserMaster(

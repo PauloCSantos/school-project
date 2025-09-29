@@ -12,21 +12,32 @@ import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interfac
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import { AuthUserService } from '@/modules/authentication-authorization-management/infrastructure/services/user-entity.service';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
-import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.repository';
-import { TenantService } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
+import { TenantServiceInterface } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
 import AuthUserGateway from '@/modules/authentication-authorization-management/application/gateway/user.gateway';
+import CheckRegistration from '@/modules/authentication-authorization-management/application/usecases/authUser/check-registration.usecase';
+import AddRole from '@/modules/authentication-authorization-management/application/usecases/authUser/add-role.usecase';
+import MasterFacadeInterface from '@/modules/user-management/application/facade/interface/master-facade.interface';
+import AdministratorFacadeInterface from '@/modules/user-management/application/facade/interface/administrator-facade.interface';
+import TeacherFacadeInterface from '@/modules/user-management/application/facade/interface/teacher-facade.interface';
+import StudentFacadeInterface from '@/modules/user-management/application/facade/interface/student-facade.interface';
+import WorkerFacadeInterface from '@/modules/user-management/application/facade/interface/worker-facade.interface';
+import TenantGateway from '@/modules/authentication-authorization-management/application/gateway/tenant.gateway';
 
 export default function initializeAuthUser(
   express: HttpServer,
   tokenService: TokenService,
+  tenantRepository: TenantGateway,
+  tenantService: TenantServiceInterface,
   authUserService: AuthUserService,
   policiesService: PoliciesService,
   authUserRepository: AuthUserGateway,
+  masterFacade: MasterFacadeInterface,
+  administratorFacade: AdministratorFacadeInterface,
+  teacherFacade: TeacherFacadeInterface,
+  studentFacade: StudentFacadeInterface,
+  workerFacade: WorkerFacadeInterface,
   isProd: boolean
 ): void {
-  const tenantRepository = new MemoryTenantRepository();
-  const tenantService = new TenantService(tenantRepository);
-
   const createAuthUser = new CreateAuthUser(
     authUserRepository,
     tenantRepository,
@@ -49,13 +60,29 @@ export default function initializeAuthUser(
     tokenService,
     tenantService
   );
+  const checkRegistration = new CheckRegistration(
+    masterFacade,
+    administratorFacade,
+    teacherFacade,
+    studentFacade,
+    workerFacade
+  );
+
+  const addRole = new AddRole(
+    authUserRepository,
+    tenantRepository,
+    tenantService,
+    policiesService
+  );
 
   const authUserController = new AuthUserController(
     createAuthUser,
     findAuthUser,
     updateAuthUser,
     deleteAuthUser,
-    loginAuthUser
+    loginAuthUser,
+    checkRegistration,
+    addRole
   );
 
   const allowedRoles: RoleUsers[] = [
