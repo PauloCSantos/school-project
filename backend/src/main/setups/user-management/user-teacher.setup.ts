@@ -4,7 +4,6 @@ import DeleteUserTeacher from '@/modules/user-management/application/usecases/te
 import FindAllUserTeacher from '@/modules/user-management/application/usecases/teacher/findAllUserTeacher.usecase';
 import FindUserTeacher from '@/modules/user-management/application/usecases/teacher/findUserTeacher.usecase';
 import UpdateUserTeacher from '@/modules/user-management/application/usecases/teacher/updateUserTeacher.usecase';
-import MemoryUserTeacherRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/teacher.repository';
 import { UserTeacherController } from '@/modules/user-management/interface/controller/teacher.controller';
 import { UserTeacherRoute } from '@/modules/user-management/interface/route/teacher.route';
 import { RoleUsers } from '@/modules/@shared/type/sharedTypes';
@@ -14,17 +13,17 @@ import TokenService from '@/modules/authentication-authorization-management/infr
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import { UserService } from '@/modules/user-management/domain/services/user.service';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
+import UserTeacherGateway from '@/modules/user-management/application/gateway/teacher.gateway';
 
 export default function initializeUserTeacher(
   express: HttpServer,
   tokenService: TokenService,
+  userTeacherRepository: UserTeacherGateway,
   emailValidatorService: EmailAuthValidatorService,
   policiesService: PoliciesService,
   userService: UserService,
   isProd: boolean
 ): void {
-  const userTeacherRepository = new MemoryUserTeacherRepository();
-
   const createUserTeacherUsecase = new CreateUserTeacher(
     userTeacherRepository,
     emailValidatorService,

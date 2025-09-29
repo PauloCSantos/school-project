@@ -21,6 +21,18 @@ import MemoryUserRepository from '@/modules/user-management/infrastructure/repos
 import { UserService } from '@/modules/user-management/domain/services/user.service';
 import MemoryAuthUserRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/user.repository';
 import { EmailAuthValidatorService } from '@/modules/user-management/application/services/email-auth-validator.service';
+import MemoryUserAdministratorRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/administrator.repository';
+import MemoryUserMasterRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/master.repository';
+import MemoryUserStudentRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/student.repository';
+import MemoryUserTeacherRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/teacher.repository';
+import MemoryUserWorkerRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/worker.repository';
+import MasterFacadeFactory from '@/modules/user-management/application/factory/master-facade.factory';
+import AdministratorFacadeFactory from '@/modules/user-management/application/factory/administrator-facade.factory';
+import TeacherFacadeFactory from '@/modules/user-management/application/factory/teacher-facade.factory';
+import StudentFacadeFactory from '@/modules/user-management/application/factory/student-facade.factory';
+import WorkerFacadeFactory from '@/modules/user-management/application/factory/worker-facade.factory';
+import { TenantService } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
+import MemoryTenantRepository from '@/modules/authentication-authorization-management/infrastructure/repositories/memory-repository/tenant.repository';
 
 async function startServer() {
   const appCfg = config;
@@ -35,17 +47,61 @@ async function startServer() {
   const authUserRepository = new MemoryAuthUserRepository(authUserService);
   const emailValidatorService = new EmailAuthValidatorService(authUserRepository);
 
-  initializeUserMaster(
-    expressHttp,
-    tokenService,
+  const userMasterRepository = new MemoryUserMasterRepository();
+  const userAdministratorRepository = new MemoryUserAdministratorRepository();
+  const userTeacherRepository = new MemoryUserTeacherRepository();
+  const userStudentRepository = new MemoryUserStudentRepository();
+  const userWorkerRepository = new MemoryUserWorkerRepository();
+
+  const tenantRepository = new MemoryTenantRepository();
+  const tenantService = new TenantService(tenantRepository);
+
+  const masterFacade = MasterFacadeFactory.create(
+    userMasterRepository,
     emailValidatorService,
     policiesService,
     userService,
+    tenantService
+  );
+  const administratorFacade = AdministratorFacadeFactory.create(
+    userAdministratorRepository,
+    emailValidatorService,
+    policiesService,
+    userService
+  );
+  const teacherFacade = TeacherFacadeFactory.create(
+    userTeacherRepository,
+    emailValidatorService,
+    policiesService,
+    userService
+  );
+  const studentFacade = StudentFacadeFactory.create(
+    userStudentRepository,
+    emailValidatorService,
+    policiesService,
+    userService
+  );
+  const workerFacade = WorkerFacadeFactory.create(
+    userWorkerRepository,
+    emailValidatorService,
+    policiesService,
+    userService
+  );
+
+  initializeUserMaster(
+    expressHttp,
+    tokenService,
+    userMasterRepository,
+    emailValidatorService,
+    policiesService,
+    userService,
+    tenantService,
     isProd
   );
   initializeUserAdministrator(
     expressHttp,
     tokenService,
+    userAdministratorRepository,
     emailValidatorService,
     policiesService,
     userService,
@@ -54,6 +110,7 @@ async function startServer() {
   initializeUserStudent(
     expressHttp,
     tokenService,
+    userStudentRepository,
     emailValidatorService,
     policiesService,
     userService,
@@ -62,6 +119,7 @@ async function startServer() {
   initializeUserTeacher(
     expressHttp,
     tokenService,
+    userTeacherRepository,
     emailValidatorService,
     policiesService,
     userService,
@@ -70,6 +128,7 @@ async function startServer() {
   initializeUserWorker(
     expressHttp,
     tokenService,
+    userWorkerRepository,
     emailValidatorService,
     policiesService,
     userService,
@@ -86,9 +145,16 @@ async function startServer() {
   initializeAuthUser(
     expressHttp,
     tokenService,
+    tenantRepository,
+    tenantService,
     authUserService,
     policiesService,
     authUserRepository,
+    masterFacade,
+    administratorFacade,
+    teacherFacade,
+    studentFacade,
+    workerFacade,
     isProd
   );
 

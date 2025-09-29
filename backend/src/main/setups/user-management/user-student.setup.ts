@@ -4,7 +4,6 @@ import DeleteUserStudent from '@/modules/user-management/application/usecases/st
 import FindAllUserStudent from '@/modules/user-management/application/usecases/student/findAllUserStudent.usecase';
 import FindUserStudent from '@/modules/user-management/application/usecases/student/findUserStudent.usecase';
 import UpdateUserStudent from '@/modules/user-management/application/usecases/student/updateUserStudent.usecase';
-import MemoryUserStudentRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/student.repository';
 import { UserStudentController } from '@/modules/user-management/interface/controller/student.controller';
 import { UserStudentRoute } from '@/modules/user-management/interface/route/student.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
@@ -14,17 +13,17 @@ import TokenService from '@/modules/authentication-authorization-management/infr
 import { PoliciesService } from '@/modules/@shared/application/services/policies.service';
 import { UserService } from '@/modules/user-management/domain/services/user.service';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
+import UserStudentGateway from '@/modules/user-management/application/gateway/student.gateway';
 
 export default function initializeUserStudent(
   express: HttpServer,
   tokenService: TokenService,
+  userStudentRepository: UserStudentGateway,
   emailValidatorService: EmailAuthValidatorService,
   policiesService: PoliciesService,
   userService: UserService,
   isProd: boolean
 ): void {
-  const userStudentRepository = new MemoryUserStudentRepository();
-
   const createUserStudentUsecase = new CreateUserStudent(
     userStudentRepository,
     emailValidatorService,

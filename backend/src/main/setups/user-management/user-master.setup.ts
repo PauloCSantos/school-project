@@ -2,7 +2,6 @@ import AuthUserMiddleware from '@/modules/@shared/application/middleware/authUse
 import CreateUserMaster from '@/modules/user-management/application/usecases/master/createUserMaster.usecase';
 import FindUserMaster from '@/modules/user-management/application/usecases/master/findUserMaster.usecase';
 import UpdateUserMaster from '@/modules/user-management/application/usecases/master/updateUserMaster.usecase';
-import MemoryUserMasterRepository from '@/modules/user-management/infrastructure/repositories/memory-repository/master.repository';
 import { UserMasterController } from '@/modules/user-management/interface/controller/master.controller';
 import { UserMasterRoute } from '@/modules/user-management/interface/route/master.route';
 import { HttpServer } from '@/modules/@shared/infraestructure/http/http.interface';
@@ -12,22 +11,25 @@ import { PoliciesService } from '@/modules/@shared/application/services/policies
 import { UserService } from '@/modules/user-management/domain/services/user.service';
 import TokenService from '@/modules/authentication-authorization-management/infrastructure/services/token.service';
 import { RoleUsersEnum } from '@/modules/@shared/enums/enums';
+import { TenantServiceInterface } from '@/modules/authentication-authorization-management/domain/service/tenant.service';
+import UserMasterGateway from '@/modules/user-management/application/gateway/master.gateway';
 
 export default function initializeUserMaster(
   express: HttpServer,
   tokenService: TokenService,
+  userMasterRepository: UserMasterGateway,
   emailValidatorService: EmailAuthValidatorService,
   policiesService: PoliciesService,
   userService: UserService,
+  tenantService: TenantServiceInterface,
   isProd: boolean
 ): void {
-  const userMasterRepository = new MemoryUserMasterRepository();
-
   const createUserMasterUsecase = new CreateUserMaster(
     userMasterRepository,
     emailValidatorService,
     policiesService,
-    userService
+    userService,
+    tenantService
   );
   const findUserMasterUsecase = new FindUserMaster(
     userMasterRepository,

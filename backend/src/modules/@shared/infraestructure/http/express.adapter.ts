@@ -9,7 +9,7 @@ import {
 
 const corsOptions: CorsOptions = {
   origin: 'http://localhost:3000',
-  methods: ['GET', 'POST', 'DELETE', 'PATCH'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: false,
   optionsSuccessStatus: 204,
@@ -23,8 +23,10 @@ export class ExpressAdapter implements HttpServer {
 
   constructor() {
     this.app = express();
-    this.app.use(express.json());
     this.app.use(cors(corsOptions));
+    this.app.options('*', cors(corsOptions));
+
+    this.app.use(express.json());
   }
 
   get(
