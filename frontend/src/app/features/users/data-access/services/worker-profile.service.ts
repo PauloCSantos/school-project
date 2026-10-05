@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { WorkerProfileRequest } from '../dto';
-import { profileToRequest } from '../../../../core/mappers/profile.mapper';
-import { WorkerProfile } from '../../../../core/types/profile.type';
+import { profileToRequest } from '../mappers/profile.mapper';
+import { WorkerProfile } from '../../../../domain/users/profile.type';
 
 @Injectable({ providedIn: 'root' })
 export class WorkerProfileService {

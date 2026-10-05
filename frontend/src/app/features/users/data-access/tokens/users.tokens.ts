@@ -1,11 +1,10 @@
 import { InjectionToken } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Role } from '../../../../core/types/role.type';
+import { Role } from '../../../../domain/users/role.type';
+import { ListParams as ListParamsCore } from '../../../../core/types/list-params';
 
-export type TokenRoles = Omit<Role, 'master'>
-export interface ListParams {
-  quantity?: number;
-  offset?: number;
+export type TokenRoles = Exclude<Role, 'master'>;
+export interface ListParams extends ListParamsCore {
   q?: string;
 }
 
@@ -29,6 +28,4 @@ export interface UserRoleRegistryEntry {
   service: UserRoleDataService;
 }
 
-export const USER_ROLE_REGISTRY = new InjectionToken<UserRoleRegistryEntry[]>(
-  'USER_ROLE_REGISTRY'
-);
+export const USER_ROLE_REGISTRY = new InjectionToken<UserRoleRegistryEntry[]>('USER_ROLE_REGISTRY');

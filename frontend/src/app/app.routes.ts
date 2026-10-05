@@ -4,6 +4,7 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterTenantComponent } from './features/auth/register-tenant/register-tenant.component';
 import { AppLayoutComponent } from './core/layout/app-layout/layout.component';
 import { loginRedirectGuard } from './core/guards/login-redirect.guard';
+import { provideUsersFeature } from './features/users/users.providers';
 
 export const routes: Routes = [
   {
@@ -23,10 +24,7 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'users' },
       {
         path: 'users',
-        loadComponent: () =>
-          import('./features/users/pages/users-list/users-list.component').then(
-            (m) => m.UsersListComponent
-          ),
+        loadChildren: () => import('./features/users/feature').then((m) => m.usersRoutes),
       },
     ],
   },

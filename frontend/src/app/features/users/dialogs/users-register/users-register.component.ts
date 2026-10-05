@@ -9,8 +9,9 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RoleKey } from '../../config/roles';
+import { CreationMode } from '../../feature/wizard/core/types';
 import { UserWizardComponent } from '../wizard/user-wizard.component';
+import { Role } from '../../../../domain/users/role.type';
 
 @Component({
   selector: 'app-users-register',
@@ -24,26 +25,35 @@ export class UsersRegisterComponent implements OnChanges {
   @Input() open = false;
   @Output() openChange = new EventEmitter<boolean>();
 
-  @Input() defaultRole: RoleKey = 'administrator';
+  @Input() defaultRole: Role = 'administrator';
 
-  selectedRole = signal<RoleKey>(this.defaultRole);
+  selectedRole = signal<Role>(this.defaultRole);
+  selectedMode = signal<CreationMode>('full');
+
   mode: 'create' | 'edit' = 'create';
   initialValue: any = null;
   id?: string;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['defaultRole'] && changes['defaultRole'].currentValue) {
-      this.selectedRole.set(changes['defaultRole'].currentValue as RoleKey);
+      this.selectedRole.set(changes['defaultRole'].currentValue as Role);
     }
   }
 
   onRoleChange(ev: Event) {
     const sel = ev.target as HTMLSelectElement;
-    this.selectedRole.set(sel.value as RoleKey);
+    this.selectedRole.set(sel.value as Role);
   }
 
-  onWizardClosed = (_success: boolean) => {
-    this.close();
+  onCreationModeChange(ev: Event) {
+    const sel = ev.target as HTMLSelectElement;
+    this.selectedMode.set(sel.value as CreationMode);
+  }
+
+  onWizardClosed = (success: boolean) => {
+    if (success) {
+      this.close();
+    }
   };
 
   close() {

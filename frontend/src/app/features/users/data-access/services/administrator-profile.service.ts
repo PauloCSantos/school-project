@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AdministratorProfileRequest } from '../dto';
-import { profileToRequest } from '../../../../core/mappers/profile.mapper';
-import { AdministratorProfile } from '../../../../core/types/profile.type';
+import { profileToRequest } from '../mappers/profile.mapper';
+import { AdministratorProfile } from '../../../../domain/users/profile.type';
 
 @Injectable({ providedIn: 'root' })
 export class AdministratorProfileService {

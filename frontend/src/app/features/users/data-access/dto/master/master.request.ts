@@ -1,5 +1,5 @@
-import { MasterProfile } from '../../../../../core/types/profile.type';
+import { MasterProfile } from '../../../../../domain/users/profile.type';
 
-export type MasterProfileRequest = Omit<MasterProfile, 'birthday'> & {
+export type MasterProfileRequest = Omit<MasterProfile, 'birthday' | 'cnpj'> & {
   birthday: string;
 };

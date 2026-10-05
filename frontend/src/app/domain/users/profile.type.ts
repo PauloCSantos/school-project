@@ -1,3 +1,5 @@
+// src/app/domain/users/profile.type.ts
+
 export type Name = {
   firstName: string;
   middleName?: string;
@@ -13,6 +15,11 @@ export type Address = {
   state: string;
 };
 
+export type Salary = {
+  salary: number;
+  currency?: 'R$' | '€' | '$';
+};
+
 export type BaseProfile = {
   name: Name;
   address: Address;
@@ -25,12 +32,12 @@ export type MasterProfile = BaseProfile & {
 };
 
 export type AdministratorProfile = BaseProfile & {
-  salary: { salary: number; currency?: 'R$' | '€' | '$' };
+  salary: Salary;
   graduation: string;
 };
 
 export type TeacherProfile = BaseProfile & {
-  salary: { salary: number; currency?: 'R$' | '€' | '$' };
+  salary: Salary;
   graduation: string;
   academicDegrees: string;
 };
@@ -40,5 +47,5 @@ export type StudentProfile = BaseProfile & {
 };
 
 export type WorkerProfile = BaseProfile & {
-  salary: { salary: number; currency?: 'R$' | '€' | '$' };
+  salary: Salary;
 };

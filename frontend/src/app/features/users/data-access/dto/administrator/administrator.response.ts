@@ -1,3 +1,3 @@
-export type AdministratorProfileResponse = Readonly<{
-  id: string;
-}>;
+import { CreateResponse } from '../base/create.response';
+
+export type AdministratorProfileResponse = CreateResponse;

@@ -1,14 +1,17 @@
-import { provideRole } from '../data-access/tokens/role-wizard-registry.token';
-import { FieldConfig, RoleWizardConfig } from './roles';
+import { FieldConfig, RoleWizardConfig } from './core/types';
 import {
-  ADMIN_PROFILE_SERVICE_TOKEN,
-  TEACHER_PROFILE_SERVICE_TOKEN,
-  STUDENT_PROFILE_SERVICE_TOKEN,
-  WORKER_PROFILE_SERVICE_TOKEN,
-  MASTER_PROFILE_SERVICE_TOKEN,
-} from '../data-access/tokens/user-service-token';
+  ADMIN_PROFILE_SERVICE,
+  TEACHER_PROFILE_SERVICE,
+  STUDENT_PROFILE_SERVICE,
+  WORKER_PROFILE_SERVICE,
+  MASTER_PROFILE_SERVICE,
+} from './core/tokens';
+import { AdministratorProfileRequest } from '../../data-access/dto/administrator/administrator.request';
+import { TeacherProfileRequest } from '../../data-access/dto/teacher/teacher.request';
+import { StudentProfileRequest } from '../../data-access/dto/student/student.request';
+import { WorkerProfileRequest } from '../../data-access/dto/worker/worker.request';
+import { MasterProfileRequest } from '../../data-access/dto/master/master.request';
 
-// ====== Helpers ======
 const toYMD = (d?: string | Date | null) => (d ? new Date(d).toISOString().slice(0, 10) : null);
 
 const toName = (n: any) => {
@@ -22,8 +25,6 @@ const toName = (n: any) => {
   };
 };
 
-// ====== Campos comuns (BASE) ======
-// IMPORTANTE: preserveOnRoleChange: true nos campos base
 const COMMON_FIELDS: FieldConfig[] = [
   {
     key: 'name',
@@ -50,18 +51,17 @@ const COMMON_FIELDS: FieldConfig[] = [
 ];
 
 // ====== ADMIN ======
-export const ADMIN_CONFIG: RoleWizardConfig = {
+export const ADMIN_CONFIG: RoleWizardConfig<any, AdministratorProfileRequest> = {
   role: 'administrator',
   label: 'Administrador(a)',
   steps: [
-    { title: 'Dados pessoais', fields: ['name', 'email', 'birthday'] },
-    { title: 'Endereço', fields: ['address'] },
-    // inclui graduation aqui
-    { title: 'Profissional', fields: ['graduation', 'salary'] },
+    { title: 'Contato', fields: ['email'], showOn: ['partial'] },
+    { title: 'Dados pessoais', fields: ['name', 'email', 'birthday'], showOn: ['full'] },
+    { title: 'Endereço', fields: ['address'], showOn: ['full'] },
+    { title: 'Profissional', fields: ['graduation', 'salary'], showOn: ['full', 'partial'] },
   ],
   fields: [
     ...COMMON_FIELDS,
-    // extras (não preservados por padrão)
     { key: 'graduation', label: 'Graduação', type: 'text' },
     {
       key: 'salary',
@@ -70,7 +70,6 @@ export const ADMIN_CONFIG: RoleWizardConfig = {
       validators: [{ name: 'custom', args: 'positiveMoney' }],
     },
   ],
-  // defaults alinhados ao DynamicField de salary => { salary, currency }
   defaults: {
     graduation: '',
     salary: { salary: null, currency: 'R$' },
@@ -79,21 +78,25 @@ export const ADMIN_CONFIG: RoleWizardConfig = {
     ...v,
     name: toName(v?.name),
     birthday: toYMD(v?.birthday),
-    // backend espera objeto { salary, currency }
     salary: v?.salary ?? null,
   }),
-  serviceToken: ADMIN_PROFILE_SERVICE_TOKEN,
+  serviceToken: ADMIN_PROFILE_SERVICE,
   capabilities: { canList: true, canEdit: true },
 };
 
 // ====== TEACHER ======
-export const TEACHER_CONFIG: RoleWizardConfig = {
+export const TEACHER_CONFIG: RoleWizardConfig<any, TeacherProfileRequest> = {
   role: 'teacher',
   label: 'Professor(a)',
   steps: [
-    { title: 'Dados pessoais', fields: ['name', 'email', 'birthday'] },
-    { title: 'Endereço', fields: ['address'] },
-    { title: 'Profissional', fields: ['graduation', 'academicDegrees', 'salary'] },
+    { title: 'Contato', fields: ['email'], showOn: ['partial'] },
+    { title: 'Dados pessoais', fields: ['name', 'email', 'birthday'], showOn: ['full'] },
+    { title: 'Endereço', fields: ['address'], showOn: ['full'] },
+    {
+      title: 'Profissional',
+      fields: ['graduation', 'academicDegrees', 'salary'],
+      showOn: ['full', 'partial'],
+    },
   ],
   fields: [
     ...COMMON_FIELDS,
@@ -115,42 +118,44 @@ export const TEACHER_CONFIG: RoleWizardConfig = {
     ...v,
     name: toName(v?.name),
     birthday: toYMD(v?.birthday),
-    salary: v?.salary ?? null, // objeto
+    salary: v?.salary ?? null,
   }),
-  serviceToken: TEACHER_PROFILE_SERVICE_TOKEN,
+  serviceToken: TEACHER_PROFILE_SERVICE,
   capabilities: { canList: true, canEdit: true },
 };
 
 // ====== STUDENT ======
-export const STUDENT_CONFIG: RoleWizardConfig = {
+export const STUDENT_CONFIG: RoleWizardConfig<any, StudentProfileRequest> = {
   role: 'student',
   label: 'Aluno(a)',
   steps: [
-    { title: 'Dados pessoais', fields: ['name', 'email', 'birthday'] },
-    { title: 'Endereço', fields: ['address'] },
-    { title: 'Matrícula', fields: ['paymentYear'] },
+    { title: 'Contato', fields: ['email'], showOn: ['partial'] },
+    { title: 'Dados pessoais', fields: ['name', 'email', 'birthday'], showOn: ['full'] },
+    { title: 'Endereço', fields: ['address'], showOn: ['full'] },
+    { title: 'Matrícula', fields: ['paymentYear'], showOn: ['full', 'partial'] },
   ],
   fields: [...COMMON_FIELDS, { key: 'paymentYear', label: 'Pagamento Anual', type: 'number' }],
   defaults: {
-    paymentYear: null, // ou ano corrente se preferir
+    paymentYear: null,
   },
   toRequest: (v: any) => ({
     ...v,
     name: toName(v?.name),
     birthday: toYMD(v?.birthday),
   }),
-  serviceToken: STUDENT_PROFILE_SERVICE_TOKEN,
+  serviceToken: STUDENT_PROFILE_SERVICE,
   capabilities: { canList: true, canEdit: true },
 };
 
 // ====== WORKER ======
-export const WORKER_CONFIG: RoleWizardConfig = {
+export const WORKER_CONFIG: RoleWizardConfig<any, WorkerProfileRequest> = {
   role: 'worker',
   label: 'Colaborador(a)',
   steps: [
-    { title: 'Dados pessoais', fields: ['name', 'email', 'birthday'] },
-    { title: 'Endereço', fields: ['address'] },
-    { title: 'Profissional', fields: ['salary'] },
+    { title: 'Contato', fields: ['email'], showOn: ['partial'] },
+    { title: 'Dados pessoais', fields: ['name', 'email', 'birthday'], showOn: ['full'] },
+    { title: 'Endereço', fields: ['address'], showOn: ['full'] },
+    { title: 'Profissional', fields: ['salary'], showOn: ['full', 'partial'] },
   ],
   fields: [
     ...COMMON_FIELDS,
@@ -168,42 +173,26 @@ export const WORKER_CONFIG: RoleWizardConfig = {
     ...v,
     name: toName(v?.name),
     birthday: toYMD(v?.birthday),
-    salary: v?.salary ?? null, // objeto
+    salary: v?.salary ?? null,
   }),
-  serviceToken: WORKER_PROFILE_SERVICE_TOKEN,
+  serviceToken: WORKER_PROFILE_SERVICE,
   capabilities: { canList: true, canEdit: true },
 };
 
-// ====== MASTER (sem list) ======
-export const MASTER_CONFIG: RoleWizardConfig = {
+export const MASTER_CONFIG: RoleWizardConfig<any, MasterProfileRequest> = {
   role: 'master',
   label: 'Master',
   steps: [
-    { title: 'Dados pessoais', fields: ['name', 'email', 'birthday'] },
-    { title: 'Endereço', fields: ['address'] },
-    { title: 'Documentos', fields: ['cnpj'] },
+    { title: 'Contato', fields: ['email'], showOn: ['partial'] },
+    { title: 'Dados pessoais', fields: ['name', 'email', 'birthday'], showOn: ['full'] },
+    { title: 'Endereço', fields: ['address'], showOn: ['full'] },
   ],
-  fields: [
-    ...COMMON_FIELDS,
-    { key: 'cnpj', label: 'CNPJ', type: 'cnpj', validators: [{ name: 'custom', args: 'cnpj' }] },
-  ],
-  defaults: {
-    cnpj: '', // ou null, conforme seu DynamicField
-  },
+  fields: [...COMMON_FIELDS],
   toRequest: (v: any) => ({
     ...v,
     name: toName(v?.name),
     birthday: toYMD(v?.birthday),
   }),
-  serviceToken: MASTER_PROFILE_SERVICE_TOKEN,
+  serviceToken: MASTER_PROFILE_SERVICE,
   capabilities: { canList: false, canEdit: true },
 };
-
-// ====== Providers de configs ======
-export const provideRoleWizardConfigs = () => [
-  provideRole(ADMIN_CONFIG),
-  provideRole(TEACHER_CONFIG),
-  provideRole(STUDENT_CONFIG),
-  provideRole(WORKER_CONFIG),
-  provideRole(MASTER_CONFIG),
-];

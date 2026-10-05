@@ -1,4 +1,4 @@
-import { Role } from '../../../core/types/role.type';
+import { Role } from '../../../domain/users/role.type';
 
 export type LoginDiscoverRequest = Readonly<{
   email: string;

@@ -1,3 +1,4 @@
+// src/app/features/users/dialogs/wizard/utils/form-utils.ts
 import {
   AbstractControl,
   FormBuilder,
@@ -7,7 +8,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { FieldConfig, FieldValidator } from '../../../config/roles';
+import { FieldConfig, FieldValidator } from '../../../feature/wizard/core/types';
 import {
   cnpjValidator,
   positiveMoneyValidator,
@@ -21,7 +22,7 @@ export function getControlByPath(group: FormGroup, path: string): AbstractContro
   let ctrl: AbstractControl | null = group;
   for (const p of parts) {
     if (!(ctrl instanceof FormGroup)) return null;
-    ctrl = ctrl.controls[p] ?? null;
+    ctrl = (ctrl.controls as any)[p] ?? null;
   }
   return ctrl;
 }
@@ -35,7 +36,7 @@ export function setControlByPath(
   const last = parts.pop() as string;
   let cursor: FormGroup = group;
   for (const p of parts) {
-    const next = cursor.controls[p];
+    const next = (cursor.controls as any)[p];
     if (!next) {
       const fg = new FormGroup({});
       cursor.addControl(p, fg);
@@ -62,8 +63,7 @@ const CUSTOM_VALIDATORS: Record<string, ValidatorFn> = {
   cnpj: cnpjValidator,
 };
 
-export function mapValidators(defs?: FieldValidator[]): ValidatorFn[] {
-  if (!defs?.length) return [];
+export function mapValidators(defs: ReadonlyArray<FieldValidator> = []): ValidatorFn[] {
   return defs.map((v) => {
     switch (v.name) {
       case 'required':
@@ -80,7 +80,7 @@ export function mapValidators(defs?: FieldValidator[]): ValidatorFn[] {
         const key = String(v.args ?? '');
         const fn = CUSTOM_VALIDATORS[key];
         if (!fn) {
-          return () => ({ unknownCustomValidator: { key } });
+          return () => ({ unknownCustomValidator: { key } } as ValidationErrors);
         }
         return fn;
       }
@@ -93,11 +93,15 @@ export function mapValidators(defs?: FieldValidator[]): ValidatorFn[] {
 /* =========================
    Form Builder dinâmico
    ========================= */
-export function buildForm(fb: FormBuilder, fields: FieldConfig[], defaults: any = {}): FormGroup {
+export function buildForm(
+  fb: FormBuilder,
+  fields: ReadonlyArray<FieldConfig>,
+  defaults: any = {}
+): FormGroup {
   const group = fb.group({}, { updateOn: 'change' });
 
   for (const f of fields) {
-    const validators = mapValidators(f.validators ?? []);
+    const validators = mapValidators(f.validators);
     const value = pickValue(defaults, f.key, null);
 
     switch (f.type) {
@@ -120,7 +124,7 @@ export function buildForm(fb: FormBuilder, fields: FieldConfig[], defaults: any 
 
       case 'salary': {
         const v = value || {};
-        const fieldValidators = mapValidators(f.validators ?? []);
+        const fieldValidators = mapValidators(f.validators);
         const salary = fb.group(
           {
             salary: [

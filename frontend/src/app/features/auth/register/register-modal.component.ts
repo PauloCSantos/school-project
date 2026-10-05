@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
-import { Role } from '../../../core/types/role.type';
+import { Role } from '../../../domain/users/role.type';
 import { RegisterService } from './register.service';
 
 type RegisterPayload = {
@@ -16,7 +16,7 @@ type RegisterPayload = {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './register-modal.component.html',
-  styleUrls: ['./register-modal.component.css'],
+  styleUrls: ['./register-modal.component.scss'],
 })
 export class RegisterModalComponent {
   @Input() open = false;

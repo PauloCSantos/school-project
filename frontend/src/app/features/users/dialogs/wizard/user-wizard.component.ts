@@ -16,52 +16,52 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { FieldConfig, RoleKey, RoleWizardConfig } from '../../config/roles';
-import { ROLE_WIZARD_REGISTRY } from '../../data-access/tokens/role-wizard-registry.token';
+import { FieldConfig, RoleWizardConfig } from '../../feature/wizard/core/types';
+import { ROLE_WIZARD_REGISTRY } from '../../feature/wizard/core/tokens';
 import { buildForm, getControlByPath } from './utils/form-utils';
 import { DynamicFieldComponent } from './dynamic-field.component';
+import { Role } from '../../../../domain/users/role.type';
 
 @Component({
   selector: 'app-user-wizard',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, DynamicFieldComponent],
   templateUrl: './user-wizard.component.html',
-  styleUrls: ['./user-wizard.component.css'],
+  styleUrls: ['./user-wizard.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserWizardComponent implements OnChanges {
-  // ===== Inputs =====
-  private _role!: RoleKey;
-  @Input({ required: true }) set role(v: RoleKey) {
-    this._role = v;
-    this.roleSig.set(v);
-  }
-
-  @Output() closed = new EventEmitter<boolean>();
-  get role(): RoleKey {
-    return this._role;
-  }
-
-  @Input() mode: 'create' | 'edit' = 'create';
-  @Input() initialValue: any = null;
-  @Input() id?: string;
-
-  // ===== DI =====
   private fb = inject(FormBuilder);
   private injector = inject(Injector);
   private configs = inject(ROLE_WIZARD_REGISTRY, { optional: true }) ?? [];
 
-  // ===== State (signals) =====
-  roleSig = signal<RoleKey | null>(null);
-  prevRole = signal<RoleKey | null>(null);
+  private registry = inject(ROLE_WIZARD_REGISTRY, { optional: true });
+  private _role!: Role;
+  @Input({ required: true }) set role(v: Role) {
+    this._role = v;
+    this.roleSig.set(v);
+  }
+  get role(): Role {
+    return this._role;
+  }
 
-  cfg = computed<RoleWizardConfig | undefined>(() =>
-    this.configs.find((c) => c.role === this.roleSig()!)
-  );
+  @Input() mode: 'create' | 'edit' = 'create';
+  @Input() creationMode: 'full' | 'partial' = 'full';
+  @Input() initialValue: any = null;
+  @Input() id?: string;
+
+  @Output() closed = new EventEmitter<boolean>();
+
+  roleSig = signal<Role | null>(null);
+  prevRole = signal<Role | null>(null);
+  cfg = computed<RoleWizardConfig | undefined>(() => {
+    const role = this.roleSig();
+    if (!role || !this.registry) return undefined;
+    return this.registry[role];
+  });
 
   form = signal<FormGroup | null>(null);
   stepIndex = signal(0);
-
   private _tick = signal(0);
 
   currentStepValid = computed(() => {
@@ -72,21 +72,20 @@ export class UserWizardComponent implements OnChanges {
     if (!form || !cfg) return false;
 
     const raw = form.getRawValue();
-    const stepDef = cfg.steps[step];
+    const visibleSteps = this.steps;
+    if (!visibleSteps.length || step < 0 || step >= visibleSteps.length) return false;
+
+    const stepDef = visibleSteps[step];
     const visible = stepDef.fields
       .map((k: string) => cfg.fields.find((f) => f.key === k)!)
       .filter(Boolean)
       .filter((f: any) => (f.visibleWhen ? !!f.visibleWhen(raw) : true));
 
-    let allValid = true;
     for (const f of visible) {
       const ctrl = getControlByPath(form, f.key);
-      if (ctrl?.invalid) {
-        allValid = false;
-      }
+      if (ctrl?.invalid) return false;
     }
-
-    return allValid;
+    return true;
   });
 
   private rebuildEffect = effect(() => {
@@ -105,29 +104,37 @@ export class UserWizardComponent implements OnChanges {
       this.prevRole.set(role);
     } else {
       const roleMudou = oldRole !== role;
-
       if (roleMudou) {
         const baseFields = cfg.fields.filter((f) => f.preserveOnRoleChange);
         this.copyCompatibleValues(prevForm, nextForm, baseFields);
       } else {
         this.copyCompatibleValues(prevForm, nextForm, cfg.fields);
       }
-
       this.form.set(nextForm);
       this.prevRole.set(role);
+    }
+
+    if (this.creationMode === 'partial') {
+      const allowedFields = new Set<string>(this.steps.flatMap((s: any) => s.fields ?? []));
+      cfg.fields.forEach((field) => {
+        if (!allowedFields.has(field.key)) {
+          const ctrl = getControlByPath(nextForm, field.key);
+          if (ctrl) {
+            ctrl.clearValidators();
+            ctrl.setErrors(null);
+            ctrl.updateValueAndValidity();
+          }
+        }
+      });
     }
 
     nextForm.updateValueAndValidity({ onlySelf: false, emitEvent: true });
 
     const current = untracked(() => this.stepIndex());
-    const max = (cfg.steps?.length ?? 0) - 1;
-    if (max < 0) {
-      this.stepIndex.set(0);
-    } else if (current > max) {
-      this.stepIndex.set(0);
-    }
+    const max = (this.steps.length ?? 0) - 1;
+    if (max < 0 || current > max) this.stepIndex.set(0);
 
-    this._tick.update((n) => n + 1);
+    setTimeout(() => this._tick.update((n) => n + 1), 0);
   });
 
   private formChangesEffect = effect((onCleanup) => {
@@ -148,22 +155,24 @@ export class UserWizardComponent implements OnChanges {
     });
   });
 
-  // ===== Lifecycle =====
   ngOnChanges(_: SimpleChanges): void {}
 
-  // ===== API usada no template =====
   get step() {
     return this.stepIndex();
   }
+
   get steps() {
-    return this.cfg()?.steps ?? [];
+    const cfg = this.cfg();
+    if (!cfg) return [];
+    const mode = this.creationMode ?? 'full';
+    return (cfg.steps ?? []).filter((s) => (s.showOn ? s.showOn.includes(mode) : true));
   }
 
-  visibleFields(step: number): FieldConfig[] {
+  visibleFields(step: number): ReadonlyArray<FieldConfig> {
     const cfg = this.cfg()!;
     const form = this.form()!;
     const raw = form.getRawValue();
-    const stepDef = cfg.steps[step];
+    const stepDef = this.steps[step];
 
     return stepDef.fields
       .map((k) => cfg.fields.find((f) => f.key === k)!)
@@ -183,20 +192,40 @@ export class UserWizardComponent implements OnChanges {
   submit() {
     const cfg = this.cfg()!;
     const form = this.form()!;
-    const last = (this.cfg()?.steps.length ?? 1) - 1;
-    if (!this.canProceedStep(last)) return;
+    const last = (this.steps.length ?? 1) - 1;
+
+    const canProceed = this.canProceedStep(last);
+    if (!canProceed) return;
 
     if (form.invalid) {
-      form.markAllAsTouched();
-      return;
+      if (this.creationMode === 'partial') {
+        // permitir envio parcial
+      } else {
+        form.markAllAsTouched();
+        return;
+      }
     }
 
-    const payload = cfg.toRequest(form.getRawValue());
-    const service = this.injector.get(cfg.serviceToken);
-    const obs =
-      this.mode === 'create' ? service.create(payload) : service.update!(this.id!, payload);
+    const fullPayload = cfg.toRequest(form.getRawValue());
+    let payload: any = fullPayload;
 
-    obs.pipe().subscribe({
+    if (this.creationMode === 'partial') {
+      const allowedFields = new Set<string>((this.steps ?? []).flatMap((s: any) => s.fields ?? []));
+      allowedFields.add('email');
+      payload = Object.fromEntries(
+        Object.entries(fullPayload).filter(([k]) => allowedFields.has(k))
+      );
+    }
+
+    const service = this.injector.get(cfg.serviceToken);
+    (payload as any).creationMode = this.creationMode;
+
+    const obs =
+      this.mode === 'create'
+        ? service.create(payload as any)
+        : service.update!(this.id!, payload as any);
+
+    obs.subscribe({
       next: () => this.closed.emit(true),
       error: () => this.closed.emit(false),
     });
@@ -207,8 +236,7 @@ export class UserWizardComponent implements OnChanges {
     this._tick.update((n) => n + 1);
   }
 
-  // ===== Helpers =====
-  private copyCompatibleValues(from: FormGroup, to: FormGroup, fields: FieldConfig[]) {
+  private copyCompatibleValues(from: FormGroup, to: FormGroup, fields: ReadonlyArray<FieldConfig>) {
     const src = from.getRawValue();
     for (const f of fields) {
       const path = f.key;
@@ -222,8 +250,11 @@ export class UserWizardComponent implements OnChanges {
     const form = this.form();
     const cfg = this.cfg();
     if (!form || !cfg) return false;
-    const keys = this.visibleFields(stepIdx).map((f) => f.key);
+
+    const visibleFields = this.visibleFields(stepIdx);
+    const keys = visibleFields.map((f) => f.key);
     let ok = true;
+
     for (const key of keys) {
       const ctrl = getControlByPath(form, key);
       if (!ctrl) continue;

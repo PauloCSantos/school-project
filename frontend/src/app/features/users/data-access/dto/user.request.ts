@@ -4,7 +4,7 @@ import {
   WorkerProfile,
   StudentProfile,
   MasterProfile,
-} from '../../../../core/types/profile.type';
+} from '../../../../domain/users/profile.type';
 
 export type AnyProfile =
   | AdministratorProfile

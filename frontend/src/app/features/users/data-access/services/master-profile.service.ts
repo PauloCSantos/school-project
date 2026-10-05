@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { MasterProfileRequest } from '../dto/master/master.request';
-import { profileToRequest } from '../../../../core/mappers/profile.mapper';
-import { MasterProfile } from '../../../../core/types/profile.type';
+import { profileToRequest } from '../mappers/profile.mapper';
+import { MasterProfile } from '../../../../domain/users/profile.type';
 
 @Injectable({ providedIn: 'root' })
 export class MasterProfileService {
@@ -11,7 +11,7 @@ export class MasterProfileService {
   constructor(private http: HttpClient) {}
 
   create(payload: MasterProfileRequest): Observable<any> {
-    const body = profileToRequest(payload as any);
+    const body = profileToRequest(payload);
     return this.http.post(this.endpoint, body);
   }
 

@@ -32,18 +32,18 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Nome</th>
-          <th>Email</th>
-          <th>{{ specificHeader() }}</th>
+          @for (col of columns(); track col.key) {
+          <th>{{ col.label }}</th>
+          }
           <th class="col-actions">Ações</th>
         </tr>
       </thead>
       <tbody>
         @for (user of items(); track user.id) {
         <tr>
-          <td>{{ user.name }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ specificValue(user) }}</td>
+          @for (col of columns(); track col.key) {
+          <td>{{ getCellValue(user, col) }}</td>
+          }
           <td class="col-actions">
             <button
               type="button"

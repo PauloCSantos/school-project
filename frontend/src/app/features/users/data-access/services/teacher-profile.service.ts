@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { TeacherProfileRequest } from '../dto';
-import { profileToRequest } from '../../../../core/mappers/profile.mapper';
-import { TeacherProfile } from '../../../../core/types/profile.type';
+import { profileToRequest } from '../mappers/profile.mapper';
+import { TeacherProfile } from '../../../../domain/users/profile.type';
 
 @Injectable({ providedIn: 'root' })
 export class TeacherProfileService {

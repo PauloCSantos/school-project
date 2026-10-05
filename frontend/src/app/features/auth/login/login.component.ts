@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TenantOption } from './login.response';
 import { LoginService } from './login.service';
-import { Role } from '../../../core/types/role.type';
+import { Role } from '../../../domain/users/role.type';
 import { ApiError } from '../../../core/interceptors/api-error.interceptor';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -23,7 +23,7 @@ type PrefillState = { email?: string; masterId?: string };
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css'],
+  styleUrls: ['./login.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements OnInit {

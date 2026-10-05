@@ -8,7 +8,7 @@ import { RegisterModalComponent } from '../../../features/auth/register/register
   standalone: true,
   imports: [RouterModule, RegisterModalComponent],
   templateUrl: './sidebar.component.html',
-  styleUrls: ['./sidebar.component.css'],
+  styleUrls: ['./sidebar.component.scss'],
 })
 export class SidebarComponent {
   registerModalOpen = signal(false);

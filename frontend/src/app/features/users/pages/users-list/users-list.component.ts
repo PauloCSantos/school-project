@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TokenRoles, UsersFacade } from '../../data-access';
 import { UsersRegisterComponent } from '../../dialogs/users-register';
+import { Role } from '../../../../domain/users/role.type';
 
 type BaseItem = {
   id: string;
@@ -9,12 +10,40 @@ type BaseItem = {
   email: string;
 };
 
+type ColumnDef = {
+  key: string;
+  label: string;
+  value?: (user: any) => unknown;
+};
+
+type TableRoleKey = Exclude<Role, 'master'>;
+const COLUMNS_CONFIG: Record<TableRoleKey, ColumnDef[]> = {
+  administrator: [
+    { key: 'name', label: 'Nome', value: (user) => user?.name?.fullName },
+    { key: 'email', label: 'Email' },
+    { key: 'graduation', label: 'Graduação' },
+  ],
+  teacher: [
+    { key: 'name', label: 'Nome', value: (user) => user?.name?.fullName },
+    { key: 'email', label: 'Email' },
+    { key: 'graduation', label: 'Graduação' },
+  ],
+  student: [
+    { key: 'name', label: 'Nome', value: (user) => user?.name?.fullName },
+    { key: 'email', label: 'Email' },
+  ],
+  worker: [
+    { key: 'name', label: 'Nome', value: (user) => user?.name?.fullName },
+    { key: 'email', label: 'Email' },
+  ],
+};
+
 @Component({
   selector: 'app-users-list',
   standalone: true,
   imports: [CommonModule, UsersRegisterComponent],
   templateUrl: './users-list.component.html',
-  styleUrls: ['./users-list.component.css'],
+  styleUrls: ['./users-list.component.scss'],
 })
 export class UsersListComponent {
   private facade = inject(UsersFacade);
@@ -22,7 +51,7 @@ export class UsersListComponent {
   loading = signal(false);
   error = signal<string | null>(null);
 
-  role = signal<TokenRoles>('administrator');
+  role = signal<TableRoleKey>('administrator');
   quantity = signal<number>(20);
   offset = signal<number>(0);
 
@@ -31,13 +60,18 @@ export class UsersListComponent {
 
   registerOpen = signal(false);
 
+  columns = computed<ColumnDef[]>(() => {
+    const role = this.role();
+    return COLUMNS_CONFIG[role] ?? COLUMNS_CONFIG['administrator'];
+  });
+
   ngOnInit() {
     this.load();
   }
 
   onRoleChange(ev: Event) {
     const select = ev.target as HTMLSelectElement;
-    this.role.set(select.value as TokenRoles);
+    this.role.set(select.value as TableRoleKey);
     this.offset.set(0);
     this.load();
   }
@@ -82,33 +116,23 @@ export class UsersListComponent {
     console.debug('remove clicked', id);
   }
 
-  specificHeader(): string {
-    switch (this.role()) {
-      case 'administrator':
-        return 'Graduação';
-      case 'teacher':
-        return 'Disciplina';
-      case 'student':
-        return 'Série';
-      case 'worker':
-        return 'Salário';
-      default:
-        return '';
-    }
-  }
+  getCellValue(user: any, column: ColumnDef): string {
+    let value: unknown;
 
-  specificValue(u: any): string {
-    switch (this.role()) {
-      case 'administrator':
-        return u?.graduation ?? '—';
-      case 'teacher':
-        return u?.subject ?? '—';
-      case 'student':
-        return u?.grade ?? '—';
-      case 'worker':
-        return u?.salary != null ? String(u.salary) : '—';
-      default:
-        return '—';
+    if (column.value) {
+      value = column.value(user);
+    } else {
+      value = user?.[column.key];
     }
+
+    if (value == null || value === '') {
+      return '—';
+    }
+
+    if (column.key === 'salary') {
+      return String(value);
+    }
+
+    return String(value);
   }
 }
