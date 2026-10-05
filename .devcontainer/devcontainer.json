@@ -1,7 +1,9 @@
 {
     "name": "Node.js 20 TypeScript Development",
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
-    "workspaceMount": "source=${localWorkspaceFolder}/frontend,target=/workspace,type=bind,consistency=cached",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
     "workspaceFolder": "/workspace",
     "customizations": {
         "vscode": {
@@ -23,6 +25,7 @@
         }
     },
     "forwardPorts": [
+        3000,
         3003
     ],
     "remoteUser": "node",

@@ -6,12 +6,12 @@ import {
   inject,
   signal,
   computed,
-} from '@angular/core'; // NEW (computed)
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TenantOption } from './login.response';
 import { LoginService } from './login.service';
-import { Role } from '../../../core/types/role.type';
+import { Role } from '../../../domain/users/role.type';
 import { ApiError } from '../../../core/interceptors/api-error.interceptor';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -23,7 +23,7 @@ type PrefillState = { email?: string; masterId?: string };
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css'],
+  styleUrls: ['./login.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements OnInit {
@@ -83,7 +83,6 @@ export class LoginComponent implements OnInit {
     ctrl.updateValueAndValidity({ emitEvent: false });
   });
 
-  // (opcional renomear)
   trackByMasterId = (_: number, t: TenantOption) => t.id;
 
   ngOnInit(): void {
@@ -97,9 +96,20 @@ export class LoginComponent implements OnInit {
     if (st?.masterId) {
       this.step.set('tenant');
       this.prefilledMasterId = st.masterId;
-      this.credentialsForm.patchValue({ masterId: st.masterId });
-      // NEW: quando pré-preenchido, já calculamos as roles disponíveis
-      this.updateAvailableRolesFromMasterId(st.masterId);
+      this.credentialsForm.patchValue({ masterId: st.masterId }, { emitEvent: false });
+      this.availableRoles.set(['master']);
+      this.credentialsForm.patchValue({ role: 'master' as Role }, { emitEvent: false });
+
+      const alreadyHas = this.tenants().some((t) => t.id === st.masterId);
+      if (!alreadyHas) {
+        this.tenants.set([
+          ...this.tenants(),
+          {
+            id: st.masterId,
+            roles: ['master'],
+          } as TenantOption,
+        ]);
+      }
     }
 
     ['email', 'password', 'role', 'masterId'].forEach((k) => {
@@ -199,7 +209,9 @@ export class LoginComponent implements OnInit {
     this.formError.set(null);
     this.loading.set(true);
 
-    const { masterId, role } = this.credentialsForm.getRawValue();
+    const { email, password, masterId, role } = this.credentialsForm.getRawValue();
+    if (!this.email) this.email = email;
+    if (!this.password) this.password = password;
     this.createSession(masterId, role as Role);
   }
 
@@ -299,16 +311,15 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  // NEW: recalcula roles disponíveis conforme o tenant selecionado
   private updateAvailableRolesFromMasterId(masterId?: string | null) {
     const tid = masterId ?? (this.credentialsForm.get('masterId')?.value as string | null);
     const t = this.tenants().find((tt) => tt.id === tid);
-    const roles = t?.roles ?? [];
+    if (!t) return;
+    const roles = t.roles ?? [];
     this.availableRoles.set(roles);
 
     const currentRole = this.credentialsForm.get('role')!.value as Role | null;
     if (!currentRole || !roles.includes(currentRole)) {
-      // troca a role do form para uma permitida pelo tenant selecionado (ou limpa)
       const nextRole = roles[0] ?? null;
       this.credentialsForm.patchValue({ role: nextRole as any }, { emitEvent: false });
     }

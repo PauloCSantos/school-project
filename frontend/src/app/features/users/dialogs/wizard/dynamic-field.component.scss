@@ -1,0 +1,18 @@
+.df {
+  display: grid;
+  gap: 0.25rem;
+}
+.input,
+.textarea,
+.select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e3e3e3;
+  border-radius: 0.5rem;
+}
+.hint {
+  color: #6b7280;
+}
+.error {
+  color: #dc2626;
+}

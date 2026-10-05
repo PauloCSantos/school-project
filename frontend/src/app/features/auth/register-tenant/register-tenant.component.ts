@@ -16,7 +16,7 @@ import { RegisterTenantResponse } from './register-tenant.response';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './register-tenant.component.html',
-  styleUrls: ['./register-tenant.component.css'],
+  styleUrls: ['./register-tenant.component.scss'],
 })
 export class RegisterTenantComponent {
   loading = signal(false);
